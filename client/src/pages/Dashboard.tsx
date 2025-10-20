@@ -14,7 +14,7 @@ import { ProcessingModal } from "@/components/ProcessingModal";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
-import { uploadDocument, getDocuments, deleteDocument, updateDocumentCategory } from "@/lib/api";
+import { uploadDocument, getDocuments, deleteDocument, updateDocumentCategory, getStorageStats, type StorageStats } from "@/lib/api";
 import { DocumentViewer } from "@/components/DocumentViewer";
 import { MultiPageUpload } from "@/components/MultiPageUpload";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -66,11 +66,20 @@ export default function Dashboard() {
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
+  // Fetch storage statistics
+  const { data: storageStats } = useQuery<StorageStats>({
+    queryKey: ["/api/storage/stats"],
+    queryFn: getStorageStats,
+    refetchOnWindowFocus: false,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+
   // Upload mutation
   const uploadMutation = useMutation({
     mutationFn: uploadDocument,
     onSuccess: (document) => {
       queryClient.invalidateQueries({ queryKey: ["/api/documents"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/storage/stats"] });
       setProcessingModal({
         open: true,
         status: 'success',
@@ -101,6 +110,7 @@ export default function Dashboard() {
     mutationFn: deleteDocument,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/documents"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/storage/stats"] });
       toast({
         title: "Dokument gelöscht",
         description: "Das Dokument wurde erfolgreich gelöscht.",
@@ -230,6 +240,14 @@ export default function Dashboard() {
            uploadDate.getFullYear() === now.getFullYear();
   }).length;
 
+  // Format storage display
+  const storageDisplay = storageStats 
+    ? `${storageStats.usedGB.toFixed(2)} GB`
+    : "...";
+  const storageTotalDisplay = storageStats
+    ? `von ${storageStats.totalGB} GB`
+    : "von 5 GB";
+
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-10 bg-background border-b">
@@ -289,9 +307,9 @@ export default function Dashboard() {
           />
           <StatsCard
             title="Speicher verwendet"
-            value="2.4 GB"
+            value={storageDisplay}
             icon={HardDrive}
-            description="von 10 GB"
+            description={storageTotalDisplay}
           />
           <StatsCard
             title="Diesen Monat"

@@ -1,6 +1,15 @@
 import type { Document, User } from "@shared/schema";
 import { apiRequest } from "./queryClient";
 
+export interface StorageStats {
+  usedBytes: number;
+  usedMB: number;
+  usedGB: number;
+  totalGB: number;
+  percentageUsed: number;
+  documentCount: number;
+}
+
 /**
  * Upload one or more document files and process them with AI
  * If multiple files are provided, they will be combined into a single multi-page PDF
@@ -73,6 +82,22 @@ export async function updateDocumentCategory(id: string, category: string): Prom
  */
 export async function deleteDocument(id: string): Promise<void> {
   await apiRequest("DELETE", `/api/documents/${id}`);
+}
+
+/**
+ * Get storage statistics for the current user
+ */
+export async function getStorageStats(): Promise<StorageStats> {
+  const response = await fetch("/api/storage/stats", {
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    const text = (await response.text()) || response.statusText;
+    throw new Error(`${response.status}: ${text}`);
+  }
+
+  return await response.json();
 }
 
 /**
