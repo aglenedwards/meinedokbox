@@ -46,7 +46,7 @@ function AuthenticatedApp() {
             Bitte melden Sie sich an, um Ihre Dokumente zu verwalten.
           </p>
           <Button asChild size="lg" data-testid="button-login">
-            <a href="/login">
+            <a href="/api/login">
               <LogIn className="h-4 w-4 mr-2" />
               Anmelden
             </a>
