@@ -1,10 +1,10 @@
-import gm from 'gm';
+import { exec } from 'child_process';
 import { promisify } from 'util';
-import { writeFile, unlink } from 'fs/promises';
+import { writeFile, unlink, readdir, readFile } from 'fs/promises';
 import { tmpdir } from 'os';
 import { join } from 'path';
 
-const imageMagick = gm.subClass({ imageMagick: true });
+const execAsync = promisify(exec);
 
 export interface PDFPageImage {
   base64: string;
@@ -14,45 +14,50 @@ export interface PDFPageImage {
 
 /**
  * Converts a PDF buffer to an array of PNG images (one per page)
- * Uses GraphicsMagick/ImageMagick for reliable PDF rendering
+ * Uses pdftoppm from poppler-utils for reliable PDF rendering
  */
 export async function convertPdfToImages(pdfBuffer: Buffer): Promise<PDFPageImage[]> {
   const tempPdfPath = join(tmpdir(), `pdf-${Date.now()}.pdf`);
+  const outputPrefix = join(tmpdir(), `pdf-page-${Date.now()}`);
   
   try {
-    console.log('Converting PDF to images using GraphicsMagick...');
+    console.log('Converting PDF to images using pdftoppm...');
     
     // Write PDF to temp file
     await writeFile(tempPdfPath, pdfBuffer);
     
-    // Get number of pages
-    const img = imageMagick(tempPdfPath);
-    const identifyAsync = promisify(img.identify.bind(img));
-    const info: any = await identifyAsync();
-    const pageNumbers = info.toString().trim().split('\n').filter((p: string) => p.trim());
-    const numPages = pageNumbers.length;
+    // Convert PDF to PNG images using pdftoppm
+    // -png: output format
+    // -r 150: resolution (DPI)
+    await execAsync(`pdftoppm -png -r 150 "${tempPdfPath}" "${outputPrefix}"`);
     
-    console.log(`PDF has ${numPages} page(s)`);
+    // Find all generated PNG files
+    const tempDir = tmpdir();
+    const allFiles = await readdir(tempDir);
+    const pngFiles = allFiles
+      .filter(f => f.startsWith(join(outputPrefix).split('/').pop() || '') && f.endsWith('.png'))
+      .sort();
+    
+    console.log(`PDF converted to ${pngFiles.length} page(s)`);
     
     const images: PDFPageImage[] = [];
     
-    // Convert each page
-    for (let pageNum = 0; pageNum < numPages; pageNum++) {
-      const pageImg = imageMagick(tempPdfPath + `[${pageNum}]`)
-        .density(150, 150)
-        .quality(90);
-      
-      const toBufferAsync = promisify(pageImg.toBuffer.bind(pageImg));
-      const imageBuffer = await toBufferAsync() as Buffer;
+    // Read each generated PNG file
+    for (let i = 0; i < pngFiles.length; i++) {
+      const pngPath = join(tempDir, pngFiles[i]);
+      const imageBuffer = await readFile(pngPath);
       const base64Image = imageBuffer.toString('base64');
       
       images.push({
         base64: base64Image,
         mimeType: 'image/png',
-        pageNumber: pageNum + 1,
+        pageNumber: i + 1,
       });
       
-      console.log(`  ✓ Converted page ${pageNum + 1}/${numPages}`);
+      // Clean up PNG file
+      await unlink(pngPath).catch(() => {});
+      
+      console.log(`  ✓ Converted page ${i + 1}/${pngFiles.length}`);
     }
     
     console.log(`Successfully converted ${images.length} page(s) to images`);
@@ -61,11 +66,7 @@ export async function convertPdfToImages(pdfBuffer: Buffer): Promise<PDFPageImag
     console.error('Failed to convert PDF to images:', error);
     throw new Error('PDF to image conversion failed: ' + (error as Error).message);
   } finally {
-    // Clean up temp file
-    try {
-      await unlink(tempPdfPath);
-    } catch (e) {
-      // Ignore cleanup errors
-    }
+    // Clean up temp PDF file
+    await unlink(tempPdfPath).catch(() => {});
   }
 }
