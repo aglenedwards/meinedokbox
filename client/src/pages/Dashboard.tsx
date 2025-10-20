@@ -1,5 +1,9 @@
 import { useState } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { FileText, HardDrive, TrendingUp, Plus } from "lucide-react";
+import { format } from "date-fns";
+import { de } from "date-fns/locale";
+import type { Document } from "@shared/schema";
 import { UploadZone } from "@/components/UploadZone";
 import { DocumentCard } from "@/components/DocumentCard";
 import { SearchBar } from "@/components/SearchBar";
@@ -8,50 +12,14 @@ import { StatsCard } from "@/components/StatsCard";
 import { EmptyState } from "@/components/EmptyState";
 import { ProcessingModal } from "@/components/ProcessingModal";
 import { Button } from "@/components/ui/button";
-
-// todo: remove mock functionality
-const mockDocuments = [
-  {
-    id: "1",
-    title: "Versicherungspolice Autoversicherung 2024",
-    category: "Versicherung",
-    date: "15. Okt 2024",
-  },
-  {
-    id: "2",
-    title: "Mietvertrag Wohnung Hauptstraße",
-    category: "Vertrag",
-    date: "1. Jan 2024",
-  },
-  {
-    id: "3",
-    title: "Stromrechnung März 2024",
-    category: "Rechnung",
-    date: "3. Apr 2024",
-  },
-  {
-    id: "4",
-    title: "Brief vom Finanzamt",
-    category: "Brief",
-    date: "20. Sep 2024",
-  },
-  {
-    id: "5",
-    title: "Handyrechnung Februar 2024",
-    category: "Rechnung",
-    date: "1. Mär 2024",
-  },
-  {
-    id: "6",
-    title: "Krankenversicherung Jahrespolice",
-    category: "Versicherung",
-    date: "10. Jan 2024",
-  },
-];
+import { useToast } from "@/hooks/use-toast";
+import { queryClient } from "@/lib/queryClient";
+import { uploadDocument, getDocuments, deleteDocument } from "@/lib/api";
 
 const categories = ["Alle", "Rechnung", "Vertrag", "Versicherung", "Brief", "Sonstiges"];
 
 export default function Dashboard() {
+  const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<string[]>(["Alle"]);
   const [showUpload, setShowUpload] = useState(false);
@@ -59,10 +27,66 @@ export default function Dashboard() {
     open: boolean;
     status: 'processing' | 'success' | 'error';
     progress: number;
+    detectedCategory?: string;
   }>({
     open: false,
     status: 'processing',
     progress: 0,
+  });
+
+  // Fetch documents with React Query
+  const { data: documents = [], isLoading } = useQuery<Document[]>({
+    queryKey: ["/api/documents", searchQuery, selectedCategories],
+    queryFn: () => getDocuments(searchQuery, selectedCategories),
+  });
+
+  // Upload mutation
+  const uploadMutation = useMutation({
+    mutationFn: uploadDocument,
+    onSuccess: (document) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/documents"] });
+      setProcessingModal({
+        open: true,
+        status: 'success',
+        progress: 100,
+        detectedCategory: document.category,
+      });
+      toast({
+        title: "Dokument erfolgreich hochgeladen",
+        description: `"${document.title}" wurde als ${document.category} klassifiziert.`,
+      });
+    },
+    onError: (error: Error) => {
+      setProcessingModal({
+        open: true,
+        status: 'error',
+        progress: 0,
+      });
+      toast({
+        title: "Fehler beim Hochladen",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Delete mutation
+  const deleteMutation = useMutation({
+    mutationFn: deleteDocument,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/documents"] });
+      toast({
+        title: "Dokument gelöscht",
+        description: "Das Dokument wurde erfolgreich gelöscht.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Fehler beim Löschen",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
   });
 
   const handleCategoryToggle = (category: string) => {
@@ -77,32 +101,49 @@ export default function Dashboard() {
     }
   };
 
-  const handleFileSelect = (file: File) => {
-    console.log('File selected:', file.name);
+  const handleFileSelect = async (file: File) => {
     setShowUpload(false);
-    
     setProcessingModal({ open: true, status: 'processing', progress: 0 });
-    
-    // todo: remove mock functionality
-    let progress = 0;
-    const interval = setInterval(() => {
-      progress += 20;
-      setProcessingModal(prev => ({ ...prev, progress }));
-      
-      if (progress >= 100) {
-        clearInterval(interval);
-        setTimeout(() => {
-          setProcessingModal({ open: true, status: 'success', progress: 100 });
-        }, 500);
-      }
-    }, 400);
+
+    // Simulate progress stages while upload is happening
+    const progressInterval = setInterval(() => {
+      setProcessingModal(prev => {
+        if (prev.progress >= 90) {
+          clearInterval(progressInterval);
+          return prev;
+        }
+        return { ...prev, progress: prev.progress + 10 };
+      });
+    }, 300);
+
+    try {
+      await uploadMutation.mutateAsync(file);
+      clearInterval(progressInterval);
+    } catch (error) {
+      clearInterval(progressInterval);
+    }
   };
 
-  const filteredDocuments = mockDocuments.filter(doc => {
-    const matchesSearch = doc.title.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategories.includes("Alle") || selectedCategories.includes(doc.category);
-    return matchesSearch && matchesCategory;
-  });
+  const handleDelete = (id: string) => {
+    deleteMutation.mutate(id);
+  };
+
+  // Format documents for display
+  const formattedDocuments = documents.map(doc => ({
+    id: doc.id,
+    title: doc.title,
+    category: doc.category,
+    date: format(new Date(doc.uploadedAt), "d. MMM yyyy", { locale: de }),
+  }));
+
+  // Calculate stats
+  const totalDocuments = documents.length;
+  const thisMonthCount = documents.filter(doc => {
+    const uploadDate = new Date(doc.uploadedAt);
+    const now = new Date();
+    return uploadDate.getMonth() === now.getMonth() && 
+           uploadDate.getFullYear() === now.getFullYear();
+  }).length;
 
   return (
     <div className="min-h-screen bg-background">
@@ -144,9 +185,9 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-8">
           <StatsCard
             title="Gesamt Dokumente"
-            value={mockDocuments.length}
+            value={totalDocuments}
             icon={FileText}
-            description="+12 diesen Monat"
+            description={`+${thisMonthCount} diesen Monat`}
           />
           <StatsCard
             title="Speicher verwendet"
@@ -156,7 +197,7 @@ export default function Dashboard() {
           />
           <StatsCard
             title="Diesen Monat"
-            value={23}
+            value={thisMonthCount}
             icon={TrendingUp}
             description="hochgeladen"
           />
@@ -171,7 +212,11 @@ export default function Dashboard() {
           />
         </div>
 
-        {filteredDocuments.length === 0 ? (
+        {isLoading ? (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">Dokumente werden geladen...</p>
+          </div>
+        ) : formattedDocuments.length === 0 ? (
           <EmptyState
             title="Keine Dokumente gefunden"
             description={
@@ -184,12 +229,12 @@ export default function Dashboard() {
           />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-            {filteredDocuments.map((doc) => (
+            {formattedDocuments.map((doc) => (
               <DocumentCard
                 key={doc.id}
                 {...doc}
                 onView={() => console.log('View', doc.id)}
-                onDelete={() => console.log('Delete', doc.id)}
+                onDelete={() => handleDelete(doc.id)}
               />
             ))}
           </div>
@@ -200,7 +245,7 @@ export default function Dashboard() {
         open={processingModal.open}
         status={processingModal.status}
         progress={processingModal.progress}
-        detectedCategory="Rechnung"
+        detectedCategory={processingModal.detectedCategory}
         onClose={() => setProcessingModal(prev => ({ ...prev, open: false }))}
         onAddAnother={() => {
           setProcessingModal(prev => ({ ...prev, open: false }));

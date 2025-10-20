@@ -18,6 +18,16 @@ interface ProcessingModalProps {
   onAddAnother?: () => void;
 }
 
+function getProcessingStep(progress: number): string {
+  if (progress < 30) {
+    return "Datei wird hochgeladen...";
+  } else if (progress < 70) {
+    return "KI analysiert Dokument...";
+  } else {
+    return "Dokument wird gespeichert...";
+  }
+}
+
 export function ProcessingModal({
   open,
   status,
@@ -26,6 +36,8 @@ export function ProcessingModal({
   onClose,
   onAddAnother,
 }: ProcessingModalProps) {
+  const currentStep = getProcessingStep(progress);
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent data-testid="modal-processing">
@@ -36,8 +48,8 @@ export function ProcessingModal({
             {status === 'error' && 'Upload fehlgeschlagen'}
           </DialogTitle>
           <DialogDescription>
-            {status === 'processing' && 'KI analysiert Ihr Dokument...'}
-            {status === 'success' && `Dokument wurde als "${detectedCategory}" klassifiziert`}
+            {status === 'processing' && currentStep}
+            {status === 'success' && detectedCategory && `Dokument wurde als "${detectedCategory}" klassifiziert`}
             {status === 'error' && 'Bitte versuchen Sie es erneut'}
           </DialogDescription>
         </DialogHeader>
