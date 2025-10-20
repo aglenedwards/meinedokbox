@@ -1,4 +1,4 @@
-import { FileText, Calendar, MoreVertical, Receipt, FileSignature, Shield, Mail, FileQuestion } from "lucide-react";
+import { FileText, Calendar, MoreVertical, Euro, FileSignature, Shield, Mail, FileQuestion } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -19,9 +19,9 @@ interface DocumentCardProps {
   onDelete?: () => void;
 }
 
-const categoryConfig: Record<string, { icon: typeof Receipt; color: string; bgColor: string }> = {
+const categoryConfig: Record<string, { icon: typeof Euro; color: string; bgColor: string }> = {
   'Rechnung': { 
-    icon: Receipt, 
+    icon: Euro, 
     color: 'text-chart-1',
     bgColor: 'bg-chart-1/10'
   },

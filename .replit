@@ -19,7 +19,7 @@ localPort = 33953
 externalPort = 3000
 
 [[ports]]
-localPort = 43379
+localPort = 37225
 externalPort = 3001
 
 [env]
