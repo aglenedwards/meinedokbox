@@ -29,13 +29,21 @@ export function DocumentViewer({ document, open, onClose }: DocumentViewerProps)
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl w-full h-[90vh] flex flex-col p-0">
+        {/* Custom close button - larger and more mobile-friendly */}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onClose}
+          className="absolute right-4 top-4 z-50 h-10 w-10"
+          data-testid="button-close-viewer"
+        >
+          <X className="h-6 w-6" />
+        </Button>
+
         <DialogHeader className="px-6 py-4 border-b">
-          <DialogTitle className="text-xl">{document.title}</DialogTitle>
-          <div className="flex items-center gap-4 text-sm text-muted-foreground mt-2">
-            <span>Kategorie: {document.category}</span>
-            <span>•</span>
-            <span>Vertrauen: {Math.round(document.confidence * 100)}%</span>
-            <span>•</span>
+          <DialogTitle className="text-xl pr-12">{document.title}</DialogTitle>
+          <div className="flex items-center gap-3 text-sm text-muted-foreground mt-2 flex-wrap">
+            <span>{document.category}</span>
             <Button
               variant="ghost"
               size="sm"
@@ -51,12 +59,22 @@ export function DocumentViewer({ document, open, onClose }: DocumentViewerProps)
 
         <div className="flex-1 overflow-auto bg-muted/30">
           {isPDF ? (
-            <iframe
-              src={documentUrl}
-              className="w-full h-full border-0"
-              title={document.title}
-              data-testid="iframe-pdf-viewer"
-            />
+            <object
+              data={documentUrl}
+              type="application/pdf"
+              className="w-full h-full"
+              data-testid="object-pdf-viewer"
+            >
+              <div className="flex flex-col items-center justify-center h-full p-8 text-center gap-4">
+                <p className="text-muted-foreground">
+                  PDF kann in diesem Browser nicht angezeigt werden.
+                </p>
+                <Button onClick={handleDownload} variant="default">
+                  <Download className="h-4 w-4 mr-2" />
+                  PDF herunterladen
+                </Button>
+              </div>
+            </object>
           ) : (
             <div className="flex items-center justify-center h-full p-4">
               <img
