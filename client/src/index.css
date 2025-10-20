@@ -166,13 +166,13 @@
 
   --popover-border: 217 33% 29%;
 
-  --primary: 37 82% 62%;
+  --primary: 210deg 40% 98.04%;
 
   --primary-foreground: 222 47% 11%;
 
   --secondary: 217 33% 24%;
 
-  --secondary-foreground: 210 40% 98%;
+  --secondary-foreground: 210deg 40% 98.04%;
 
   --muted: 217 33% 21%;
 
@@ -187,8 +187,8 @@
   --destructive-foreground: 0 0% 100%;
 
   --input: 217 33% 32%;
-  --ring: 37 82% 65%;
-  --chart-1: 37 82% 68%;
+  --ring: 210deg 40% 98.04%;
+  --chart-1: 210deg 40% 98.04%;
   --chart-2: 221 83% 73%;
   --chart-3: 142 76% 56%;
   --chart-4: 262 83% 78%;
