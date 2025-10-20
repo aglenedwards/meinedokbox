@@ -158,6 +158,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       pageUrls,
       thumbnailUrl: thumbnailPath,
       confidence: analysisResult.confidence,
+      // Phase 2: Smart metadata
+      extractedDate: analysisResult.extractedDate ? new Date(analysisResult.extractedDate) : null,
+      amount: analysisResult.amount ?? null,
+      sender: analysisResult.sender ?? null,
     };
 
     // Validate with Zod schema
@@ -414,6 +418,182 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error permanently deleting document:", error);
       res.status(500).json({ message: "Failed to permanently delete document" });
+    }
+  });
+
+  // Phase 2: Tags API routes
+  
+  // Get all tags for user
+  app.get('/api/tags', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const userTags = await storage.getTags(userId);
+      res.json(userTags);
+    } catch (error) {
+      console.error("Error fetching tags:", error);
+      res.status(500).json({ message: "Failed to fetch tags" });
+    }
+  });
+
+  // Create new tag
+  app.post('/api/tags', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { name, color } = req.body;
+
+      if (!name) {
+        return res.status(400).json({ message: "Tag name is required" });
+      }
+
+      const tag = await storage.createTag({
+        userId,
+        name,
+        color: color || "#3b82f6",
+      });
+
+      res.json(tag);
+    } catch (error) {
+      console.error("Error creating tag:", error);
+      res.status(500).json({ message: "Failed to create tag" });
+    }
+  });
+
+  // Update tag
+  app.patch('/api/tags/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { id } = req.params;
+      const { name, color } = req.body;
+
+      const updated = await storage.updateTag(id, userId, { name, color });
+
+      if (!updated) {
+        return res.status(404).json({ message: "Tag not found or access denied" });
+      }
+
+      res.json(updated);
+    } catch (error) {
+      console.error("Error updating tag:", error);
+      res.status(500).json({ message: "Failed to update tag" });
+    }
+  });
+
+  // Delete tag
+  app.delete('/api/tags/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { id } = req.params;
+
+      const deleted = await storage.deleteTag(id, userId);
+
+      if (!deleted) {
+        return res.status(404).json({ message: "Tag not found or access denied" });
+      }
+
+      res.json({ message: "Tag deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting tag:", error);
+      res.status(500).json({ message: "Failed to delete tag" });
+    }
+  });
+
+  // Add tag to document
+  app.post('/api/documents/:documentId/tags/:tagId', isAuthenticated, async (req: any, res) => {
+    try {
+      const { documentId, tagId } = req.params;
+      const documentTag = await storage.addTagToDocument(documentId, tagId);
+      res.json(documentTag);
+    } catch (error) {
+      console.error("Error adding tag to document:", error);
+      res.status(500).json({ message: "Failed to add tag to document" });
+    }
+  });
+
+  // Remove tag from document
+  app.delete('/api/documents/:documentId/tags/:tagId', isAuthenticated, async (req: any, res) => {
+    try {
+      const { documentId, tagId } = req.params;
+      const removed = await storage.removeTagFromDocument(documentId, tagId);
+      
+      if (!removed) {
+        return res.status(404).json({ message: "Tag association not found" });
+      }
+
+      res.json({ message: "Tag removed from document" });
+    } catch (error) {
+      console.error("Error removing tag from document:", error);
+      res.status(500).json({ message: "Failed to remove tag from document" });
+    }
+  });
+
+  // Get all tags for a document
+  app.get('/api/documents/:documentId/tags', isAuthenticated, async (req: any, res) => {
+    try {
+      const { documentId } = req.params;
+      const documentTags = await storage.getDocumentTags(documentId);
+      res.json(documentTags);
+    } catch (error) {
+      console.error("Error fetching document tags:", error);
+      res.status(500).json({ message: "Failed to fetch document tags" });
+    }
+  });
+
+  // Phase 2: Export functionality - download all documents as ZIP
+  app.get('/api/documents/export/zip', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const documents = await storage.getDocumentsByUserId(userId);
+
+      if (documents.length === 0) {
+        return res.status(404).json({ message: "No documents to export" });
+      }
+
+      const archiver = require('archiver');
+      const objectStorageService = new ObjectStorageService();
+
+      // Set response headers for ZIP download
+      res.setHeader('Content-Type', 'application/zip');
+      res.setHeader('Content-Disposition', `attachment; filename="meinedokbox_export_${new Date().toISOString().split('T')[0]}.zip"`);
+
+      // Create ZIP archive
+      const archive = archiver('zip', {
+        zlib: { level: 9 }
+      });
+
+      archive.pipe(res);
+
+      // Add each document to the archive
+      for (const doc of documents) {
+        const pageUrls = doc.pageUrls && doc.pageUrls.length > 0 
+          ? doc.pageUrls 
+          : doc.fileUrl 
+            ? [doc.fileUrl] 
+            : [];
+
+        for (let i = 0; i < pageUrls.length; i++) {
+          try {
+            const pageUrl = pageUrls[i];
+            const objectFile = await objectStorageService.getObjectEntityFile(pageUrl);
+            const [fileBuffer] = await objectFile.download();
+            
+            // Create safe filename
+            const safeTitle = doc.title.replace(/[^a-zA-Z0-9äöüÄÖÜß\s-]/g, '_');
+            const extension = pageUrl.split('.').pop() || 'bin';
+            const filename = pageUrls.length > 1 
+              ? `${safeTitle}_page_${i + 1}.${extension}`
+              : `${safeTitle}.${extension}`;
+            
+            archive.append(fileBuffer, { name: filename });
+          } catch (error) {
+            console.error(`Failed to add document ${doc.id} to archive:`, error);
+          }
+        }
+      }
+
+      await archive.finalize();
+    } catch (error) {
+      console.error("Error exporting documents:", error);
+      res.status(500).json({ message: "Failed to export documents" });
     }
   });
 

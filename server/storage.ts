@@ -1,6 +1,6 @@
-import { type User, type UpsertUser, type Document, type InsertDocument } from "@shared/schema";
+import { type User, type UpsertUser, type Document, type InsertDocument, type Tag, type InsertTag, type DocumentTag, type InsertDocumentTag } from "@shared/schema";
 import { db } from "./db";
-import { users, documents } from "@shared/schema";
+import { users, documents, tags, documentTags } from "@shared/schema";
 import { eq, and, or, like, desc, asc, isNull, isNotNull, inArray, sql } from "drizzle-orm";
 
 export interface StorageStats {
@@ -29,6 +29,16 @@ export interface IStorage {
   restoreDocument(id: string, userId: string): Promise<Document | undefined>;
   permanentlyDeleteDocument(id: string, userId: string): Promise<boolean>;
   getUserStorageStats(userId: string): Promise<StorageStats>;
+  
+  // Phase 2: Tags management
+  createTag(tag: InsertTag): Promise<Tag>;
+  getTags(userId: string): Promise<Tag[]>;
+  updateTag(id: string, userId: string, data: Partial<InsertTag>): Promise<Tag | undefined>;
+  deleteTag(id: string, userId: string): Promise<boolean>;
+  addTagToDocument(documentId: string, tagId: string): Promise<DocumentTag>;
+  removeTagFromDocument(documentId: string, tagId: string): Promise<boolean>;
+  getDocumentTags(documentId: string): Promise<Tag[]>;
+  getDocumentsByTag(userId: string, tagId: string): Promise<Document[]>;
 }
 
 export class DbStorage implements IStorage {
@@ -256,6 +266,116 @@ export class DbStorage implements IStorage {
       percentageUsed: Math.round(percentageUsed * 10) / 10,
       documentCount: userDocuments.length,
     };
+  }
+
+  // Phase 2: Tags management
+  async createTag(tag: InsertTag): Promise<Tag> {
+    const [newTag] = await db.insert(tags).values(tag).returning();
+    return newTag;
+  }
+
+  async getTags(userId: string): Promise<Tag[]> {
+    return db
+      .select()
+      .from(tags)
+      .where(eq(tags.userId, userId))
+      .orderBy(asc(tags.name));
+  }
+
+  async updateTag(id: string, userId: string, data: Partial<InsertTag>): Promise<Tag | undefined> {
+    const [updated] = await db
+      .update(tags)
+      .set(data)
+      .where(
+        and(
+          eq(tags.id, id),
+          eq(tags.userId, userId)
+        )
+      )
+      .returning();
+    return updated;
+  }
+
+  async deleteTag(id: string, userId: string): Promise<boolean> {
+    // First remove all document-tag associations
+    await db.delete(documentTags).where(eq(documentTags.tagId, id));
+    
+    // Then delete the tag itself
+    const result = await db.delete(tags).where(
+      and(
+        eq(tags.id, id),
+        eq(tags.userId, userId)
+      )
+    );
+    return result.rowCount !== null && result.rowCount > 0;
+  }
+
+  async addTagToDocument(documentId: string, tagId: string): Promise<DocumentTag> {
+    const [documentTag] = await db
+      .insert(documentTags)
+      .values({ documentId, tagId })
+      .onConflictDoNothing()
+      .returning();
+    return documentTag;
+  }
+
+  async removeTagFromDocument(documentId: string, tagId: string): Promise<boolean> {
+    const result = await db.delete(documentTags).where(
+      and(
+        eq(documentTags.documentId, documentId),
+        eq(documentTags.tagId, tagId)
+      )
+    );
+    return result.rowCount !== null && result.rowCount > 0;
+  }
+
+  async getDocumentTags(documentId: string): Promise<Tag[]> {
+    const result = await db
+      .select({
+        id: tags.id,
+        userId: tags.userId,
+        name: tags.name,
+        color: tags.color,
+        createdAt: tags.createdAt,
+      })
+      .from(documentTags)
+      .innerJoin(tags, eq(documentTags.tagId, tags.id))
+      .where(eq(documentTags.documentId, documentId))
+      .orderBy(asc(tags.name));
+    
+    return result;
+  }
+
+  async getDocumentsByTag(userId: string, tagId: string): Promise<Document[]> {
+    const result = await db
+      .select({
+        id: documents.id,
+        userId: documents.userId,
+        title: documents.title,
+        category: documents.category,
+        extractedText: documents.extractedText,
+        fileUrl: documents.fileUrl,
+        pageUrls: documents.pageUrls,
+        thumbnailUrl: documents.thumbnailUrl,
+        confidence: documents.confidence,
+        uploadedAt: documents.uploadedAt,
+        deletedAt: documents.deletedAt,
+        extractedDate: documents.extractedDate,
+        amount: documents.amount,
+        sender: documents.sender,
+      })
+      .from(documentTags)
+      .innerJoin(documents, eq(documentTags.documentId, documents.id))
+      .where(
+        and(
+          eq(documentTags.tagId, tagId),
+          eq(documents.userId, userId),
+          isNull(documents.deletedAt)
+        )
+      )
+      .orderBy(desc(documents.uploadedAt));
+    
+    return result;
   }
 }
 
