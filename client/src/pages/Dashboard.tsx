@@ -17,6 +17,7 @@ import { queryClient } from "@/lib/queryClient";
 import { uploadDocument, getDocuments, deleteDocument } from "@/lib/api";
 import { DocumentViewer } from "@/components/DocumentViewer";
 import { MultiPageUpload } from "@/components/MultiPageUpload";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import logoImage from "@assets/meinedokbox_1760966015056.png";
 
 const categories = ["Alle", "Rechnung", "Vertrag", "Versicherung", "Brief", "Sonstiges"];
@@ -173,20 +174,23 @@ export default function Dashboard() {
               <img src={logoImage} alt="MeineDokBox" className="h-12 md:h-14" data-testid="img-logo" />
             </div>
             
-            <div className="flex-1 flex items-center gap-3">
+            <div className="flex-1 flex items-center gap-3 min-w-0">
               <SearchBar 
                 value={searchQuery} 
                 onChange={setSearchQuery}
               />
             </div>
             
-            <Button 
-              onClick={() => setShowUpload(!showUpload)}
-              data-testid="button-toggle-upload"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Hochladen
-            </Button>
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
+              <Button 
+                onClick={() => setShowUpload(!showUpload)}
+                data-testid="button-toggle-upload"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Hochladen
+              </Button>
+            </div>
           </div>
         </div>
       </header>
