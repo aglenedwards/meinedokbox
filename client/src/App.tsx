@@ -42,7 +42,7 @@ function AuthenticatedApp() {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-background px-4">
         <div className="max-w-md text-center space-y-6">
-          <img src={logoImage} alt="MeineDokBox" className="h-20 md:h-24 mx-auto" data-testid="img-logo-login" />
+          <img src={logoImage} alt="MeineDokBox" className="h-20 md:h-24 mx-auto dark:invert dark:brightness-0 dark:contrast-200" data-testid="img-logo-login" />
           <p className="text-muted-foreground">
             Bitte melden Sie sich an, um Ihre Dokumente zu verwalten.
           </p>
