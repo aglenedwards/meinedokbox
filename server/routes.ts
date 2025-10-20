@@ -6,6 +6,7 @@ import { setupAuth, isAuthenticated } from "./replitAuth";
 import { analyzeDocument, analyzeDocumentFromText } from "./lib/openai";
 import { extractTextFromPdf } from "./lib/pdfParser";
 import { uploadFile } from "./lib/storage";
+import { convertPdfToImages } from "./lib/pdfToImage";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { ObjectPermission } from "./objectAcl";
 import { insertDocumentSchema } from "@shared/schema";
@@ -73,14 +74,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log(`Extracted ${extractedText.length} characters from PDF`);
         
         // If PDF text extraction yielded too little text (< 50 chars), 
-        // it's likely a scanned document - use Vision API instead
+        // it's likely a scanned document - convert to images and use Vision API
         if (extractedText.length < 50) {
-          console.log('PDF has insufficient text, using Vision API for OCR');
-          const pdfAsImage = {
-            base64: firstFile.buffer.toString('base64'),
-            mimeType: 'application/pdf',
-          };
-          analysisResult = await analyzeDocument([pdfAsImage]);
+          console.log('PDF has insufficient text, converting to images for Vision API OCR');
+          const pdfImages = await convertPdfToImages(firstFile.buffer);
+          const imagesForAnalysis = pdfImages.map(img => ({
+            base64: img.base64,
+            mimeType: img.mimeType,
+          }));
+          analysisResult = await analyzeDocument(imagesForAnalysis);
         } else {
           analysisResult = await analyzeDocumentFromText(extractedText);
         }
