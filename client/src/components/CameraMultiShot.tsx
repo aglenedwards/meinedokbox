@@ -1,7 +1,11 @@
 import { useState, useRef } from "react";
-import { Camera, X, Check, RotateCcw } from "lucide-react";
+import { Camera, X, Check, RotateCcw, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { enhanceDocumentImage } from "@/lib/edgeDetection";
+import { useToast } from "@/hooks/use-toast";
 
 interface CameraMultiShotProps {
   onComplete: (files: File[]) => void;
@@ -11,18 +15,54 @@ interface CameraMultiShotProps {
 interface CapturedImage {
   file: File;
   previewUrl: string;
+  wasEnhanced?: boolean;
 }
 
 export function CameraMultiShot({ onComplete, onCancel }: CameraMultiShotProps) {
   const [captures, setCaptures] = useState<CapturedImage[]>([]);
+  const [autoEnhance, setAutoEnhance] = useState(true);
+  const [isProcessing, setIsProcessing] = useState(false);
   const cameraInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
 
-  const handleCapture = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCapture = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const previewUrl = URL.createObjectURL(file);
-    setCaptures(prev => [...prev, { file, previewUrl }]);
+    setIsProcessing(true);
+
+    try {
+      if (autoEnhance) {
+        const result = await enhanceDocumentImage(file, {
+          grayscale: false,
+          sharpen: true,
+          autoAdjust: true
+        });
+
+        setCaptures(prev => [...prev, {
+          file: result.file,
+          previewUrl: result.previewUrl,
+          wasEnhanced: result.wasProcessed
+        }]);
+
+        if (result.wasProcessed) {
+          toast({
+            title: "Bild optimiert",
+            description: "Dokument wurde automatisch verbessert",
+            duration: 2000,
+          });
+        }
+      } else {
+        const previewUrl = URL.createObjectURL(file);
+        setCaptures(prev => [...prev, { file, previewUrl, wasEnhanced: false }]);
+      }
+    } catch (error) {
+      console.error('Error processing image:', error);
+      const previewUrl = URL.createObjectURL(file);
+      setCaptures(prev => [...prev, { file, previewUrl, wasEnhanced: false }]);
+    } finally {
+      setIsProcessing(false);
+    }
 
     // Reset input to allow capturing the same camera again
     e.target.value = '';
@@ -64,15 +104,38 @@ export function CameraMultiShot({ onComplete, onCancel }: CameraMultiShotProps) 
         </Button>
       </div>
 
-      {/* Instructions */}
+      {/* Auto-enhance toggle */}
       <div className="mb-4 p-3 bg-muted rounded-lg">
-        <p className="text-sm text-muted-foreground">
-          {captures.length === 0 
-            ? "Scannen Sie Ihr Dokument Seite für Seite mit der Kamera"
-            : `${captures.length} Seite${captures.length !== 1 ? 'n' : ''} erfasst. Fügen Sie weitere hinzu oder beenden Sie den Scan.`
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Sparkles className="h-4 w-4 text-primary" />
+            <Label htmlFor="auto-enhance" className="text-sm font-medium cursor-pointer">
+              Auto-Optimierung
+            </Label>
+          </div>
+          <Switch
+            id="auto-enhance"
+            checked={autoEnhance}
+            onCheckedChange={setAutoEnhance}
+            data-testid="switch-auto-enhance"
+          />
+        </div>
+        <p className="text-xs text-muted-foreground mt-2">
+          {autoEnhance 
+            ? "Dokumente werden automatisch geschärft und optimiert"
+            : "Bilder werden ohne Verarbeitung verwendet"
           }
         </p>
       </div>
+
+      {/* Instructions */}
+      {captures.length > 0 && (
+        <div className="mb-4 p-2 bg-muted/50 rounded-lg">
+          <p className="text-xs text-muted-foreground text-center">
+            {captures.length} Seite{captures.length !== 1 ? 'n' : ''} erfasst
+          </p>
+        </div>
+      )}
 
       {/* Captured images grid */}
       {captures.length > 0 && (
@@ -101,7 +164,8 @@ export function CameraMultiShot({ onComplete, onCancel }: CameraMultiShotProps) 
                     <X className="h-4 w-4" />
                   </Button>
                   
-                  <div className="absolute bottom-2 left-2 bg-background/90 rounded px-2 py-1 text-xs font-medium">
+                  <div className="absolute bottom-2 left-2 bg-background/90 rounded px-2 py-1 text-xs font-medium flex items-center gap-1">
+                    {capture.wasEnhanced && <Sparkles className="h-3 w-3 text-primary" />}
                     Seite {index + 1}
                   </div>
                 </div>
@@ -117,10 +181,16 @@ export function CameraMultiShot({ onComplete, onCancel }: CameraMultiShotProps) 
           size="lg"
           className="w-full"
           onClick={triggerCamera}
+          disabled={isProcessing}
           data-testid="button-capture-photo"
         >
           <Camera className="h-5 w-5 mr-2" />
-          {captures.length === 0 ? "Erste Seite scannen" : "Weitere Seite scannen"}
+          {isProcessing 
+            ? "Verarbeite..." 
+            : captures.length === 0 
+              ? "Erste Seite scannen" 
+              : "Weitere Seite scannen"
+          }
         </Button>
 
         <input
