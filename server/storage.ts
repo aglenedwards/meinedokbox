@@ -11,6 +11,7 @@ export interface IStorage {
   getDocument(id: string): Promise<Document | undefined>;
   getDocumentsByUserId(userId: string): Promise<Document[]>;
   searchDocuments(userId: string, query?: string, category?: string): Promise<Document[]>;
+  updateDocumentCategory(id: string, userId: string, category: string): Promise<Document | undefined>;
   deleteDocument(id: string, userId: string): Promise<boolean>;
 }
 
@@ -67,6 +68,20 @@ export class DbStorage implements IStorage {
     }
 
     return db.select().from(documents).where(whereClause).orderBy(desc(documents.uploadedAt));
+  }
+
+  async updateDocumentCategory(id: string, userId: string, category: string): Promise<Document | undefined> {
+    const [updated] = await db
+      .update(documents)
+      .set({ category })
+      .where(
+        and(
+          eq(documents.id, id),
+          eq(documents.userId, userId)
+        )
+      )
+      .returning();
+    return updated;
   }
 
   async deleteDocument(id: string, userId: string): Promise<boolean> {
