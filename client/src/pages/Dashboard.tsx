@@ -150,7 +150,7 @@ export default function Dashboard() {
     title: doc.title,
     category: doc.category,
     date: format(new Date(doc.uploadedAt), "d. MMM yyyy", { locale: de }),
-    thumbnailUrl: doc.thumbnailUrl,
+    thumbnailUrl: doc.thumbnailUrl ?? undefined,
   }));
 
   // Calculate stats

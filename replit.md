@@ -6,6 +6,12 @@ PaperEase is a web and mobile application that digitizes paper documents using s
 
 **Core Purpose:** Minimize friction in document capture and retrieval; maximize clarity in organization through AI-assisted categorization.
 
+**Recent Updates (Oct 2025):**
+- Added document viewer with full-screen display for images and PDFs
+- Improved AI categorization to correctly classify Abrechnungen/Endabrechnungen as "Rechnung"
+- Enhanced document cards with clickable preview functionality
+- Download capability for all documents
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
@@ -53,8 +59,16 @@ Preferred communication style: Simple, everyday language.
 1. File upload received via Multer
 2. OpenAI GPT-5 Vision API analyzes document image
 3. AI extracts text (OCR), determines category, generates title, provides confidence score
+   - Categories: Rechnung (includes bills, invoices, Abrechnungen), Vertrag, Versicherung, Brief, Sonstiges
+   - Improved prompt ensures Endabrechnungen and Nebenkostenabrechnungen are classified as "Rechnung"
 4. File and optional thumbnail stored in object storage
 5. Document metadata saved to PostgreSQL database
+
+**Document Viewing:**
+- Documents accessible via `/objects/:objectPath` route with ACL-based access control
+- Full-screen viewer modal for images and PDFs
+- Download functionality for all document types
+- Thumbnail previews in document cards
 
 **Error Handling:** Centralized error middleware with status code and message extraction.
 
