@@ -20,7 +20,24 @@ import { MultiPageUpload } from "@/components/MultiPageUpload";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import logoImage from "@assets/meinedokbox_1760966015056.png";
 
-const categories = ["Alle", "Rechnung", "Vertrag", "Versicherung", "Brief", "Sonstiges"];
+const categories = [
+  "Alle",
+  "Finanzen & Banken",
+  "Versicherungen",
+  "Steuern & Buchhaltung",
+  "Arbeit & Gehalt",
+  "Verträge & Abos",
+  "Behörden & Amtliches",
+  "Gesundheit & Arzt",
+  "Wohnen & Immobilien",
+  "Auto & Mobilität",
+  "Schule & Ausbildung",
+  "Familie & Kinder",
+  "Rente & Vorsorge",
+  "Einkäufe & Online-Bestellungen",
+  "Reisen & Freizeit",
+  "Sonstiges / Privat"
+];
 
 export default function Dashboard() {
   const { toast } = useToast();
