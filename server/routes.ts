@@ -9,7 +9,7 @@ import { uploadFile } from "./lib/storage";
 import { convertPdfToImages } from "./lib/pdfToImage";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { ObjectPermission } from "./objectAcl";
-import { insertDocumentSchema } from "@shared/schema";
+import { insertDocumentSchema, DOCUMENT_CATEGORIES } from "@shared/schema";
 import { combineImagesToPDF, type PageBuffer } from "./lib/pdfGenerator";
 
 // Configure multer for file uploads (memory storage for processing)
@@ -275,10 +275,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { category } = req.body;
 
       // Validate category
-      const validCategories = ['Rechnung', 'Vertrag', 'Versicherung', 'Brief', 'Sonstiges'];
+      const validCategories = [...DOCUMENT_CATEGORIES];
       if (!category || !validCategories.includes(category)) {
         return res.status(400).json({ 
-          message: "Invalid category. Must be one of: Rechnung, Vertrag, Versicherung, Brief, Sonstiges" 
+          message: `Invalid category. Must be one of: ${validCategories.join(', ')}` 
         });
       }
 
