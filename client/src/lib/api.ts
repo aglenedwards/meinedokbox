@@ -61,6 +61,14 @@ export async function getDocuments(
 }
 
 /**
+ * Update document category
+ */
+export async function updateDocumentCategory(id: string, category: string): Promise<Document> {
+  const response = await apiRequest("PATCH", `/api/documents/${id}`, { category });
+  return await response.json();
+}
+
+/**
  * Delete a document by ID
  */
 export async function deleteDocument(id: string): Promise<void> {

@@ -14,7 +14,7 @@ import { ProcessingModal } from "@/components/ProcessingModal";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
-import { uploadDocument, getDocuments, deleteDocument } from "@/lib/api";
+import { uploadDocument, getDocuments, deleteDocument, updateDocumentCategory } from "@/lib/api";
 import { DocumentViewer } from "@/components/DocumentViewer";
 import { MultiPageUpload } from "@/components/MultiPageUpload";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -98,6 +98,47 @@ export default function Dashboard() {
     },
   });
 
+  // Update category mutation with optimistic updates
+  const updateCategoryMutation = useMutation({
+    mutationFn: ({ id, category }: { id: string; category: string }) => 
+      updateDocumentCategory(id, category),
+    onMutate: async ({ id, category }) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ["/api/documents"] });
+
+      // Snapshot previous value
+      const previousDocuments = queryClient.getQueryData(["/api/documents"]);
+
+      // Optimistically update to the new value
+      queryClient.setQueryData(["/api/documents", searchQuery, selectedCategories], (old: Document[] | undefined) =>
+        old?.map(doc => doc.id === id ? { ...doc, category } : doc)
+      );
+
+      return { previousDocuments };
+    },
+    onError: (error: Error, variables, context) => {
+      // Rollback to previous value on error
+      if (context?.previousDocuments) {
+        queryClient.setQueryData(["/api/documents"], context.previousDocuments);
+      }
+      toast({
+        title: "Fehler beim Aktualisieren",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+    onSuccess: (updatedDoc) => {
+      toast({
+        title: "Kategorie aktualisiert",
+        description: `"${updatedDoc.title}" wurde zu ${updatedDoc.category} verschoben.`,
+      });
+    },
+    onSettled: () => {
+      // Always refetch after error or success to ensure sync
+      queryClient.invalidateQueries({ queryKey: ["/api/documents"] });
+    },
+  });
+
   const handleCategoryToggle = (category: string) => {
     if (category === "Alle") {
       setSelectedCategories(["Alle"]);
@@ -135,6 +176,10 @@ export default function Dashboard() {
 
   const handleDelete = (id: string) => {
     deleteMutation.mutate(id);
+  };
+
+  const handleCategoryChange = (id: string, category: string) => {
+    updateCategoryMutation.mutate({ id, category });
   };
 
   const handleView = (id: string) => {
@@ -271,6 +316,7 @@ export default function Dashboard() {
                 {...doc}
                 onView={() => handleView(doc.id)}
                 onDelete={() => handleDelete(doc.id)}
+                onCategoryChange={(category) => handleCategoryChange(doc.id, category)}
               />
             ))}
           </div>
