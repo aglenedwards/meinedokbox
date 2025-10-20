@@ -17,6 +17,7 @@ import { queryClient } from "@/lib/queryClient";
 import { uploadDocument, getDocuments, deleteDocument } from "@/lib/api";
 import { DocumentViewer } from "@/components/DocumentViewer";
 import { MultiPageUpload } from "@/components/MultiPageUpload";
+import logoImage from "@assets/meinedokbox_1760964397977.png";
 
 const categories = ["Alle", "Rechnung", "Vertrag", "Versicherung", "Brief", "Sonstiges"];
 
@@ -168,11 +169,8 @@ export default function Dashboard() {
       <header className="sticky top-0 z-10 bg-background border-b">
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-4">
           <div className="flex items-center gap-4 flex-wrap">
-            <div className="flex items-center gap-3">
-              <div className="h-9 w-9 rounded-md bg-primary flex items-center justify-center">
-                <FileText className="h-5 w-5 text-primary-foreground" />
-              </div>
-              <h1 className="text-xl font-bold">PaperEase</h1>
+            <div className="flex items-center">
+              <img src={logoImage} alt="MeineDokBox" className="h-10" data-testid="img-logo" />
             </div>
             
             <div className="flex-1 flex items-center gap-3">
