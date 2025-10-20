@@ -44,6 +44,9 @@ export default function Dashboard() {
   const { data: documents = [], isLoading } = useQuery<Document[]>({
     queryKey: ["/api/documents", searchQuery, selectedCategories],
     queryFn: () => getDocuments(searchQuery, selectedCategories),
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
   // Upload mutation
