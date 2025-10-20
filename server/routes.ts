@@ -19,12 +19,18 @@ const upload = multer({
     fileSize: 10 * 1024 * 1024, // 10MB max file size
   },
   fileFilter: (req, file, cb) => {
-    // Accept only images (PDFs are handled separately with a better error message)
-    const allowedMimes = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
+    // Accept images and PDFs
+    const allowedMimes = [
+      'image/jpeg',      // .jpg, .jpeg
+      'image/png',       // .png
+      'image/webp',      // .webp
+      'image/gif',       // .gif
+      'application/pdf'  // .pdf
+    ];
     if (allowedMimes.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error('Ungültiger Dateityp. Nur JPEG, PNG und WEBP Bilddateien sind erlaubt.'));
+      cb(new Error('Ungültiger Dateityp. Bitte laden Sie nur Bilder (JPEG, PNG, WEBP, GIF) oder PDF-Dateien hoch.'));
     }
   },
 });
