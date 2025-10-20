@@ -229,13 +229,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/objects/:objectPath(*)', async (req: any, res) => {
     try {
       const objectPath = `/objects/${req.params.objectPath}`;
+      console.log('Serving object:', objectPath);
       const objectStorageService = new ObjectStorageService();
 
       // Get the object file
       const objectFile = await objectStorageService.getObjectEntityFile(objectPath);
+      console.log('Object file found:', objectFile.name);
 
       // Get userId from session if authenticated
       const userId = req.user?.claims?.sub;
+      console.log('User ID:', userId || 'unauthenticated');
 
       // Check ACL permissions
       const canAccess = await objectStorageService.canAccessObjectEntity({
@@ -243,8 +246,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         objectFile,
         requestedPermission: ObjectPermission.READ,
       });
+      console.log('Can access:', canAccess);
 
       if (!canAccess) {
+        console.log('Access denied for user:', userId);
         return res.status(403).json({ message: "Access denied" });
       }
 
@@ -252,6 +257,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await objectStorageService.downloadObject(objectFile, res);
     } catch (error) {
       if (error instanceof ObjectNotFoundError) {
+        console.log('Object not found:', `/objects/${req.params.objectPath}`);
         return res.status(404).json({ message: "Object not found" });
       }
       console.error("Error serving object:", error);

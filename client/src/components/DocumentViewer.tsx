@@ -15,14 +15,9 @@ export function DocumentViewer({ document, open, onClose }: DocumentViewerProps)
   const isPDF = document.fileUrl.toLowerCase().endsWith('.pdf');
   const fileExtension = document.fileUrl.split('.').pop()?.toLowerCase();
   
-  // Convert object storage path to accessible URL
-  // fileUrl already contains the path like ".private/xyz" or "public/xyz"
-  const documentUrl = document.fileUrl.startsWith('/objects/') 
-    ? document.fileUrl 
-    : `/objects/${document.fileUrl}`;
-  
-  console.log('Document fileUrl:', document.fileUrl);
-  console.log('Document URL:', documentUrl);
+  // fileUrl is stored as "/objects/uploads/xyz" in the database
+  // The server endpoint expects just the path, so we use it as-is
+  const documentUrl = document.fileUrl;
 
   const handleDownload = () => {
     const link = window.document.createElement('a');
@@ -35,21 +30,22 @@ export function DocumentViewer({ document, open, onClose }: DocumentViewerProps)
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl w-full h-[90vh] flex flex-col p-0">
         <DialogHeader className="px-6 py-4 border-b">
-          <div className="flex items-center justify-between">
-            <DialogTitle className="text-xl">{document.title}</DialogTitle>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={handleDownload}
-              data-testid="button-download-document"
-            >
-              <Download className="h-4 w-4" />
-            </Button>
-          </div>
+          <DialogTitle className="text-xl">{document.title}</DialogTitle>
           <div className="flex items-center gap-4 text-sm text-muted-foreground mt-2">
             <span>Kategorie: {document.category}</span>
             <span>•</span>
             <span>Vertrauen: {Math.round(document.confidence * 100)}%</span>
+            <span>•</span>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleDownload}
+              data-testid="button-download-document"
+              className="h-auto p-0 text-muted-foreground hover:text-foreground"
+            >
+              <Download className="h-4 w-4 mr-1" />
+              Download
+            </Button>
           </div>
         </DialogHeader>
 
