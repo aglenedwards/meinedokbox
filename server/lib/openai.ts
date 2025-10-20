@@ -8,6 +8,10 @@ export interface DocumentAnalysisResult {
   category: string;
   title: string;
   confidence: number;
+  // Phase 2: Smart metadata extraction
+  extractedDate?: string; // ISO date string
+  amount?: number;
+  sender?: string;
 }
 
 export interface ImageWithMimeType {
@@ -73,19 +77,27 @@ export async function analyzeDocument(
 
 3. A concise, descriptive German title for the document (e.g., "Nebenkostenabrechnung 2024", "Stromrechnung Januar 2025")
 4. Your confidence level (0-1)
+5. Smart metadata extraction:
+   - extractedDate: The document date (invoice date, statement date, etc.) in ISO format (YYYY-MM-DD). Extract the most relevant date from the document.
+   - amount: The main monetary amount (e.g., invoice total, salary amount, balance). Extract as a number, use negative for debits/expenses.
+   - sender: The sender/issuer of the document (e.g., company name, authority, institution)
 
 Important: 
 - Choose the MOST SPECIFIC category based on keywords and document content
 - Create a meaningful title based on the document content
 - If multiple pages are provided, combine all text from all pages
 - Use high confidence (>0.8) when clear keywords match
+- For metadata: Only extract if clearly visible in the document. Use null if not found.
 
 Respond with JSON in this format:
 {
   "extractedText": "full extracted text from all pages",
   "category": "category name (exact match from the 15 categories above)",
   "title": "descriptive document title",
-  "confidence": 0.95
+  "confidence": 0.95,
+  "extractedDate": "2024-01-15" or null,
+  "amount": 123.45 or null,
+  "sender": "Company/Institution Name" or null
 }`
         },
         {
@@ -111,7 +123,10 @@ Respond with JSON in this format:
       category: result.category,
       title: result.title,
       confidence: result.confidence,
-      textLength: result.extractedText?.length || 0
+      textLength: result.extractedText?.length || 0,
+      extractedDate: result.extractedDate,
+      amount: result.amount,
+      sender: result.sender
     });
     
     return {
@@ -119,6 +134,9 @@ Respond with JSON in this format:
       category: result.category || "Sonstiges / Privat",
       title: result.title || "Unbekanntes Dokument",
       confidence: Math.max(0, Math.min(1, result.confidence || 0.5)),
+      extractedDate: result.extractedDate || undefined,
+      amount: result.amount || undefined,
+      sender: result.sender || undefined,
     };
   } catch (error) {
     console.error("Failed to analyze document:", error);
@@ -176,17 +194,25 @@ export async function analyzeDocumentFromText(
 
 2. A concise, descriptive German title for the document (e.g., "Nebenkostenabrechnung 2024", "Stromrechnung Januar 2025")
 3. Your confidence level (0-1)
+4. Smart metadata extraction:
+   - extractedDate: The document date (invoice date, statement date, etc.) in ISO format (YYYY-MM-DD)
+   - amount: The main monetary amount (e.g., invoice total, salary amount, balance). Use negative for debits/expenses.
+   - sender: The sender/issuer of the document (e.g., company name, authority, institution)
 
 Important: 
 - Choose the MOST SPECIFIC category based on keywords and document content
 - Create a meaningful title based on the document content
 - Use high confidence (>0.8) when clear keywords match
+- For metadata: Only extract if clearly visible in the document. Use null if not found.
 
 Respond with JSON in this format:
 {
   "category": "category name (exact match from the 15 categories above)",
   "title": "descriptive document title",
-  "confidence": 0.95
+  "confidence": 0.95,
+  "extractedDate": "2024-01-15" or null,
+  "amount": 123.45 or null,
+  "sender": "Company/Institution Name" or null
 }`
         },
         {
@@ -204,6 +230,9 @@ Respond with JSON in this format:
       category: result.category,
       title: result.title,
       confidence: result.confidence,
+      extractedDate: result.extractedDate,
+      amount: result.amount,
+      sender: result.sender
     });
     
     return {
@@ -211,6 +240,9 @@ Respond with JSON in this format:
       category: result.category || "Sonstiges / Privat",
       title: result.title || "Unbekanntes Dokument",
       confidence: Math.max(0, Math.min(1, result.confidence || 0.5)),
+      extractedDate: result.extractedDate || undefined,
+      amount: result.amount || undefined,
+      sender: result.sender || undefined,
     };
   } catch (error) {
     console.error("Failed to analyze document from text:", error);
