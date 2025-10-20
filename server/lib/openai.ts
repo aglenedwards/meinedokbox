@@ -10,31 +10,49 @@ export interface DocumentAnalysisResult {
   confidence: number;
 }
 
-export async function analyzeDocument(base64Image: string): Promise<DocumentAnalysisResult> {
+export async function analyzeDocument(
+  base64Images: string | string[],
+  mimeType: string = 'image/jpeg'
+): Promise<DocumentAnalysisResult> {
   try {
+    const images = Array.isArray(base64Images) ? base64Images : [base64Images];
+    
+    console.log(`Analyzing document with ${images.length} page(s), MIME type: ${mimeType}`);
+    
+    // Build content with all images for multi-page documents
+    const imageContents = images.map(base64Image => ({
+      type: "image_url" as const,
+      image_url: {
+        url: `data:${mimeType};base64,${base64Image}`
+      }
+    }));
+
     const response = await openai.chat.completions.create({
       model: "gpt-5",
       messages: [
         {
           role: "system",
-          content: `You are an expert document analyzer. Analyze the document image and extract:
-1. All visible text (OCR)
+          content: `You are an expert document analyzer. Analyze the document image(s) and extract:
+1. All visible text (OCR) from ALL pages
 2. Document type/category from these options:
-   - Rechnung: Invoices, bills, receipts, Abrechnungen (settlements), Endabrechnungen, Nebenkostenabrechnungen, payment requests
+   - Rechnung: Invoices, bills, receipts, Abrechnungen (settlements), Endabrechnungen, Nebenkostenabrechnungen, payment requests, utility bills
    - Vertrag: Contracts, agreements, terms of service, Mietverträge, Arbeitsverträge
    - Versicherung: Insurance documents, policies, claims
    - Brief: Letters, correspondence, notices
    - Sonstiges: Everything else that doesn't fit the above categories
-3. A concise German title for the document
+3. A concise, descriptive German title for the document (NOT "Unbekanntes Dokument")
 4. Your confidence level (0-1)
 
-Important: Classify Abrechnungen, Endabrechnungen, and Nebenkostenabrechnungen as "Rechnung".
+Important: 
+- Classify Abrechnungen, Endabrechnungen, and Nebenkostenabrechnungen as "Rechnung"
+- Create a meaningful title based on the document content (e.g., "Nebenkostenabrechnung 2024", "Stromrechnung Januar 2025")
+- If multiple pages are provided, combine all text from all pages
 
 Respond with JSON in this format:
 {
-  "extractedText": "full extracted text",
+  "extractedText": "full extracted text from all pages",
   "category": "category name",
-  "title": "document title",
+  "title": "descriptive document title",
   "confidence": 0.95
 }`
         },
@@ -43,22 +61,26 @@ Respond with JSON in this format:
           content: [
             {
               type: "text",
-              text: "Please analyze this document and extract all information."
+              text: images.length > 1 
+                ? `Please analyze this ${images.length}-page document and extract all information from all pages.`
+                : "Please analyze this document and extract all information."
             },
-            {
-              type: "image_url",
-              image_url: {
-                url: `data:image/jpeg;base64,${base64Image}`
-              }
-            }
+            ...imageContents
           ],
         },
       ],
       response_format: { type: "json_object" },
-      max_completion_tokens: 2048,
+      max_completion_tokens: 4096,
     });
 
     const result = JSON.parse(response.choices[0].message.content || "{}");
+    
+    console.log('OpenAI Analysis Result:', {
+      category: result.category,
+      title: result.title,
+      confidence: result.confidence,
+      textLength: result.extractedText?.length || 0
+    });
     
     return {
       extractedText: result.extractedText || "",
@@ -68,6 +90,10 @@ Respond with JSON in this format:
     };
   } catch (error) {
     console.error("Failed to analyze document:", error);
+    if (error instanceof Error) {
+      console.error("Error details:", error.message);
+      console.error("Error stack:", error.stack);
+    }
     throw new Error("Document analysis failed: " + (error as Error).message);
   }
 }

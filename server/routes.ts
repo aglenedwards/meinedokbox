@@ -55,29 +55,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       let fileBuffer: Buffer;
       let fileName: string;
-      let base64Image: string;
+      let base64Images: string[];
+      let mimeType: string;
 
-      // If multiple files, combine them into a PDF
+      // For multiple files, send each image separately to OpenAI for analysis
       if (files.length > 1) {
-        console.log(`Combining ${files.length} files into a PDF`);
+        console.log(`Processing ${files.length} files as multi-page document`);
         
+        // Convert each image to base64 for OpenAI analysis
+        base64Images = files.map(file => file.buffer.toString('base64'));
+        mimeType = files[0].mimetype; // Use first file's MIME type as reference
+        
+        // Combine them into a PDF for storage
         const pages: PageBuffer[] = files.map(file => ({
           buffer: file.buffer,
           mimeType: file.mimetype,
         }));
-
         fileBuffer = await combineImagesToPDF(pages);
         fileName = 'combined-document.pdf';
-        base64Image = fileBuffer.toString('base64');
       } else {
         // Single file upload
         fileBuffer = files[0].buffer;
         fileName = files[0].originalname;
-        base64Image = fileBuffer.toString('base64');
+        base64Images = [fileBuffer.toString('base64')];
+        mimeType = files[0].mimetype;
       }
 
-      // Analyze document with OpenAI
-      const analysisResult = await analyzeDocument(base64Image);
+      // Analyze document with OpenAI (send all pages)
+      const analysisResult = await analyzeDocument(base64Images, mimeType);
 
       // Upload file to object storage
       const { filePath, thumbnailPath } = await uploadFile(
