@@ -66,7 +66,7 @@ export function DocumentViewer({ document, open, onClose }: DocumentViewerProps)
       <DialogContent className="max-w-4xl w-full h-[90vh] flex flex-col p-0 gap-0">
         {/* Header */}
         <div className="px-4 sm:px-6 py-4 border-b flex items-center justify-between gap-2 sm:gap-4">
-          <div className="flex-1 min-w-0 pr-10 sm:pr-0">
+          <div className="flex-1 min-w-0 pr-16 sm:pr-0">
             <h2 className="text-lg sm:text-xl font-semibold truncate">{document.title}</h2>
             <div className="flex items-center gap-3 text-sm text-muted-foreground mt-1 flex-wrap">
               <span>{document.category}</span>
@@ -79,7 +79,7 @@ export function DocumentViewer({ document, open, onClose }: DocumentViewerProps)
             </div>
           </div>
           
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 mr-6 sm:mr-0">
             <Button
               variant="outline"
               size="sm"
