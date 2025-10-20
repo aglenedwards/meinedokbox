@@ -2,6 +2,7 @@ import { type User, type UpsertUser, type Document, type InsertDocument, type Ta
 import { db } from "./db";
 import { users, documents, tags, documentTags } from "@shared/schema";
 import { eq, and, or, like, desc, asc, isNull, isNotNull, inArray, sql } from "drizzle-orm";
+import { generateInboundEmail } from "./lib/emailInbound";
 
 export interface StorageStats {
   usedBytes: number;
@@ -64,9 +65,18 @@ export class DbStorage implements IStorage {
   }
 
   async upsertUser(userData: UpsertUser): Promise<User> {
+    // Check if user already exists
+    const existingUser = await this.getUser(userData.id!);
+    
+    // Generate inbound email only for new users
+    const dataToInsert = {
+      ...userData,
+      inboundEmail: existingUser?.inboundEmail || generateInboundEmail(userData.id!),
+    };
+    
     const [user] = await db
       .insert(users)
-      .values(userData)
+      .values(dataToInsert)
       .onConflictDoUpdate({
         target: users.id,
         set: {

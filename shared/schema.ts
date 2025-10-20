@@ -21,6 +21,9 @@ export const users = pgTable("users", {
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
+  // E-Mail Inbound feature
+  inboundEmail: varchar("inbound_email").unique(),
+  emailWhitelist: text("email_whitelist").array(),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -78,6 +81,19 @@ export const documentTags = pgTable("document_tags", {
   createdAt: timestamp("created_at").notNull().default(sql`now()`),
 });
 
+// E-Mail processing logs
+export const emailLogs = pgTable("email_logs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
+  fromAddress: text("from_address").notNull(),
+  subject: text("subject"),
+  receivedAt: timestamp("received_at").notNull().default(sql`now()`),
+  attachmentCount: real("attachment_count").notNull().default(0),
+  processedCount: real("processed_count").notNull().default(0),
+  status: varchar("status", { length: 20 }).notNull().default("pending"), // pending, success, error
+  errorMessage: text("error_message"),
+});
+
 export const insertDocumentSchema = createInsertSchema(documents).omit({
   id: true,
   uploadedAt: true,
@@ -92,6 +108,11 @@ export const insertDocumentTagSchema = createInsertSchema(documentTags).omit({
   createdAt: true,
 });
 
+export const insertEmailLogSchema = createInsertSchema(emailLogs).omit({
+  id: true,
+  receivedAt: true,
+});
+
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
 export type InsertDocument = z.infer<typeof insertDocumentSchema>;
@@ -100,3 +121,5 @@ export type InsertTag = z.infer<typeof insertTagSchema>;
 export type Tag = typeof tags.$inferSelect;
 export type InsertDocumentTag = z.infer<typeof insertDocumentTagSchema>;
 export type DocumentTag = typeof documentTags.$inferSelect;
+export type InsertEmailLog = z.infer<typeof insertEmailLogSchema>;
+export type EmailLog = typeof emailLogs.$inferSelect;

@@ -11,6 +11,10 @@ import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { ObjectPermission } from "./objectAcl";
 import { insertDocumentSchema, DOCUMENT_CATEGORIES } from "@shared/schema";
 import { combineImagesToPDF, type PageBuffer } from "./lib/pdfGenerator";
+import { parseMailgunWebhook, isSupportedAttachment, isEmailWhitelisted } from "./lib/emailInbound";
+import { db } from "./db";
+import { users, emailLogs } from "@shared/schema";
+import { eq } from "drizzle-orm";
 
 // Configure multer for file uploads (memory storage for processing)
 const upload = multer({
@@ -634,6 +638,144 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       console.error("Error serving object:", error);
       res.status(500).json({ message: "Failed to serve object" });
+    }
+  });
+
+  // E-Mail Inbound Webhook (Public - no authentication)
+  // Receives emails from Mailgun and processes attachments
+  app.post('/api/webhook/email', upload.any(), async (req: any, res) => {
+    console.log('[Email Webhook] Received email');
+    
+    try {
+      const { from, subject, attachments } = parseMailgunWebhook(req.body, req.files);
+      const recipient = req.body.recipient || '';
+      
+      console.log('[Email Webhook] From:', from, 'To:', recipient, 'Attachments:', attachments.length);
+      
+      // Find user by inbound email address
+      const [user] = await db.select().from(users).where(eq(users.inboundEmail, recipient)).limit(1);
+      
+      if (!user) {
+        console.log('[Email Webhook] Unknown recipient:', recipient);
+        return res.status(200).json({ message: 'Unknown recipient' });
+      }
+      
+      // Check whitelist
+      if (!isEmailWhitelisted(from, user.emailWhitelist || null)) {
+        console.log('[Email Webhook] Sender not whitelisted:', from);
+        await db.insert(emailLogs).values({
+          userId: user.id,
+          fromAddress: from,
+          subject: subject || '',
+          attachmentCount: attachments.length,
+          processedCount: 0,
+          status: 'error',
+          errorMessage: 'Sender not in whitelist'
+        });
+        return res.status(200).json({ message: 'Sender not allowed' });
+      }
+      
+      // Create email log
+      const [emailLog] = await db.insert(emailLogs).values({
+        userId: user.id,
+        fromAddress: from,
+        subject: subject || '',
+        attachmentCount: attachments.length,
+        processedCount: 0,
+        status: 'pending'
+      }).returning();
+      
+      // Filter supported attachments
+      const supportedAttachments = attachments.filter(att => 
+        isSupportedAttachment(att.contentType, att.filename)
+      );
+      
+      console.log('[Email Webhook] Processing', supportedAttachments.length, 'supported attachments');
+      
+      let processedCount = 0;
+      const errors: string[] = [];
+      
+      // Process each attachment
+      for (const attachment of supportedAttachments) {
+        try {
+          console.log('[Email Webhook] Processing attachment:', attachment.filename);
+          
+          // Convert Buffer to File-like object for existing pipeline
+          const fileData: Express.Multer.File = {
+            fieldname: 'file',
+            originalname: attachment.filename,
+            encoding: '7bit',
+            mimetype: attachment.contentType,
+            buffer: attachment.content,
+            size: attachment.size
+          } as Express.Multer.File;
+          
+          // Analyze document using existing pipeline
+          let analysisResult;
+          if (attachment.contentType === 'application/pdf') {
+            const extractedText = await extractTextFromPdf(attachment.content);
+            analysisResult = await analyzeDocumentFromText(extractedText);
+          } else {
+            // For images, create ImageWithMimeType array
+            analysisResult = await analyzeDocument([{
+              data: attachment.content,
+              mimeType: attachment.contentType
+            }]);
+          }
+          
+          // Store file in object storage
+          const { filePath, thumbnailPath } = await uploadFile(
+            attachment.content,
+            attachment.filename,
+            user.id
+          );
+          
+          // Save to database
+          await storage.createDocument({
+            userId: user.id,
+            title: analysisResult.title,
+            category: analysisResult.category,
+            extractedText: analysisResult.extractedText,
+            fileUrl: filePath,
+            thumbnailUrl: thumbnailPath,
+            confidence: analysisResult.confidence,
+            extractedDate: analysisResult.extractedDate,
+            amount: analysisResult.amount,
+            sender: analysisResult.sender,
+          });
+          
+          processedCount++;
+          console.log('[Email Webhook] Successfully processed:', attachment.filename);
+        } catch (error) {
+          const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+          console.error('[Email Webhook] Failed to process attachment:', attachment.filename, errorMsg);
+          errors.push(`${attachment.filename}: ${errorMsg}`);
+        }
+      }
+      
+      // Update email log
+      await db.update(emailLogs)
+        .set({
+          processedCount,
+          status: processedCount > 0 ? 'success' : 'error',
+          errorMessage: errors.length > 0 ? errors.join('; ') : null
+        })
+        .where(eq(emailLogs.id, emailLog.id));
+      
+      console.log('[Email Webhook] Completed. Processed:', processedCount, 'Errors:', errors.length);
+      
+      res.status(200).json({
+        message: `Processed ${processedCount} of ${attachments.length} attachments`,
+        processed: processedCount,
+        total: attachments.length
+      });
+      
+    } catch (error) {
+      console.error('[Email Webhook] Error processing email:', error);
+      res.status(500).json({ 
+        message: 'Failed to process email',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
     }
   });
 
