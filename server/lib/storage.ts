@@ -4,6 +4,20 @@
 import { ObjectStorageService } from "../objectStorage";
 import sharp from "sharp";
 
+// Determine content type based on file extension
+function getContentType(fileName: string): string {
+  const ext = fileName.toLowerCase().split('.').pop();
+  const contentTypes: Record<string, string> = {
+    'pdf': 'application/pdf',
+    'jpg': 'image/jpeg',
+    'jpeg': 'image/jpeg',
+    'png': 'image/png',
+    'webp': 'image/webp',
+    'gif': 'image/gif',
+  };
+  return contentTypes[ext || ''] || 'application/octet-stream';
+}
+
 export async function uploadFile(
   file: Buffer,
   fileName: string,
@@ -14,12 +28,16 @@ export async function uploadFile(
   // Get upload URL for the main file
   const uploadURL = await objectStorageService.getObjectEntityUploadURL();
   
+  // Determine correct content type
+  const contentType = getContentType(fileName);
+  console.log('Uploading file:', fileName, 'Content-Type:', contentType);
+  
   // Upload file to object storage using presigned URL
   await fetch(uploadURL, {
     method: "PUT",
     body: file,
     headers: {
-      "Content-Type": "application/octet-stream",
+      "Content-Type": contentType,
     },
   });
   
