@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { FileText, HardDrive, TrendingUp, Plus, Trash2, ArrowUpDown } from "lucide-react";
+import { FileText, HardDrive, TrendingUp, Plus, Trash2, ArrowUpDown, Download } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { Link } from "wouter";
@@ -17,10 +17,12 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
-import { uploadDocument, getDocuments, deleteDocument, updateDocumentCategory, getStorageStats, bulkDeleteDocuments, type StorageStats, type SortOption } from "@/lib/api";
+import { uploadDocument, getDocuments, deleteDocument, updateDocumentCategory, getStorageStats, bulkDeleteDocuments, exportDocumentsAsZip, type StorageStats, type SortOption } from "@/lib/api";
 import { DocumentViewer } from "@/components/DocumentViewer";
 import { MultiPageUpload } from "@/components/MultiPageUpload";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import logoImage from "@assets/meinedokbox_1760966015056.png";
 
 const categories = [
@@ -284,6 +286,11 @@ export default function Dashboard() {
     category: doc.category,
     date: format(new Date(doc.uploadedAt), "d. MMM yyyy", { locale: de }),
     thumbnailUrl: doc.thumbnailUrl ?? undefined,
+    // Phase 2: Smart metadata
+    confidence: doc.confidence,
+    extractedDate: doc.extractedDate ?? undefined,
+    amount: doc.amount ?? undefined,
+    sender: doc.sender ?? undefined,
   }));
 
   // Calculate stats
@@ -302,6 +309,18 @@ export default function Dashboard() {
   const storageTotalDisplay = storageStats
     ? `von ${storageStats.totalGB} GB`
     : "von 5 GB";
+
+  // Phase 2: Category distribution for chart
+  const categoryDistribution = categories
+    .filter(cat => cat !== "Alle")
+    .map(category => ({
+      name: category.length > 20 ? category.substring(0, 18) + "..." : category,
+      fullName: category,
+      count: documents.filter(doc => doc.category === category).length,
+    }))
+    .filter(item => item.count > 0)
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 10); // Top 10 categories
 
   return (
     <div className="min-h-screen bg-background">
@@ -331,6 +350,17 @@ export default function Dashboard() {
             
             <div className="hidden md:flex items-center gap-2">
               <ThemeToggle />
+              {documents.length > 0 && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={exportDocumentsAsZip}
+                  data-testid="button-export"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Export
+                </Button>
+              )}
               <Link href="/trash">
                 <Button variant="outline" size="sm" data-testid="button-trash">
                   <Trash2 className="h-4 w-4 mr-2" />
@@ -379,6 +409,45 @@ export default function Dashboard() {
             description="hochgeladen"
           />
         </div>
+
+        {categoryDistribution.length > 0 && (
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle>Dokumentenverteilung nach Kategorien</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={categoryDistribution}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <XAxis 
+                    dataKey="name" 
+                    angle={-45}
+                    textAnchor="end"
+                    height={100}
+                    className="text-xs"
+                  />
+                  <YAxis className="text-xs" />
+                  <Tooltip 
+                    contentStyle={{
+                      backgroundColor: 'hsl(var(--background))',
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '6px',
+                    }}
+                    labelFormatter={(value, payload) => {
+                      const item = payload[0]?.payload;
+                      return item?.fullName || value;
+                    }}
+                  />
+                  <Bar 
+                    dataKey="count" 
+                    fill="hsl(var(--primary))" 
+                    radius={[8, 8, 0, 0]}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        )}
 
         <div className="mb-6">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">

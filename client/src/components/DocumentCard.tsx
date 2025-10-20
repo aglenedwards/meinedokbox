@@ -1,7 +1,7 @@
 import { 
   FileText, Calendar, MoreVertical, Euro, FileSignature, Shield, Mail, FileQuestion,
   Landmark, Receipt, Briefcase, FileCheck, Building2, Stethoscope, Home, Car, 
-  GraduationCap, Baby, PiggyBank, ShoppingBag, Plane
+  GraduationCap, Baby, PiggyBank, ShoppingBag, Plane, DollarSign, User, Sparkles
 } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -25,6 +25,11 @@ interface DocumentCardProps {
   onView?: () => void;
   onDelete?: () => void;
   onCategoryChange?: (category: string) => void;
+  // Phase 2: Smart metadata
+  confidence?: number;
+  extractedDate?: string;
+  amount?: number;
+  sender?: string;
 }
 
 const categoryConfig: Record<string, { icon: typeof Euro; color: string; bgColor: string }> = {
@@ -150,9 +155,29 @@ export function DocumentCard({
   onView,
   onDelete,
   onCategoryChange,
+  confidence,
+  extractedDate,
+  amount,
+  sender,
 }: DocumentCardProps) {
   const config = categoryConfig[category] || categoryConfig['Sonstiges / Privat'];
   const CategoryIcon = config.icon;
+  
+  // Helper function to format confidence
+  const getConfidenceColor = (conf?: number) => {
+    if (!conf) return 'bg-muted text-muted-foreground';
+    if (conf >= 0.9) return 'bg-green-100 dark:bg-green-950 text-green-700 dark:text-green-400';
+    if (conf >= 0.7) return 'bg-yellow-100 dark:bg-yellow-950 text-yellow-700 dark:text-yellow-400';
+    return 'bg-orange-100 dark:bg-orange-950 text-orange-700 dark:text-orange-400';
+  };
+
+  const formatAmount = (amt?: number) => {
+    if (!amt) return null;
+    return new Intl.NumberFormat('de-DE', { 
+      style: 'currency', 
+      currency: 'EUR' 
+    }).format(amt);
+  };
   
   return (
     <Card 
@@ -221,17 +246,59 @@ export function DocumentCard({
             </div>
             
             <div className="flex flex-col gap-2">
-              <Badge 
-                variant="outline" 
-                className={`${categoryColors[category] || categoryColors['Sonstiges']} text-xs w-fit`}
-                data-testid={`badge-category-${id}`}
-              >
-                {category}
-              </Badge>
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge 
+                  variant="outline" 
+                  className={`${categoryColors[category] || categoryColors['Sonstiges']} text-xs w-fit`}
+                  data-testid={`badge-category-${id}`}
+                >
+                  {category}
+                </Badge>
+                
+                {confidence && (
+                  <Badge 
+                    variant="outline"
+                    className={`${getConfidenceColor(confidence)} text-xs w-fit`}
+                    data-testid={`badge-confidence-${id}`}
+                  >
+                    <Sparkles className="h-3 w-3 mr-1" />
+                    {Math.round(confidence * 100)}% KI
+                  </Badge>
+                )}
+              </div>
               
-              <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                <Calendar className="h-4 w-4" />
-                <span data-testid={`text-date-${id}`}>{date}</span>
+              <div className="flex flex-col gap-1.5">
+                <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                  <Calendar className="h-4 w-4 flex-shrink-0" />
+                  <span data-testid={`text-date-${id}`}>{date}</span>
+                </div>
+                
+                {extractedDate && (
+                  <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                    <FileText className="h-4 w-4 flex-shrink-0" />
+                    <span data-testid={`text-extracted-date-${id}`}>
+                      Dok: {new Date(extractedDate).toLocaleDateString('de-DE')}
+                    </span>
+                  </div>
+                )}
+                
+                {amount !== undefined && amount !== null && (
+                  <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                    <Euro className="h-4 w-4 flex-shrink-0" />
+                    <span data-testid={`text-amount-${id}`} className="font-medium">
+                      {formatAmount(amount)}
+                    </span>
+                  </div>
+                )}
+                
+                {sender && (
+                  <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                    <User className="h-4 w-4 flex-shrink-0" />
+                    <span data-testid={`text-sender-${id}`} className="truncate">
+                      {sender}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           </div>

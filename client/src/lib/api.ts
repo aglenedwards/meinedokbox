@@ -1,4 +1,4 @@
-import type { Document, User } from "@shared/schema";
+import type { Document, User, Tag } from "@shared/schema";
 import { apiRequest } from "./queryClient";
 
 export interface StorageStats {
@@ -172,4 +172,84 @@ export async function getCurrentUser(): Promise<User | null> {
     }
     throw error;
   }
+}
+
+// Phase 2: Tags API
+
+/**
+ * Get all tags for the current user
+ */
+export async function getTags(): Promise<Tag[]> {
+  const response = await fetch("/api/tags", {
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    const text = (await response.text()) || response.statusText;
+    throw new Error(`${response.status}: ${text}`);
+  }
+
+  return await response.json();
+}
+
+/**
+ * Create a new tag
+ */
+export async function createTag(data: { name: string; color?: string }): Promise<Tag> {
+  const response = await apiRequest("POST", "/api/tags", data);
+  return await response.json();
+}
+
+/**
+ * Update a tag
+ */
+export async function updateTag(id: string, data: { name?: string; color?: string }): Promise<Tag> {
+  const response = await apiRequest("PATCH", `/api/tags/${id}`, data);
+  return await response.json();
+}
+
+/**
+ * Delete a tag
+ */
+export async function deleteTag(id: string): Promise<void> {
+  await apiRequest("DELETE", `/api/tags/${id}`);
+}
+
+/**
+ * Get tags for a specific document
+ */
+export async function getDocumentTags(documentId: string): Promise<Tag[]> {
+  const response = await fetch(`/api/documents/${documentId}/tags`, {
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    const text = (await response.text()) || response.statusText;
+    throw new Error(`${response.status}: ${text}`);
+  }
+
+  return await response.json();
+}
+
+/**
+ * Add a tag to a document
+ */
+export async function addTagToDocument(documentId: string, tagId: string): Promise<void> {
+  await apiRequest("POST", `/api/documents/${documentId}/tags/${tagId}`);
+}
+
+/**
+ * Remove a tag from a document
+ */
+export async function removeTagFromDocument(documentId: string, tagId: string): Promise<void> {
+  await apiRequest("DELETE", `/api/documents/${documentId}/tags/${tagId}`);
+}
+
+// Phase 2: Export functionality
+
+/**
+ * Export all documents as a ZIP file
+ */
+export function exportDocumentsAsZip(): void {
+  window.open("/api/documents/export/zip", "_blank");
 }
