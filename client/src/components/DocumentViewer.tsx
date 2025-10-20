@@ -16,7 +16,13 @@ export function DocumentViewer({ document, open, onClose }: DocumentViewerProps)
   const fileExtension = document.fileUrl.split('.').pop()?.toLowerCase();
   
   // Convert object storage path to accessible URL
-  const documentUrl = `/objects/${document.fileUrl}`;
+  // fileUrl already contains the path like ".private/xyz" or "public/xyz"
+  const documentUrl = document.fileUrl.startsWith('/objects/') 
+    ? document.fileUrl 
+    : `/objects/${document.fileUrl}`;
+  
+  console.log('Document fileUrl:', document.fileUrl);
+  console.log('Document URL:', documentUrl);
 
   const handleDownload = () => {
     const link = window.document.createElement('a');
@@ -31,24 +37,14 @@ export function DocumentViewer({ document, open, onClose }: DocumentViewerProps)
         <DialogHeader className="px-6 py-4 border-b">
           <div className="flex items-center justify-between">
             <DialogTitle className="text-xl">{document.title}</DialogTitle>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={handleDownload}
-                data-testid="button-download-document"
-              >
-                <Download className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={onClose}
-                data-testid="button-close-viewer"
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={handleDownload}
+              data-testid="button-download-document"
+            >
+              <Download className="h-4 w-4" />
+            </Button>
           </div>
           <div className="flex items-center gap-4 text-sm text-muted-foreground mt-2">
             <span>Kategorie: {document.category}</span>
