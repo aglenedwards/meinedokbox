@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { FileText, HardDrive, TrendingUp, Plus, Trash2, ArrowUpDown, Download } from "lucide-react";
+import { FileText, HardDrive, TrendingUp, Plus, Trash2, ArrowUpDown, Download, Camera, ChevronDown } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { Link } from "wouter";
@@ -15,11 +15,18 @@ import { ProcessingModal } from "@/components/ProcessingModal";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
 import { uploadDocument, getDocuments, deleteDocument, updateDocumentCategory, getStorageStats, bulkDeleteDocuments, exportDocumentsAsZip, type StorageStats, type SortOption } from "@/lib/api";
 import { DocumentViewer } from "@/components/DocumentViewer";
 import { MultiPageUpload } from "@/components/MultiPageUpload";
+import { CameraMultiShot } from "@/components/CameraMultiShot";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
@@ -51,6 +58,7 @@ export default function Dashboard() {
   const [sortBy, setSortBy] = useState<SortOption>("date-desc");
   const [selectedDocuments, setSelectedDocuments] = useState<Set<string>>(new Set());
   const [showUpload, setShowUpload] = useState(false);
+  const [showCameraMultiShot, setShowCameraMultiShot] = useState(false);
   const [processingModal, setProcessingModal] = useState<{
     open: boolean;
     status: 'processing' | 'success' | 'error';
@@ -209,6 +217,7 @@ export default function Dashboard() {
 
   const handleFileSelect = async (files: File | File[]) => {
     setShowUpload(false);
+    setShowCameraMultiShot(false);
     setProcessingModal({ open: true, status: 'processing', progress: 0 });
 
     // Simulate progress stages while upload is happening
@@ -331,13 +340,23 @@ export default function Dashboard() {
               <img src={logoImage} alt="MeineDokBox" className="h-12 md:h-16 dark:invert dark:brightness-0 dark:contrast-200" data-testid="img-logo" />
               <div className="flex items-center gap-2 md:hidden">
                 <ThemeToggle />
-                <Button 
-                  onClick={() => setShowUpload(!showUpload)}
-                  data-testid="button-toggle-upload"
-                  size="sm"
-                >
-                  <Plus className="h-4 w-4" />
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button size="sm" data-testid="button-upload-menu-mobile">
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => { setShowUpload(false); setShowCameraMultiShot(true); }} data-testid="menu-item-camera-scanner">
+                      <Camera className="h-4 w-4 mr-2" />
+                      Kamera-Scanner
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => { setShowCameraMultiShot(false); setShowUpload(true); }} data-testid="menu-item-multi-page">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Mehrere Seiten
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </div>
             
@@ -367,13 +386,25 @@ export default function Dashboard() {
                   Papierkorb
                 </Button>
               </Link>
-              <Button 
-                onClick={() => setShowUpload(!showUpload)}
-                data-testid="button-toggle-upload"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Hochladen
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button data-testid="button-upload-menu">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Hochladen
+                    <ChevronDown className="h-4 w-4 ml-2" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => { setShowUpload(false); setShowCameraMultiShot(true); }} data-testid="menu-item-camera-scanner-desktop">
+                    <Camera className="h-4 w-4 mr-2" />
+                    Kamera-Scanner
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => { setShowCameraMultiShot(false); setShowUpload(true); }} data-testid="menu-item-multi-page-desktop">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Mehrere Seiten
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </div>
@@ -386,6 +417,19 @@ export default function Dashboard() {
               onComplete={handleFileSelect}
               onCancel={() => setShowUpload(false)}
             />
+          </div>
+        )}
+
+        {showCameraMultiShot && (
+          <div className="mb-8">
+            <Card>
+              <CardContent className="p-6">
+                <CameraMultiShot 
+                  onComplete={handleFileSelect}
+                  onCancel={() => setShowCameraMultiShot(false)}
+                />
+              </CardContent>
+            </Card>
           </div>
         )}
 

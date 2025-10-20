@@ -5,9 +5,10 @@ import { useState, useRef } from "react";
 
 interface UploadZoneProps {
   onFileSelect: (file: File) => void;
+  onMultiShotClick?: () => void;
 }
 
-export function UploadZone({ onFileSelect }: UploadZoneProps) {
+export function UploadZone({ onFileSelect, onMultiShotClick }: UploadZoneProps) {
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
@@ -61,12 +62,23 @@ export function UploadZone({ onFileSelect }: UploadZoneProps) {
           </div>
 
           <div className="flex gap-3 flex-wrap justify-center">
+            {onMultiShotClick && (
+              <Button
+                onClick={onMultiShotClick}
+                data-testid="button-multi-shot-scan"
+              >
+                <Camera className="h-4 w-4 mr-2" />
+                Kamera-Scanner
+              </Button>
+            )}
+            
             <Button
+              variant={onMultiShotClick ? "secondary" : "default"}
               onClick={() => cameraInputRef.current?.click()}
               data-testid="button-scan-document"
             >
               <Camera className="h-4 w-4 mr-2" />
-              Dokument scannen
+              {onMultiShotClick ? "Einzelbild" : "Dokument scannen"}
             </Button>
             
             <Button
