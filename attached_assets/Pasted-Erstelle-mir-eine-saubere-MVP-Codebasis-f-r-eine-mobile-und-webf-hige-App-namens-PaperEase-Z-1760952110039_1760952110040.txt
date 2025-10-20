@@ -1,0 +1,57 @@
+Erstelle mir eine saubere MVP-Codebasis für eine mobile und webfähige App namens „PaperEase“.
+
+### Ziel
+Die App digitalisiert Papierdokumente mit dem Smartphone, erkennt den Inhalt mit KI (OCR + semantische Analyse) und legt sie automatisch in passende digitale Ordner ab.
+
+---
+
+### 🔹 TECHNISCHE BASIS
+- Framework: Flask (Python) als Backend oder Node.js (Express) als Alternative
+- Frontend: React oder Flutter (je nach Toolumgebung)
+- Datenbank: SQLite für MVP (später skalierbar auf PostgreSQL)
+- API-Struktur mit modularer Erweiterbarkeit
+- Saubere Verzeichnisstruktur: `/app`, `/models`, `/routes`, `/static`, `/templates`
+- TailwindCSS oder MaterialUI für modernes UI
+
+---
+
+### 🔹 MVP-FUNKTIONEN (Phase 1)
+1. 📄 **Scan & Upload**
+   - Nutzer kann ein Dokument mit Smartphone-Kamera oder Datei-Upload hinzufügen.
+   - Datei wird gespeichert im Verzeichnis `/uploads`.
+   - Frontend zeigt Upload-Vorschau.
+
+2. 🧠 **KI-OCR & Klassifizierung**
+   - Nach Upload wird eine OCR-Funktion (z. B. Tesseract oder OpenAI Vision API) angewendet.
+   - KI analysiert Textinhalt → erkennt Dokumenttyp (z. B. Rechnung, Vertrag, Versicherung, Brief).
+   - System legt automatisch einen passenden digitalen Ordner an (z. B. `/storage/versicherungen/`).
+
+3. 🗂️ **Ordnerstruktur & Verwaltung**
+   - Nutzer kann alle gespeicherten Dokumente nach Kategorien durchsuchen.
+   - Frontend zeigt Dateiname, Erstellungsdatum, Dokumenttyp, Vorschau.
+   - Suchfunktion (Volltext aus OCR-Ergebnis).
+
+4. 🔒 **Login / Auth**
+   - Simples Login/Register-System (Session-basiert).
+   - Nutzer hat eigenen Speicherbereich `/user/<id>/documents`.
+
+5. 🧩 **Frontend**
+   - Modernes, minimalistisches Dashboard:
+     - “+ Dokument scannen/hochladen”
+     - “Meine Dokumente”
+     - “Suche”
+   - Responsives Design für Smartphone und Desktop.
+
+---
+
+### 🔹 SPÄTERE ERWEITERUNG (Platzhalter einbauen)
+- Vertragslaufzeiten-Erkennung (Datum extrahieren)
+- Erinnerungen / Notifications
+- Premium-Funktionen
+- Team-/Familienzugang
+- Cloud-Speicher-Integration (z. B. AWS S3 oder GDrive)
+- KI-Fragen wie: „Wann läuft meine Autoversicherung ab?“
+
+---
+
+### 🔹 STRUKTURBEISPIEL (Dateien)
