@@ -14,6 +14,8 @@ import Dashboard from "@/pages/Dashboard";
 import Trash from "@/pages/Trash";
 import NotFound from "@/pages/not-found";
 import logoImage from "@assets/meinedokbox_1760966015056.png";
+import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
+import { PWAUpdatePrompt } from "@/components/PWAUpdatePrompt";
 
 function Router() {
   return (
@@ -68,6 +70,8 @@ function App() {
       <ThemeProvider>
         <TooltipProvider>
           <Toaster />
+          <PWAInstallPrompt />
+          <PWAUpdatePrompt />
           <AuthenticatedApp />
         </TooltipProvider>
       </ThemeProvider>
