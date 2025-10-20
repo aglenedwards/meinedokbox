@@ -55,6 +55,7 @@ export const documents = pgTable("documents", {
   thumbnailUrl: text("thumbnail_url"),
   confidence: real("confidence").notNull(),
   uploadedAt: timestamp("uploaded_at").notNull().default(sql`now()`),
+  deletedAt: timestamp("deleted_at"),
 });
 
 export const insertDocumentSchema = createInsertSchema(documents).omit({
