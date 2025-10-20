@@ -179,16 +179,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get all documents for authenticated user with optional search/filter
+  // Get all documents for authenticated user with optional search/filter/sort
   app.get('/api/documents', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const { search, category } = req.query;
+      const { search, categories, sort } = req.query;
+
+      // Parse categories from query string (comma-separated)
+      const categoryArray = categories 
+        ? (categories as string).split(',').filter(c => c.trim())
+        : undefined;
 
       const documents = await storage.searchDocuments(
         userId,
         search as string | undefined,
-        category as string | undefined
+        categoryArray,
+        sort as any
       );
 
       res.json(documents);
@@ -308,7 +314,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Delete document
+  // Delete document (soft delete - moves to trash)
   app.delete('/api/documents/:id', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
@@ -325,17 +331,89 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Access denied" });
       }
 
-      // Delete document from database
+      // Soft delete document (moves to trash)
       const deleted = await storage.deleteDocument(id, userId);
 
       if (!deleted) {
         return res.status(500).json({ message: "Failed to delete document" });
       }
 
-      res.json({ message: "Document deleted successfully" });
+      res.json({ message: "Document moved to trash" });
     } catch (error) {
       console.error("Error deleting document:", error);
       res.status(500).json({ message: "Failed to delete document" });
+    }
+  });
+
+  // Bulk delete documents (soft delete - moves to trash)
+  app.post('/api/documents/bulk-delete', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { ids } = req.body;
+
+      if (!ids || !Array.isArray(ids) || ids.length === 0) {
+        return res.status(400).json({ message: "No document IDs provided" });
+      }
+
+      const deletedCount = await storage.bulkDeleteDocuments(ids, userId);
+
+      res.json({ 
+        message: `${deletedCount} document(s) moved to trash`,
+        count: deletedCount 
+      });
+    } catch (error) {
+      console.error("Error bulk deleting documents:", error);
+      res.status(500).json({ message: "Failed to delete documents" });
+    }
+  });
+
+  // Get trashed documents
+  app.get('/api/trash', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const trashedDocuments = await storage.getTrashedDocuments(userId);
+      res.json(trashedDocuments);
+    } catch (error) {
+      console.error("Error fetching trashed documents:", error);
+      res.status(500).json({ message: "Failed to fetch trashed documents" });
+    }
+  });
+
+  // Restore document from trash
+  app.post('/api/documents/:id/restore', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { id } = req.params;
+
+      const restored = await storage.restoreDocument(id, userId);
+
+      if (!restored) {
+        return res.status(404).json({ message: "Document not found in trash or access denied" });
+      }
+
+      res.json(restored);
+    } catch (error) {
+      console.error("Error restoring document:", error);
+      res.status(500).json({ message: "Failed to restore document" });
+    }
+  });
+
+  // Permanently delete document from trash
+  app.delete('/api/trash/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { id } = req.params;
+
+      const deleted = await storage.permanentlyDeleteDocument(id, userId);
+
+      if (!deleted) {
+        return res.status(404).json({ message: "Document not found in trash or access denied" });
+      }
+
+      res.json({ message: "Document permanently deleted" });
+    } catch (error) {
+      console.error("Error permanently deleting document:", error);
+      res.status(500).json({ message: "Failed to permanently delete document" });
     }
   });
 
