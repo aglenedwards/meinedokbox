@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
 import { uploadDocument, getDocuments, deleteDocument } from "@/lib/api";
+import { DocumentViewer } from "@/components/DocumentViewer";
 
 const categories = ["Alle", "Rechnung", "Vertrag", "Versicherung", "Brief", "Sonstiges"];
 
@@ -33,6 +34,8 @@ export default function Dashboard() {
     status: 'processing',
     progress: 0,
   });
+  const [viewerDocument, setViewerDocument] = useState<Document | null>(null);
+  const [viewerOpen, setViewerOpen] = useState(false);
 
   // Fetch documents with React Query
   const { data: documents = [], isLoading } = useQuery<Document[]>({
@@ -128,12 +131,26 @@ export default function Dashboard() {
     deleteMutation.mutate(id);
   };
 
+  const handleView = (id: string) => {
+    const document = documents.find(doc => doc.id === id);
+    if (document) {
+      setViewerDocument(document);
+      setViewerOpen(true);
+    }
+  };
+
+  const handleCloseViewer = () => {
+    setViewerOpen(false);
+    setTimeout(() => setViewerDocument(null), 300);
+  };
+
   // Format documents for display
   const formattedDocuments = documents.map(doc => ({
     id: doc.id,
     title: doc.title,
     category: doc.category,
     date: format(new Date(doc.uploadedAt), "d. MMM yyyy", { locale: de }),
+    thumbnailUrl: doc.thumbnailUrl,
   }));
 
   // Calculate stats
@@ -233,7 +250,7 @@ export default function Dashboard() {
               <DocumentCard
                 key={doc.id}
                 {...doc}
-                onView={() => console.log('View', doc.id)}
+                onView={() => handleView(doc.id)}
                 onDelete={() => handleDelete(doc.id)}
               />
             ))}
@@ -251,6 +268,12 @@ export default function Dashboard() {
           setProcessingModal(prev => ({ ...prev, open: false }));
           setShowUpload(true);
         }}
+      />
+
+      <DocumentViewer
+        document={viewerDocument}
+        open={viewerOpen}
+        onClose={handleCloseViewer}
       />
     </div>
   );

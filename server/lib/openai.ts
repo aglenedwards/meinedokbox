@@ -19,9 +19,16 @@ export async function analyzeDocument(base64Image: string): Promise<DocumentAnal
           role: "system",
           content: `You are an expert document analyzer. Analyze the document image and extract:
 1. All visible text (OCR)
-2. Document type/category (Rechnung, Vertrag, Versicherung, Brief, or Sonstiges)
-3. A concise title for the document
+2. Document type/category from these options:
+   - Rechnung: Invoices, bills, receipts, Abrechnungen (settlements), Endabrechnungen, Nebenkostenabrechnungen, payment requests
+   - Vertrag: Contracts, agreements, terms of service, Mietverträge, Arbeitsverträge
+   - Versicherung: Insurance documents, policies, claims
+   - Brief: Letters, correspondence, notices
+   - Sonstiges: Everything else that doesn't fit the above categories
+3. A concise German title for the document
 4. Your confidence level (0-1)
+
+Important: Classify Abrechnungen, Endabrechnungen, and Nebenkostenabrechnungen as "Rechnung".
 
 Respond with JSON in this format:
 {
