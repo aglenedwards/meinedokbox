@@ -8,6 +8,7 @@ import { uploadFile } from "./lib/storage";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { ObjectPermission } from "./objectAcl";
 import { insertDocumentSchema } from "@shared/schema";
+import { combineImagesToPDF, type PageBuffer } from "./lib/pdfGenerator";
 
 // Configure multer for file uploads (memory storage for processing)
 const upload = multer({
@@ -42,26 +43,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Document upload endpoint
-  app.post('/api/documents/upload', isAuthenticated, upload.single('file'), async (req: any, res) => {
+  // Document upload endpoint - supports single or multiple files
+  app.post('/api/documents/upload', isAuthenticated, upload.array('files', 20), async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const file = req.file;
+      const files = req.files as Express.Multer.File[];
 
-      if (!file) {
-        return res.status(400).json({ message: "No file provided" });
+      if (!files || files.length === 0) {
+        return res.status(400).json({ message: "No files provided" });
       }
 
-      // Convert file to base64 for OpenAI Vision API
-      const base64Image = file.buffer.toString('base64');
+      let fileBuffer: Buffer;
+      let fileName: string;
+      let base64Image: string;
+
+      // If multiple files, combine them into a PDF
+      if (files.length > 1) {
+        console.log(`Combining ${files.length} files into a PDF`);
+        
+        const pages: PageBuffer[] = files.map(file => ({
+          buffer: file.buffer,
+          mimeType: file.mimetype,
+        }));
+
+        fileBuffer = await combineImagesToPDF(pages);
+        fileName = 'combined-document.pdf';
+        base64Image = fileBuffer.toString('base64');
+      } else {
+        // Single file upload
+        fileBuffer = files[0].buffer;
+        fileName = files[0].originalname;
+        base64Image = fileBuffer.toString('base64');
+      }
 
       // Analyze document with OpenAI
       const analysisResult = await analyzeDocument(base64Image);
 
       // Upload file to object storage
       const { filePath, thumbnailPath } = await uploadFile(
-        file.buffer,
-        file.originalname,
+        fileBuffer,
+        fileName,
         userId
       );
 

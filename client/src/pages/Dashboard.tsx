@@ -16,6 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
 import { uploadDocument, getDocuments, deleteDocument } from "@/lib/api";
 import { DocumentViewer } from "@/components/DocumentViewer";
+import { MultiPageUpload } from "@/components/MultiPageUpload";
 
 const categories = ["Alle", "Rechnung", "Vertrag", "Versicherung", "Brief", "Sonstiges"];
 
@@ -104,7 +105,7 @@ export default function Dashboard() {
     }
   };
 
-  const handleFileSelect = async (file: File) => {
+  const handleFileSelect = async (files: File | File[]) => {
     setShowUpload(false);
     setProcessingModal({ open: true, status: 'processing', progress: 0 });
 
@@ -120,7 +121,7 @@ export default function Dashboard() {
     }, 300);
 
     try {
-      await uploadMutation.mutateAsync(file);
+      await uploadMutation.mutateAsync(files);
       clearInterval(progressInterval);
     } catch (error) {
       clearInterval(progressInterval);
@@ -195,7 +196,10 @@ export default function Dashboard() {
       <main className="max-w-7xl mx-auto px-4 md:px-6 py-8">
         {showUpload && (
           <div className="mb-8">
-            <UploadZone onFileSelect={handleFileSelect} />
+            <MultiPageUpload 
+              onComplete={handleFileSelect}
+              onCancel={() => setShowUpload(false)}
+            />
           </div>
         )}
 

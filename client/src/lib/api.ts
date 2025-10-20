@@ -2,11 +2,16 @@ import type { Document, User } from "@shared/schema";
 import { apiRequest } from "./queryClient";
 
 /**
- * Upload a document file and process it with AI
+ * Upload one or more document files and process them with AI
+ * If multiple files are provided, they will be combined into a single multi-page PDF
  */
-export async function uploadDocument(file: File): Promise<Document> {
+export async function uploadDocument(files: File | File[]): Promise<Document> {
   const formData = new FormData();
-  formData.append("file", file);
+  const fileArray = Array.isArray(files) ? files : [files];
+  
+  fileArray.forEach(file => {
+    formData.append("files", file);
+  });
 
   const response = await fetch("/api/documents/upload", {
     method: "POST",
