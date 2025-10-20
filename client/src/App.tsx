@@ -12,7 +12,7 @@ import { LogIn } from "lucide-react";
 import { getCurrentUser } from "@/lib/api";
 import Dashboard from "@/pages/Dashboard";
 import NotFound from "@/pages/not-found";
-import logoImage from "@assets/meinedokbox_1760964397977.png";
+import logoImage from "@assets/meinedokbox_1760966015056.png";
 
 function Router() {
   return (
@@ -42,7 +42,7 @@ function AuthenticatedApp() {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-background px-4">
         <div className="max-w-md text-center space-y-6">
-          <img src={logoImage} alt="MeineDokBox" className="h-16 mx-auto" data-testid="img-logo-login" />
+          <img src={logoImage} alt="MeineDokBox" className="h-20 md:h-24 mx-auto" data-testid="img-logo-login" />
           <p className="text-muted-foreground">
             Bitte melden Sie sich an, um Ihre Dokumente zu verwalten.
           </p>

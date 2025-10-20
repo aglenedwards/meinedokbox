@@ -17,7 +17,7 @@ import { queryClient } from "@/lib/queryClient";
 import { uploadDocument, getDocuments, deleteDocument } from "@/lib/api";
 import { DocumentViewer } from "@/components/DocumentViewer";
 import { MultiPageUpload } from "@/components/MultiPageUpload";
-import logoImage from "@assets/meinedokbox_1760964397977.png";
+import logoImage from "@assets/meinedokbox_1760966015056.png";
 
 const categories = ["Alle", "Rechnung", "Vertrag", "Versicherung", "Brief", "Sonstiges"];
 
@@ -170,7 +170,7 @@ export default function Dashboard() {
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-4">
           <div className="flex items-center gap-4 flex-wrap">
             <div className="flex items-center">
-              <img src={logoImage} alt="MeineDokBox" className="h-10" data-testid="img-logo" />
+              <img src={logoImage} alt="MeineDokBox" className="h-12 md:h-14" data-testid="img-logo" />
             </div>
             
             <div className="flex-1 flex items-center gap-3">
