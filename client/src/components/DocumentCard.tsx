@@ -1,7 +1,7 @@
 import { 
   FileText, Calendar, MoreVertical, Euro, FileSignature, Shield, Mail, FileQuestion,
   Landmark, Receipt, Briefcase, FileCheck, Building2, Stethoscope, Home, Car, 
-  GraduationCap, Baby, PiggyBank, ShoppingBag, Plane, DollarSign, User, Sparkles
+  GraduationCap, Baby, PiggyBank, ShoppingBag, Plane, User, Sparkles
 } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -44,7 +44,7 @@ const categoryConfig: Record<string, { icon: typeof Euro; color: string; bgColor
     bgColor: 'bg-emerald-50 dark:bg-emerald-950'
   },
   'Steuern & Buchhaltung': { 
-    icon: Receipt, 
+    icon: Euro, 
     color: 'text-amber-600 dark:text-amber-400',
     bgColor: 'bg-amber-50 dark:bg-amber-950'
   },
