@@ -450,11 +450,11 @@ export default function Dashboard() {
         )}
 
         <div className="mb-6">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <h2 className="text-2xl font-bold">Meine Dokumente</h2>
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="flex items-center gap-2">
-                <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <h2 className="text-2xl font-bold">Meine Dokumente</h2>
+              <div className="flex items-center gap-3">
+                <ArrowUpDown className="h-4 w-4 text-muted-foreground hidden sm:block" />
                 <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
                   <SelectTrigger className="w-[180px]" data-testid="select-sort">
                     <SelectValue />
@@ -468,12 +468,13 @@ export default function Dashboard() {
                   </SelectContent>
                 </Select>
               </div>
-              <CategoryFilter
-                categories={categories}
-                selectedCategories={selectedCategories}
-                onCategoryToggle={handleCategoryToggle}
-              />
             </div>
+            
+            <CategoryFilter
+              categories={categories}
+              selectedCategories={selectedCategories}
+              onCategoryToggle={handleCategoryToggle}
+            />
           </div>
 
           {selectedDocuments.size > 0 && (
