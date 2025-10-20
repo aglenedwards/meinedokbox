@@ -168,20 +168,30 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-10 bg-background border-b">
-        <div className="max-w-7xl mx-auto px-4 md:px-6 py-4">
-          <div className="flex items-center gap-4 flex-wrap">
-            <div className="flex items-center">
-              <img src={logoImage} alt="MeineDokBox" className="h-12 md:h-14" data-testid="img-logo" />
+        <div className="max-w-7xl mx-auto px-4 md:px-6 py-3 md:py-4">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-4">
+            <div className="flex items-center justify-between md:justify-start gap-3">
+              <img src={logoImage} alt="MeineDokBox" className="h-10 md:h-14" data-testid="img-logo" />
+              <div className="flex items-center gap-2 md:hidden">
+                <ThemeToggle />
+                <Button 
+                  onClick={() => setShowUpload(!showUpload)}
+                  data-testid="button-toggle-upload"
+                  size="sm"
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
             
-            <div className="flex-1 flex items-center gap-3 min-w-0">
+            <div className="flex-1 min-w-0">
               <SearchBar 
                 value={searchQuery} 
                 onChange={setSearchQuery}
               />
             </div>
             
-            <div className="flex items-center gap-2">
+            <div className="hidden md:flex items-center gap-2">
               <ThemeToggle />
               <Button 
                 onClick={() => setShowUpload(!showUpload)}
