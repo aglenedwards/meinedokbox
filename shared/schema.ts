@@ -25,6 +25,25 @@ export const users = pgTable("users", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// 15 document categories covering all common document types
+export const DOCUMENT_CATEGORIES = [
+  "Finanzen & Banken",
+  "Versicherungen", 
+  "Steuern & Buchhaltung",
+  "Arbeit & Gehalt",
+  "Verträge & Abos",
+  "Behörden & Amtliches",
+  "Gesundheit & Arzt",
+  "Wohnen & Immobilien",
+  "Auto & Mobilität",
+  "Schule & Ausbildung",
+  "Familie & Kinder",
+  "Rente & Vorsorge",
+  "Einkäufe & Online-Bestellungen",
+  "Reisen & Freizeit",
+  "Sonstiges / Privat"
+] as const;
+
 export const documents = pgTable("documents", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull(),
