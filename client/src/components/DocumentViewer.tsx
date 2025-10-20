@@ -14,10 +14,13 @@ export function DocumentViewer({ document, open, onClose }: DocumentViewerProps)
 
   const isPDF = document.fileUrl.toLowerCase().endsWith('.pdf');
   const fileExtension = document.fileUrl.split('.').pop()?.toLowerCase();
+  
+  // Convert object storage path to accessible URL
+  const documentUrl = `/objects/${document.fileUrl}`;
 
   const handleDownload = () => {
     const link = window.document.createElement('a');
-    link.href = document.fileUrl;
+    link.href = documentUrl;
     link.download = `${document.title}.${fileExtension}`;
     link.click();
   };
@@ -57,7 +60,7 @@ export function DocumentViewer({ document, open, onClose }: DocumentViewerProps)
         <div className="flex-1 overflow-auto bg-muted/30">
           {isPDF ? (
             <iframe
-              src={document.fileUrl}
+              src={documentUrl}
               className="w-full h-full border-0"
               title={document.title}
               data-testid="iframe-pdf-viewer"
@@ -65,7 +68,7 @@ export function DocumentViewer({ document, open, onClose }: DocumentViewerProps)
           ) : (
             <div className="flex items-center justify-center h-full p-4">
               <img
-                src={document.fileUrl}
+                src={documentUrl}
                 alt={document.title}
                 className="max-w-full max-h-full object-contain"
                 data-testid="img-document-viewer"

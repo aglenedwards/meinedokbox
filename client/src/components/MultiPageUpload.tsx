@@ -63,19 +63,9 @@ export function MultiPageUpload({ onComplete, onCancel }: MultiPageUploadProps) 
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">
-          Mehrseitiges Dokument hochladen
-        </h3>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={onCancel}
-          data-testid="button-cancel-multipage"
-        >
-          <X className="h-4 w-4" />
-        </Button>
-      </div>
+      <h3 className="text-lg font-semibold">
+        Mehrseitiges Dokument hochladen
+      </h3>
 
       {pages.length > 0 && (
         <div className="space-y-3">
