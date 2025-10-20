@@ -26,6 +26,10 @@ export function DocumentViewer({ document, open, onClose }: DocumentViewerProps)
 
   const totalPages = pageUrls.length;
   const currentPageUrl = pageUrls[currentPage];
+  
+  // Check if the document is a PDF
+  const isPdf = currentPageUrl.toLowerCase().endsWith('.pdf') || 
+                currentPageUrl.includes('application/pdf');
 
   const handleDownloadPDF = () => {
     const link = window.document.createElement('a');
@@ -100,12 +104,21 @@ export function DocumentViewer({ document, open, onClose }: DocumentViewerProps)
         {/* Main viewer area */}
         <div className="flex-1 overflow-auto bg-muted/30 relative">
           <div className="flex items-center justify-center h-full p-4">
-            <img
-              src={currentPageUrl}
-              alt={`${document.title} - Seite ${currentPage + 1}`}
-              className="max-w-full max-h-full object-contain"
-              data-testid={`img-page-${currentPage}`}
-            />
+            {isPdf ? (
+              <iframe
+                src={currentPageUrl}
+                className="w-full h-full border-0"
+                title={document.title}
+                data-testid="pdf-viewer"
+              />
+            ) : (
+              <img
+                src={currentPageUrl}
+                alt={`${document.title} - Seite ${currentPage + 1}`}
+                className="max-w-full max-h-full object-contain"
+                data-testid={`img-page-${currentPage}`}
+              />
+            )}
           </div>
 
           {/* Navigation arrows for multi-page documents */}
@@ -135,8 +148,8 @@ export function DocumentViewer({ document, open, onClose }: DocumentViewerProps)
           )}
         </div>
 
-        {/* Page thumbnails for multi-page documents */}
-        {totalPages > 1 && (
+        {/* Page thumbnails for multi-page documents (only for images, not PDFs) */}
+        {totalPages > 1 && !isPdf && (
           <div className="border-t p-3 bg-background">
             <div className="flex gap-2 overflow-x-auto">
               {pageUrls.map((url, index) => (
