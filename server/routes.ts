@@ -3,7 +3,8 @@ import { createServer, type Server } from "http";
 import multer from "multer";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
-import { analyzeDocument } from "./lib/openai";
+import { analyzeDocument, analyzeDocumentFromText } from "./lib/openai";
+import { extractTextFromPdf } from "./lib/pdfParser";
 import { uploadFile } from "./lib/storage";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { ObjectPermission } from "./objectAcl";
@@ -53,26 +54,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "No files provided" });
       }
 
-      // Check if any files are PDFs
-      const hasPdf = files.some(file => file.mimetype === 'application/pdf');
-      if (hasPdf) {
-        return res.status(400).json({ 
-          message: "PDF-Dateien werden derzeit nicht unterstützt. Bitte fotografieren Sie das Dokument mit Ihrer Kamera oder scannen Sie es als Bilddatei (JPEG, PNG, WEBP)."
-        });
-      }
+      const firstFile = files[0];
+      const isPdf = firstFile.mimetype === 'application/pdf';
 
-      // Prepare images for OpenAI analysis (each with its own MIME type)
-      const imagesForAnalysis = files.map(file => ({
-        base64: file.buffer.toString('base64'),
-        mimeType: file.mimetype,
-      }));
+      console.log(`Processing ${files.length} file(s) as ${isPdf ? 'PDF' : 'image'} document`);
+
+      let analysisResult;
+
+      if (isPdf) {
+        // Handle PDF: Extract text and analyze
+        if (files.length > 1) {
+          return res.status(400).json({ 
+            message: "Bitte laden Sie nur eine PDF-Datei gleichzeitig hoch."
+          });
+        }
+
+        const extractedText = await extractTextFromPdf(firstFile.buffer);
+        console.log(`Extracted ${extractedText.length} characters from PDF`);
+        analysisResult = await analyzeDocumentFromText(extractedText);
+      } else {
+        // Handle images: Use Vision API
+        const imagesForAnalysis = files.map(file => ({
+          base64: file.buffer.toString('base64'),
+          mimeType: file.mimetype,
+        }));
+        analysisResult = await analyzeDocument(imagesForAnalysis);
+      }
       
-      console.log(`Processing ${files.length} file(s) as document`);
-      
-      // Analyze document with OpenAI (send all pages as separate images)
-      const analysisResult = await analyzeDocument(imagesForAnalysis);
-      
-      // Upload each page separately
+      // Upload files (images as pages, PDF as single file)
       await processMultiPageUpload(userId, files, analysisResult, res);
     } catch (error) {
       console.error("Error uploading document:", error);
