@@ -103,6 +103,67 @@ Respond with JSON in this format:
   }
 }
 
+export async function analyzeDocumentFromText(
+  extractedText: string
+): Promise<DocumentAnalysisResult> {
+  try {
+    console.log(`Analyzing PDF document from extracted text (${extractedText.length} characters)`);
+    
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "system",
+          content: `You are an expert document analyzer. Analyze the provided document text and determine:
+1. Document type/category from these options:
+   - Rechnung: Invoices, bills, receipts, Abrechnungen (settlements), Endabrechnungen, Nebenkostenabrechnungen, payment requests, utility bills
+   - Vertrag: Contracts, agreements, terms of service, Mietverträge, Arbeitsverträge
+   - Versicherung: Insurance documents, policies, claims
+   - Brief: Letters, correspondence, notices
+   - Sonstiges: Everything else that doesn't fit the above categories
+2. A concise, descriptive German title for the document (NOT "Unbekanntes Dokument")
+3. Your confidence level (0-1)
+
+Important: 
+- Classify Abrechnungen, Endabrechnungen, and Nebenkostenabrechnungen as "Rechnung"
+- Create a meaningful title based on the document content (e.g., "Nebenkostenabrechnung 2024", "Stromrechnung Januar 2025")
+
+Respond with JSON in this format:
+{
+  "category": "category name",
+  "title": "descriptive document title",
+  "confidence": 0.95
+}`
+        },
+        {
+          role: "user",
+          content: `Please analyze this document text and categorize it:\n\n${extractedText.substring(0, 8000)}`
+        },
+      ],
+      response_format: { type: "json_object" },
+      max_completion_tokens: 1024,
+    });
+
+    const result = JSON.parse(response.choices[0].message.content || "{}");
+    
+    console.log('OpenAI Text Analysis Result:', {
+      category: result.category,
+      title: result.title,
+      confidence: result.confidence,
+    });
+    
+    return {
+      extractedText: extractedText,
+      category: result.category || "Sonstiges",
+      title: result.title || "Unbekanntes Dokument",
+      confidence: Math.max(0, Math.min(1, result.confidence || 0.5)),
+    };
+  } catch (error) {
+    console.error("Failed to analyze document from text:", error);
+    throw new Error("Document text analysis failed: " + (error as Error).message);
+  }
+}
+
 export async function searchDocuments(query: string, documents: Array<{ id: string, extractedText: string, title: string }>): Promise<string[]> {
   if (!query || documents.length === 0) {
     return [];
