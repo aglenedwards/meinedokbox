@@ -4,7 +4,7 @@ hidden = [".config", ".git", "generated-icon.png", "node_modules", "dist"]
 
 [nix]
 channel = "stable-24_05"
-packages = ["cairo", "pango", "libuuid", "pkg-config"]
+packages = ["cairo", "pango", "libuuid", "pkg-config", "graphicsmagick", "ghostscript"]
 
 [deployment]
 deploymentTarget = "autoscale"

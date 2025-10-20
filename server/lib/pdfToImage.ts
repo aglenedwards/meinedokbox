@@ -1,5 +1,10 @@
-import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.mjs';
-import { createCanvas } from 'canvas';
+import gm from 'gm';
+import { promisify } from 'util';
+import { writeFile, unlink } from 'fs/promises';
+import { tmpdir } from 'os';
+import { join } from 'path';
+
+const imageMagick = gm.subClass({ imageMagick: true });
 
 export interface PDFPageImage {
   base64: string;
@@ -9,50 +14,45 @@ export interface PDFPageImage {
 
 /**
  * Converts a PDF buffer to an array of PNG images (one per page)
+ * Uses GraphicsMagick/ImageMagick for reliable PDF rendering
  */
 export async function convertPdfToImages(pdfBuffer: Buffer): Promise<PDFPageImage[]> {
+  const tempPdfPath = join(tmpdir(), `pdf-${Date.now()}.pdf`);
+  
   try {
-    console.log('Converting PDF to images...');
+    console.log('Converting PDF to images using GraphicsMagick...');
     
-    // Load PDF document
-    const loadingTask = pdfjsLib.getDocument({
-      data: new Uint8Array(pdfBuffer),
-    });
+    // Write PDF to temp file
+    await writeFile(tempPdfPath, pdfBuffer);
     
-    const pdfDocument = await loadingTask.promise;
-    const numPages = pdfDocument.numPages;
+    // Get number of pages
+    const img = imageMagick(tempPdfPath);
+    const identifyAsync = promisify(img.identify.bind(img));
+    const info: any = await identifyAsync();
+    const pageNumbers = info.toString().trim().split('\n').filter((p: string) => p.trim());
+    const numPages = pageNumbers.length;
+    
     console.log(`PDF has ${numPages} page(s)`);
     
     const images: PDFPageImage[] = [];
     
-    // Convert each page to an image
-    for (let pageNum = 1; pageNum <= numPages; pageNum++) {
-      const page = await pdfDocument.getPage(pageNum);
+    // Convert each page
+    for (let pageNum = 0; pageNum < numPages; pageNum++) {
+      const pageImg = imageMagick(tempPdfPath + `[${pageNum}]`)
+        .density(150, 150)
+        .quality(90);
       
-      // Get viewport at 2x scale for better quality
-      const viewport = page.getViewport({ scale: 2.0 });
-      
-      // Create canvas
-      const canvas = createCanvas(viewport.width, viewport.height);
-      const context = canvas.getContext('2d');
-      
-      // Render PDF page to canvas
-      await page.render({
-        canvasContext: context as any,
-        viewport: viewport,
-        canvas: canvas as any,
-      }).promise;
-      
-      // Convert canvas to base64 PNG
-      const base64Image = canvas.toDataURL('image/png').split(',')[1];
+      const toBufferAsync = promisify(pageImg.toBuffer.bind(pageImg));
+      const imageBuffer = await toBufferAsync() as Buffer;
+      const base64Image = imageBuffer.toString('base64');
       
       images.push({
         base64: base64Image,
         mimeType: 'image/png',
-        pageNumber: pageNum,
+        pageNumber: pageNum + 1,
       });
       
-      console.log(`  ✓ Converted page ${pageNum}/${numPages}`);
+      console.log(`  ✓ Converted page ${pageNum + 1}/${numPages}`);
     }
     
     console.log(`Successfully converted ${images.length} page(s) to images`);
@@ -60,5 +60,12 @@ export async function convertPdfToImages(pdfBuffer: Buffer): Promise<PDFPageImag
   } catch (error) {
     console.error('Failed to convert PDF to images:', error);
     throw new Error('PDF to image conversion failed: ' + (error as Error).message);
+  } finally {
+    // Clean up temp file
+    try {
+      await unlink(tempPdfPath);
+    } catch (e) {
+      // Ignore cleanup errors
+    }
   }
 }
