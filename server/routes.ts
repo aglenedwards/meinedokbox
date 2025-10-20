@@ -267,6 +267,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update document category
+  app.patch('/api/documents/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { id } = req.params;
+      const { category } = req.body;
+
+      // Validate category
+      const validCategories = ['Rechnung', 'Vertrag', 'Versicherung', 'Brief', 'Sonstiges'];
+      if (!category || !validCategories.includes(category)) {
+        return res.status(400).json({ 
+          message: "Invalid category. Must be one of: Rechnung, Vertrag, Versicherung, Brief, Sonstiges" 
+        });
+      }
+
+      // Update category
+      const updated = await storage.updateDocumentCategory(id, userId, category);
+
+      if (!updated) {
+        return res.status(404).json({ message: "Document not found or access denied" });
+      }
+
+      res.json(updated);
+    } catch (error) {
+      console.error("Error updating document:", error);
+      res.status(500).json({ message: "Failed to update document" });
+    }
+  });
+
   // Delete document
   app.delete('/api/documents/:id', isAuthenticated, async (req: any, res) => {
     try {
