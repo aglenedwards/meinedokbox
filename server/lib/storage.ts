@@ -44,39 +44,6 @@ export async function uploadFile(
   // Normalize the path
   const filePath = objectStorageService.normalizeObjectEntityPath(uploadURL);
   
-  // Generate thumbnail for images and PDFs
-  let thumbnailPath: string | null = null;
-  try {
-    let thumbnail: Buffer | null = null;
-    
-    if (fileName.match(/\.(jpg|jpeg|png|webp)$/i)) {
-      // Generate thumbnail from image with auto-rotation
-      thumbnail = await sharp(file)
-        .rotate() // Auto-rotate based on EXIF
-        .resize(400, 300, { fit: "cover" })
-        .jpeg({ quality: 80 })
-        .toBuffer();
-    } else if (fileName.match(/\.pdf$/i)) {
-      // For PDFs, use the pdfGenerator to create a thumbnail
-      const { generatePdfThumbnail } = await import('./pdfGenerator');
-      thumbnail = await generatePdfThumbnail(file);
-    }
-    
-    if (thumbnail) {
-      const thumbnailUploadURL = await objectStorageService.getObjectEntityUploadURL();
-      await fetch(thumbnailUploadURL, {
-        method: "PUT",
-        body: thumbnail,
-        headers: {
-          "Content-Type": "image/jpeg",
-        },
-      });
-      
-      thumbnailPath = objectStorageService.normalizeObjectEntityPath(thumbnailUploadURL);
-    }
-  } catch (error) {
-    console.error("Failed to generate thumbnail:", error);
-  }
-  
-  return { filePath, thumbnailPath };
+  // No longer generating thumbnails - cards now use category icons
+  return { filePath, thumbnailPath: null };
 }
