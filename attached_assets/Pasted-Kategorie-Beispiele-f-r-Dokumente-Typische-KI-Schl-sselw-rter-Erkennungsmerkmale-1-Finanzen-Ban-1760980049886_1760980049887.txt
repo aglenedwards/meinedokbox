@@ -1,0 +1,16 @@
+Kategorie	Beispiele für Dokumente	Typische KI-Schlüsselwörter / Erkennungsmerkmale
+1. Finanzen & Banken	Kontoauszüge, Kreditunterlagen, Überweisungen, Kreditkartenabrechnungen	IBAN, Konto, Bank, Zahlung, Betrag, „Kreditinstitut“, „Sparkasse“, „Commerzbank“
+2. Versicherungen	Haftpflicht, Hausrat, Kfz-Versicherung, Policen, Schadensmeldungen	Versicherung, Police, Beitrag, Vertragspartner, Schaden
+3. Steuern & Buchhaltung	Steuerbescheide, Lohnsteuer, Belege, Rechnungen, Quittungen	Finanzamt, Bescheid, Steuer-ID, Einnahmen, Ausgaben
+4. Arbeit & Gehalt	Arbeitsvertrag, Lohnzettel, Abmahnung, Zeugnis	Arbeitgeber, Arbeitnehmer, Gehalt, Brutto, Netto, Lohnabrechnung
+5. Verträge & Abos	Strom, Internet, Handy, Streaming, Fitnessstudio	Vertrag, Laufzeit, Kündigung, Anbieter, Tarif
+6. Behörden & Amtliches	Personalausweis, Geburtsurkunde, Führerschein, Melderegister	Stadtverwaltung, Amt, Behörde, Ministerium, Bescheid
+7. Gesundheit & Arzt	Arztbriefe, Rezepte, Krankenkasse, Impfpass, Laborbefunde	Arztpraxis, Diagnose, Rezept, Krankenkasse, Versicherungskarte
+8. Wohnen & Immobilien	Mietvertrag, Nebenkostenabrechnung, Grundsteuer, Bauunterlagen	Miete, Vermieter, Wohnung, Haus, Quadratmeter, Energieausweis
+9. Auto & Mobilität	Fahrzeugbrief, Kfz-Steuer, TÜV, Werkstattrechnung	Kennzeichen, TÜV, Kfz, Fahrzeug, Werkstatt, Inspektion
+10. Schule & Ausbildung	Zeugnisse, Schulbescheinigung, Hochschulunterlagen	Schule, Zeugnis, Studium, Universität, Abschluss
+11. Familie & Kinder	Kindergeld, Geburtsurkunde, Kita, Unterhalt	Kind, Eltern, Jugendamt, Elterngeld, Schule
+12. Rente & Vorsorge	Rentenversicherung, Altersvorsorge, Lebensversicherung	Rente, Vorsorge, Rentenbescheid, Pension, Beitragszeit
+13. Einkäufe & Online-Bestellungen	Bestellbestätigungen, Garantien, Rücksendungen	Bestellung, Rechnung, Amazon, Otto, Lieferdatum, Garantie
+14. Reisen & Freizeit	Buchungen, Tickets, Reiseunterlagen, Mitgliedschaften	Flug, Hotel, Reise, Buchungsnummer, Ticket, Mitglied
+15. Sonstiges / Privat	Briefe, Notizen, Fotos, Memos, Sonstiges	kein eindeutiges Pattern, niedrige Konfidenz
