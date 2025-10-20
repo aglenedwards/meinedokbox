@@ -53,49 +53,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "No files provided" });
       }
 
-      let fileBuffer: Buffer;
-      let fileName: string;
-
-      // For multiple files, send each image separately to OpenAI for analysis
-      // Then combine them into a PDF for storage
-      if (files.length > 1) {
-        console.log(`Processing ${files.length} files as multi-page document`);
-        
-        // Prepare images for OpenAI analysis (each with its own MIME type)
-        const imagesForAnalysis = files.map(file => ({
-          base64: file.buffer.toString('base64'),
-          mimeType: file.mimetype,
-        }));
-        
-        // Analyze document with OpenAI (send all pages as separate images)
-        const analysisResult = await analyzeDocument(imagesForAnalysis);
-        
-        // Combine them into a PDF for storage
-        const pages: PageBuffer[] = files.map(file => ({
-          buffer: file.buffer,
-          mimeType: file.mimetype,
-        }));
-        fileBuffer = await combineImagesToPDF(pages);
-        fileName = 'combined-document.pdf';
-        
-        // Continue with upload
-        await processUpload(userId, fileBuffer, fileName, analysisResult, res);
-      } else {
-        // Single file upload
-        fileBuffer = files[0].buffer;
-        fileName = files[0].originalname;
-        
-        const imagesForAnalysis = [{
-          base64: fileBuffer.toString('base64'),
-          mimeType: files[0].mimetype,
-        }];
-        
-        // Analyze document with OpenAI
-        const analysisResult = await analyzeDocument(imagesForAnalysis);
-        
-        // Continue with upload
-        await processUpload(userId, fileBuffer, fileName, analysisResult, res);
-      }
+      // Prepare images for OpenAI analysis (each with its own MIME type)
+      const imagesForAnalysis = files.map(file => ({
+        base64: file.buffer.toString('base64'),
+        mimeType: file.mimetype,
+      }));
+      
+      console.log(`Processing ${files.length} file(s) as document`);
+      
+      // Analyze document with OpenAI (send all pages as separate images)
+      const analysisResult = await analyzeDocument(imagesForAnalysis);
+      
+      // Upload each page separately
+      await processMultiPageUpload(userId, files, analysisResult, res);
     } catch (error) {
       console.error("Error uploading document:", error);
       res.status(500).json({ 
@@ -105,32 +75,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  async function processUpload(
+  async function processMultiPageUpload(
     userId: string,
-    fileBuffer: Buffer,
-    fileName: string,
+    files: Express.Multer.File[],
     analysisResult: any,
     res: any
   ) {
-    // Upload file to object storage
-    const { filePath, thumbnailPath } = await uploadFile(
-      fileBuffer,
-      fileName,
-      userId
-    );
-
-    // Set ACL policy on uploaded file (private, owner = userId)
     const objectStorageService = new ObjectStorageService();
-    await objectStorageService.trySetObjectEntityAclPolicy(filePath, {
-      owner: userId,
-      visibility: "private",
-    });
+    const pageUrls: string[] = [];
+    let thumbnailPath: string | null = null;
 
-    if (thumbnailPath) {
-      await objectStorageService.trySetObjectEntityAclPolicy(thumbnailPath, {
+    // Upload each page separately
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const { filePath, thumbnailPath: pageThumbnail } = await uploadFile(
+        file.buffer,
+        file.originalname,
+        userId
+      );
+
+      // Set ACL policy on uploaded file (private, owner = userId)
+      await objectStorageService.trySetObjectEntityAclPolicy(filePath, {
         owner: userId,
         visibility: "private",
       });
+
+      pageUrls.push(filePath);
+
+      // Use the first page's thumbnail as the document thumbnail
+      if (i === 0 && pageThumbnail) {
+        thumbnailPath = pageThumbnail;
+        await objectStorageService.trySetObjectEntityAclPolicy(thumbnailPath, {
+          owner: userId,
+          visibility: "private",
+        });
+      }
     }
 
     // Create document record in database
@@ -139,7 +118,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       title: analysisResult.title,
       category: analysisResult.category,
       extractedText: analysisResult.extractedText,
-      fileUrl: filePath,
+      pageUrls,
       thumbnailUrl: thumbnailPath,
       confidence: analysisResult.confidence,
     };
