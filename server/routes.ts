@@ -17,12 +17,12 @@ const upload = multer({
     fileSize: 10 * 1024 * 1024, // 10MB max file size
   },
   fileFilter: (req, file, cb) => {
-    // Accept images and PDFs
+    // Accept only images (PDFs are handled separately with a better error message)
     const allowedMimes = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
     if (allowedMimes.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error('Invalid file type. Only JPEG, PNG, WEBP, and PDF files are allowed.'));
+      cb(new Error('Ungültiger Dateityp. Nur JPEG, PNG und WEBP Bilddateien sind erlaubt.'));
     }
   },
 });
@@ -51,6 +51,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       if (!files || files.length === 0) {
         return res.status(400).json({ message: "No files provided" });
+      }
+
+      // Check if any files are PDFs
+      const hasPdf = files.some(file => file.mimetype === 'application/pdf');
+      if (hasPdf) {
+        return res.status(400).json({ 
+          message: "PDF-Dateien werden derzeit nicht unterstützt. Bitte fotografieren Sie das Dokument mit Ihrer Kamera oder scannen Sie es als Bilddatei (JPEG, PNG, WEBP)."
+        });
       }
 
       // Prepare images for OpenAI analysis (each with its own MIME type)
