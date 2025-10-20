@@ -9,9 +9,9 @@ export async function extractTextFromPdf(buffer: Buffer): Promise<string> {
     // Create parser with data property (not url)
     const parser = new PDFParse({ data: uint8Array });
     
-    // Extract text
+    // Extract text - getText() returns an object with a 'text' property
     const result = await parser.getText();
-    return result;
+    return result.text || '';
   } catch (error) {
     console.error('Error extracting text from PDF:', error);
     throw new Error('Failed to extract text from PDF');
