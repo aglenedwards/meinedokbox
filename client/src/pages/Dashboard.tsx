@@ -4,7 +4,7 @@ import { FileText, HardDrive, TrendingUp, Plus, Trash2, ArrowUpDown, Download, C
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { Link } from "wouter";
-import type { Document } from "@shared/schema";
+import type { Document, User } from "@shared/schema";
 import { UploadZone } from "@/components/UploadZone";
 import { DocumentCard } from "@/components/DocumentCard";
 import { SearchBar } from "@/components/SearchBar";
@@ -23,11 +23,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
-import { uploadDocument, getDocuments, deleteDocument, updateDocumentCategory, getStorageStats, bulkDeleteDocuments, exportDocumentsAsZip, type StorageStats, type SortOption } from "@/lib/api";
+import { uploadDocument, getDocuments, deleteDocument, updateDocumentCategory, getStorageStats, bulkDeleteDocuments, exportDocumentsAsZip, getCurrentUser, type StorageStats, type SortOption } from "@/lib/api";
 import { DocumentViewer } from "@/components/DocumentViewer";
 import { MultiPageUpload } from "@/components/MultiPageUpload";
 import { CameraMultiShot } from "@/components/CameraMultiShot";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { EmailInbound } from "@/components/EmailInbound";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import logoImage from "@assets/meinedokbox_1760966015056.png";
@@ -87,6 +88,13 @@ export default function Dashboard() {
     queryFn: getStorageStats,
     refetchOnWindowFocus: false,
     staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+
+  // Fetch user data for email inbound
+  const { data: user } = useQuery<User | null>({
+    queryKey: ["/api/auth/user"],
+    queryFn: getCurrentUser,
+    retry: false,
   });
 
   // Upload mutation
@@ -491,6 +499,12 @@ export default function Dashboard() {
               </ResponsiveContainer>
             </CardContent>
           </Card>
+        )}
+
+        {user && user.inboundEmail && (
+          <div className="mb-8">
+            <EmailInbound user={user} />
+          </div>
         )}
 
         <div className="mb-6">
