@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { LogIn } from "lucide-react";
 import { getCurrentUser } from "@/lib/api";
 import Dashboard from "@/pages/Dashboard";
+import Trash from "@/pages/Trash";
 import NotFound from "@/pages/not-found";
 import logoImage from "@assets/meinedokbox_1760966015056.png";
 
@@ -18,6 +19,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Dashboard} />
+      <Route path="/trash" component={Trash} />
       <Route component={NotFound} />
     </Switch>
   );

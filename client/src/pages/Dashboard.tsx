@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { FileText, HardDrive, TrendingUp, Plus } from "lucide-react";
+import { FileText, HardDrive, TrendingUp, Plus, Trash2, ArrowUpDown } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
+import { Link } from "wouter";
 import type { Document } from "@shared/schema";
 import { UploadZone } from "@/components/UploadZone";
 import { DocumentCard } from "@/components/DocumentCard";
@@ -12,9 +13,11 @@ import { StatsCard } from "@/components/StatsCard";
 import { EmptyState } from "@/components/EmptyState";
 import { ProcessingModal } from "@/components/ProcessingModal";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
-import { uploadDocument, getDocuments, deleteDocument, updateDocumentCategory, getStorageStats, type StorageStats } from "@/lib/api";
+import { uploadDocument, getDocuments, deleteDocument, updateDocumentCategory, getStorageStats, bulkDeleteDocuments, type StorageStats, type SortOption } from "@/lib/api";
 import { DocumentViewer } from "@/components/DocumentViewer";
 import { MultiPageUpload } from "@/components/MultiPageUpload";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -43,6 +46,8 @@ export default function Dashboard() {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<string[]>(["Alle"]);
+  const [sortBy, setSortBy] = useState<SortOption>("date-desc");
+  const [selectedDocuments, setSelectedDocuments] = useState<Set<string>>(new Set());
   const [showUpload, setShowUpload] = useState(false);
   const [processingModal, setProcessingModal] = useState<{
     open: boolean;
@@ -59,8 +64,8 @@ export default function Dashboard() {
 
   // Fetch documents with React Query
   const { data: documents = [], isLoading } = useQuery<Document[]>({
-    queryKey: ["/api/documents", searchQuery, selectedCategories],
-    queryFn: () => getDocuments(searchQuery, selectedCategories),
+    queryKey: ["/api/documents", searchQuery, selectedCategories, sortBy],
+    queryFn: () => getDocuments(searchQuery, selectedCategories, sortBy),
     refetchOnWindowFocus: false,
     refetchOnMount: false,
     staleTime: 1000 * 60 * 5, // 5 minutes
@@ -111,9 +116,31 @@ export default function Dashboard() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/documents"] });
       queryClient.invalidateQueries({ queryKey: ["/api/storage/stats"] });
+      setSelectedDocuments(new Set());
       toast({
-        title: "Dokument gelöscht",
-        description: "Das Dokument wurde erfolgreich gelöscht.",
+        title: "Dokument in den Papierkorb verschoben",
+        description: "Das Dokument wurde in den Papierkorb verschoben.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Fehler beim Löschen",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Bulk delete mutation
+  const bulkDeleteMutation = useMutation({
+    mutationFn: bulkDeleteDocuments,
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/documents"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/storage/stats"] });
+      setSelectedDocuments(new Set());
+      toast({
+        title: `${data.count} Dokument(e) in den Papierkorb verschoben`,
+        description: "Die ausgewählten Dokumente wurden in den Papierkorb verschoben.",
       });
     },
     onError: (error: Error) => {
@@ -222,6 +249,34 @@ export default function Dashboard() {
     setTimeout(() => setViewerDocument(null), 300);
   };
 
+  // Selection handlers
+  const handleSelectDocument = (id: string, checked: boolean) => {
+    const newSelection = new Set(selectedDocuments);
+    if (checked) {
+      newSelection.add(id);
+    } else {
+      newSelection.delete(id);
+    }
+    setSelectedDocuments(newSelection);
+  };
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedDocuments(new Set(documents.map(doc => doc.id)));
+    } else {
+      setSelectedDocuments(new Set());
+    }
+  };
+
+  const handleBulkDelete = () => {
+    if (selectedDocuments.size > 0) {
+      bulkDeleteMutation.mutate(Array.from(selectedDocuments));
+    }
+  };
+
+  const allSelected = documents.length > 0 && selectedDocuments.size === documents.length;
+  const someSelected = selectedDocuments.size > 0 && !allSelected;
+
   // Format documents for display
   const formattedDocuments = documents.map(doc => ({
     id: doc.id,
@@ -276,6 +331,12 @@ export default function Dashboard() {
             
             <div className="hidden md:flex items-center gap-2">
               <ThemeToggle />
+              <Link href="/trash">
+                <Button variant="outline" size="sm" data-testid="button-trash">
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Papierkorb
+                </Button>
+              </Link>
               <Button 
                 onClick={() => setShowUpload(!showUpload)}
                 data-testid="button-toggle-upload"
@@ -319,13 +380,57 @@ export default function Dashboard() {
           />
         </div>
 
-        <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-2xl font-bold">Meine Dokumente</h2>
-          <CategoryFilter
-            categories={categories}
-            selectedCategories={selectedCategories}
-            onCategoryToggle={handleCategoryToggle}
-          />
+        <div className="mb-6">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <h2 className="text-2xl font-bold">Meine Dokumente</h2>
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex items-center gap-2">
+                <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
+                <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
+                  <SelectTrigger className="w-[180px]" data-testid="select-sort">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="date-desc">Neueste zuerst</SelectItem>
+                    <SelectItem value="date-asc">Älteste zuerst</SelectItem>
+                    <SelectItem value="title-asc">Titel A-Z</SelectItem>
+                    <SelectItem value="title-desc">Titel Z-A</SelectItem>
+                    <SelectItem value="category-asc">Nach Kategorie</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <CategoryFilter
+                categories={categories}
+                selectedCategories={selectedCategories}
+                onCategoryToggle={handleCategoryToggle}
+              />
+            </div>
+          </div>
+
+          {selectedDocuments.size > 0 && (
+            <div className="mt-4 flex items-center gap-4 p-4 bg-accent rounded-lg">
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  checked={allSelected}
+                  onCheckedChange={handleSelectAll}
+                  data-testid="checkbox-select-all"
+                />
+                <span className="text-sm font-medium">
+                  {selectedDocuments.size} ausgewählt
+                </span>
+              </div>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={handleBulkDelete}
+                disabled={bulkDeleteMutation.isPending}
+                data-testid="button-bulk-delete"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                {bulkDeleteMutation.isPending ? "Wird gelöscht..." : "Löschen"}
+              </Button>
+            </div>
+          )}
         </div>
 
         {isLoading ? (
@@ -344,17 +449,40 @@ export default function Dashboard() {
             onAction={!searchQuery ? () => setShowUpload(true) : undefined}
           />
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-            {formattedDocuments.map((doc) => (
-              <DocumentCard
-                key={doc.id}
-                {...doc}
-                onView={() => handleView(doc.id)}
-                onDelete={() => handleDelete(doc.id)}
-                onCategoryChange={(category) => handleCategoryChange(doc.id, category)}
-              />
-            ))}
-          </div>
+          <>
+            {documents.length > 0 && (
+              <div className="mb-4 flex items-center gap-2">
+                <Checkbox
+                  checked={allSelected}
+                  onCheckedChange={handleSelectAll}
+                  data-testid="checkbox-select-all-header"
+                />
+                <span className="text-sm text-muted-foreground">
+                  {someSelected ? `${selectedDocuments.size} ausgewählt` : (allSelected ? "Alle auswählen" : "Alle abwählen")}
+                </span>
+              </div>
+            )}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+              {formattedDocuments.map((doc) => (
+                <div key={doc.id} className="relative">
+                  <div className="absolute top-2 left-2 z-10">
+                    <Checkbox
+                      checked={selectedDocuments.has(doc.id)}
+                      onCheckedChange={(checked) => handleSelectDocument(doc.id, checked as boolean)}
+                      data-testid={`checkbox-document-${doc.id}`}
+                      className="bg-background"
+                    />
+                  </div>
+                  <DocumentCard
+                    {...doc}
+                    onView={() => handleView(doc.id)}
+                    onDelete={() => handleDelete(doc.id)}
+                    onCategoryChange={(category) => handleCategoryChange(doc.id, category)}
+                  />
+                </div>
+              ))}
+            </div>
+          </>
         )}
       </main>
 
