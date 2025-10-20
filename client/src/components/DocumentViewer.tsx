@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Download, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { Download, ChevronLeft, ChevronRight } from "lucide-react";
 import type { Document } from "@shared/schema";
 
 interface DocumentViewerProps {
@@ -88,15 +88,6 @@ export function DocumentViewer({ document, open, onClose }: DocumentViewerProps)
             >
               <Download className="h-4 w-4 mr-1" />
               PDF
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onClose}
-              className="h-10 w-10"
-              data-testid="button-close-viewer"
-            >
-              <X className="h-6 w-6" />
             </Button>
           </div>
         </div>
