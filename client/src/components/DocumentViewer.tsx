@@ -65,9 +65,9 @@ export function DocumentViewer({ document, open, onClose }: DocumentViewerProps)
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl w-full h-[90vh] flex flex-col p-0 gap-0">
         {/* Header */}
-        <div className="px-6 py-4 border-b flex items-center justify-between gap-4">
-          <div className="flex-1 min-w-0">
-            <h2 className="text-xl font-semibold truncate">{document.title}</h2>
+        <div className="px-4 sm:px-6 py-4 border-b flex items-center justify-between gap-2 sm:gap-4">
+          <div className="flex-1 min-w-0 pr-10 sm:pr-0">
+            <h2 className="text-lg sm:text-xl font-semibold truncate">{document.title}</h2>
             <div className="flex items-center gap-3 text-sm text-muted-foreground mt-1 flex-wrap">
               <span>{document.category}</span>
               {totalPages > 1 && (
@@ -85,9 +85,10 @@ export function DocumentViewer({ document, open, onClose }: DocumentViewerProps)
               size="sm"
               onClick={handleDownloadPDF}
               data-testid="button-download-pdf"
+              className="h-8"
             >
-              <Download className="h-4 w-4 mr-1" />
-              PDF
+              <Download className="h-4 w-4 sm:mr-1" />
+              <span className="hidden sm:inline">PDF</span>
             </Button>
           </div>
         </div>
