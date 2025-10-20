@@ -66,7 +66,7 @@ export function DocumentViewer({ document, open, onClose }: DocumentViewerProps)
       <DialogContent className="max-w-4xl w-full h-[90vh] flex flex-col p-0 gap-0">
         {/* Header */}
         <div className="px-4 sm:px-6 py-4 border-b flex items-center justify-between gap-2 sm:gap-4">
-          <div className="flex-1 min-w-0 pr-16 sm:pr-0">
+          <div className="flex-1 min-w-0 pr-8 sm:pr-0">
             <h2 className="text-lg sm:text-xl font-semibold truncate">{document.title}</h2>
             <div className="flex items-center gap-3 text-sm text-muted-foreground mt-1 flex-wrap">
               <span>{document.category}</span>
@@ -79,7 +79,8 @@ export function DocumentViewer({ document, open, onClose }: DocumentViewerProps)
             </div>
           </div>
           
-          <div className="flex items-center gap-2 mr-6 sm:mr-0">
+          {/* Download button only on desktop */}
+          <div className="hidden sm:flex items-center gap-2">
             <Button
               variant="outline"
               size="sm"
@@ -88,7 +89,7 @@ export function DocumentViewer({ document, open, onClose }: DocumentViewerProps)
               className="h-8"
             >
               <Download className="h-4 w-4 sm:mr-1" />
-              <span className="hidden sm:inline">PDF</span>
+              <span>PDF</span>
             </Button>
           </div>
         </div>
@@ -138,6 +139,20 @@ export function DocumentViewer({ document, open, onClose }: DocumentViewerProps)
               </Button>
             </>
           )}
+
+          {/* Floating download button for mobile */}
+          <div className="sm:hidden absolute bottom-6 left-1/2 -translate-x-1/2">
+            <Button
+              variant="default"
+              size="lg"
+              onClick={handleDownloadPDF}
+              data-testid="button-download-pdf-mobile"
+              className="shadow-lg"
+            >
+              <Download className="h-5 w-5 mr-2" />
+              PDF herunterladen
+            </Button>
+          </div>
         </div>
 
         {/* Page thumbnails for multi-page documents (only for images, not PDFs) */}
