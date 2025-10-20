@@ -50,8 +50,8 @@ export function CategoryFilter({
       </div>
 
       {/* Mobile: Horizontal scrollable chips */}
-      <div className="sm:hidden w-full overflow-x-auto pb-2 -mx-4 px-4">
-        <div className="flex gap-2 min-w-min">
+      <div className="sm:hidden w-full overflow-x-auto pb-2">
+        <div className="flex gap-2 min-w-min px-1">
           {categories.map((category) => {
             const isSelected = selectedCategories.includes(category);
             return (
