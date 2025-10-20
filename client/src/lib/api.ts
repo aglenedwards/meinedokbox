@@ -36,12 +36,15 @@ export async function uploadDocument(files: File | File[]): Promise<Document> {
   return await response.json();
 }
 
+export type SortOption = "date-desc" | "date-asc" | "title-asc" | "title-desc" | "category-asc";
+
 /**
- * Get all documents for the current user with optional search and category filters
+ * Get all documents for the current user with optional search, category filters, and sorting
  */
 export async function getDocuments(
   searchQuery?: string,
-  categories?: string[]
+  categories?: string[],
+  sortBy?: SortOption
 ): Promise<Document[]> {
   const params = new URLSearchParams();
   
@@ -50,8 +53,12 @@ export async function getDocuments(
   }
   
   if (categories && categories.length > 0 && !categories.includes("Alle")) {
-    // Backend expects single category for now, use first selected
-    params.append("category", categories[0]);
+    // Backend expects comma-separated categories
+    params.append("categories", categories.join(","));
+  }
+
+  if (sortBy) {
+    params.append("sort", sortBy);
   }
 
   const queryString = params.toString();
@@ -78,10 +85,49 @@ export async function updateDocumentCategory(id: string, category: string): Prom
 }
 
 /**
- * Delete a document by ID
+ * Delete a document by ID (soft delete - moves to trash)
  */
 export async function deleteDocument(id: string): Promise<void> {
   await apiRequest("DELETE", `/api/documents/${id}`);
+}
+
+/**
+ * Bulk delete multiple documents (soft delete - moves to trash)
+ */
+export async function bulkDeleteDocuments(ids: string[]): Promise<{ count: number }> {
+  const response = await apiRequest("POST", "/api/documents/bulk-delete", { ids });
+  return await response.json();
+}
+
+/**
+ * Get trashed documents
+ */
+export async function getTrashedDocuments(): Promise<Document[]> {
+  const response = await fetch("/api/trash", {
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    const text = (await response.text()) || response.statusText;
+    throw new Error(`${response.status}: ${text}`);
+  }
+
+  return await response.json();
+}
+
+/**
+ * Restore a document from trash
+ */
+export async function restoreDocument(id: string): Promise<Document> {
+  const response = await apiRequest("POST", `/api/documents/${id}/restore`);
+  return await response.json();
+}
+
+/**
+ * Permanently delete a document from trash
+ */
+export async function permanentlyDeleteDocument(id: string): Promise<void> {
+  await apiRequest("DELETE", `/api/trash/${id}`);
 }
 
 /**
