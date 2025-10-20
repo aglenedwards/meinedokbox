@@ -93,10 +93,13 @@ export class ObjectStorageService {
       const aclPolicy = await getObjectAclPolicy(file);
       const isPublic = aclPolicy?.visibility === "public";
       
+      console.log('Downloading object:', file.name, 'Content-Type:', metadata.contentType, 'Size:', metadata.size);
+      
       res.set({
         "Content-Type": metadata.contentType || "application/octet-stream",
         "Content-Length": metadata.size,
         "Cache-Control": `${isPublic ? "public" : "private"}, max-age=${cacheTtlSec}`,
+        "Accept-Ranges": "bytes",
       });
 
       const stream = file.createReadStream();
@@ -105,6 +108,9 @@ export class ObjectStorageService {
         if (!res.headersSent) {
           res.status(500).json({ error: "Error streaming file" });
         }
+      });
+      stream.on("end", () => {
+        console.log("Stream completed for:", file.name);
       });
       stream.pipe(res);
     } catch (error) {
