@@ -56,6 +56,26 @@ export const documents = pgTable("documents", {
   confidence: real("confidence").notNull(),
   uploadedAt: timestamp("uploaded_at").notNull().default(sql`now()`),
   deletedAt: timestamp("deleted_at"),
+  // Phase 2: Smart metadata extraction
+  extractedDate: timestamp("extracted_date"),
+  amount: real("amount"),
+  sender: text("sender"),
+});
+
+// Tags system for document organization
+export const tags = pgTable("tags", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
+  name: text("name").notNull(),
+  color: varchar("color", { length: 7 }).notNull().default("#3b82f6"),
+  createdAt: timestamp("created_at").notNull().default(sql`now()`),
+});
+
+// Junction table for many-to-many relationship between documents and tags
+export const documentTags = pgTable("document_tags", {
+  documentId: varchar("document_id").notNull(),
+  tagId: varchar("tag_id").notNull(),
+  createdAt: timestamp("created_at").notNull().default(sql`now()`),
 });
 
 export const insertDocumentSchema = createInsertSchema(documents).omit({
@@ -63,7 +83,20 @@ export const insertDocumentSchema = createInsertSchema(documents).omit({
   uploadedAt: true,
 });
 
+export const insertTagSchema = createInsertSchema(tags).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertDocumentTagSchema = createInsertSchema(documentTags).omit({
+  createdAt: true,
+});
+
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
 export type InsertDocument = z.infer<typeof insertDocumentSchema>;
 export type Document = typeof documents.$inferSelect;
+export type InsertTag = z.infer<typeof insertTagSchema>;
+export type Tag = typeof tags.$inferSelect;
+export type InsertDocumentTag = z.infer<typeof insertDocumentTagSchema>;
+export type DocumentTag = typeof documentTags.$inferSelect;
