@@ -7,6 +7,12 @@ PaperEase is a web and mobile application that digitizes paper documents using s
 **Core Purpose:** Minimize friction in document capture and retrieval; maximize clarity in organization through AI-assisted categorization.
 
 **Recent Updates (Oct 2025):**
+- **Phase 3 Mobile Excellence Completed:**
+  - ✅ Kamera-Multi-Shot-Modus: Kontinuierliche Dokumentenaufnahme mit der Handykamera
+  - ✅ Auto-Bildoptimierung: Automatische Schärfung, Helligkeit- und Kontrast-Anpassung
+  - ✅ PWA-Support: Vollständig installierbare Progressive Web App
+  - ✅ Offline-Fähigkeit: Service Worker mit intelligenten Caching-Strategien
+  - ✅ Installations- und Update-Prompts: Benutzerfreundliche PWA-Verwaltung
 - Added document viewer with full-screen display for images and PDFs
 - Improved AI categorization to correctly classify Abrechnungen/Endabrechnungen as "Rechnung"
 - Enhanced document cards with clickable preview functionality
