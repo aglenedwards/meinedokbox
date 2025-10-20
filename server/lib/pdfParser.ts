@@ -1,8 +1,8 @@
 export async function extractTextFromPdf(buffer: Buffer): Promise<string> {
   try {
-    // Dynamic import for CommonJS module compatibility
-    const pdfParse = (await import('pdf-parse')).default;
-    const data = await pdfParse(buffer);
+    // Dynamic import for ESM compatibility
+    const { PDFParse } = await import('pdf-parse');
+    const data = await PDFParse(buffer);
     return data.text;
   } catch (error) {
     console.error('Error extracting text from PDF:', error);
