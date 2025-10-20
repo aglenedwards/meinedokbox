@@ -10,25 +10,30 @@ export interface DocumentAnalysisResult {
   confidence: number;
 }
 
+export interface ImageWithMimeType {
+  base64: string;
+  mimeType: string;
+}
+
 export async function analyzeDocument(
-  base64Images: string | string[],
-  mimeType: string = 'image/jpeg'
+  images: ImageWithMimeType[]
 ): Promise<DocumentAnalysisResult> {
   try {
-    const images = Array.isArray(base64Images) ? base64Images : [base64Images];
-    
-    console.log(`Analyzing document with ${images.length} page(s), MIME type: ${mimeType}`);
+    console.log(`Analyzing document with ${images.length} page(s)`);
     
     // Build content with all images for multi-page documents
-    const imageContents = images.map(base64Image => ({
-      type: "image_url" as const,
-      image_url: {
-        url: `data:${mimeType};base64,${base64Image}`
-      }
-    }));
+    const imageContents = images.map(img => {
+      console.log(`  - Adding page with MIME type: ${img.mimeType}`);
+      return {
+        type: "image_url" as const,
+        image_url: {
+          url: `data:${img.mimeType};base64,${img.base64}`
+        }
+      };
+    });
 
     const response = await openai.chat.completions.create({
-      model: "gpt-5",
+      model: "gpt-4o",
       messages: [
         {
           role: "system",

@@ -55,16 +55,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       let fileBuffer: Buffer;
       let fileName: string;
-      let base64Images: string[];
-      let mimeType: string;
 
       // For multiple files, send each image separately to OpenAI for analysis
+      // Then combine them into a PDF for storage
       if (files.length > 1) {
         console.log(`Processing ${files.length} files as multi-page document`);
         
-        // Convert each image to base64 for OpenAI analysis
-        base64Images = files.map(file => file.buffer.toString('base64'));
-        mimeType = files[0].mimetype; // Use first file's MIME type as reference
+        // Prepare images for OpenAI analysis (each with its own MIME type)
+        const imagesForAnalysis = files.map(file => ({
+          base64: file.buffer.toString('base64'),
+          mimeType: file.mimetype,
+        }));
+        
+        // Analyze document with OpenAI (send all pages as separate images)
+        const analysisResult = await analyzeDocument(imagesForAnalysis);
         
         // Combine them into a PDF for storage
         const pages: PageBuffer[] = files.map(file => ({
@@ -73,54 +77,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }));
         fileBuffer = await combineImagesToPDF(pages);
         fileName = 'combined-document.pdf';
+        
+        // Continue with upload
+        await processUpload(userId, fileBuffer, fileName, analysisResult, res);
       } else {
         // Single file upload
         fileBuffer = files[0].buffer;
         fileName = files[0].originalname;
-        base64Images = [fileBuffer.toString('base64')];
-        mimeType = files[0].mimetype;
+        
+        const imagesForAnalysis = [{
+          base64: fileBuffer.toString('base64'),
+          mimeType: files[0].mimetype,
+        }];
+        
+        // Analyze document with OpenAI
+        const analysisResult = await analyzeDocument(imagesForAnalysis);
+        
+        // Continue with upload
+        await processUpload(userId, fileBuffer, fileName, analysisResult, res);
       }
-
-      // Analyze document with OpenAI (send all pages)
-      const analysisResult = await analyzeDocument(base64Images, mimeType);
-
-      // Upload file to object storage
-      const { filePath, thumbnailPath } = await uploadFile(
-        fileBuffer,
-        fileName,
-        userId
-      );
-
-      // Set ACL policy on uploaded file (private, owner = userId)
-      const objectStorageService = new ObjectStorageService();
-      await objectStorageService.trySetObjectEntityAclPolicy(filePath, {
-        owner: userId,
-        visibility: "private",
-      });
-
-      if (thumbnailPath) {
-        await objectStorageService.trySetObjectEntityAclPolicy(thumbnailPath, {
-          owner: userId,
-          visibility: "private",
-        });
-      }
-
-      // Create document record in database
-      const documentData = {
-        userId,
-        title: analysisResult.title,
-        category: analysisResult.category,
-        extractedText: analysisResult.extractedText,
-        fileUrl: filePath,
-        thumbnailUrl: thumbnailPath,
-        confidence: analysisResult.confidence,
-      };
-
-      // Validate with Zod schema
-      const validatedData = insertDocumentSchema.parse(documentData);
-      const document = await storage.createDocument(validatedData);
-
-      res.json(document);
     } catch (error) {
       console.error("Error uploading document:", error);
       res.status(500).json({ 
@@ -129,6 +104,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
+
+  async function processUpload(
+    userId: string,
+    fileBuffer: Buffer,
+    fileName: string,
+    analysisResult: any,
+    res: any
+  ) {
+    // Upload file to object storage
+    const { filePath, thumbnailPath } = await uploadFile(
+      fileBuffer,
+      fileName,
+      userId
+    );
+
+    // Set ACL policy on uploaded file (private, owner = userId)
+    const objectStorageService = new ObjectStorageService();
+    await objectStorageService.trySetObjectEntityAclPolicy(filePath, {
+      owner: userId,
+      visibility: "private",
+    });
+
+    if (thumbnailPath) {
+      await objectStorageService.trySetObjectEntityAclPolicy(thumbnailPath, {
+        owner: userId,
+        visibility: "private",
+      });
+    }
+
+    // Create document record in database
+    const documentData = {
+      userId,
+      title: analysisResult.title,
+      category: analysisResult.category,
+      extractedText: analysisResult.extractedText,
+      fileUrl: filePath,
+      thumbnailUrl: thumbnailPath,
+      confidence: analysisResult.confidence,
+    };
+
+    // Validate with Zod schema
+    const validatedData = insertDocumentSchema.parse(documentData);
+    const document = await storage.createDocument(validatedData);
+
+    res.json(document);
+  }
 
   // Get all documents for authenticated user with optional search/filter
   app.get('/api/documents', isAuthenticated, async (req: any, res) => {
