@@ -171,7 +171,7 @@ export default function Dashboard() {
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-3 md:py-4">
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-4">
             <div className="flex items-center justify-between md:justify-start gap-3">
-              <img src={logoImage} alt="MeineDokBox" className="h-10 md:h-14 dark:invert dark:brightness-0 dark:contrast-200" data-testid="img-logo" />
+              <img src={logoImage} alt="MeineDokBox" className="h-12 md:h-16 dark:invert dark:brightness-0 dark:contrast-200" data-testid="img-logo" />
               <div className="flex items-center gap-2 md:hidden">
                 <ThemeToggle />
                 <Button 
