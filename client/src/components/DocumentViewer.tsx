@@ -27,21 +27,22 @@ export function DocumentViewer({ document, open, onClose }: DocumentViewerProps)
   const totalPages = pageUrls.length;
   const currentPageUrl = pageUrls[currentPage];
 
-  const handleDownload = (pageIndex?: number) => {
-    const urlToDownload = pageIndex !== undefined ? pageUrls[pageIndex] : currentPageUrl;
-    const extension = urlToDownload.split('.').pop()?.toLowerCase() || 'jpg';
+  const handleDownloadPDF = () => {
     const link = window.document.createElement('a');
-    link.href = urlToDownload;
-    link.download = totalPages > 1 && pageIndex !== undefined
-      ? `${document.title}_Seite_${pageIndex + 1}.${extension}`
-      : `${document.title}.${extension}`;
+    link.href = `/api/documents/${document.id}/download-pdf`;
+    link.download = `${document.title}.pdf`;
     link.click();
   };
 
-  const handleDownloadAll = () => {
-    pageUrls.forEach((url, index) => {
-      setTimeout(() => handleDownload(index), index * 500);
-    });
+  const handleDownloadPage = (pageIndex: number) => {
+    const urlToDownload = pageUrls[pageIndex];
+    const extension = urlToDownload.split('.').pop()?.toLowerCase() || 'jpg';
+    const link = window.document.createElement('a');
+    link.href = urlToDownload;
+    link.download = totalPages > 1
+      ? `${document.title}_Seite_${pageIndex + 1}.${extension}`
+      : `${document.title}.${extension}`;
+    link.click();
   };
 
   const goToNextPage = () => {
@@ -75,25 +76,14 @@ export function DocumentViewer({ document, open, onClose }: DocumentViewerProps)
           </div>
           
           <div className="flex items-center gap-2">
-            {totalPages > 1 && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleDownloadAll}
-                data-testid="button-download-all"
-              >
-                <Download className="h-4 w-4 mr-1" />
-                Alle
-              </Button>
-            )}
             <Button
               variant="outline"
               size="sm"
-              onClick={() => handleDownload()}
-              data-testid="button-download-current"
+              onClick={handleDownloadPDF}
+              data-testid="button-download-pdf"
             >
               <Download className="h-4 w-4 mr-1" />
-              {totalPages > 1 ? 'Diese' : 'Download'}
+              PDF
             </Button>
             <Button
               variant="ghost"

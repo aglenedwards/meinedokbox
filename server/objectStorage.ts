@@ -87,6 +87,16 @@ export class ObjectStorageService {
     return null;
   }
 
+  async getObjectBuffer(file: File): Promise<Buffer> {
+    try {
+      const [buffer] = await file.download();
+      return buffer;
+    } catch (error) {
+      console.error("Error downloading file buffer:", error);
+      throw new Error("Failed to download file buffer");
+    }
+  }
+
   async downloadObject(file: File, res: Response, cacheTtlSec: number = 3600) {
     try {
       const [metadata] = await file.getMetadata();

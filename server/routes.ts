@@ -173,6 +173,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Download document as PDF (combines all pages)
+  app.get('/api/documents/:id/download-pdf', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { id } = req.params;
+
+      const document = await storage.getDocument(id);
+
+      if (!document) {
+        return res.status(404).json({ message: "Document not found" });
+      }
+
+      if (document.userId !== userId) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const objectStorageService = new ObjectStorageService();
+      const pageUrls = document.pageUrls && document.pageUrls.length > 0 
+        ? document.pageUrls 
+        : document.fileUrl 
+          ? [document.fileUrl] 
+          : [];
+
+      if (pageUrls.length === 0) {
+        return res.status(400).json({ message: "No pages found" });
+      }
+
+      // Download all pages
+      const pages: PageBuffer[] = [];
+      for (const pageUrl of pageUrls) {
+        const objectFile = await objectStorageService.getObjectEntityFile(pageUrl);
+        const buffer = await objectStorageService.getObjectBuffer(objectFile);
+        
+        // Determine MIME type from file extension or object metadata
+        const extension = pageUrl.split('.').pop()?.toLowerCase();
+        let mimeType = 'image/jpeg';
+        if (extension === 'png') mimeType = 'image/png';
+        else if (extension === 'webp') mimeType = 'image/webp';
+        else if (extension === 'pdf') mimeType = 'application/pdf';
+
+        pages.push({ buffer, mimeType });
+      }
+
+      // Combine to PDF
+      const pdfBuffer = await combineImagesToPDF(pages);
+
+      // Send PDF
+      const fileName = `${document.title}.pdf`;
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+      res.send(pdfBuffer);
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      res.status(500).json({ message: "Failed to generate PDF" });
+    }
+  });
+
   // Delete document
   app.delete('/api/documents/:id', isAuthenticated, async (req: any, res) => {
     try {
