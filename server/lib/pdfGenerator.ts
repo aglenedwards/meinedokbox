@@ -19,12 +19,19 @@ export async function combineImagesToPDF(pages: PageBuffer[]): Promise<Buffer> {
       let embedFunction;
 
       // Convert all images to JPEG for consistency
+      // IMPORTANT: Apply auto-rotation based on EXIF data to preserve orientation
       if (page.mimeType === 'image/png' || page.mimeType === 'image/webp') {
         imageBuffer = await sharp(page.buffer)
+          .rotate() // Auto-rotate based on EXIF orientation
           .jpeg({ quality: 90 })
           .toBuffer();
         embedFunction = pdfDoc.embedJpg.bind(pdfDoc);
       } else if (page.mimeType === 'image/jpeg') {
+        // Also rotate JPEG images based on EXIF
+        imageBuffer = await sharp(page.buffer)
+          .rotate() // Auto-rotate based on EXIF orientation
+          .jpeg({ quality: 90 })
+          .toBuffer();
         embedFunction = pdfDoc.embedJpg.bind(pdfDoc);
       } else if (page.mimeType === 'application/pdf') {
         // If it's already a PDF, merge it
