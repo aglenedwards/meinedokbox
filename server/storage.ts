@@ -3,6 +3,15 @@ import { db } from "./db";
 import { users, documents } from "@shared/schema";
 import { eq, and, or, like, desc } from "drizzle-orm";
 
+export interface StorageStats {
+  usedBytes: number;
+  usedMB: number;
+  usedGB: number;
+  totalGB: number;
+  percentageUsed: number;
+  documentCount: number;
+}
+
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
@@ -13,6 +22,7 @@ export interface IStorage {
   searchDocuments(userId: string, query?: string, category?: string): Promise<Document[]>;
   updateDocumentCategory(id: string, userId: string, category: string): Promise<Document | undefined>;
   deleteDocument(id: string, userId: string): Promise<boolean>;
+  getUserStorageStats(userId: string): Promise<StorageStats>;
 }
 
 export class DbStorage implements IStorage {
@@ -92,6 +102,61 @@ export class DbStorage implements IStorage {
       )
     );
     return result.rowCount !== null && result.rowCount > 0;
+  }
+
+  async getUserStorageStats(userId: string): Promise<StorageStats> {
+    const { ObjectStorageService } = await import("./objectStorage");
+    const objectStorage = new ObjectStorageService();
+    
+    // Get all user's documents
+    const userDocuments = await this.getDocumentsByUserId(userId);
+    
+    let totalBytes = 0;
+    
+    // Calculate total size from all document pages
+    for (const doc of userDocuments) {
+      const pageUrls = doc.pageUrls && doc.pageUrls.length > 0 
+        ? doc.pageUrls 
+        : doc.fileUrl 
+          ? [doc.fileUrl] 
+          : [];
+      
+      for (const pageUrl of pageUrls) {
+        try {
+          const objectFile = await objectStorage.getObjectEntityFile(pageUrl);
+          const [metadata] = await objectFile.getMetadata();
+          totalBytes += parseInt(metadata.size as string) || 0;
+        } catch (error) {
+          console.error(`Failed to get stats for ${pageUrl}:`, error);
+          // Continue with other files if one fails
+        }
+      }
+      
+      // Also count thumbnails if they exist
+      if (doc.thumbnailUrl) {
+        try {
+          const objectFile = await objectStorage.getObjectEntityFile(doc.thumbnailUrl);
+          const [metadata] = await objectFile.getMetadata();
+          totalBytes += parseInt(metadata.size as string) || 0;
+        } catch (error) {
+          console.error(`Failed to get stats for thumbnail ${doc.thumbnailUrl}:`, error);
+        }
+      }
+    }
+    
+    const usedMB = totalBytes / (1024 * 1024);
+    const usedGB = totalBytes / (1024 * 1024 * 1024);
+    const totalGB = 5; // Free tier: 5 GB
+    const percentageUsed = (usedGB / totalGB) * 100;
+    
+    return {
+      usedBytes: totalBytes,
+      usedMB: Math.round(usedMB * 100) / 100,
+      usedGB: Math.round(usedGB * 100) / 100,
+      totalGB,
+      percentageUsed: Math.round(percentageUsed * 10) / 10,
+      documentCount: userDocuments.length,
+    };
   }
 }
 
