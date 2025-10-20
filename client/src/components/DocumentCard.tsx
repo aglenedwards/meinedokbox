@@ -6,6 +6,9 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
@@ -17,6 +20,7 @@ interface DocumentCardProps {
   thumbnailUrl?: string;
   onView?: () => void;
   onDelete?: () => void;
+  onCategoryChange?: (category: string) => void;
 }
 
 const categoryConfig: Record<string, { icon: typeof Euro; color: string; bgColor: string }> = {
@@ -55,6 +59,8 @@ const categoryColors: Record<string, string> = {
   'Sonstiges': 'bg-muted text-muted-foreground border-border',
 };
 
+const allCategories = ['Rechnung', 'Vertrag', 'Versicherung', 'Brief', 'Sonstiges'];
+
 export function DocumentCard({
   id,
   title,
@@ -63,6 +69,7 @@ export function DocumentCard({
   thumbnailUrl,
   onView,
   onDelete,
+  onCategoryChange,
 }: DocumentCardProps) {
   const config = categoryConfig[category] || categoryConfig['Sonstiges'];
   const CategoryIcon = config.icon;
@@ -100,6 +107,29 @@ export function DocumentCard({
                   <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onView?.(); }}>
                     Ansehen
                   </DropdownMenuItem>
+                  <DropdownMenuSub>
+                    <DropdownMenuSubTrigger onClick={(e) => e.stopPropagation()}>
+                      Kategorie ändern
+                    </DropdownMenuSubTrigger>
+                    <DropdownMenuSubContent>
+                      {allCategories.map((cat) => (
+                        <DropdownMenuItem
+                          key={cat}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (cat !== category) {
+                              onCategoryChange?.(cat);
+                            }
+                          }}
+                          disabled={cat === category}
+                          data-testid={`menuitem-category-${cat}`}
+                        >
+                          {cat}
+                          {cat === category && " ✓"}
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuSubContent>
+                  </DropdownMenuSub>
                   <DropdownMenuItem 
                     className="text-destructive" 
                     onClick={(e) => { e.stopPropagation(); onDelete?.(); }}
