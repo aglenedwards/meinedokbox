@@ -13,8 +13,10 @@ import { insertDocumentSchema, DOCUMENT_CATEGORIES } from "@shared/schema";
 import { combineImagesToPDF, type PageBuffer } from "./lib/pdfGenerator";
 import { parseMailgunWebhook, isSupportedAttachment, isEmailWhitelisted, verifyMailgunWebhook, extractEmailAddress } from "./lib/emailInbound";
 import { db } from "./db";
-import { users, emailLogs } from "@shared/schema";
-import { eq } from "drizzle-orm";
+import { users, emailLogs, invites, accountMembers, accounts, documents } from "@shared/schema";
+import { eq, and } from "drizzle-orm";
+import { AccountService } from "./lib/accountService";
+import crypto from "crypto";
 
 // Configure multer for file uploads (memory storage for processing)
 const upload = multer({
@@ -832,6 +834,326 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: 'Failed to process email',
         error: error instanceof Error ? error.message : 'Unknown error'
       });
+    }
+  });
+
+  // ============================================
+  // ACCOUNT MANAGEMENT ROUTES
+  // ============================================
+
+  const accountService = new AccountService();
+
+  // Get account information with seats and members
+  app.get('/api/account', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // Get user's account
+      const accountId = await accountService.getAccountByUserId(userId);
+      
+      if (!accountId) {
+        return res.status(404).json({ message: "Account not found" });
+      }
+
+      const accountDetails = await accountService.getAccountDetails(accountId);
+      
+      if (!accountDetails) {
+        return res.status(404).json({ message: "Account not found" });
+      }
+
+      // Enrich members with user data
+      const membersWithUserData = await Promise.all(
+        accountDetails.members.map(async (member) => {
+          const user = await storage.getUser(member.userId);
+          return {
+            ...member,
+            email: user?.email,
+            firstName: user?.firstName,
+            lastName: user?.lastName,
+            profileImageUrl: user?.profileImageUrl,
+          };
+        })
+      );
+
+      res.json({
+        ...accountDetails,
+        members: membersWithUserData,
+      });
+    } catch (error) {
+      console.error("Error fetching account:", error);
+      res.status(500).json({ message: "Failed to fetch account" });
+    }
+  });
+
+  // Create invitation
+  app.post('/api/account/invites', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { email } = req.body;
+
+      if (!email || !email.includes('@')) {
+        return res.status(400).json({ message: "Gültige E-Mail-Adresse erforderlich" });
+      }
+
+      // Get user's account
+      const accountId = await accountService.getAccountByUserId(userId);
+      
+      if (!accountId) {
+        return res.status(404).json({ message: "Account not found" });
+      }
+
+      // Check if user is owner
+      const isOwner = await accountService.isAccountOwner(userId, accountId);
+      
+      if (!isOwner) {
+        return res.status(403).json({ message: "Nur der Account-Inhaber kann Einladungen versenden" });
+      }
+
+      // Check seats availability
+      const canInvite = await accountService.canInviteMore(accountId);
+      
+      if (!canInvite) {
+        return res.status(400).json({ 
+          message: "Keine freien Plätze mehr verfügbar. Bitte upgraden Sie Ihren Plan." 
+        });
+      }
+
+      // Check if user already exists
+      const existingUser = await db.query.users.findFirst({
+        where: eq(users.email, email),
+      });
+
+      if (existingUser) {
+        // Check if already member
+        const existingMember = await db.query.accountMembers.findFirst({
+          where: and(
+            eq(accountMembers.accountId, accountId),
+            eq(accountMembers.userId, existingUser.id)
+          ),
+        });
+
+        if (existingMember) {
+          return res.status(400).json({ message: "Dieser Nutzer ist bereits Mitglied" });
+        }
+      }
+
+      // Check if already invited
+      const existingInvite = await db.query.invites.findFirst({
+        where: and(
+          eq(invites.accountId, accountId),
+          eq(invites.email, email),
+          eq(invites.status, "pending")
+        ),
+      });
+
+      if (existingInvite) {
+        return res.status(400).json({ message: "Einladung bereits versendet" });
+      }
+
+      // Create invite token
+      const token = crypto.randomBytes(32).toString('hex');
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + 7); // 7 days expiry
+
+      // Insert invite
+      const [invite] = await db.insert(invites).values({
+        accountId,
+        email,
+        token,
+        invitedBy: userId,
+        expiresAt,
+        role: "member",
+        canUpload: true,
+      }).returning();
+
+      // Send invitation email
+      const { sendInvitationEmail } = await import('./lib/emailService');
+      const inviter = await storage.getUser(userId);
+      await sendInvitationEmail(email, token, inviter?.email || 'jemand');
+
+      res.json({ 
+        message: "Einladung erfolgreich versendet",
+        invite: {
+          id: invite.id,
+          email: invite.email,
+          status: invite.status,
+          createdAt: invite.createdAt,
+        }
+      });
+    } catch (error) {
+      console.error("Error creating invitation:", error);
+      res.status(500).json({ message: "Fehler beim Erstellen der Einladung" });
+    }
+  });
+
+  // Accept invitation
+  app.post('/api/account/invites/:token/accept', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { token } = req.params;
+
+      // Find invite
+      const invite = await db.query.invites.findFirst({
+        where: and(
+          eq(invites.token, token),
+          eq(invites.status, "pending")
+        ),
+      });
+
+      if (!invite) {
+        return res.status(404).json({ message: "Einladung nicht gefunden oder bereits verwendet" });
+      }
+
+      // Check expiry
+      if (new Date() > invite.expiresAt) {
+        await db.update(invites)
+          .set({ status: "expired" })
+          .where(eq(invites.id, invite.id));
+        
+        return res.status(400).json({ message: "Einladung ist abgelaufen" });
+      }
+
+      // Verify email matches
+      const user = await storage.getUser(userId);
+      if (user?.email !== invite.email) {
+        return res.status(403).json({ 
+          message: "Diese Einladung ist für eine andere E-Mail-Adresse bestimmt" 
+        });
+      }
+
+      // Check if user already has an account (as owner)
+      const existingAccount = await db.query.accounts.findFirst({
+        where: eq(accounts.ownerUserId, userId),
+      });
+
+      if (existingAccount) {
+        return res.status(400).json({ 
+          message: "Sie sind bereits Owner eines Accounts. Sie können nicht als Member beitreten." 
+        });
+      }
+
+      // Check seats availability
+      const canInvite = await accountService.canInviteMore(invite.accountId);
+      
+      if (!canInvite) {
+        return res.status(400).json({ 
+          message: "Keine freien Plätze mehr verfügbar" 
+        });
+      }
+
+      // Add user as member
+      await db.insert(accountMembers).values({
+        accountId: invite.accountId,
+        userId,
+        role: invite.role,
+        canUpload: invite.canUpload,
+      });
+
+      // Mark invite as accepted
+      await db.update(invites)
+        .set({ 
+          status: "accepted",
+          acceptedAt: new Date()
+        })
+        .where(eq(invites.id, invite.id));
+
+      // Move user's documents to the account
+      await db.update(documents)
+        .set({ accountId: invite.accountId })
+        .where(eq(documents.userId, userId));
+
+      res.json({ 
+        message: "Einladung erfolgreich angenommen",
+        accountId: invite.accountId
+      });
+    } catch (error) {
+      console.error("Error accepting invitation:", error);
+      res.status(500).json({ message: "Fehler beim Annehmen der Einladung" });
+    }
+  });
+
+  // Get account members
+  app.get('/api/account/members', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // Get user's account
+      const accountId = await accountService.getAccountByUserId(userId);
+      
+      if (!accountId) {
+        return res.status(404).json({ message: "Account not found" });
+      }
+
+      const members = await db.query.accountMembers.findMany({
+        where: eq(accountMembers.accountId, accountId),
+      });
+
+      // Enrich with user data
+      const membersWithUserData = await Promise.all(
+        members.map(async (member) => {
+          const user = await storage.getUser(member.userId);
+          return {
+            ...member,
+            email: user?.email,
+            firstName: user?.firstName,
+            lastName: user?.lastName,
+            profileImageUrl: user?.profileImageUrl,
+          };
+        })
+      );
+
+      res.json(membersWithUserData);
+    } catch (error) {
+      console.error("Error fetching members:", error);
+      res.status(500).json({ message: "Failed to fetch members" });
+    }
+  });
+
+  // Remove member from account
+  app.delete('/api/account/members/:memberId', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { memberId } = req.params;
+
+      // Get user's account
+      const accountId = await accountService.getAccountByUserId(userId);
+      
+      if (!accountId) {
+        return res.status(404).json({ message: "Account not found" });
+      }
+
+      // Check if user is owner
+      const isOwner = await accountService.isAccountOwner(userId, accountId);
+      
+      if (!isOwner) {
+        return res.status(403).json({ message: "Nur der Account-Inhaber kann Mitglieder entfernen" });
+      }
+
+      // Find member
+      const member = await db.query.accountMembers.findFirst({
+        where: and(
+          eq(accountMembers.id, memberId),
+          eq(accountMembers.accountId, accountId)
+        ),
+      });
+
+      if (!member) {
+        return res.status(404).json({ message: "Mitglied nicht gefunden" });
+      }
+
+      // Cannot remove owner
+      if (member.role === "owner") {
+        return res.status(400).json({ message: "Der Account-Inhaber kann nicht entfernt werden" });
+      }
+
+      // Remove member
+      await db.delete(accountMembers)
+        .where(eq(accountMembers.id, memberId));
+
+      res.json({ message: "Mitglied erfolgreich entfernt" });
+    } catch (error) {
+      console.error("Error removing member:", error);
+      res.status(500).json({ message: "Fehler beim Entfernen des Mitglieds" });
     }
   });
 
