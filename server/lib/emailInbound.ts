@@ -1,6 +1,25 @@
 import crypto from 'crypto';
 
 /**
+ * Verifies Mailgun webhook signature to ensure request authenticity
+ */
+export function verifyMailgunWebhook(timestamp: string, token: string, signature: string): boolean {
+  const signingKey = process.env.MAILGUN_WEBHOOK_SIGNING_KEY;
+  
+  if (!signingKey) {
+    console.warn('[Mailgun] No signing key configured - skipping verification');
+    return true; // Allow in development without key
+  }
+
+  // Mailgun signature format: HMAC-SHA256(timestamp + token)
+  const hmac = crypto.createHmac('sha256', signingKey);
+  hmac.update(timestamp + token);
+  const calculatedSignature = hmac.digest('hex');
+
+  return calculatedSignature === signature;
+}
+
+/**
  * Generates a unique inbound email address for a user
  * Format: u_{short_user_id}_{random}@in.meinedokbox.de
  */

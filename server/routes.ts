@@ -11,7 +11,7 @@ import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { ObjectPermission } from "./objectAcl";
 import { insertDocumentSchema, DOCUMENT_CATEGORIES } from "@shared/schema";
 import { combineImagesToPDF, type PageBuffer } from "./lib/pdfGenerator";
-import { parseMailgunWebhook, isSupportedAttachment, isEmailWhitelisted } from "./lib/emailInbound";
+import { parseMailgunWebhook, isSupportedAttachment, isEmailWhitelisted, verifyMailgunWebhook } from "./lib/emailInbound";
 import { db } from "./db";
 import { users, emailLogs } from "@shared/schema";
 import { eq } from "drizzle-orm";
@@ -647,6 +647,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     console.log('[Email Webhook] Received email');
     
     try {
+      // Verify Mailgun webhook signature
+      const timestamp = req.body.timestamp || '';
+      const token = req.body.token || '';
+      const signature = req.body.signature || '';
+      
+      if (!verifyMailgunWebhook(timestamp, token, signature)) {
+        console.error('[Email Webhook] Invalid signature - rejecting request');
+        return res.status(403).json({ message: 'Invalid signature' });
+      }
+      
       const { from, subject, attachments } = parseMailgunWebhook(req.body, req.files);
       const recipient = req.body.recipient || '';
       
