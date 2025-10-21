@@ -55,6 +55,24 @@ export function getUserIdFromInboundEmail(email: string): string | null {
 }
 
 /**
+ * Extracts email address from formatted string
+ * Examples:
+ *   "John Doe <john@example.com>" -> "john@example.com"
+ *   "<john@example.com>" -> "john@example.com"
+ *   "john@example.com" -> "john@example.com"
+ */
+export function extractEmailAddress(formattedEmail: string): string {
+  // Match email inside angle brackets: <email@domain.com>
+  const bracketMatch = formattedEmail.match(/<([^>]+)>/);
+  if (bracketMatch) {
+    return bracketMatch[1].trim().toLowerCase();
+  }
+  
+  // If no angle brackets, return the whole string (trimmed and lowercased)
+  return formattedEmail.trim().toLowerCase();
+}
+
+/**
  * Validates if sender is in user's whitelist
  */
 export function isEmailWhitelisted(fromAddress: string, whitelist: string[] | null): boolean {

@@ -11,7 +11,7 @@ import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { ObjectPermission } from "./objectAcl";
 import { insertDocumentSchema, DOCUMENT_CATEGORIES } from "@shared/schema";
 import { combineImagesToPDF, type PageBuffer } from "./lib/pdfGenerator";
-import { parseMailgunWebhook, isSupportedAttachment, isEmailWhitelisted, verifyMailgunWebhook } from "./lib/emailInbound";
+import { parseMailgunWebhook, isSupportedAttachment, isEmailWhitelisted, verifyMailgunWebhook, extractEmailAddress } from "./lib/emailInbound";
 import { db } from "./db";
 import { users, emailLogs } from "@shared/schema";
 import { eq } from "drizzle-orm";
@@ -692,24 +692,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const { from, subject, attachments } = parseMailgunWebhook(req.body, req.files);
-      const recipient = req.body.recipient || '';
+      const rawRecipient = req.body.recipient || '';
       
-      console.log('[Email Webhook] From:', from, 'To:', recipient, 'Attachments:', attachments.length);
+      // Extract clean email addresses from formatted strings
+      const cleanFrom = extractEmailAddress(from);
+      const cleanRecipient = extractEmailAddress(rawRecipient);
       
-      // Find user by inbound email address
-      const [user] = await db.select().from(users).where(eq(users.inboundEmail, recipient)).limit(1);
+      console.log('[Email Webhook] From:', cleanFrom, '(raw:', from + ')');
+      console.log('[Email Webhook] To:', cleanRecipient, '(raw:', rawRecipient + ')');
+      console.log('[Email Webhook] Attachments:', attachments.length);
+      
+      // Find user by inbound email address (case-insensitive)
+      const [user] = await db.select().from(users).where(eq(users.inboundEmail, cleanRecipient)).limit(1);
       
       if (!user) {
-        console.log('[Email Webhook] Unknown recipient:', recipient);
+        console.log('[Email Webhook] Unknown recipient:', cleanRecipient);
         return res.status(200).json({ message: 'Unknown recipient' });
       }
       
       // Check whitelist
-      if (!isEmailWhitelisted(from, user.emailWhitelist || null)) {
-        console.log('[Email Webhook] Sender not whitelisted:', from);
+      if (!isEmailWhitelisted(cleanFrom, user.emailWhitelist || null)) {
+        console.log('[Email Webhook] Sender not whitelisted:', cleanFrom);
         await db.insert(emailLogs).values({
           userId: user.id,
-          fromAddress: from,
+          fromAddress: cleanFrom,
           subject: subject || '',
           attachmentCount: attachments.length,
           processedCount: 0,
@@ -722,7 +728,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create email log
       const [emailLog] = await db.insert(emailLogs).values({
         userId: user.id,
-        fromAddress: from,
+        fromAddress: cleanFrom,
         subject: subject || '',
         attachmentCount: attachments.length,
         processedCount: 0,
