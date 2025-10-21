@@ -78,32 +78,29 @@ export function DocumentViewer({ document, open, onClose }: DocumentViewerProps)
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl w-full h-[90vh] flex flex-col p-0 gap-0">
         {/* Header */}
-        <div className="px-4 sm:px-6 py-4 pr-12 border-b flex items-center justify-between gap-2 sm:gap-4">
-          <div className="flex-1 min-w-0">
-            <h2 className="text-lg sm:text-xl font-semibold truncate">{document.title}</h2>
-            <div className="flex items-center gap-3 text-sm text-muted-foreground mt-1 flex-wrap">
-              <span>{document.category}</span>
-              {totalPages > 1 && (
-                <>
-                  <span>•</span>
-                  <span>Seite {currentPage + 1} von {totalPages}</span>
-                </>
-              )}
-            </div>
-          </div>
-          
-          {/* Download button only on desktop */}
-          <div className="hidden sm:flex items-center gap-2">
+        <div className="px-4 sm:px-6 py-4 border-b">
+          <div className="flex items-start justify-between gap-4 mb-3">
+            <h2 className="text-lg sm:text-xl font-semibold truncate pr-8">{document.title}</h2>
+            {/* Download button only on desktop */}
             <Button
               variant="outline"
               size="sm"
               onClick={handleDownloadPDF}
               data-testid="button-download-pdf"
-              className="h-8"
+              className="hidden sm:flex h-8 flex-shrink-0"
             >
-              <Download className="h-4 w-4 sm:mr-1" />
+              <Download className="h-4 w-4 mr-1" />
               <span>PDF</span>
             </Button>
+          </div>
+          <div className="flex items-center gap-3 text-sm text-muted-foreground flex-wrap">
+            <span>{document.category}</span>
+            {totalPages > 1 && (
+              <>
+                <span>•</span>
+                <span>Seite {currentPage + 1} von {totalPages}</span>
+              </>
+            )}
           </div>
         </div>
 
