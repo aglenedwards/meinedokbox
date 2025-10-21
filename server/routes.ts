@@ -13,7 +13,7 @@ import { insertDocumentSchema, DOCUMENT_CATEGORIES } from "@shared/schema";
 import { combineImagesToPDF, type PageBuffer } from "./lib/pdfGenerator";
 import { parseMailgunWebhook, isSupportedAttachment, isEmailWhitelisted, verifyMailgunWebhook, extractEmailAddress } from "./lib/emailInbound";
 import { sendSharedAccessInvitation } from "./lib/sendEmail";
-import { checkDocumentLimit, checkEmailFeature, checkAndDowngradeTrial, getEffectiveUserId } from "./middleware/subscriptionLimits";
+import { checkDocumentLimit, checkEmailFeature, checkAndDowngradeTrial, getEffectiveUserId, isSharedUser } from "./middleware/subscriptionLimits";
 import { db } from "./db";
 import { users, emailLogs } from "@shared/schema";
 import { eq } from "drizzle-orm";
@@ -247,11 +247,97 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Folders API routes
+  
+  // Get all folders for user
+  app.get('/api/folders', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const effectiveUserId = await getEffectiveUserId(userId);
+      const folders = await storage.getUserFolders(effectiveUserId);
+      res.json(folders);
+    } catch (error) {
+      console.error("Error fetching folders:", error);
+      res.status(500).json({ message: "Fehler beim Laden der Ordner" });
+    }
+  });
+
+  // Create new folder
+  app.post('/api/folders', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const effectiveUserId = await getEffectiveUserId(userId);
+      const { name, isShared, icon } = req.body;
+
+      if (!name || typeof name !== 'string') {
+        return res.status(400).json({ message: "Ordnername erforderlich" });
+      }
+
+      const folder = await storage.createFolder({
+        userId: effectiveUserId,
+        name,
+        isShared: isShared !== undefined ? isShared : true,
+        icon: icon || "📂",
+      });
+
+      res.json(folder);
+    } catch (error) {
+      console.error("Error creating folder:", error);
+      res.status(500).json({ message: "Fehler beim Erstellen des Ordners" });
+    }
+  });
+
+  // Update folder
+  app.patch('/api/folders/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const effectiveUserId = await getEffectiveUserId(userId);
+      const { id } = req.params;
+      const { name, isShared, icon } = req.body;
+
+      const folder = await storage.updateFolder(id, effectiveUserId, {
+        name,
+        isShared,
+        icon,
+      });
+
+      if (!folder) {
+        return res.status(404).json({ message: "Ordner nicht gefunden" });
+      }
+
+      res.json(folder);
+    } catch (error) {
+      console.error("Error updating folder:", error);
+      res.status(500).json({ message: "Fehler beim Aktualisieren des Ordners" });
+    }
+  });
+
+  // Delete folder
+  app.delete('/api/folders/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const effectiveUserId = await getEffectiveUserId(userId);
+      const { id } = req.params;
+
+      const deleted = await storage.deleteFolder(id, effectiveUserId);
+
+      if (!deleted) {
+        return res.status(404).json({ message: "Ordner nicht gefunden" });
+      }
+
+      res.json({ message: "Ordner gelöscht" });
+    } catch (error) {
+      console.error("Error deleting folder:", error);
+      res.status(500).json({ message: "Fehler beim Löschen des Ordners" });
+    }
+  });
+
   // Document upload endpoint - supports single or multiple files
   app.post('/api/documents/upload', isAuthenticated, checkDocumentLimit, upload.array('files', 20), async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const files = req.files as Express.Multer.File[];
+      const folderId = req.body.folderId || null; // Optional folder assignment
 
       if (!files || files.length === 0) {
         return res.status(400).json({ message: "No files provided" });
@@ -260,7 +346,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const firstFile = files[0];
       const isPdf = firstFile.mimetype === 'application/pdf';
 
-      console.log(`Processing ${files.length} file(s) as ${isPdf ? 'PDF' : 'image'} document`);
+      console.log(`Processing ${files.length} file(s) as ${isPdf ? 'PDF' : 'image'} document${folderId ? ` into folder ${folderId}` : ''}`);
 
       let analysisResult;
 
@@ -298,7 +384,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Upload files (images as pages, PDF as single file)
-      await processMultiPageUpload(userId, files, analysisResult, res);
+      await processMultiPageUpload(userId, files, analysisResult, folderId, res);
     } catch (error) {
       console.error("Error uploading document:", error);
       res.status(500).json({ 
@@ -312,6 +398,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     userId: string,
     files: Express.Multer.File[],
     analysisResult: any,
+    folderId: string | null,
     res: any
   ) {
     const objectStorageService = new ObjectStorageService();
@@ -348,6 +435,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     // Create document record in database
     const documentData = {
       userId,
+      folderId, // Add folder assignment
       title: analysisResult.title,
       category: analysisResult.category,
       extractedText: analysisResult.extractedText,
@@ -390,6 +478,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Get effective user ID (supports shared access)
       const effectiveUserId = await getEffectiveUserId(userId);
+      
+      // Check if user is accessing shared documents (only show shared folders)
+      const isShared = await isSharedUser(userId);
 
       // Parse categories from query string (comma-separated)
       const categoryArray = categories 
@@ -400,7 +491,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         effectiveUserId,
         search as string | undefined,
         categoryArray,
-        sort as any
+        sort as any,
+        isShared // Only show shared folder documents if user is a shared user
       );
 
       res.json(documents);

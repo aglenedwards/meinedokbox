@@ -22,8 +22,8 @@ export interface IStorage {
   
   createDocument(document: InsertDocument): Promise<Document>;
   getDocument(id: string): Promise<Document | undefined>;
-  getDocumentsByUserId(userId: string, sortBy?: SortOption): Promise<Document[]>;
-  searchDocuments(userId: string, query?: string, categories?: string[], sortBy?: SortOption): Promise<Document[]>;
+  getDocumentsByUserId(userId: string, sortBy?: SortOption, includeOnlySharedFolders?: boolean): Promise<Document[]>;
+  searchDocuments(userId: string, query?: string, categories?: string[], sortBy?: SortOption, includeOnlySharedFolders?: boolean): Promise<Document[]>;
   updateDocumentCategory(id: string, userId: string, category: string): Promise<Document | undefined>;
   deleteDocument(id: string, userId: string): Promise<boolean>;
   bulkDeleteDocuments(ids: string[], userId: string): Promise<number>;
@@ -109,6 +109,13 @@ export class DbStorage implements IStorage {
         },
       })
       .returning();
+    
+    // Create default folders for new users
+    if (isNewUser) {
+      await this.createDefaultFolders(user.id);
+      console.log(`[UpsertUser] Created default folders for new user ${user.id}`);
+    }
+    
     return user;
   }
 
@@ -137,7 +144,44 @@ export class DbStorage implements IStorage {
     return document;
   }
 
-  async getDocumentsByUserId(userId: string, sortBy?: SortOption): Promise<Document[]> {
+  async getDocumentsByUserId(userId: string, sortBy?: SortOption, includeOnlySharedFolders?: boolean): Promise<Document[]> {
+    // If we need to filter by shared folders only
+    if (includeOnlySharedFolders) {
+      return db
+        .select({
+          id: documents.id,
+          userId: documents.userId,
+          folderId: documents.folderId,
+          title: documents.title,
+          category: documents.category,
+          extractedText: documents.extractedText,
+          fileUrl: documents.fileUrl,
+          pageUrls: documents.pageUrls,
+          thumbnailUrl: documents.thumbnailUrl,
+          mimeType: documents.mimeType,
+          confidence: documents.confidence,
+          uploadedAt: documents.uploadedAt,
+          deletedAt: documents.deletedAt,
+          extractedDate: documents.extractedDate,
+          amount: documents.amount,
+          sender: documents.sender,
+        })
+        .from(documents)
+        .leftJoin(folders, eq(documents.folderId, folders.id))
+        .where(
+          and(
+            eq(documents.userId, userId),
+            isNull(documents.deletedAt),
+            or(
+              isNull(documents.folderId), // Documents with no folder are visible
+              eq(folders.isShared, true) // Or documents in shared folders
+            )
+          )
+        )
+        .orderBy(this.getSortOrder(sortBy));
+    }
+
+    // Normal query without folder filtering
     return db
       .select()
       .from(documents)
@@ -150,11 +194,23 @@ export class DbStorage implements IStorage {
       .orderBy(this.getSortOrder(sortBy));
   }
 
-  async searchDocuments(userId: string, query?: string, categories?: string[], sortBy?: SortOption): Promise<Document[]> {
+  async searchDocuments(userId: string, query?: string, categories?: string[], sortBy?: SortOption, includeOnlySharedFolders?: boolean): Promise<Document[]> {
+    // Build base where clause
     let whereClause = and(
       eq(documents.userId, userId),
       isNull(documents.deletedAt)
     ) as any;
+
+    // Add folder filtering for shared users
+    if (includeOnlySharedFolders) {
+      whereClause = and(
+        whereClause,
+        or(
+          isNull(documents.folderId), // Documents with no folder
+          sql`EXISTS (SELECT 1 FROM ${folders} WHERE ${folders.id} = ${documents.folderId} AND ${folders.isShared} = true)` // Documents in shared folders
+        )
+      ) as any;
+    }
 
     if (categories && categories.length > 0) {
       whereClause = and(whereClause, inArray(documents.category, categories)) as any;
@@ -400,6 +456,7 @@ export class DbStorage implements IStorage {
       .select({
         id: documents.id,
         userId: documents.userId,
+        folderId: documents.folderId,
         title: documents.title,
         category: documents.category,
         extractedText: documents.extractedText,

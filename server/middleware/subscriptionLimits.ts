@@ -150,3 +150,17 @@ export async function getEffectiveUserId(userId: string): Promise<string> {
     return userId;
   }
 }
+
+/**
+ * Check if user is a shared user (accessing someone else's account)
+ * Returns true if the user is viewing shared documents from another account
+ */
+export async function isSharedUser(userId: string): Promise<boolean> {
+  try {
+    const accessibleAccounts = await storage.getAccessibleAccounts(userId);
+    return accessibleAccounts.sharedAccounts.length > 0;
+  } catch (error) {
+    console.error("Error checking if user is shared user:", error);
+    return false;
+  }
+}
