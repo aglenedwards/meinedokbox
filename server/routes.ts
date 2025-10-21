@@ -12,6 +12,7 @@ import { ObjectPermission } from "./objectAcl";
 import { insertDocumentSchema, DOCUMENT_CATEGORIES } from "@shared/schema";
 import { combineImagesToPDF, type PageBuffer } from "./lib/pdfGenerator";
 import { parseMailgunWebhook, isSupportedAttachment, isEmailWhitelisted, verifyMailgunWebhook, extractEmailAddress } from "./lib/emailInbound";
+import { checkDocumentLimit, checkEmailFeature, checkAndDowngradeTrial } from "./middleware/subscriptionLimits";
 import { db } from "./db";
 import { users, emailLogs } from "@shared/schema";
 import { eq } from "drizzle-orm";
@@ -47,6 +48,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
+      
+      // Check and auto-downgrade trial users if needed
+      await checkAndDowngradeTrial(userId);
+      
       const user = await storage.getUser(userId);
       res.json(user);
     } catch (error) {
@@ -77,7 +82,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Document upload endpoint - supports single or multiple files
-  app.post('/api/documents/upload', isAuthenticated, upload.array('files', 20), async (req: any, res) => {
+  app.post('/api/documents/upload', isAuthenticated, checkDocumentLimit, upload.array('files', 20), async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const files = req.files as Express.Multer.File[];
