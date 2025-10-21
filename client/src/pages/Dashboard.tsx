@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
-import { uploadDocument, getDocuments, deleteDocument, updateDocumentCategory, getStorageStats, bulkDeleteDocuments, exportDocumentsAsZip, getCurrentUser, type StorageStats, type SortOption } from "@/lib/api";
+import { uploadDocument, getDocuments, deleteDocument, updateDocumentCategory, getStorageStats, bulkDeleteDocuments, exportDocumentsAsZip, getCurrentUser, getSubscriptionStatus, type StorageStats, type SortOption, type SubscriptionStatus } from "@/lib/api";
 import { DocumentViewer } from "@/components/DocumentViewer";
 import { MultiPageUpload } from "@/components/MultiPageUpload";
 import { CameraMultiShot } from "@/components/CameraMultiShot";
@@ -31,6 +31,8 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { EmailInbound } from "@/components/EmailInbound";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { UpgradeModal } from "@/components/UpgradeModal";
+import { TrialBanner } from "@/components/TrialBanner";
 import logoImage from "@assets/meinedokbox_1760966015056.png";
 
 const categories = [
@@ -72,6 +74,10 @@ export default function Dashboard() {
   });
   const [viewerDocument, setViewerDocument] = useState<Document | null>(null);
   const [viewerOpen, setViewerOpen] = useState(false);
+  const [upgradeModal, setUpgradeModal] = useState<{
+    open: boolean;
+    reason?: "document_limit" | "email_feature" | "trial_expired";
+  }>({ open: false });
 
   // Fetch documents with React Query
   const { data: documents = [], isLoading } = useQuery<Document[]>({
@@ -97,6 +103,14 @@ export default function Dashboard() {
     retry: false,
   });
 
+  // Fetch subscription status
+  const { data: subscriptionStatus } = useQuery<SubscriptionStatus>({
+    queryKey: ["/api/subscription/status"],
+    queryFn: getSubscriptionStatus,
+    refetchOnWindowFocus: false,
+    staleTime: 1000 * 60, // 1 minute
+  });
+
   // Upload mutation
   const uploadMutation = useMutation({
     mutationFn: uploadDocument,
@@ -115,6 +129,15 @@ export default function Dashboard() {
       });
     },
     onError: (error: Error) => {
+      // Check if it's a 403 error (limit reached)
+      if (error.message.includes("403")) {
+        setUpgradeModal({
+          open: true,
+          reason: "document_limit",
+        });
+        return;
+      }
+      
       setProcessingModal({
         open: true,
         status: 'error',
@@ -441,6 +464,16 @@ export default function Dashboard() {
           </div>
         )}
 
+        {/* Trial Banner */}
+        {subscriptionStatus?.plan === "trial" && subscriptionStatus.daysRemaining && subscriptionStatus.daysRemaining > 0 && (
+          <div className="mb-6">
+            <TrialBanner
+              daysRemaining={subscriptionStatus.daysRemaining}
+              onUpgrade={() => setUpgradeModal({ open: true, reason: "trial_expired" })}
+            />
+          </div>
+        )}
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-8">
           <StatsCard
             title="Gesamt Dokumente"
@@ -630,6 +663,12 @@ export default function Dashboard() {
         document={viewerDocument}
         open={viewerOpen}
         onClose={handleCloseViewer}
+      />
+
+      <UpgradeModal
+        open={upgradeModal.open}
+        onClose={() => setUpgradeModal({ open: false })}
+        reason={upgradeModal.reason}
       />
     </div>
   );

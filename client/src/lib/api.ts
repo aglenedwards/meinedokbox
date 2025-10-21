@@ -259,3 +259,33 @@ export function exportDocumentsAsZip(): void {
   link.click();
   document.body.removeChild(link);
 }
+
+// Subscription management
+
+export interface SubscriptionStatus {
+  plan: "free" | "trial" | "premium";
+  displayName: string;
+  maxDocuments: number;
+  currentDocuments: number;
+  canUseEmailInbound: boolean;
+  price: number;
+  trialEndsAt?: Date;
+  daysRemaining?: number | null;
+  subscriptionEndsAt?: Date;
+}
+
+/**
+ * Get subscription status for current user
+ */
+export async function getSubscriptionStatus(): Promise<SubscriptionStatus> {
+  const response = await fetch("/api/subscription/status", {
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    const text = (await response.text()) || response.statusText;
+    throw new Error(`${response.status}: ${text}`);
+  }
+
+  return await response.json();
+}
