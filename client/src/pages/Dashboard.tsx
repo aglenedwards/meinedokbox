@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { FileText, HardDrive, TrendingUp, Plus, Trash2, ArrowUpDown, Download, Camera, ChevronDown, Settings, Folder, FolderOpen, Lock, Share2 } from "lucide-react";
+import { FileText, HardDrive, TrendingUp, Plus, Trash2, ArrowUpDown, Download, Camera, ChevronDown, Settings, Folder, FolderOpen, Lock, Share2, MoreVertical } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { Link } from "wouter";
@@ -385,30 +385,32 @@ export default function Dashboard() {
               <img src={logoImage} alt="MeineDokBox" className="h-12 md:h-16 dark:invert dark:brightness-0 dark:contrast-200" data-testid="img-logo" />
               <div className="flex items-center gap-2 md:hidden">
                 <ThemeToggle />
-                <Link href="/settings">
-                  <Button variant="ghost" size="sm" data-testid="button-settings-mobile">
-                    <Settings className="h-4 w-4" />
-                  </Button>
-                </Link>
-                <Link href="/trash">
-                  <Button variant="ghost" size="sm" data-testid="button-trash-mobile">
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </Link>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button size="sm" data-testid="button-upload-menu-mobile">
-                      <Plus className="h-4 w-4" />
+                    <Button variant="ghost" size="sm" data-testid="button-menu-mobile">
+                      <MoreVertical className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => { setShowUpload(false); setShowCameraMultiShot(true); }} data-testid="menu-item-camera-scanner">
+                    <DropdownMenuItem onClick={() => { setShowUpload(false); setShowCameraMultiShot(true); }} data-testid="menu-item-camera-scanner-mobile">
                       <Camera className="h-4 w-4 mr-2" />
                       Kamera-Scanner
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => { setShowCameraMultiShot(false); setShowUpload(true); }} data-testid="menu-item-multi-page">
+                    <DropdownMenuItem onClick={() => { setShowCameraMultiShot(false); setShowUpload(true); }} data-testid="menu-item-file-upload-mobile">
                       <Plus className="h-4 w-4 mr-2" />
-                      Mehrere Seiten
+                      Dateien hochladen
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/trash" className="flex items-center">
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Papierkorb
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/settings" className="flex items-center">
+                        <Settings className="h-4 w-4 mr-2" />
+                        Einstellungen
+                      </Link>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>

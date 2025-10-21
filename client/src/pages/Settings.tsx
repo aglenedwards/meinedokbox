@@ -49,7 +49,7 @@ export default function Settings() {
       }
       return response.json();
     },
-    enabled: subscriptionStatus?.plan === "premium",
+    enabled: subscriptionStatus?.plan === "premium" || subscriptionStatus?.plan === "trial",
   });
 
   // Invite mutation
@@ -121,7 +121,7 @@ export default function Settings() {
     e.preventDefault();
     if (!inviteEmail.trim()) return;
     
-    if (subscriptionStatus?.plan !== "premium") {
+    if (subscriptionStatus?.plan !== "premium" && subscriptionStatus?.plan !== "trial") {
       setUpgradeModalOpen(true);
       return;
     }
@@ -159,10 +159,10 @@ export default function Settings() {
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8 max-w-4xl">
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold mb-2">Einstellungen</h2>
-          <p className="text-muted-foreground">
+      <main className="container mx-auto px-4 py-4 md:py-8 max-w-4xl">
+        <div className="mb-4 md:mb-8">
+          <h2 className="text-2xl md:text-3xl font-bold mb-2">Einstellungen</h2>
+          <p className="text-sm md:text-base text-muted-foreground">
             Verwalten Sie Ihr Abonnement und Ihre Kontoeinstellungen
           </p>
         </div>
@@ -316,7 +316,7 @@ export default function Settings() {
             </CardContent>
           </Card>
 
-          {/* Shared Access Card (Premium only) */}
+          {/* Shared Access Card (Premium & Trial) */}
           <Card data-testid="card-shared-access">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -324,13 +324,13 @@ export default function Settings() {
                 Zweite Person einladen
               </CardTitle>
               <CardDescription>
-                {subscriptionStatus?.plan === "premium"
-                  ? "Laden Sie eine weitere Person ein, um gemeinsam auf alle Dokumente zuzugreifen"
-                  : "Verfügbar im Premium-Plan"}
+                {subscriptionStatus?.plan === "premium" || subscriptionStatus?.plan === "trial"
+                  ? "Laden Sie eine weitere Person ein, um gemeinsam auf geteilte Ordner zuzugreifen"
+                  : "Verfügbar im Premium-Plan und während der Trial-Phase"}
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {subscriptionStatus?.plan === "premium" ? (
+              {subscriptionStatus?.plan === "premium" || subscriptionStatus?.plan === "trial" ? (
                 <>
                   {sharedAccess?.status === "active" || sharedAccess?.status === "pending" ? (
                     <div className="space-y-4">
@@ -387,9 +387,9 @@ export default function Settings() {
                   )}
                 </>
               ) : (
-                <div className="text-center py-8">
-                  <p className="text-muted-foreground mb-4">
-                    Upgraden Sie auf Premium, um eine zweite Person einzuladen
+                <div className="text-center py-6 md:py-8">
+                  <p className="text-sm md:text-base text-muted-foreground mb-4">
+                    Upgraden Sie auf Premium oder starten Sie eine Trial, um eine zweite Person einzuladen
                   </p>
                   <Button onClick={() => setUpgradeModalOpen(true)} data-testid="button-upgrade-for-share">
                     <Crown className="h-4 w-4 mr-2" />

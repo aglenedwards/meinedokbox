@@ -36,27 +36,27 @@ export function UpgradeModal({ open, onClose, reason = "document_limit" }: Upgra
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-2xl">
-            <Zap className="h-6 w-6 text-primary" />
+          <DialogTitle className="flex items-center gap-2 text-xl md:text-2xl">
+            <Zap className="h-5 w-5 md:h-6 md:w-6 text-primary" />
             {selectedReason.title}
           </DialogTitle>
-          <DialogDescription className="text-base">
+          <DialogDescription className="text-sm md:text-base">
             {selectedReason.description}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid md:grid-cols-2 gap-4 my-6">
+        <div className="grid md:grid-cols-2 gap-4 my-4 md:my-6">
           {/* Free Plan */}
-          <div className="border rounded-lg p-4 bg-muted/30">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="font-semibold">Free</h3>
-              <Badge variant="outline">Aktuell</Badge>
+          <div className="border rounded-lg p-3 md:p-4 bg-muted/30">
+            <div className="flex items-center justify-between mb-2 md:mb-3">
+              <h3 className="text-sm md:text-base font-semibold">Free</h3>
+              <Badge variant="outline" className="text-xs">Aktuell</Badge>
             </div>
-            <div className="text-2xl font-bold mb-4">
+            <div className="text-xl md:text-2xl font-bold mb-3 md:mb-4">
               0 €
-              <span className="text-sm font-normal text-muted-foreground">/Monat</span>
+              <span className="text-xs md:text-sm font-normal text-muted-foreground">/Monat</span>
             </div>
             <ul className="space-y-2 text-sm">
               <li className="flex items-start gap-2">
@@ -79,16 +79,16 @@ export function UpgradeModal({ open, onClose, reason = "document_limit" }: Upgra
           </div>
 
           {/* Premium Plan */}
-          <div className="border-2 border-primary rounded-lg p-4 bg-primary/5 relative overflow-hidden">
+          <div className="border-2 border-primary rounded-lg p-3 md:p-4 bg-primary/5 relative overflow-hidden">
             <div className="absolute top-2 right-2">
-              <Badge variant="default" className="bg-primary">Beliebt</Badge>
+              <Badge variant="default" className="bg-primary text-xs">Beliebt</Badge>
             </div>
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="font-semibold">Premium</h3>
+            <div className="flex items-center justify-between mb-2 md:mb-3">
+              <h3 className="text-sm md:text-base font-semibold">Premium</h3>
             </div>
-            <div className="text-2xl font-bold mb-4">
+            <div className="text-xl md:text-2xl font-bold mb-3 md:mb-4">
               4,99 €
-              <span className="text-sm font-normal text-muted-foreground">/Monat</span>
+              <span className="text-xs md:text-sm font-normal text-muted-foreground">/Monat</span>
             </div>
             <ul className="space-y-2 text-sm">
               <li className="flex items-start gap-2">
@@ -111,16 +111,17 @@ export function UpgradeModal({ open, onClose, reason = "document_limit" }: Upgra
           </div>
         </div>
 
-        <DialogFooter className="flex gap-2">
-          <Button variant="outline" onClick={onClose} data-testid="button-cancel-upgrade">
+        <DialogFooter className="flex-col sm:flex-row gap-2">
+          <Button variant="outline" onClick={onClose} data-testid="button-cancel-upgrade" className="w-full sm:w-auto">
             Später
           </Button>
           <Button onClick={() => {
             // TODO: Navigate to settings/upgrade page or open Stripe checkout
             window.location.href = '/settings?tab=subscription';
-          }} data-testid="button-upgrade-to-premium">
+          }} data-testid="button-upgrade-to-premium" className="w-full sm:w-auto">
             <Zap className="h-4 w-4 mr-2" />
-            Jetzt auf Premium upgraden
+            <span className="hidden sm:inline">Jetzt auf Premium upgraden</span>
+            <span className="sm:hidden">Premium upgraden</span>
           </Button>
         </DialogFooter>
       </DialogContent>
