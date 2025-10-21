@@ -385,32 +385,25 @@ export default function Dashboard() {
               <img src={logoImage} alt="MeineDokBox" className="h-12 md:h-16 dark:invert dark:brightness-0 dark:contrast-200" data-testid="img-logo" />
               <div className="flex items-center gap-2 md:hidden">
                 <ThemeToggle />
+                <Link href="/settings">
+                  <Button variant="ghost" size="sm" data-testid="button-settings-mobile">
+                    <Settings className="h-4 w-4" />
+                  </Button>
+                </Link>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" data-testid="button-menu-mobile">
-                      <MoreVertical className="h-4 w-4" />
+                    <Button size="sm" data-testid="button-upload-menu-mobile">
+                      <Plus className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => { setShowUpload(false); setShowCameraMultiShot(true); }} data-testid="menu-item-camera-scanner-mobile">
+                    <DropdownMenuItem onClick={() => { setShowUpload(false); setShowCameraMultiShot(true); }} data-testid="menu-item-camera-scanner">
                       <Camera className="h-4 w-4 mr-2" />
                       Kamera-Scanner
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => { setShowCameraMultiShot(false); setShowUpload(true); }} data-testid="menu-item-file-upload-mobile">
+                    <DropdownMenuItem onClick={() => { setShowCameraMultiShot(false); setShowUpload(true); }} data-testid="menu-item-multi-page">
                       <Plus className="h-4 w-4 mr-2" />
-                      Dateien hochladen
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link href="/trash" className="flex items-center">
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Papierkorb
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link href="/settings" className="flex items-center">
-                        <Settings className="h-4 w-4 mr-2" />
-                        Einstellungen
-                      </Link>
+                      Mehrere Seiten
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>

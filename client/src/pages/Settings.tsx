@@ -251,10 +251,10 @@ export default function Settings() {
                 <div>Laden...</div>
               ) : subscriptionStatus ? (
                 <>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Aktueller Plan</p>
-                      <div className="flex items-center gap-2 mt-1">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Aktueller Plan</p>
+                    <div className="flex items-center justify-between mt-2">
+                      <div className="flex items-center gap-2">
                         <p className="text-2xl font-bold" data-testid="text-plan-name">
                           {subscriptionStatus.displayName}
                         </p>
@@ -265,16 +265,17 @@ export default function Settings() {
                           {subscriptionStatus.plan === "premium" ? "Premium" : subscriptionStatus.plan === "trial" ? "Trial" : "Free"}
                         </Badge>
                       </div>
+                      {subscriptionStatus.plan !== "premium" && (
+                        <Button
+                          onClick={() => setUpgradeModalOpen(true)}
+                          data-testid="button-upgrade"
+                          size="sm"
+                        >
+                          <Crown className="h-4 w-4 mr-2" />
+                          Upgraden
+                        </Button>
+                      )}
                     </div>
-                    {subscriptionStatus.plan !== "premium" && (
-                      <Button
-                        onClick={() => setUpgradeModalOpen(true)}
-                        data-testid="button-upgrade"
-                      >
-                        <Crown className="h-4 w-4 mr-2" />
-                        Upgraden
-                      </Button>
-                    )}
                   </div>
 
                   <Separator />
