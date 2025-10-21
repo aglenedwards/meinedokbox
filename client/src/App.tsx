@@ -12,6 +12,7 @@ import { LogIn } from "lucide-react";
 import { getCurrentUser } from "@/lib/api";
 import Dashboard from "@/pages/Dashboard";
 import Trash from "@/pages/Trash";
+import TeamSettings from "@/pages/TeamSettings";
 import NotFound from "@/pages/not-found";
 import logoImage from "@assets/meinedokbox_1760966015056.png";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
@@ -22,6 +23,7 @@ function Router() {
     <Switch>
       <Route path="/" component={Dashboard} />
       <Route path="/trash" component={Trash} />
+      <Route path="/team" component={TeamSettings} />
       <Route component={NotFound} />
     </Switch>
   );

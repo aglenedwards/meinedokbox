@@ -1,9 +1,7 @@
 import { useState } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { FileText, HardDrive, TrendingUp, Plus, Trash2, ArrowUpDown, Download, Camera, ChevronDown } from "lucide-react";
-import { format } from "date-fns";
-import { de } from "date-fns/locale";
-import { Link } from "wouter";
+import { useQuery, useMutation } from "@tantml:function_calls>
+<invoke name="bash">
+<parameter name="command">wc -l client/src/pages/Dashboard.tsx
 import type { Document, User } from "@shared/schema";
 import { UploadZone } from "@/components/UploadZone";
 import { DocumentCard } from "@/components/DocumentCard";
