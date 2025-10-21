@@ -665,26 +665,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // E-Mail Inbound Webhook (Public - no authentication)
   // Receives emails from Mailgun and processes attachments
   app.post('/api/webhook/email', upload.any(), async (req: any, res) => {
-    console.log('[Email Webhook] Received email');
-    console.log('[Email Webhook] Body keys:', Object.keys(req.body).join(', '));
-    console.log('[Email Webhook] timestamp:', req.body.timestamp);
-    console.log('[Email Webhook] token:', req.body.token?.substring(0, 20) + '...');
-    console.log('[Email Webhook] signature:', req.body.signature);
-    
     try {
       // Verify Mailgun webhook signature
       const timestamp = req.body.timestamp || '';
       const token = req.body.token || '';
       const signature = req.body.signature || '';
       
-      console.log('[Email Webhook] Calling verifyMailgunWebhook with:', {
-        timestampLength: timestamp.length,
-        tokenLength: token.length,
-        signatureLength: signature.length
-      });
-      
       const isValid = verifyMailgunWebhook(timestamp, token, signature);
-      console.log('[Email Webhook] Verification result:', isValid);
       
       if (!isValid) {
         console.error('[Email Webhook] Invalid signature - rejecting request');
@@ -698,9 +685,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const cleanFrom = extractEmailAddress(from);
       const cleanRecipient = extractEmailAddress(rawRecipient);
       
-      console.log('[Email Webhook] From:', cleanFrom, '(raw:', from + ')');
-      console.log('[Email Webhook] To:', cleanRecipient, '(raw:', rawRecipient + ')');
-      console.log('[Email Webhook] Attachments:', attachments.length);
+      console.log('[Email Webhook] Processing email from:', cleanFrom, 'to:', cleanRecipient, 'attachments:', attachments.length);
       
       // Find user by inbound email address (case-insensitive)
       const [user] = await db.select().from(users).where(eq(users.inboundEmail, cleanRecipient)).limit(1);

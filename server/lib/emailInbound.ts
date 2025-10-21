@@ -11,20 +11,10 @@ export function verifyMailgunWebhook(timestamp: string, token: string, signature
     return true; // Allow in development without key
   }
 
-  // Debug logging
-  console.log('[Mailgun] Signature verification:');
-  console.log('  - Timestamp:', timestamp);
-  console.log('  - Token:', token?.substring(0, 10) + '...');
-  console.log('  - Received signature:', signature);
-  console.log('  - Signing key exists:', !!signingKey);
-
   // Mailgun signature format: HMAC-SHA256(timestamp + token)
   const hmac = crypto.createHmac('sha256', signingKey);
   hmac.update(timestamp + token);
   const calculatedSignature = hmac.digest('hex');
-  
-  console.log('  - Calculated signature:', calculatedSignature);
-  console.log('  - Signatures match:', calculatedSignature === signature);
 
   return calculatedSignature === signature;
 }
@@ -119,20 +109,10 @@ export function parseMailgunWebhook(body: any, files: any): {
   const subject = body.subject || '';
   const attachments: EmailAttachment[] = [];
 
-  // Debug: Log what we received
-  console.log('[parseMailgunWebhook] Files type:', typeof files);
-  console.log('[parseMailgunWebhook] Files is array:', Array.isArray(files));
-  console.log('[parseMailgunWebhook] Files keys:', files ? Object.keys(files) : 'null');
-  if (files) {
-    console.log('[parseMailgunWebhook] Files content:', JSON.stringify(Object.keys(files)));
-  }
-
   // Mailgun sends attachments as multipart/form-data files
   // With upload.any(), files is an array, not an object!
   if (Array.isArray(files)) {
-    console.log('[parseMailgunWebhook] Processing array of', files.length, 'files');
     for (const file of files) {
-      console.log('[parseMailgunWebhook] File fieldname:', file.fieldname);
       if (file.fieldname && file.fieldname.startsWith('attachment-')) {
         if (file && file.buffer) {
           attachments.push({
@@ -141,7 +121,6 @@ export function parseMailgunWebhook(body: any, files: any): {
             content: file.buffer,
             size: file.size || file.buffer.length
           });
-          console.log('[parseMailgunWebhook] Added attachment:', file.originalname);
         }
       }
     }
@@ -163,7 +142,6 @@ export function parseMailgunWebhook(body: any, files: any): {
     }
   }
 
-  console.log('[parseMailgunWebhook] Total attachments found:', attachments.length);
   return { from, subject, attachments };
 }
 
