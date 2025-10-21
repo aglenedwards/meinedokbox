@@ -305,7 +305,7 @@ export default function Dashboard() {
     thumbnailUrl: doc.thumbnailUrl ?? undefined,
     // Phase 2: Smart metadata
     confidence: doc.confidence,
-    extractedDate: doc.extractedDate ?? undefined,
+    extractedDate: doc.extractedDate ? format(new Date(doc.extractedDate), "d. MMM yyyy", { locale: de }) : undefined,
     amount: doc.amount ?? undefined,
     sender: doc.sender ?? undefined,
   }));
