@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import multer from "multer";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated } from "./replitAuth";
+import { setupAuth, isAuthenticated, optionalAuth } from "./replitAuth";
 import { analyzeDocument, analyzeDocumentFromText } from "./lib/openai";
 import { extractTextFromPdf } from "./lib/pdfParser";
 import { uploadFile } from "./lib/storage";
@@ -573,7 +573,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "No documents to export" });
       }
 
-      const archiver = require('archiver');
+      const archiver = (await import('archiver')).default;
       const objectStorageService = new ObjectStorageService();
 
       // Set response headers for ZIP download
@@ -623,7 +623,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Serve uploaded document files with ACL check
-  app.get('/objects/:objectPath(*)', async (req: any, res) => {
+  app.get('/objects/:objectPath(*)', optionalAuth, async (req: any, res) => {
     try {
       const objectPath = `/objects/${req.params.objectPath}`;
       console.log('Serving object:', objectPath);

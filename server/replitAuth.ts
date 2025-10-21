@@ -155,3 +155,38 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
     return;
   }
 };
+
+/**
+ * Optional authentication middleware - sets user if authenticated, but doesn't fail if not
+ * Useful for endpoints that support both public and private access
+ */
+export const optionalAuth: RequestHandler = async (req, res, next) => {
+  const user = req.user as any;
+
+  // If not authenticated or no session, just continue without user
+  if (!req.isAuthenticated() || !user?.expires_at) {
+    return next();
+  }
+
+  const now = Math.floor(Date.now() / 1000);
+  
+  // If token is still valid, continue with current user
+  if (now <= user.expires_at) {
+    return next();
+  }
+
+  // Try to refresh token if expired
+  const refreshToken = user.refresh_token;
+  if (refreshToken) {
+    try {
+      const config = await getOidcConfig();
+      const tokenResponse = await client.refreshTokenGrant(config, refreshToken);
+      updateUserSession(user, tokenResponse);
+    } catch (error) {
+      // If refresh fails, clear user from session and continue as unauthenticated
+      req.logout(() => {});
+    }
+  }
+  
+  return next();
+};
