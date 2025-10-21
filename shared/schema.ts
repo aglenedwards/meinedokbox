@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { index, jsonb, pgTable, text, varchar, timestamp, real } from "drizzle-orm/pg-core";
+import { index, jsonb, pgTable, text, varchar, timestamp, real, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -77,9 +77,20 @@ export const DOCUMENT_CATEGORIES = [
   "Sonstiges / Privat"
 ] as const;
 
+// Folders for document organization
+export const folders = pgTable("folders", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
+  name: text("name").notNull(),
+  isShared: boolean("is_shared").notNull().default(true), // If true, shared users can see documents in this folder
+  icon: varchar("icon", { length: 50 }).default("📂"), // Emoji icon for visual distinction
+  createdAt: timestamp("created_at").notNull().default(sql`now()`),
+});
+
 export const documents = pgTable("documents", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull(),
+  folderId: varchar("folder_id"), // Optional: documents can be in a folder or not
   title: text("title").notNull(),
   category: text("category").notNull(),
   extractedText: text("extracted_text").notNull(),
@@ -136,6 +147,11 @@ export const sharedAccess = pgTable("shared_access", {
   acceptedAt: timestamp("accepted_at"),
 });
 
+export const insertFolderSchema = createInsertSchema(folders).omit({
+  id: true,
+  createdAt: true,
+});
+
 export const insertDocumentSchema = createInsertSchema(documents).omit({
   id: true,
   uploadedAt: true,
@@ -162,6 +178,8 @@ export const insertSharedAccessSchema = createInsertSchema(sharedAccess).omit({
 
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
+export type InsertFolder = z.infer<typeof insertFolderSchema>;
+export type Folder = typeof folders.$inferSelect;
 export type InsertDocument = z.infer<typeof insertDocumentSchema>;
 export type Document = typeof documents.$inferSelect;
 export type InsertTag = z.infer<typeof insertTagSchema>;

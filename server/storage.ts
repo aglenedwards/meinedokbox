@@ -1,6 +1,6 @@
-import { type User, type UpsertUser, type Document, type InsertDocument, type Tag, type InsertTag, type DocumentTag, type InsertDocumentTag, type SharedAccess, type InsertSharedAccess } from "@shared/schema";
+import { type User, type UpsertUser, type Document, type InsertDocument, type Tag, type InsertTag, type DocumentTag, type InsertDocumentTag, type SharedAccess, type InsertSharedAccess, type Folder, type InsertFolder } from "@shared/schema";
 import { db } from "./db";
-import { users, documents, tags, documentTags, sharedAccess } from "@shared/schema";
+import { users, documents, tags, documentTags, sharedAccess, folders } from "@shared/schema";
 import { eq, and, or, like, desc, asc, isNull, isNotNull, inArray, sql } from "drizzle-orm";
 import { generateInboundEmail } from "./lib/emailInbound";
 
@@ -49,6 +49,14 @@ export interface IStorage {
   acceptSharedInvitation(email: string, userId: string): Promise<SharedAccess | undefined>;
   revokeSharedAccess(ownerId: string): Promise<boolean>;
   getAccessibleAccounts(userId: string): Promise<{ ownedAccount: User | undefined; sharedAccounts: (SharedAccess & { owner: User })[] }>;
+  
+  // Folders management
+  createFolder(folder: InsertFolder): Promise<Folder>;
+  getUserFolders(userId: string): Promise<Folder[]>;
+  getFolder(id: string): Promise<Folder | undefined>;
+  updateFolder(id: string, userId: string, data: Partial<InsertFolder>): Promise<Folder | undefined>;
+  deleteFolder(id: string, userId: string): Promise<boolean>;
+  createDefaultFolders(userId: string): Promise<void>;
 }
 
 export class DbStorage implements IStorage {
@@ -509,6 +517,83 @@ export class DbStorage implements IStorage {
       ownedAccount,
       sharedAccounts,
     };
+  }
+
+  // Folders implementations
+  async createFolder(folder: InsertFolder): Promise<Folder> {
+    const [newFolder] = await db
+      .insert(folders)
+      .values(folder)
+      .returning();
+    return newFolder;
+  }
+
+  async getUserFolders(userId: string): Promise<Folder[]> {
+    const userFolders = await db
+      .select()
+      .from(folders)
+      .where(eq(folders.userId, userId))
+      .orderBy(asc(folders.createdAt));
+    return userFolders;
+  }
+
+  async getFolder(id: string): Promise<Folder | undefined> {
+    const [folder] = await db
+      .select()
+      .from(folders)
+      .where(eq(folders.id, id));
+    return folder;
+  }
+
+  async updateFolder(id: string, userId: string, data: Partial<InsertFolder>): Promise<Folder | undefined> {
+    const [folder] = await db
+      .update(folders)
+      .set(data)
+      .where(
+        and(
+          eq(folders.id, id),
+          eq(folders.userId, userId)
+        )
+      )
+      .returning();
+    return folder;
+  }
+
+  async deleteFolder(id: string, userId: string): Promise<boolean> {
+    // First, move all documents from this folder to no folder (null)
+    await db
+      .update(documents)
+      .set({ folderId: null })
+      .where(eq(documents.folderId, id));
+
+    // Then delete the folder
+    const result = await db
+      .delete(folders)
+      .where(
+        and(
+          eq(folders.id, id),
+          eq(folders.userId, userId)
+        )
+      );
+    return result.rowCount ? result.rowCount > 0 : false;
+  }
+
+  async createDefaultFolders(userId: string): Promise<void> {
+    // Create default folders for new users
+    await db.insert(folders).values([
+      {
+        userId,
+        name: "Alle Dokumente",
+        isShared: true,
+        icon: "📂",
+      },
+      {
+        userId,
+        name: "Privat",
+        isShared: false,
+        icon: "🔒",
+      }
+    ]);
   }
 }
 
