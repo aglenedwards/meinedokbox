@@ -1,7 +1,8 @@
 // Object storage utilities for file management
 // Reference: javascript_object_storage blueprint
 
-import { ObjectStorageService } from "../objectStorage";
+import { ObjectStorageService, objectStorageClient } from "../objectStorage";
+import { setObjectAclPolicy, ObjectPermission } from "../objectAcl";
 import sharp from "sharp";
 
 // Determine content type based on file extension
@@ -43,6 +44,19 @@ export async function uploadFile(
   
   // Normalize the path
   const filePath = objectStorageService.normalizeObjectEntityPath(uploadURL);
+  
+  // Set ACL policy so the owner can access the file
+  try {
+    const fileObject = await objectStorageService.getObjectEntityFile(filePath);
+    await setObjectAclPolicy(fileObject, {
+      owner: userId,
+      visibility: "private"
+    });
+    console.log('ACL policy set for:', filePath, 'owner:', userId);
+  } catch (error) {
+    console.error('Failed to set ACL policy:', error);
+    // Continue anyway - the file is uploaded
+  }
   
   // No longer generating thumbnails - cards now use category icons
   return { filePath, thumbnailPath: null };
