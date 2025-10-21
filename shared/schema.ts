@@ -14,6 +14,32 @@ export const sessions = pgTable(
   (table) => [index("IDX_session_expire").on(table.expire)],
 );
 
+// Subscription plans
+export const SUBSCRIPTION_PLANS = ["free", "trial", "premium"] as const;
+
+// Document limits per subscription plan
+export const PLAN_LIMITS = {
+  free: {
+    maxDocuments: 50,
+    canUseEmailInbound: false,
+    displayName: "Free",
+    price: 0,
+  },
+  trial: {
+    maxDocuments: -1, // unlimited during trial
+    canUseEmailInbound: true,
+    displayName: "Trial (2 Wochen)",
+    price: 0,
+    trialDurationDays: 14,
+  },
+  premium: {
+    maxDocuments: -1, // unlimited
+    canUseEmailInbound: true,
+    displayName: "Premium",
+    price: 4.99,
+  },
+} as const;
+
 // User storage table for Replit Auth
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -24,6 +50,10 @@ export const users = pgTable("users", {
   // E-Mail Inbound feature
   inboundEmail: varchar("inbound_email").unique(),
   emailWhitelist: text("email_whitelist").array(),
+  // Subscription management
+  subscriptionPlan: varchar("subscription_plan", { length: 20 }).notNull().default("trial"),
+  trialEndsAt: timestamp("trial_ends_at"),
+  subscriptionEndsAt: timestamp("subscription_ends_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
