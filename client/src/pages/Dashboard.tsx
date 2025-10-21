@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { FileText, HardDrive, TrendingUp, Plus, Trash2, ArrowUpDown, Download, Camera, ChevronDown, Settings } from "lucide-react";
+import { FileText, HardDrive, TrendingUp, Plus, Trash2, ArrowUpDown, Download, Camera, ChevronDown, Settings, Folder, FolderOpen, Lock, Share2 } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { Link } from "wouter";
@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
-import { uploadDocument, getDocuments, deleteDocument, updateDocumentCategory, getStorageStats, bulkDeleteDocuments, exportDocumentsAsZip, getCurrentUser, getSubscriptionStatus, type StorageStats, type SortOption, type SubscriptionStatus } from "@/lib/api";
+import { uploadDocument, getDocuments, deleteDocument, updateDocumentCategory, getStorageStats, bulkDeleteDocuments, exportDocumentsAsZip, getCurrentUser, getSubscriptionStatus, getFolders, type StorageStats, type SortOption, type SubscriptionStatus, type Folder as FolderType } from "@/lib/api";
 import { DocumentViewer } from "@/components/DocumentViewer";
 import { MultiPageUpload } from "@/components/MultiPageUpload";
 import { CameraMultiShot } from "@/components/CameraMultiShot";
@@ -58,6 +58,7 @@ export default function Dashboard() {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<string[]>(["Alle"]);
+  const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<SortOption>("date-desc");
   const [selectedDocuments, setSelectedDocuments] = useState<Set<string>>(new Set());
   const [showUpload, setShowUpload] = useState(false);
@@ -109,6 +110,14 @@ export default function Dashboard() {
     queryFn: getSubscriptionStatus,
     refetchOnWindowFocus: false,
     staleTime: 1000 * 60, // 1 minute
+  });
+
+  // Fetch folders
+  const { data: folders = [] } = useQuery<FolderType[]>({
+    queryKey: ["/api/folders"],
+    queryFn: getFolders,
+    refetchOnWindowFocus: false,
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
   // Upload mutation
@@ -319,8 +328,13 @@ export default function Dashboard() {
   const allSelected = documents.length > 0 && selectedDocuments.size === documents.length;
   const someSelected = selectedDocuments.size > 0 && !allSelected;
 
+  // Filter documents by selected folder
+  const filteredDocuments = selectedFolderId 
+    ? documents.filter(doc => doc.folderId === selectedFolderId)
+    : documents;
+
   // Format documents for display
-  const formattedDocuments = documents.map(doc => ({
+  const formattedDocuments = filteredDocuments.map(doc => ({
     id: doc.id,
     title: doc.title,
     category: doc.category,
@@ -566,6 +580,39 @@ export default function Dashboard() {
                 </Select>
               </div>
             </div>
+
+            {/* Folder Navigation */}
+            {folders.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-4">
+                <Button
+                  variant={selectedFolderId === null ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setSelectedFolderId(null)}
+                  data-testid="button-folder-all"
+                  className="gap-2"
+                >
+                  <FolderOpen className="h-4 w-4" />
+                  Alle Ordner
+                </Button>
+                {folders.map(folder => (
+                  <Button
+                    key={folder.id}
+                    variant={selectedFolderId === folder.id ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setSelectedFolderId(folder.id)}
+                    data-testid={`button-folder-${folder.id}`}
+                    className="gap-2"
+                  >
+                    {folder.isShared ? (
+                      <Share2 className="h-4 w-4" />
+                    ) : (
+                      <Lock className="h-4 w-4" />
+                    )}
+                    {folder.name}
+                  </Button>
+                ))}
+              </div>
+            )}
             
             <CategoryFilter
               categories={categories}

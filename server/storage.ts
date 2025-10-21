@@ -642,13 +642,11 @@ export class DbStorage implements IStorage {
         userId,
         name: "Alle Dokumente",
         isShared: true,
-        icon: "📂",
       },
       {
         userId,
         name: "Privat",
         isShared: false,
-        icon: "🔒",
       }
     ]);
   }
