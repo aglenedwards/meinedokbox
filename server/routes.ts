@@ -645,6 +645,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Receives emails from Mailgun and processes attachments
   app.post('/api/webhook/email', upload.any(), async (req: any, res) => {
     console.log('[Email Webhook] Received email');
+    console.log('[Email Webhook] Body keys:', Object.keys(req.body).join(', '));
+    console.log('[Email Webhook] timestamp:', req.body.timestamp);
+    console.log('[Email Webhook] token:', req.body.token?.substring(0, 20) + '...');
+    console.log('[Email Webhook] signature:', req.body.signature);
     
     try {
       // Verify Mailgun webhook signature
@@ -652,7 +656,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const token = req.body.token || '';
       const signature = req.body.signature || '';
       
-      if (!verifyMailgunWebhook(timestamp, token, signature)) {
+      console.log('[Email Webhook] Calling verifyMailgunWebhook with:', {
+        timestampLength: timestamp.length,
+        tokenLength: token.length,
+        signatureLength: signature.length
+      });
+      
+      const isValid = verifyMailgunWebhook(timestamp, token, signature);
+      console.log('[Email Webhook] Verification result:', isValid);
+      
+      if (!isValid) {
         console.error('[Email Webhook] Invalid signature - rejecting request');
         return res.status(403).json({ message: 'Invalid signature' });
       }
