@@ -18,6 +18,7 @@ export type SortOption = "date-desc" | "date-asc" | "title-asc" | "title-desc" |
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
+  updateUserSubscription(id: string, data: Partial<Pick<User, 'subscriptionPlan' | 'trialEndsAt' | 'subscriptionEndsAt'>>): Promise<User | undefined>;
   
   createDocument(document: InsertDocument): Promise<Document>;
   getDocument(id: string): Promise<Document | undefined>;
@@ -68,10 +69,17 @@ export class DbStorage implements IStorage {
     // Check if user already exists
     const existingUser = await this.getUser(userData.id!);
     
+    // For new users: Set up 14-day trial
+    const isNewUser = !existingUser;
+    const trialDurationMs = 14 * 24 * 60 * 60 * 1000; // 14 days
+    
     // Generate inbound email only for new users
     const dataToInsert = {
       ...userData,
       inboundEmail: existingUser?.inboundEmail || generateInboundEmail(userData.id!),
+      // Set trial end date for new users
+      subscriptionPlan: isNewUser ? 'trial' : existingUser?.subscriptionPlan,
+      trialEndsAt: isNewUser ? new Date(Date.now() + trialDurationMs) : existingUser?.trialEndsAt,
     };
     
     const [user] = await db
@@ -84,6 +92,21 @@ export class DbStorage implements IStorage {
           updatedAt: new Date(),
         },
       })
+      .returning();
+    return user;
+  }
+
+  async updateUserSubscription(
+    id: string,
+    data: Partial<Pick<User, 'subscriptionPlan' | 'trialEndsAt' | 'subscriptionEndsAt'>>
+  ): Promise<User | undefined> {
+    const [user] = await db
+      .update(users)
+      .set({
+        ...data,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, id))
       .returning();
     return user;
   }
@@ -367,6 +390,7 @@ export class DbStorage implements IStorage {
         fileUrl: documents.fileUrl,
         pageUrls: documents.pageUrls,
         thumbnailUrl: documents.thumbnailUrl,
+        mimeType: documents.mimeType,
         confidence: documents.confidence,
         uploadedAt: documents.uploadedAt,
         deletedAt: documents.deletedAt,
