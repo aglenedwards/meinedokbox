@@ -728,7 +728,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           } else {
             // For images, create ImageWithMimeType array
             analysisResult = await analyzeDocument([{
-              data: attachment.content,
+              base64: attachment.content.toString('base64'),
               mimeType: attachment.contentType
             }]);
           }
@@ -749,7 +749,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             fileUrl: filePath,
             thumbnailUrl: thumbnailPath,
             confidence: analysisResult.confidence,
-            extractedDate: analysisResult.extractedDate,
+            extractedDate: analysisResult.extractedDate ? new Date(analysisResult.extractedDate) : null,
             amount: analysisResult.amount,
             sender: analysisResult.sender,
           });
