@@ -147,10 +147,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "E-Mail-Adresse erforderlich" });
       }
 
-      // Check if user is Premium
+      // Check if user is Premium or Trial
       const user = await storage.getUser(userId);
-      if (!user || user.subscriptionPlan !== 'premium') {
-        return res.status(403).json({ message: "Diese Funktion ist nur für Premium-Nutzer verfügbar" });
+      if (!user || (user.subscriptionPlan !== 'premium' && user.subscriptionPlan !== 'trial')) {
+        return res.status(403).json({ message: "Diese Funktion ist nur für Premium- und Trial-Nutzer verfügbar" });
       }
 
       // Check if already has an active shared access
