@@ -1,8 +1,10 @@
 import { useState } from "react";
-import { Mail, Copy, Check, Info } from "lucide-react";
+import { Mail, Copy, Check, Info, RefreshCw } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { useMutation } from "@tanstack/react-query";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { User } from "@shared/schema";
 
 interface EmailInboundProps {
@@ -12,6 +14,27 @@ interface EmailInboundProps {
 export function EmailInbound({ user }: EmailInboundProps) {
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
+
+  const regenerateEmailMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest('POST', '/api/auth/regenerate-email');
+      return await response.json();
+    },
+    onSuccess: (data: { inboundEmail: string }) => {
+      queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+      toast({
+        title: "E-Mail-Adresse aktualisiert",
+        description: `Ihre neue Adresse: ${data.inboundEmail}`,
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Fehler",
+        description: error.message || "Die E-Mail-Adresse konnte nicht aktualisiert werden.",
+        variant: "destructive",
+      });
+    },
+  });
 
   const handleCopy = async () => {
     if (!user.inboundEmail) return;
@@ -50,9 +73,22 @@ export function EmailInbound({ user }: EmailInboundProps) {
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
-          <label className="text-sm font-medium text-muted-foreground">
-            Ihre persönliche E-Mail-Adresse:
-          </label>
+          <div className="flex items-center justify-between">
+            <label className="text-sm font-medium text-muted-foreground">
+              Ihre persönliche E-Mail-Adresse:
+            </label>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => regenerateEmailMutation.mutate()}
+              disabled={regenerateEmailMutation.isPending}
+              data-testid="button-regenerate-email"
+              className="h-7 text-xs gap-1.5"
+            >
+              <RefreshCw className={`h-3 w-3 ${regenerateEmailMutation.isPending ? 'animate-spin' : ''}`} />
+              Neu generieren
+            </Button>
+          </div>
           <div className="flex gap-2">
             <div 
               className="flex-1 px-3 py-2 bg-muted rounded-md font-mono text-sm break-all"

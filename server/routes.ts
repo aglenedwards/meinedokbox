@@ -55,6 +55,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Regenerate inbound email address for user
+  app.post('/api/auth/regenerate-email', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { generateInboundEmail } = await import('./lib/emailInbound');
+      const newEmail = generateInboundEmail(userId);
+      
+      // Update user in database
+      await db.update(users)
+        .set({ inboundEmail: newEmail })
+        .where(eq(users.id, userId));
+      
+      console.log(`[Regenerate Email] Generated new email for user ${userId}: ${newEmail}`);
+      
+      res.json({ inboundEmail: newEmail });
+    } catch (error) {
+      console.error("Error regenerating email:", error);
+      res.status(500).json({ message: "Failed to regenerate email" });
+    }
+  });
+
   // Document upload endpoint - supports single or multiple files
   app.post('/api/documents/upload', isAuthenticated, upload.array('files', 20), async (req: any, res) => {
     try {
