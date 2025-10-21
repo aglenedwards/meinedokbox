@@ -124,6 +124,108 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Shared Access API routes (Premium feature)
+  
+  // Invite second person (Premium only)
+  app.post('/api/shared-access/invite', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { email } = req.body;
+
+      if (!email || typeof email !== 'string') {
+        return res.status(400).json({ message: "E-Mail-Adresse erforderlich" });
+      }
+
+      // Check if user is Premium
+      const user = await storage.getUser(userId);
+      if (!user || user.subscriptionPlan !== 'premium') {
+        return res.status(403).json({ message: "Diese Funktion ist nur für Premium-Nutzer verfügbar" });
+      }
+
+      // Check if already has an active shared access
+      const existingAccess = await storage.getSharedAccessByOwner(userId);
+      if (existingAccess) {
+        return res.status(400).json({ message: "Sie haben bereits eine Person eingeladen" });
+      }
+
+      // Create invitation
+      const sharedAccess = await storage.createSharedAccess({
+        ownerId: userId,
+        sharedWithEmail: email.toLowerCase(),
+        status: 'pending',
+      });
+
+      // TODO: Send email invitation via Mailgun
+      // For now, just return success
+      res.json({
+        message: "Einladung gesendet",
+        sharedAccess,
+      });
+    } catch (error) {
+      console.error("Error creating shared access:", error);
+      res.status(500).json({ message: "Fehler beim Erstellen der Einladung" });
+    }
+  });
+
+  // Get shared access status
+  app.get('/api/shared-access', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const sharedAccess = await storage.getSharedAccessByOwner(userId);
+      res.json(sharedAccess || null);
+    } catch (error) {
+      console.error("Error fetching shared access:", error);
+      res.status(500).json({ message: "Fehler beim Laden des Zugriffsstatus" });
+    }
+  });
+
+  // Revoke shared access
+  app.delete('/api/shared-access', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const revoked = await storage.revokeSharedAccess(userId);
+      
+      if (!revoked) {
+        return res.status(404).json({ message: "Kein aktiver Zugriff gefunden" });
+      }
+
+      res.json({ message: "Zugriff widerrufen" });
+    } catch (error) {
+      console.error("Error revoking shared access:", error);
+      res.status(500).json({ message: "Fehler beim Widerrufen des Zugriffs" });
+    }
+  });
+
+  // Accept shared access invitation (when invited user logs in)
+  app.post('/api/shared-access/accept', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user || !user.email) {
+        return res.status(400).json({ message: "Benutzer-E-Mail nicht gefunden" });
+      }
+
+      // Check if there's a pending invitation for this email
+      const invitation = await storage.getSharedAccessByEmail(user.email.toLowerCase());
+      
+      if (!invitation) {
+        return res.status(404).json({ message: "Keine ausstehende Einladung gefunden" });
+      }
+
+      // Accept the invitation
+      const accepted = await storage.acceptSharedInvitation(user.email.toLowerCase(), userId);
+      
+      res.json({
+        message: "Einladung akzeptiert",
+        sharedAccess: accepted,
+      });
+    } catch (error) {
+      console.error("Error accepting shared access:", error);
+      res.status(500).json({ message: "Fehler beim Akzeptieren der Einladung" });
+    }
+  });
+
   // Document upload endpoint - supports single or multiple files
   app.post('/api/documents/upload', isAuthenticated, checkDocumentLimit, upload.array('files', 20), async (req: any, res) => {
     try {

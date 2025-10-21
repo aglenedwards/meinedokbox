@@ -1,6 +1,6 @@
-import { type User, type UpsertUser, type Document, type InsertDocument, type Tag, type InsertTag, type DocumentTag, type InsertDocumentTag } from "@shared/schema";
+import { type User, type UpsertUser, type Document, type InsertDocument, type Tag, type InsertTag, type DocumentTag, type InsertDocumentTag, type SharedAccess, type InsertSharedAccess } from "@shared/schema";
 import { db } from "./db";
-import { users, documents, tags, documentTags } from "@shared/schema";
+import { users, documents, tags, documentTags, sharedAccess } from "@shared/schema";
 import { eq, and, or, like, desc, asc, isNull, isNotNull, inArray, sql } from "drizzle-orm";
 import { generateInboundEmail } from "./lib/emailInbound";
 
@@ -41,6 +41,14 @@ export interface IStorage {
   removeTagFromDocument(documentId: string, tagId: string): Promise<boolean>;
   getDocumentTags(documentId: string): Promise<Tag[]>;
   getDocumentsByTag(userId: string, tagId: string): Promise<Document[]>;
+  
+  // Shared Access management (Premium feature)
+  createSharedAccess(data: InsertSharedAccess): Promise<SharedAccess>;
+  getSharedAccessByOwner(ownerId: string): Promise<SharedAccess | undefined>;
+  getSharedAccessByEmail(email: string): Promise<SharedAccess | undefined>;
+  acceptSharedInvitation(email: string, userId: string): Promise<SharedAccess | undefined>;
+  revokeSharedAccess(ownerId: string): Promise<boolean>;
+  getAccessibleAccounts(userId: string): Promise<{ ownedAccount: User | undefined; sharedAccounts: (SharedAccess & { owner: User })[] }>;
 }
 
 export class DbStorage implements IStorage {
@@ -410,6 +418,97 @@ export class DbStorage implements IStorage {
       .orderBy(desc(documents.uploadedAt));
     
     return result;
+  }
+
+  // Shared Access implementations
+  async createSharedAccess(data: InsertSharedAccess): Promise<SharedAccess> {
+    const [access] = await db
+      .insert(sharedAccess)
+      .values(data)
+      .returning();
+    return access;
+  }
+
+  async getSharedAccessByOwner(ownerId: string): Promise<SharedAccess | undefined> {
+    const [access] = await db
+      .select()
+      .from(sharedAccess)
+      .where(
+        and(
+          eq(sharedAccess.ownerId, ownerId),
+          eq(sharedAccess.status, 'active')
+        )
+      );
+    return access;
+  }
+
+  async getSharedAccessByEmail(email: string): Promise<SharedAccess | undefined> {
+    const [access] = await db
+      .select()
+      .from(sharedAccess)
+      .where(
+        and(
+          eq(sharedAccess.sharedWithEmail, email),
+          eq(sharedAccess.status, 'pending')
+        )
+      );
+    return access;
+  }
+
+  async acceptSharedInvitation(email: string, userId: string): Promise<SharedAccess | undefined> {
+    const [access] = await db
+      .update(sharedAccess)
+      .set({
+        sharedWithUserId: userId,
+        status: 'active',
+        acceptedAt: new Date(),
+      })
+      .where(
+        and(
+          eq(sharedAccess.sharedWithEmail, email),
+          eq(sharedAccess.status, 'pending')
+        )
+      )
+      .returning();
+    return access;
+  }
+
+  async revokeSharedAccess(ownerId: string): Promise<boolean> {
+    const result = await db
+      .update(sharedAccess)
+      .set({ status: 'revoked' })
+      .where(eq(sharedAccess.ownerId, ownerId));
+    return result.rowCount ? result.rowCount > 0 : false;
+  }
+
+  async getAccessibleAccounts(userId: string): Promise<{
+    ownedAccount: User | undefined;
+    sharedAccounts: (SharedAccess & { owner: User })[];
+  }> {
+    // Get user's own account
+    const ownedAccount = await this.getUser(userId);
+
+    // Get accounts shared with this user
+    const sharedAccessRecords = await db
+      .select()
+      .from(sharedAccess)
+      .innerJoin(users, eq(sharedAccess.ownerId, users.id))
+      .where(
+        and(
+          eq(sharedAccess.sharedWithUserId, userId),
+          eq(sharedAccess.status, 'active')
+        )
+      );
+
+    const sharedAccounts = sharedAccessRecords.map(record => ({
+      ...record.shared_access,
+      owner: record.users,
+    }));
+
+    return {
+      ownedAccount,
+      sharedAccounts,
+    };
   }
 }
 

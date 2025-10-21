@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { FileText, HardDrive, TrendingUp, Plus, Trash2, ArrowUpDown, Download, Camera, ChevronDown } from "lucide-react";
+import { FileText, HardDrive, TrendingUp, Plus, Trash2, ArrowUpDown, Download, Camera, ChevronDown, Settings } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { Link } from "wouter";
@@ -415,6 +415,12 @@ export default function Dashboard() {
                 <Button variant="outline" size="sm" data-testid="button-trash">
                   <Trash2 className="h-4 w-4 mr-2" />
                   Papierkorb
+                </Button>
+              </Link>
+              <Link href="/settings">
+                <Button variant="outline" size="sm" data-testid="button-settings">
+                  <Settings className="h-4 w-4 mr-2" />
+                  Einstellungen
                 </Button>
               </Link>
               <DropdownMenu>

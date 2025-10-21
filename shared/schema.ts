@@ -125,6 +125,17 @@ export const emailLogs = pgTable("email_logs", {
   errorMessage: text("error_message"),
 });
 
+// Shared Access - Premium feature to share account with a second person
+export const sharedAccess = pgTable("shared_access", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  ownerId: varchar("owner_id").notNull(), // Premium user who owns the account
+  sharedWithEmail: varchar("shared_with_email").notNull(), // Email of invited person
+  sharedWithUserId: varchar("shared_with_user_id"), // Set when invitation is accepted and user logs in
+  status: varchar("status", { length: 20 }).notNull().default("pending"), // pending, active, revoked
+  invitedAt: timestamp("invited_at").notNull().default(sql`now()`),
+  acceptedAt: timestamp("accepted_at"),
+});
+
 export const insertDocumentSchema = createInsertSchema(documents).omit({
   id: true,
   uploadedAt: true,
@@ -144,6 +155,11 @@ export const insertEmailLogSchema = createInsertSchema(emailLogs).omit({
   receivedAt: true,
 });
 
+export const insertSharedAccessSchema = createInsertSchema(sharedAccess).omit({
+  id: true,
+  invitedAt: true,
+});
+
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
 export type InsertDocument = z.infer<typeof insertDocumentSchema>;
@@ -154,3 +170,5 @@ export type InsertDocumentTag = z.infer<typeof insertDocumentTagSchema>;
 export type DocumentTag = typeof documentTags.$inferSelect;
 export type InsertEmailLog = z.infer<typeof insertEmailLogSchema>;
 export type EmailLog = typeof emailLogs.$inferSelect;
+export type InsertSharedAccess = z.infer<typeof insertSharedAccessSchema>;
+export type SharedAccess = typeof sharedAccess.$inferSelect;
