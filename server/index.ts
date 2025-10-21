@@ -4,13 +4,24 @@ import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
 
-// Redirect www to non-www
+// Redirect to canonical domain (SEO: prevent duplicate content)
 app.use((req, res, next) => {
   const host = req.headers.host;
-  if (host && host.startsWith('www.')) {
-    const newHost = host.slice(4);
-    return res.redirect(301, `${req.protocol}://${newHost}${req.originalUrl}`);
+  const canonicalDomain = 'meinedokbox.de';
+  
+  if (host) {
+    // Redirect www to non-www
+    if (host.startsWith('www.')) {
+      const newHost = host.slice(4);
+      return res.redirect(301, `https://${newHost}${req.originalUrl}`);
+    }
+    
+    // Redirect replit.app to custom domain
+    if (host.includes('.replit.app')) {
+      return res.redirect(301, `https://${canonicalDomain}${req.originalUrl}`);
+    }
   }
+  
   next();
 });
 
