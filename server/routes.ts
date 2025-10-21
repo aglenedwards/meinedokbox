@@ -182,6 +182,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       extractedText: analysisResult.extractedText,
       pageUrls,
       thumbnailUrl: thumbnailPath,
+      mimeType: files[0].mimetype, // Store original MIME type
       confidence: analysisResult.confidence,
       // Phase 2: Smart metadata
       extractedDate: analysisResult.extractedDate ? new Date(analysisResult.extractedDate) : null,
@@ -601,9 +602,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
             const objectFile = await objectStorageService.getObjectEntityFile(pageUrl);
             const [fileBuffer] = await objectFile.download();
             
-            // Create safe filename
+            // Create safe filename with correct extension from MIME type
             const safeTitle = doc.title.replace(/[^a-zA-Z0-9äöüÄÖÜß\s-]/g, '_');
-            const extension = pageUrl.split('.').pop() || 'bin';
+            const mimeTypeToExt: Record<string, string> = {
+              'application/pdf': 'pdf',
+              'image/jpeg': 'jpg',
+              'image/jpg': 'jpg',
+              'image/png': 'png',
+              'image/webp': 'webp',
+              'image/gif': 'gif',
+            };
+            const extension = doc.mimeType ? (mimeTypeToExt[doc.mimeType] || 'bin') : 'bin';
             const filename = pageUrls.length > 1 
               ? `${safeTitle}_page_${i + 1}.${extension}`
               : `${safeTitle}.${extension}`;
@@ -773,6 +782,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             extractedText: analysisResult.extractedText,
             fileUrl: filePath,
             thumbnailUrl: thumbnailPath,
+            mimeType: attachment.contentType, // Store MIME type
             confidence: analysisResult.confidence,
             extractedDate: analysisResult.extractedDate ? new Date(analysisResult.extractedDate) : null,
             amount: analysisResult.amount,

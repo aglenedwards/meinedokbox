@@ -56,6 +56,7 @@ export const documents = pgTable("documents", {
   fileUrl: text("file_url"),
   pageUrls: text("page_urls").array(),
   thumbnailUrl: text("thumbnail_url"),
+  mimeType: varchar("mime_type", { length: 100 }),
   confidence: real("confidence").notNull(),
   uploadedAt: timestamp("uploaded_at").notNull().default(sql`now()`),
   deletedAt: timestamp("deleted_at"),

@@ -27,9 +27,22 @@ export function DocumentViewer({ document, open, onClose }: DocumentViewerProps)
   const totalPages = pageUrls.length;
   const currentPageUrl = pageUrls[currentPage];
   
-  // Check if the document is a PDF
-  const isPdf = currentPageUrl.toLowerCase().endsWith('.pdf') || 
-                currentPageUrl.includes('application/pdf');
+  // Check if the document is a PDF using mimeType
+  const isPdf = document.mimeType === 'application/pdf';
+
+  // Get file extension from MIME type
+  const getExtensionFromMimeType = (mimeType: string | null | undefined): string => {
+    if (!mimeType) return 'jpg';
+    const mimeMap: Record<string, string> = {
+      'application/pdf': 'pdf',
+      'image/jpeg': 'jpg',
+      'image/jpg': 'jpg',
+      'image/png': 'png',
+      'image/webp': 'webp',
+      'image/gif': 'gif',
+    };
+    return mimeMap[mimeType.toLowerCase()] || 'jpg';
+  };
 
   const handleDownloadPDF = () => {
     const link = window.document.createElement('a');
@@ -40,7 +53,7 @@ export function DocumentViewer({ document, open, onClose }: DocumentViewerProps)
 
   const handleDownloadPage = (pageIndex: number) => {
     const urlToDownload = pageUrls[pageIndex];
-    const extension = urlToDownload.split('.').pop()?.toLowerCase() || 'jpg';
+    const extension = getExtensionFromMimeType(document.mimeType);
     const link = window.document.createElement('a');
     link.href = urlToDownload;
     link.download = totalPages > 1
