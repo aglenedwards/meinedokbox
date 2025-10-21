@@ -119,8 +119,34 @@ export function parseMailgunWebhook(body: any, files: any): {
   const subject = body.subject || '';
   const attachments: EmailAttachment[] = [];
 
-  // Mailgun sends attachments as multipart/form-data files
+  // Debug: Log what we received
+  console.log('[parseMailgunWebhook] Files type:', typeof files);
+  console.log('[parseMailgunWebhook] Files is array:', Array.isArray(files));
+  console.log('[parseMailgunWebhook] Files keys:', files ? Object.keys(files) : 'null');
   if (files) {
+    console.log('[parseMailgunWebhook] Files content:', JSON.stringify(Object.keys(files)));
+  }
+
+  // Mailgun sends attachments as multipart/form-data files
+  // With upload.any(), files is an array, not an object!
+  if (Array.isArray(files)) {
+    console.log('[parseMailgunWebhook] Processing array of', files.length, 'files');
+    for (const file of files) {
+      console.log('[parseMailgunWebhook] File fieldname:', file.fieldname);
+      if (file.fieldname && file.fieldname.startsWith('attachment-')) {
+        if (file && file.buffer) {
+          attachments.push({
+            filename: file.originalname || 'attachment',
+            contentType: file.mimetype || 'application/octet-stream',
+            content: file.buffer,
+            size: file.size || file.buffer.length
+          });
+          console.log('[parseMailgunWebhook] Added attachment:', file.originalname);
+        }
+      }
+    }
+  } else if (files) {
+    // Object format (shouldn't happen with upload.any() but keeping for backwards compat)
     for (const [fieldName, fileData] of Object.entries(files)) {
       if (fieldName.startsWith('attachment-')) {
         const file = Array.isArray(fileData) ? fileData[0] : fileData;
@@ -137,6 +163,7 @@ export function parseMailgunWebhook(body: any, files: any): {
     }
   }
 
+  console.log('[parseMailgunWebhook] Total attachments found:', attachments.length);
   return { from, subject, attachments };
 }
 
