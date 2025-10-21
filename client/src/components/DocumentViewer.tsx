@@ -79,21 +79,8 @@ export function DocumentViewer({ document, open, onClose }: DocumentViewerProps)
       <DialogContent className="max-w-4xl w-full h-[90vh] flex flex-col p-0 gap-0">
         {/* Header */}
         <div className="px-4 sm:px-6 py-4 border-b">
-          <div className="flex items-start justify-between gap-4 mb-3">
-            <h2 className="text-lg sm:text-xl font-semibold truncate pr-8">{document.title}</h2>
-            {/* Download button only on desktop */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleDownloadPDF}
-              data-testid="button-download-pdf"
-              className="hidden sm:flex h-8 flex-shrink-0"
-            >
-              <Download className="h-4 w-4 mr-1" />
-              <span>PDF</span>
-            </Button>
-          </div>
-          <div className="flex items-center gap-3 text-sm text-muted-foreground flex-wrap">
+          <h2 className="text-lg sm:text-xl font-semibold truncate pr-10">{document.title}</h2>
+          <div className="flex items-center gap-3 text-sm text-muted-foreground mt-1 flex-wrap">
             <span>{document.category}</span>
             {totalPages > 1 && (
               <>
@@ -106,6 +93,19 @@ export function DocumentViewer({ document, open, onClose }: DocumentViewerProps)
 
         {/* Main viewer area */}
         <div className="flex-1 overflow-auto bg-muted/30 relative">
+          {/* Floating download button - desktop only */}
+          <div className="hidden sm:block absolute top-4 right-4 z-10">
+            <Button
+              variant="default"
+              size="sm"
+              onClick={handleDownloadPDF}
+              data-testid="button-download-pdf"
+              className="h-9 shadow-lg"
+            >
+              <Download className="h-4 w-4 mr-2" />
+              <span>PDF</span>
+            </Button>
+          </div>
           <div className="flex items-center justify-center h-full p-4">
             {isPdf ? (
               <iframe
