@@ -11,10 +11,20 @@ export function verifyMailgunWebhook(timestamp: string, token: string, signature
     return true; // Allow in development without key
   }
 
+  // Debug logging
+  console.log('[Mailgun] Signature verification:');
+  console.log('  - Timestamp:', timestamp);
+  console.log('  - Token:', token?.substring(0, 10) + '...');
+  console.log('  - Received signature:', signature);
+  console.log('  - Signing key exists:', !!signingKey);
+
   // Mailgun signature format: HMAC-SHA256(timestamp + token)
   const hmac = crypto.createHmac('sha256', signingKey);
   hmac.update(timestamp + token);
   const calculatedSignature = hmac.digest('hex');
+  
+  console.log('  - Calculated signature:', calculatedSignature);
+  console.log('  - Signatures match:', calculatedSignature === signature);
 
   return calculatedSignature === signature;
 }
