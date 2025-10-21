@@ -385,6 +385,16 @@ export default function Dashboard() {
               <img src={logoImage} alt="MeineDokBox" className="h-12 md:h-16 dark:invert dark:brightness-0 dark:contrast-200" data-testid="img-logo" />
               <div className="flex items-center gap-2 md:hidden">
                 <ThemeToggle />
+                <Link href="/settings">
+                  <Button variant="ghost" size="sm" data-testid="button-settings-mobile">
+                    <Settings className="h-4 w-4" />
+                  </Button>
+                </Link>
+                <Link href="/trash">
+                  <Button variant="ghost" size="sm" data-testid="button-trash-mobile">
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </Link>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button size="sm" data-testid="button-upload-menu-mobile">
