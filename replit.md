@@ -7,6 +7,14 @@ PaperEase is a web and mobile application that digitizes paper documents using s
 **Core Purpose:** Minimize friction in document capture and retrieval; maximize clarity in organization through AI-assisted categorization.
 
 **Recent Updates (Oct 2025):**
+- **Folder-Based Privacy System (Oct 21, 2025):**
+  - ✅ Backend: Folders table with `isShared` flag for granular privacy control
+  - ✅ Backend: Shared users only see documents from folders marked as shared
+  - ✅ Backend: Auto-migration creates default folders ("Alle Dokumente" shared, "Privat" private)
+  - ✅ Frontend: Folder navigation UI in Dashboard with Lock/Share icons
+  - ✅ Frontend: Documents filtered by selected folder
+  - ✅ Frontend: Upload documents into selected folder
+  - ⏳ Pending: Folder management UI in Settings (create, rename, delete, toggle sharing)
 - **Phase 3 Mobile Excellence Completed:**
   - ✅ Kamera-Multi-Shot-Modus: Kontinuierliche Dokumentenaufnahme mit der Handykamera
   - ✅ Auto-Bildoptimierung: Automatische Schärfung, Helligkeit- und Kontrast-Anpassung
@@ -87,7 +95,9 @@ Preferred communication style: Simple, everyday language.
 **Database Schema:**
 - `sessions` table: Express session storage with expiry indexing
 - `users` table: User profiles from Replit Auth (email, name, profile image)
-- `documents` table: Document metadata (title, category, extracted text, file URLs, confidence score, upload timestamp)
+- `folders` table: Folder organization with privacy control (userId, name, isShared boolean)
+- `documents` table: Document metadata (title, category, extracted text, file URLs, confidence score, upload timestamp, folderId for organization)
+- `sharedAccess` table: Tracks which users have shared access to other users' documents
 
 **Object Storage:** Google Cloud Storage integration via Replit Object Storage service.
 - Presigned URL generation for secure file uploads

@@ -122,7 +122,7 @@ export default function Dashboard() {
 
   // Upload mutation
   const uploadMutation = useMutation({
-    mutationFn: uploadDocument,
+    mutationFn: (files: File | File[]) => uploadDocument(files, selectedFolderId),
     onSuccess: (document) => {
       queryClient.invalidateQueries({ queryKey: ["/api/documents"] });
       queryClient.invalidateQueries({ queryKey: ["/api/storage/stats"] });
