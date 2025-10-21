@@ -285,27 +285,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "No pages found" });
       }
 
-      // Download all pages
-      const pages: PageBuffer[] = [];
-      for (const pageUrl of pageUrls) {
-        const objectFile = await objectStorageService.getObjectEntityFile(pageUrl);
-        const buffer = await objectStorageService.getObjectBuffer(objectFile);
-        
-        // Determine MIME type from file extension or object metadata
-        const extension = pageUrl.split('.').pop()?.toLowerCase();
-        let mimeType = 'image/jpeg';
-        if (extension === 'png') mimeType = 'image/png';
-        else if (extension === 'webp') mimeType = 'image/webp';
-        else if (extension === 'pdf') mimeType = 'application/pdf';
+      // Check if document is already a PDF (via mimeType in DB or fileUrl)
+      const isPdf = document.mimeType === 'application/pdf' || 
+                    document.fileUrl?.toLowerCase().endsWith('.pdf');
 
-        pages.push({ buffer, mimeType });
+      let pdfBuffer: Buffer;
+      const fileName = `${document.title}.pdf`;
+
+      if (isPdf && pageUrls.length === 1) {
+        // Document is already a PDF - stream it directly
+        const objectFile = await objectStorageService.getObjectEntityFile(pageUrls[0]);
+        pdfBuffer = await objectStorageService.getObjectBuffer(objectFile);
+      } else {
+        // Document is images - convert to PDF
+        const pages: PageBuffer[] = [];
+        for (const pageUrl of pageUrls) {
+          const objectFile = await objectStorageService.getObjectEntityFile(pageUrl);
+          const buffer = await objectStorageService.getObjectBuffer(objectFile);
+          
+          // Determine MIME type from file extension or object metadata
+          const extension = pageUrl.split('.').pop()?.toLowerCase();
+          let mimeType = 'image/jpeg';
+          if (extension === 'png') mimeType = 'image/png';
+          else if (extension === 'webp') mimeType = 'image/webp';
+
+          pages.push({ buffer, mimeType });
+        }
+
+        // Combine images to PDF
+        pdfBuffer = await combineImagesToPDF(pages);
       }
 
-      // Combine to PDF
-      const pdfBuffer = await combineImagesToPDF(pages);
-
       // Send PDF
-      const fileName = `${document.title}.pdf`;
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
       res.send(pdfBuffer);
