@@ -81,6 +81,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Subscription management routes
+  app.get('/api/subscription/status', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const { PLAN_LIMITS } = await import('@shared/schema');
+      const plan = user.subscriptionPlan as keyof typeof PLAN_LIMITS;
+      const limits = PLAN_LIMITS[plan];
+
+      // Calculate days remaining for trial
+      let daysRemaining = null;
+      if (user.subscriptionPlan === 'trial' && user.trialEndsAt) {
+        const now = new Date();
+        const timeRemaining = user.trialEndsAt.getTime() - now.getTime();
+        daysRemaining = Math.ceil(timeRemaining / (1000 * 60 * 60 * 24));
+      }
+
+      // Count current documents
+      const documents = await storage.getDocumentsByUserId(userId);
+      const documentCount = documents.length;
+
+      res.json({
+        plan: user.subscriptionPlan,
+        displayName: limits.displayName,
+        maxDocuments: limits.maxDocuments,
+        currentDocuments: documentCount,
+        canUseEmailInbound: limits.canUseEmailInbound,
+        price: limits.price,
+        trialEndsAt: user.trialEndsAt,
+        daysRemaining,
+        subscriptionEndsAt: user.subscriptionEndsAt,
+      });
+    } catch (error) {
+      console.error("Error fetching subscription status:", error);
+      res.status(500).json({ message: "Failed to fetch subscription status" });
+    }
+  });
+
   // Document upload endpoint - supports single or multiple files
   app.post('/api/documents/upload', isAuthenticated, checkDocumentLimit, upload.array('files', 20), async (req: any, res) => {
     try {
