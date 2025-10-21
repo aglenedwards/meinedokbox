@@ -123,3 +123,30 @@ export async function checkAndDowngradeTrial(userId: string): Promise<void> {
     console.error("Error checking trial status:", error);
   }
 }
+
+/**
+ * Get effective user ID for document access.
+ * If user has shared access to another account, returns the owner's ID.
+ * Otherwise returns the user's own ID.
+ * This allows shared users to access the owner's documents.
+ */
+export async function getEffectiveUserId(userId: string): Promise<string> {
+  try {
+    // Check if this user has access to a shared account
+    const accessibleAccounts = await storage.getAccessibleAccounts(userId);
+    
+    // If user has shared access to another account, use owner's ID
+    if (accessibleAccounts.sharedAccounts.length > 0) {
+      // Return the first shared account owner's ID
+      // (Currently limited to 1 shared account per user)
+      return accessibleAccounts.sharedAccounts[0].ownerId;
+    }
+    
+    // Otherwise use user's own ID
+    return userId;
+  } catch (error) {
+    console.error("Error getting effective user ID:", error);
+    // Fallback to user's own ID on error
+    return userId;
+  }
+}

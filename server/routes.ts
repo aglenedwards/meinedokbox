@@ -12,7 +12,8 @@ import { ObjectPermission } from "./objectAcl";
 import { insertDocumentSchema, DOCUMENT_CATEGORIES } from "@shared/schema";
 import { combineImagesToPDF, type PageBuffer } from "./lib/pdfGenerator";
 import { parseMailgunWebhook, isSupportedAttachment, isEmailWhitelisted, verifyMailgunWebhook, extractEmailAddress } from "./lib/emailInbound";
-import { checkDocumentLimit, checkEmailFeature, checkAndDowngradeTrial } from "./middleware/subscriptionLimits";
+import { sendSharedAccessInvitation } from "./lib/sendEmail";
+import { checkDocumentLimit, checkEmailFeature, checkAndDowngradeTrial, getEffectiveUserId } from "./middleware/subscriptionLimits";
 import { db } from "./db";
 import { users, emailLogs } from "@shared/schema";
 import { eq } from "drizzle-orm";
@@ -53,6 +54,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await checkAndDowngradeTrial(userId);
       
       const user = await storage.getUser(userId);
+      
+      // Auto-accept shared access invitation if pending
+      if (user && user.email) {
+        const pendingInvitation = await storage.getSharedAccessByEmail(user.email.toLowerCase());
+        if (pendingInvitation) {
+          console.log(`Auto-accepting shared access invitation for user ${userId}`);
+          await storage.acceptSharedInvitation(user.email.toLowerCase(), userId);
+        }
+      }
+      
       res.json(user);
     } catch (error) {
       console.error("Error fetching user:", error);
@@ -155,11 +166,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         status: 'pending',
       });
 
-      // TODO: Send email invitation via Mailgun
-      // For now, just return success
+      // Send email invitation via Mailgun
+      const ownerName = user.firstName && user.lastName 
+        ? `${user.firstName} ${user.lastName}`
+        : user.email || "Ein Nutzer";
+      
+      const emailSent = await sendSharedAccessInvitation(email.toLowerCase(), ownerName);
+      
+      if (!emailSent) {
+        console.warn("Failed to send invitation email, but invitation was created");
+      }
+
       res.json({
         message: "Einladung gesendet",
         sharedAccess,
+        emailSent,
       });
     } catch (error) {
       console.error("Error creating shared access:", error);
@@ -351,7 +372,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/storage/stats', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const stats = await storage.getUserStorageStats(userId);
+      // Get effective user ID (supports shared access)
+      const effectiveUserId = await getEffectiveUserId(userId);
+      const stats = await storage.getUserStorageStats(effectiveUserId);
       res.json(stats);
     } catch (error) {
       console.error("Error fetching storage stats:", error);
@@ -365,13 +388,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const { search, categories, sort } = req.query;
 
+      // Get effective user ID (supports shared access)
+      const effectiveUserId = await getEffectiveUserId(userId);
+
       // Parse categories from query string (comma-separated)
       const categoryArray = categories 
         ? (categories as string).split(',').filter(c => c.trim())
         : undefined;
 
       const documents = await storage.searchDocuments(
-        userId,
+        effectiveUserId,
         search as string | undefined,
         categoryArray,
         sort as any
@@ -511,6 +537,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const { id } = req.params;
 
+      // Get effective user ID (supports shared access)
+      const effectiveUserId = await getEffectiveUserId(userId);
+
       // Verify document exists and user owns it
       const document = await storage.getDocument(id);
 
@@ -518,12 +547,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Document not found" });
       }
 
-      if (document.userId !== userId) {
+      if (document.userId !== effectiveUserId) {
         return res.status(403).json({ message: "Access denied" });
       }
 
       // Soft delete document (moves to trash)
-      const deleted = await storage.deleteDocument(id, userId);
+      const deleted = await storage.deleteDocument(id, effectiveUserId);
 
       if (!deleted) {
         return res.status(500).json({ message: "Failed to delete document" });
