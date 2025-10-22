@@ -99,6 +99,7 @@ export const documents = pgTable("documents", {
   thumbnailUrl: text("thumbnail_url"),
   mimeType: varchar("mime_type", { length: 100 }),
   confidence: real("confidence").notNull(),
+  isPrivate: boolean("is_private").notNull().default(false), // Privacy per document - private docs only visible to owner
   uploadedAt: timestamp("uploaded_at").notNull().default(sql`now()`),
   deletedAt: timestamp("deleted_at"),
   // Phase 2: Smart metadata extraction
