@@ -144,17 +144,19 @@ export default function Settings() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Link to="/" data-testid="link-dashboard">
-            <div className="flex items-center gap-3 cursor-pointer hover-elevate active-elevate-2 rounded-md px-3 py-2 -ml-3">
-              <img src={logoImage} alt="MeineDokBox" className="h-10 w-10" />
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-                MeineDokBox
-              </h1>
-            </div>
-          </Link>
-          <ThemeToggle />
+      <header className="sticky top-0 z-10 bg-background border-b">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 py-3 md:py-4">
+          <div className="flex items-center justify-between gap-4">
+            <Link to="/" data-testid="link-dashboard">
+              <div className="flex items-center gap-3 cursor-pointer hover-elevate active-elevate-2 rounded-md px-3 py-2 -ml-3">
+                <img src={logoImage} alt="MeineDokBox" className="h-12 md:h-16" />
+                <h1 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                  MeineDokBox
+                </h1>
+              </div>
+            </Link>
+            <ThemeToggle />
+          </div>
         </div>
       </header>
 
