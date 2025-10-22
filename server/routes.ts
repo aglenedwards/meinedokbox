@@ -1,6 +1,8 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import multer from "multer";
+import path from "path";
+import fs from "fs";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated, optionalAuth } from "./replitAuth";
 import { analyzeDocument, analyzeDocumentFromText } from "./lib/openai";
@@ -44,6 +46,28 @@ const upload = multer({
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
+
+  // Serve PWA files with correct MIME types (fix production deployment)
+  app.get('/service-worker.js', (_req, res) => {
+    const filePath = path.resolve(import.meta.dirname, '..', 'public', 'service-worker.js');
+    if (fs.existsSync(filePath)) {
+      res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+      res.setHeader('Service-Worker-Allowed', '/');
+      res.sendFile(filePath);
+    } else {
+      res.status(404).send('Service Worker not found');
+    }
+  });
+
+  app.get('/manifest.json', (_req, res) => {
+    const filePath = path.resolve(import.meta.dirname, '..', 'public', 'manifest.json');
+    if (fs.existsSync(filePath)) {
+      res.setHeader('Content-Type', 'application/json; charset=utf-8');
+      res.sendFile(filePath);
+    } else {
+      res.status(404).send('Manifest not found');
+    }
+  });
 
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
@@ -507,6 +531,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         isShared // Only show shared folder documents if user is a shared user
       );
 
+      // Disable caching to ensure fresh data after privacy toggle
+      res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.set('Pragma', 'no-cache');
+      res.set('Expires', '0');
       res.json(documents);
     } catch (error) {
       console.error("Error fetching documents:", error);
