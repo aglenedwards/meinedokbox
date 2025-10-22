@@ -155,7 +155,7 @@ export function DocumentCard({
   category,
   date,
   thumbnailUrl,
-  isPrivate = false,
+  isPrivate,
   isUpdatingPrivacy = false,
   onView,
   onDelete,
@@ -166,6 +166,8 @@ export function DocumentCard({
   amount,
   sender,
 }: DocumentCardProps) {
+  // Handle null/undefined isPrivate values - default to false (shared)
+  const privateStatus = isPrivate ?? false;
   const config = categoryConfig[category] || categoryConfig['Sonstiges / Privat'];
   const CategoryIcon = config.icon;
   
@@ -321,13 +323,13 @@ export function DocumentCard({
           onClick={(e) => {
             e.stopPropagation();
             if (onPrivacyToggle && !isUpdatingPrivacy) {
-              onPrivacyToggle(!isPrivate);
+              onPrivacyToggle(!privateStatus);
             }
           }}
           data-testid={`button-privacy-${id}`}
-          title={isPrivate ? "Privat (nur Sie sehen dieses Dokument)" : "Für beide Nutzer sichtbar"}
+          title={privateStatus ? "Privat (nur Sie sehen dieses Dokument)" : "Für beide Nutzer sichtbar"}
         >
-          {isPrivate ? (
+          {privateStatus ? (
             <Lock className="h-4 w-4 text-red-600 dark:text-red-500" />
           ) : (
             <LockOpen className="h-4 w-4 text-muted-foreground" />
