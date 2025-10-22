@@ -261,12 +261,13 @@ export default function Landing() {
             14 Tage kostenlos testen. Keine Kreditkarte erforderlich.
           </p>
           
-          <div className="max-w-lg mx-auto">
-            <Card className="border-primary shadow-lg" data-testid="card-pricing">
-              <CardHeader className="text-center pb-8">
-                <CardTitle className="text-2xl">Premium Family</CardTitle>
+          <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+            {/* Solo Plan */}
+            <Card data-testid="card-pricing-solo">
+              <CardHeader className="text-center pb-6">
+                <CardTitle className="text-xl">Solo</CardTitle>
                 <div className="mt-4">
-                  <span className="text-5xl font-bold">€4,99</span>
+                  <span className="text-4xl font-bold">€3,99</span>
                   <span className="text-muted-foreground ml-2">/Monat</span>
                 </div>
               </CardHeader>
@@ -274,7 +275,63 @@ export default function Landing() {
                 <ul className="space-y-3">
                   <li className="flex items-start gap-3">
                     <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                    <span>2 Benutzer pro Account</span>
+                    <span>1 Benutzer</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                    <span>2 GB Speicherplatz</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                    <span>Unbegrenzte Dokumente</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                    <span>KI-Kategorisierung</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                    <span>Smartphone-App & PWA</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                    <span>E-Mail-Eingang</span>
+                  </li>
+                </ul>
+                <Button
+                  className="w-full mt-6"
+                  size="lg"
+                  variant="outline"
+                  onClick={() => {
+                    setAuthTab("signup");
+                    setAuthModalOpen(true);
+                  }}
+                  data-testid="button-pricing-solo"
+                >
+                  Kostenlos testen
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Family Plan - Hervorgehoben */}
+            <Card className="border-primary shadow-lg relative md:scale-105" data-testid="card-pricing-family">
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                <span className="bg-primary text-primary-foreground px-4 py-1 rounded-full text-sm font-medium">
+                  Empfohlen
+                </span>
+              </div>
+              <CardHeader className="text-center pb-6 pt-8">
+                <CardTitle className="text-2xl">Family</CardTitle>
+                <div className="mt-4">
+                  <span className="text-5xl font-bold">€6,99</span>
+                  <span className="text-muted-foreground ml-2">/Monat</span>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <ul className="space-y-3">
+                  <li className="flex items-start gap-3">
+                    <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                    <span>2 Benutzer</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
@@ -286,7 +343,7 @@ export default function Landing() {
                   </li>
                   <li className="flex items-start gap-3">
                     <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                    <span>KI-gestützte Kategorisierung</span>
+                    <span>KI-Kategorisierung</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
@@ -298,7 +355,7 @@ export default function Landing() {
                   </li>
                   <li className="flex items-start gap-3">
                     <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                    <span>E-Mail-Dokumenteneingang</span>
+                    <span>E-Mail-Eingang</span>
                   </li>
                 </ul>
                 <Button
@@ -308,9 +365,68 @@ export default function Landing() {
                     setAuthTab("signup");
                     setAuthModalOpen(true);
                   }}
-                  data-testid="button-pricing-cta"
+                  data-testid="button-pricing-family"
                 >
                   Jetzt 14 Tage kostenlos testen
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Family Plus Plan */}
+            <Card data-testid="card-pricing-family-plus">
+              <CardHeader className="text-center pb-6">
+                <CardTitle className="text-xl">Family Plus</CardTitle>
+                <div className="mt-4">
+                  <span className="text-4xl font-bold">€9,99</span>
+                  <span className="text-muted-foreground ml-2">/Monat</span>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <ul className="space-y-3">
+                  <li className="flex items-start gap-3">
+                    <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                    <span>4 Benutzer</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                    <span>15 GB Speicherplatz (geteilt)</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                    <span>Unbegrenzte Dokumente</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                    <span>KI-Kategorisierung</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                    <span>Smartphone-App & PWA</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                    <span>Private & geteilte Ordner</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                    <span>E-Mail-Eingang</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                    <span>Prioritäts-Support</span>
+                  </li>
+                </ul>
+                <Button
+                  className="w-full mt-6"
+                  size="lg"
+                  variant="outline"
+                  onClick={() => {
+                    setAuthTab("signup");
+                    setAuthModalOpen(true);
+                  }}
+                  data-testid="button-pricing-family-plus"
+                >
+                  Kostenlos testen
                 </Button>
               </CardContent>
             </Card>
