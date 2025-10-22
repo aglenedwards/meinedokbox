@@ -40,10 +40,11 @@ export const PLAN_LIMITS = {
   },
 } as const;
 
-// User storage table for Replit Auth
+// User storage table with Email/Password authentication
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  email: varchar("email").unique(),
+  email: varchar("email").notNull().unique(),
+  passwordHash: varchar("password_hash"), // bcrypt hash for password authentication
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
@@ -99,7 +100,7 @@ export const documents = pgTable("documents", {
   thumbnailUrl: text("thumbnail_url"),
   mimeType: varchar("mime_type", { length: 100 }),
   confidence: real("confidence").notNull(),
-  isPrivate: boolean("is_private").notNull().default(false), // Privacy per document - private docs only visible to owner
+  isShared: boolean("is_shared").notNull().default(false), // DEFAULT: docs are private (not shared). User can manually share.
   uploadedAt: timestamp("uploaded_at").notNull().default(sql`now()`),
   deletedAt: timestamp("deleted_at"),
   // Phase 2: Smart metadata extraction
