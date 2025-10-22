@@ -534,6 +534,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // DEBUG: Log first document's privacy status
       if (documents.length > 0) {
         console.log('[GET /api/documents] First doc isPrivate:', documents[0].isPrivate, 'type:', typeof documents[0].isPrivate);
+        console.log('[GET /api/documents] First doc ALL KEYS:', Object.keys(documents[0]));
+        console.log('[GET /api/documents] JSON.stringify result:', JSON.stringify(documents[0]).substring(0, 200));
       }
 
       // Disable caching to ensure fresh data after privacy toggle
