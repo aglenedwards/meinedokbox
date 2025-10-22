@@ -13,8 +13,12 @@ export async function sendEmail(options: EmailOptions): Promise<boolean> {
   const apiKey = process.env.MAILGUN_API_KEY;
   const domain = process.env.MAILGUN_DOMAIN;
 
+  console.log(`[Email] Attempting to send email to: ${options.to}`);
+  console.log(`[Email] Mailgun domain: ${domain ? 'configured' : 'NOT configured'}`);
+  console.log(`[Email] Mailgun API key: ${apiKey ? 'configured' : 'NOT configured'}`);
+
   if (!apiKey || !domain) {
-    console.error("Mailgun credentials not configured");
+    console.error("[Email] ERROR: Mailgun credentials not configured");
     return false;
   }
 
@@ -39,15 +43,15 @@ export async function sendEmail(options: EmailOptions): Promise<boolean> {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Mailgun API error:", errorText);
+      console.error("[Email] Mailgun API error (status " + response.status + "):", errorText);
       return false;
     }
 
     const result = await response.json();
-    console.log("Email sent successfully:", result);
+    console.log("[Email] ✅ Email sent successfully:", result);
     return true;
   } catch (error) {
-    console.error("Failed to send email:", error);
+    console.error("[Email] ❌ Failed to send email:", error);
     return false;
   }
 }

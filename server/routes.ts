@@ -171,10 +171,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ? `${user.firstName} ${user.lastName}`
         : user.email || "Ein Nutzer";
       
+      console.log(`[Invite] Sending invitation email to ${email.toLowerCase()} from ${ownerName}`);
       const emailSent = await sendSharedAccessInvitation(email.toLowerCase(), ownerName);
       
       if (!emailSent) {
-        console.warn("Failed to send invitation email, but invitation was created");
+        console.warn("[Invite] ⚠️ Failed to send invitation email, but invitation was created");
+      } else {
+        console.log("[Invite] ✅ Invitation email sent successfully");
       }
 
       res.json({
