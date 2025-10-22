@@ -73,7 +73,16 @@ export async function getDocuments(
     throw new Error(`${response.status}: ${text}`);
   }
 
-  return await response.json();
+  const data = await response.json();
+  
+  // DEBUG: Log what we actually receive
+  if (data && data.length > 0) {
+    console.log('[getDocuments] First doc keys:', Object.keys(data[0]));
+    console.log('[getDocuments] First doc isPrivate:', data[0].isPrivate, 'type:', typeof data[0].isPrivate);
+    console.log('[getDocuments] First doc is_private:', data[0].is_private, 'type:', typeof data[0].is_private);
+  }
+  
+  return data;
 }
 
 /**
