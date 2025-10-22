@@ -244,10 +244,10 @@ export default function Dashboard() {
       await queryClient.cancelQueries({ queryKey: ["/api/documents"] });
 
       // Snapshot previous value
-      const previousDocuments = queryClient.getQueryData(["/api/documents"]);
+      const previousDocuments = queryClient.getQueryData(["/api/documents", searchQuery, selectedCategories, sortBy]);
 
       // Optimistically update to the new value
-      queryClient.setQueryData(["/api/documents", searchQuery, selectedCategories], (old: Document[] | undefined) =>
+      queryClient.setQueryData(["/api/documents", searchQuery, selectedCategories, sortBy], (old: Document[] | undefined) =>
         old?.map(doc => doc.id === id ? { ...doc, isPrivate } : doc)
       );
 
@@ -256,7 +256,7 @@ export default function Dashboard() {
     onError: (error: Error, variables, context) => {
       // Rollback to previous value on error
       if (context?.previousDocuments) {
-        queryClient.setQueryData(["/api/documents"], context.previousDocuments);
+        queryClient.setQueryData(["/api/documents", searchQuery, selectedCategories, sortBy], context.previousDocuments);
       }
       toast({
         title: "Fehler beim Aktualisieren",
