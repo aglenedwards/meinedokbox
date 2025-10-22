@@ -14,18 +14,13 @@ export interface StorageStats {
  * Upload one or more document files and process them with AI
  * If multiple files are provided, they will be combined into a single multi-page PDF
  */
-export async function uploadDocument(files: File | File[], folderId?: string | null): Promise<Document> {
+export async function uploadDocument(files: File | File[]): Promise<Document> {
   const formData = new FormData();
   const fileArray = Array.isArray(files) ? files : [files];
   
   fileArray.forEach(file => {
     formData.append("files", file);
   });
-
-  // Add folder ID if provided
-  if (folderId) {
-    formData.append("folderId", folderId);
-  }
 
   const response = await fetch("/api/documents/upload", {
     method: "POST",
@@ -303,51 +298,3 @@ export async function getSubscriptionStatus(): Promise<SubscriptionStatus> {
   return await response.json();
 }
 
-// Folder management
-
-export interface Folder {
-  id: string;
-  userId: string;
-  name: string;
-  isShared: boolean;
-  createdAt: Date;
-}
-
-/**
- * Get all folders for current user
- */
-export async function getFolders(): Promise<Folder[]> {
-  const response = await fetch("/api/folders", {
-    credentials: "include",
-  });
-
-  if (!response.ok) {
-    const text = (await response.text()) || response.statusText;
-    throw new Error(`${response.status}: ${text}`);
-  }
-
-  return await response.json();
-}
-
-/**
- * Create a new folder
- */
-export async function createFolder(name: string, isShared: boolean = false): Promise<Folder> {
-  const response = await apiRequest("POST", "/api/folders", { name, isShared });
-  return await response.json();
-}
-
-/**
- * Update folder properties (name or isShared)
- */
-export async function updateFolder(id: string, data: { name?: string; isShared?: boolean }): Promise<Folder> {
-  const response = await apiRequest("PATCH", `/api/folders/${id}`, data);
-  return await response.json();
-}
-
-/**
- * Delete a folder
- */
-export async function deleteFolder(id: string): Promise<void> {
-  await apiRequest("DELETE", `/api/folders/${id}`);
-}
