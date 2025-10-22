@@ -279,6 +279,9 @@ export interface SubscriptionStatus {
   price: number;
   trialEndsAt?: Date;
   daysRemaining?: number | null;
+  gracePeriod?: boolean;
+  isReadOnly?: boolean;
+  graceDaysRemaining?: number;
   subscriptionEndsAt?: Date;
 }
 

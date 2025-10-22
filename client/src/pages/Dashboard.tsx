@@ -33,6 +33,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { UpgradeModal } from "@/components/UpgradeModal";
 import { TrialBanner } from "@/components/TrialBanner";
+import { GracePeriodBanner } from "@/components/GracePeriodBanner";
+import { ReadOnlyBanner } from "@/components/ReadOnlyBanner";
 import { Footer } from "@/components/Footer";
 import logoImage from "@assets/meinedokbox_1760966015056.png";
 
@@ -100,6 +102,10 @@ export default function Dashboard() {
     reason?: "document_limit" | "email_feature" | "trial_expired";
   }>({ open: false });
   const [updatingSharing, setUpdatingSharing] = useState<string | null>(null);
+
+  // Check if uploads/edits should be disabled (grace period or read-only mode)
+  const isUploadDisabled = subscriptionStatus?.gracePeriod || subscriptionStatus?.isReadOnly;
+  const isReadOnly = subscriptionStatus?.isReadOnly;
 
   // Fetch documents with React Query
   const { data: documents = [], isLoading } = useQuery<Document[]>({
@@ -457,23 +463,25 @@ export default function Dashboard() {
                     <Settings className="h-4 w-4" />
                   </Button>
                 </Link>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button size="sm" data-testid="button-upload-menu-mobile">
-                      <Plus className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => { setShowUpload(false); setShowCameraMultiShot(true); }} data-testid="menu-item-camera-scanner">
-                      <Camera className="h-4 w-4 mr-2" />
-                      Kamera-Scanner
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => { setShowCameraMultiShot(false); setShowUpload(true); }} data-testid="menu-item-multi-page">
-                      <Plus className="h-4 w-4 mr-2" />
-                      Mehrere Seiten
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                {!isUploadDisabled && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button size="sm" data-testid="button-upload-menu-mobile">
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => { setShowUpload(false); setShowCameraMultiShot(true); }} data-testid="menu-item-camera-scanner">
+                        <Camera className="h-4 w-4 mr-2" />
+                        Kamera-Scanner
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => { setShowCameraMultiShot(false); setShowUpload(true); }} data-testid="menu-item-multi-page">
+                        <Plus className="h-4 w-4 mr-2" />
+                        Mehrere Seiten
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
               </div>
             </div>
             
@@ -497,12 +505,14 @@ export default function Dashboard() {
                   Export
                 </Button>
               )}
-              <Link href="/trash">
-                <Button variant="outline" size="sm" data-testid="button-trash">
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Papierkorb
-                </Button>
-              </Link>
+              {!isReadOnly && (
+                <Link href="/trash">
+                  <Button variant="outline" size="sm" data-testid="button-trash">
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Papierkorb
+                  </Button>
+                </Link>
+              )}
               <Link href="/settings">
                 <Button variant="outline" size="sm" data-testid="button-settings">
                   <Settings className="h-4 w-4 mr-2" />
@@ -519,25 +529,27 @@ export default function Dashboard() {
                 <LogOut className="h-4 w-4 mr-2" />
                 Abmelden
               </Button>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button data-testid="button-upload-menu">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Hochladen
-                    <ChevronDown className="h-4 w-4 ml-2" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => { setShowUpload(false); setShowCameraMultiShot(true); }} data-testid="menu-item-camera-scanner-desktop">
-                    <Camera className="h-4 w-4 mr-2" />
-                    Kamera-Scanner
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => { setShowCameraMultiShot(false); setShowUpload(true); }} data-testid="menu-item-multi-page-desktop">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Mehrere Seiten
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              {!isUploadDisabled && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button data-testid="button-upload-menu">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Hochladen
+                      <ChevronDown className="h-4 w-4 ml-2" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => { setShowUpload(false); setShowCameraMultiShot(true); }} data-testid="menu-item-camera-scanner-desktop">
+                      <Camera className="h-4 w-4 mr-2" />
+                      Kamera-Scanner
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => { setShowCameraMultiShot(false); setShowUpload(true); }} data-testid="menu-item-multi-page-desktop">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Mehrere Seiten
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
             </div>
           </div>
         </div>
@@ -566,7 +578,7 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* Trial Banner */}
+        {/* Subscription Status Banners */}
         {subscriptionStatus?.plan === "trial" && subscriptionStatus.daysRemaining && subscriptionStatus.daysRemaining > 0 && (
           <div className="mb-6">
             <TrialBanner
@@ -574,6 +586,16 @@ export default function Dashboard() {
               onUpgrade={() => setUpgradeModal({ open: true, reason: "trial_expired" })}
             />
           </div>
+        )}
+        
+        {/* Grace Period Banner (Days 15-17) */}
+        {subscriptionStatus?.gracePeriod && subscriptionStatus.graceDaysRemaining && (
+          <GracePeriodBanner graceDaysRemaining={subscriptionStatus.graceDaysRemaining} />
+        )}
+        
+        {/* Read-Only Banner (Day 18+) */}
+        {subscriptionStatus?.isReadOnly && (
+          <ReadOnlyBanner />
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-8">
@@ -670,7 +692,7 @@ export default function Dashboard() {
             />
           </div>
 
-          {selectedDocuments.size > 0 && (
+          {!isReadOnly && selectedDocuments.size > 0 && (
             <div className="mt-4 flex items-center gap-4 p-4 bg-accent rounded-lg">
               <div className="flex items-center gap-2">
                 <Checkbox
@@ -708,12 +730,12 @@ export default function Dashboard() {
                 ? `Keine Dokumente für "${searchQuery}" gefunden.`
                 : "Laden Sie Ihr erstes Dokument hoch, um loszulegen."
             }
-            actionLabel={!searchQuery ? "Dokument hochladen" : undefined}
-            onAction={!searchQuery ? () => setShowUpload(true) : undefined}
+            actionLabel={!searchQuery && !isUploadDisabled ? "Dokument hochladen" : undefined}
+            onAction={!searchQuery && !isUploadDisabled ? () => setShowUpload(true) : undefined}
           />
         ) : (
           <>
-            {documents.length > 0 && (
+            {!isReadOnly && documents.length > 0 && (
               <div className="mb-4 flex items-center gap-2">
                 <Checkbox
                   checked={allSelected}
@@ -728,19 +750,21 @@ export default function Dashboard() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
               {formattedDocuments.map((doc) => (
                 <div key={doc.id} className="relative">
-                  <div className="absolute top-2 left-2 z-10">
-                    <Checkbox
-                      checked={selectedDocuments.has(doc.id)}
-                      onCheckedChange={(checked) => handleSelectDocument(doc.id, checked as boolean)}
-                      data-testid={`checkbox-document-${doc.id}`}
-                      className="bg-background"
-                    />
-                  </div>
+                  {!isReadOnly && (
+                    <div className="absolute top-2 left-2 z-10">
+                      <Checkbox
+                        checked={selectedDocuments.has(doc.id)}
+                        onCheckedChange={(checked) => handleSelectDocument(doc.id, checked as boolean)}
+                        data-testid={`checkbox-document-${doc.id}`}
+                        className="bg-background"
+                      />
+                    </div>
+                  )}
                   <DocumentCard
                     {...doc}
                     isUpdatingSharing={updatingSharing === doc.id}
                     onView={() => handleView(doc.id)}
-                    onDelete={() => handleDelete(doc.id)}
+                    onDelete={!isReadOnly ? () => handleDelete(doc.id) : undefined}
                     onCategoryChange={(category) => handleCategoryChange(doc.id, category)}
                     onSharingToggle={(isShared) => {
                       if (updatingSharing === null) {
