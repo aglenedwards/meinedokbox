@@ -264,13 +264,8 @@ export default function Dashboard() {
         variant: "destructive",
       });
     },
-    onSuccess: (updatedDoc) => {
-      toast({
-        title: updatedDoc.isPrivate ? "Dokument auf Privat gesetzt" : "Dokument geteilt",
-        description: updatedDoc.isPrivate 
-          ? "Nur Sie können dieses Dokument sehen" 
-          : "Beide Nutzer können dieses Dokument sehen",
-      });
+    onSuccess: () => {
+      // Visual feedback via icon color change is sufficient
     },
     onSettled: () => {
       // Always refetch after error or success to ensure sync

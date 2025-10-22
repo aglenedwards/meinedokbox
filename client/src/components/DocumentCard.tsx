@@ -323,7 +323,7 @@ export function DocumentCard({
           title={isPrivate ? "Privat (nur für Sie sichtbar)" : "Geteilt (für beide Nutzer sichtbar)"}
         >
           {isPrivate ? (
-            <Lock className="h-4 w-4 text-muted-foreground" />
+            <Lock className="h-4 w-4 text-destructive" />
           ) : (
             <LockOpen className="h-4 w-4 text-muted-foreground" />
           )}
