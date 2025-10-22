@@ -288,6 +288,10 @@ export default function Dashboard() {
     onSuccess: () => {
       setUpdatingPrivacy(null);
     },
+    onSettled: () => {
+      // Always refetch to ensure UI shows the correct privacy state
+      queryClient.invalidateQueries({ queryKey: ["/api/documents"] });
+    },
   });
 
   const handleCategoryToggle = (category: string) => {
