@@ -1,6 +1,8 @@
 /**
- * Send email using Mailgun API
+ * Send email using SMTP (Hostinger)
  */
+
+import nodemailer from 'nodemailer';
 
 interface EmailOptions {
   to: string;
@@ -10,45 +12,43 @@ interface EmailOptions {
 }
 
 export async function sendEmail(options: EmailOptions): Promise<boolean> {
-  const apiKey = process.env.MAILGUN_API_KEY;
-  const domain = process.env.MAILGUN_DOMAIN;
+  const smtpHost = process.env.SMTP_HOST;
+  const smtpPort = process.env.SMTP_PORT;
+  const smtpUser = process.env.SMTP_USER;
+  const smtpPass = process.env.SMTP_PASS;
 
   console.log(`[Email] Attempting to send email to: ${options.to}`);
-  console.log(`[Email] Mailgun domain: ${domain ? 'configured' : 'NOT configured'}`);
-  console.log(`[Email] Mailgun API key: ${apiKey ? 'configured' : 'NOT configured'}`);
+  console.log(`[Email] SMTP Host: ${smtpHost ? 'configured' : 'NOT configured'}`);
+  console.log(`[Email] SMTP Port: ${smtpPort || 'NOT configured'}`);
+  console.log(`[Email] SMTP User: ${smtpUser ? 'configured' : 'NOT configured'}`);
 
-  if (!apiKey || !domain) {
-    console.error("[Email] ERROR: Mailgun credentials not configured");
+  if (!smtpHost || !smtpPort || !smtpUser || !smtpPass) {
+    console.error("[Email] ERROR: SMTP credentials not configured");
     return false;
   }
 
   try {
-    const formData = new URLSearchParams();
-    formData.append("from", `MeineDokBox <noreply@${domain}>`);
-    formData.append("to", options.to);
-    formData.append("subject", options.subject);
-    formData.append("text", options.text);
-    
-    if (options.html) {
-      formData.append("html", options.html);
-    }
-
-    const response = await fetch(`https://api.mailgun.net/v3/${domain}/messages`, {
-      method: "POST",
-      headers: {
-        Authorization: `Basic ${Buffer.from(`api:${apiKey}`).toString("base64")}`,
+    // Create transporter with Hostinger SMTP settings
+    const transporter = nodemailer.createTransport({
+      host: smtpHost,
+      port: parseInt(smtpPort),
+      secure: true, // true for port 465
+      auth: {
+        user: smtpUser,
+        pass: smtpPass,
       },
-      body: formData,
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("[Email] Mailgun API error (status " + response.status + "):", errorText);
-      return false;
-    }
+    // Send email
+    const info = await transporter.sendMail({
+      from: `"MeineDokBox" <${smtpUser}>`,
+      to: options.to,
+      subject: options.subject,
+      text: options.text,
+      html: options.html || options.text,
+    });
 
-    const result = await response.json();
-    console.log("[Email] ✅ Email sent successfully:", result);
+    console.log("[Email] ✅ Email sent successfully:", info.messageId);
     return true;
   } catch (error) {
     console.error("[Email] ❌ Failed to send email:", error);
@@ -70,7 +70,7 @@ Hallo!
 
 ${ownerName} möchte sein MeineDokBox-Konto mit Ihnen teilen.
 
-Mit dieser Einladung erhalten Sie vollen Zugriff auf alle Dokumente und können gemeinsam Dokumente verwalten.
+Mit dieser Einladung erhalten Sie vollen Zugriff auf alle geteilten Dokumente und können gemeinsam Dokumente verwalten.
 
 So akzeptieren Sie die Einladung:
 1. Gehen Sie zu MeineDokBox: ${process.env.REPLIT_DOMAINS?.split(',')[0] || 'https://meinedokbox.replit.app'}
@@ -149,7 +149,7 @@ Ihr MeineDokBox Team
     
     <p><strong>${ownerName}</strong> möchte sein MeineDokBox-Konto mit Ihnen teilen.</p>
     
-    <p>Mit dieser Einladung erhalten Sie vollen Zugriff auf alle Dokumente und können gemeinsam Dokumente verwalten.</p>
+    <p>Mit dieser Einladung erhalten Sie vollen Zugriff auf alle geteilten Dokumente und können gemeinsam Dokumente verwalten.</p>
     
     <div class="steps">
       <h3>So akzeptieren Sie die Einladung:</h3>
