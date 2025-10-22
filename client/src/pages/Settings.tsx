@@ -12,6 +12,7 @@ import { queryClient } from "@/lib/queryClient";
 import { getCurrentUser, getSubscriptionStatus, type SubscriptionStatus } from "@/lib/api";
 import type { User as UserType, SharedAccess } from "@shared/schema";
 import { UpgradeModal } from "@/components/UpgradeModal";
+import { Footer } from "@/components/Footer";
 import logoImage from "@assets/meinedokbox_1760966015056.png";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Link } from "wouter";
@@ -413,6 +414,8 @@ export default function Settings() {
         open={upgradeModalOpen}
         onClose={() => setUpgradeModalOpen(false)}
       />
+
+      <Footer />
     </div>
   );
 }
