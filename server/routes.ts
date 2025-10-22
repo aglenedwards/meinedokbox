@@ -454,6 +454,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       thumbnailUrl: thumbnailPath,
       mimeType: files[0].mimetype, // Store original MIME type
       confidence: analysisResult.confidence,
+      isPrivate: false, // Default: shared documents
       // Phase 2: Smart metadata
       extractedDate: analysisResult.extractedDate ? new Date(analysisResult.extractedDate) : null,
       amount: analysisResult.amount ?? null,
