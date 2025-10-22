@@ -230,15 +230,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const { PLAN_LIMITS } = await import('@shared/schema');
+      const { getTrialStatus } = await import('./middleware/subscriptionLimits');
+      
       const plan = user.subscriptionPlan as keyof typeof PLAN_LIMITS;
       const limits = PLAN_LIMITS[plan];
 
-      // Calculate days remaining for trial
+      // Calculate trial status with grace period
       let daysRemaining = null;
+      let gracePeriod = false;
+      let isReadOnly = false;
+      let graceDaysRemaining = 0;
+      
       if (user.subscriptionPlan === 'trial' && user.trialEndsAt) {
-        const now = new Date();
-        const timeRemaining = user.trialEndsAt.getTime() - now.getTime();
-        daysRemaining = Math.ceil(timeRemaining / (1000 * 60 * 60 * 24));
+        const trialStatus = getTrialStatus(user.trialEndsAt);
+        daysRemaining = trialStatus.daysRemaining;
+        gracePeriod = trialStatus.status === 'grace_period';
+        isReadOnly = trialStatus.status === 'expired';
+        graceDaysRemaining = trialStatus.graceDaysRemaining;
       }
 
       // Count current documents
@@ -254,6 +262,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         price: limits.price,
         trialEndsAt: user.trialEndsAt,
         daysRemaining,
+        gracePeriod,
+        isReadOnly,
+        graceDaysRemaining,
         subscriptionEndsAt: user.subscriptionEndsAt,
       });
     } catch (error) {

@@ -4,6 +4,7 @@ import { PLAN_LIMITS } from "../../shared/schema";
 
 /**
  * Middleware to check if user has reached document limit for their subscription plan
+ * Blocks uploads during grace period and read-only mode
  */
 export const checkDocumentLimit: RequestHandler = async (req: any, res, next) => {
   try {
@@ -19,13 +20,26 @@ export const checkDocumentLimit: RequestHandler = async (req: any, res, next) =>
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Check if trial has expired and downgrade to free
-    const now = new Date();
-    if (user.subscriptionPlan === "trial" && user.trialEndsAt && now > user.trialEndsAt) {
-      // Auto-downgrade to free (will be handled in next request)
-      console.log(`Trial expired for user ${userId}, will downgrade to free`);
-      // For now, treat as free user
-      user.subscriptionPlan = "free";
+    // Check trial status with grace period
+    if (user.subscriptionPlan === "trial" && user.trialEndsAt) {
+      const trialStatus = getTrialStatus(user.trialEndsAt);
+      
+      // Block uploads during grace period (days 15-17)
+      if (trialStatus.status === "grace_period") {
+        return res.status(403).json({
+          message: "Testphase abgelaufen - Upload deaktiviert",
+          reason: "grace_period",
+          graceDaysRemaining: trialStatus.graceDaysRemaining,
+        });
+      }
+      
+      // Block uploads in read-only mode (day 18+)
+      if (trialStatus.status === "expired") {
+        return res.status(403).json({
+          message: "Nur-Lese-Modus - Bitte upgraden Sie Ihren Plan",
+          reason: "read_only",
+        });
+      }
     }
 
     const plan = user.subscriptionPlan as keyof typeof PLAN_LIMITS;
@@ -97,7 +111,44 @@ export const checkEmailFeature: RequestHandler = async (req: any, res, next) => 
 };
 
 /**
+ * Calculate trial status with grace period support
+ * Returns:
+ * - "active": Trial still active (days 1-14)
+ * - "grace_period": Trial ended, but grace period (days 15-17) 
+ * - "expired": Grace period ended, read-only mode (day 18+)
+ */
+export function getTrialStatus(trialEndsAt: Date | null): {
+  status: "active" | "grace_period" | "expired";
+  daysRemaining: number;
+  graceDaysRemaining: number;
+} {
+  if (!trialEndsAt) {
+    return { status: "expired", daysRemaining: 0, graceDaysRemaining: 0 };
+  }
+
+  const now = new Date();
+  const timeRemaining = trialEndsAt.getTime() - now.getTime();
+  const daysRemaining = Math.ceil(timeRemaining / (1000 * 60 * 60 * 24));
+
+  // Grace period is 3 days after trial ends (days 15-17)
+  const gracePeriodDays = 3;
+  const gracePeriodEnds = new Date(trialEndsAt);
+  gracePeriodEnds.setDate(gracePeriodEnds.getDate() + gracePeriodDays);
+  
+  const graceDaysRemaining = Math.ceil((gracePeriodEnds.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+
+  if (daysRemaining > 0) {
+    return { status: "active", daysRemaining, graceDaysRemaining };
+  } else if (graceDaysRemaining > 0) {
+    return { status: "grace_period", daysRemaining: 0, graceDaysRemaining };
+  } else {
+    return { status: "expired", daysRemaining: 0, graceDaysRemaining: 0 };
+  }
+}
+
+/**
  * Helper to check and auto-downgrade trial users if trial expired
+ * Now with grace period support - only downgrades after grace period ends
  * Should be called on user login or app initialization
  */
 export async function checkAndDowngradeTrial(userId: string): Promise<void> {
@@ -108,16 +159,19 @@ export async function checkAndDowngradeTrial(userId: string): Promise<void> {
       return;
     }
 
-    // Check if trial has expired
-    const now = new Date();
-    if (user.subscriptionPlan === "trial" && user.trialEndsAt && now > user.trialEndsAt) {
-      console.log(`Auto-downgrading user ${userId} from trial to free`);
+    // Check if trial has expired AND grace period has ended
+    if (user.subscriptionPlan === "trial" && user.trialEndsAt) {
+      const trialStatus = getTrialStatus(user.trialEndsAt);
       
-      // Downgrade to free plan
-      await storage.updateUserSubscription(userId, {
-        subscriptionPlan: "free",
-        trialEndsAt: user.trialEndsAt, // Keep original trial end date for records
-      });
+      if (trialStatus.status === "expired") {
+        console.log(`Auto-downgrading user ${userId} from trial to free (grace period ended)`);
+        
+        // Downgrade to free plan
+        await storage.updateUserSubscription(userId, {
+          subscriptionPlan: "free",
+          trialEndsAt: user.trialEndsAt, // Keep original trial end date for records
+        });
+      }
     }
   } catch (error) {
     console.error("Error checking trial status:", error);
