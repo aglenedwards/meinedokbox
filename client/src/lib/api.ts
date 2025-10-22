@@ -90,6 +90,14 @@ export async function updateDocumentCategory(id: string, category: string): Prom
 }
 
 /**
+ * Toggle document privacy (private/shared)
+ */
+export async function updateDocumentPrivacy(id: string, isPrivate: boolean): Promise<Document> {
+  const response = await apiRequest("PATCH", `/api/documents/${id}/privacy`, { isPrivate });
+  return await response.json();
+}
+
+/**
  * Delete a document by ID (soft delete - moves to trash)
  */
 export async function deleteDocument(id: string): Promise<void> {
