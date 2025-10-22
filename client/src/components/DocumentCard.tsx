@@ -1,11 +1,12 @@
 import { 
   FileText, Calendar, MoreVertical, Euro, FileSignature, Shield, Mail, FileQuestion,
   Landmark, Receipt, Briefcase, FileCheck, Building2, Stethoscope, Home, Car, 
-  GraduationCap, Baby, PiggyBank, ShoppingBag, Plane, User, Sparkles, Lock, LockOpen
+  GraduationCap, Baby, PiggyBank, ShoppingBag, Plane, User, Sparkles
 } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -309,25 +310,19 @@ export function DocumentCard({
         </div>
       </CardHeader>
       
-      {/* Privacy toggle button - bottom right */}
-      <div className="absolute bottom-3 right-3">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8"
-          onClick={(e) => {
-            e.stopPropagation();
-            onPrivacyToggle?.(!isPrivate);
+      {/* Privacy toggle - bottom right */}
+      <div className="absolute bottom-3 right-3 flex items-center gap-2 bg-background/90 backdrop-blur-sm px-3 py-1.5 rounded-md border">
+        <span className="text-xs text-muted-foreground">
+          {isPrivate ? "Privat" : "Geteilt"}
+        </span>
+        <Switch
+          checked={!isPrivate}
+          onCheckedChange={(checked) => {
+            onPrivacyToggle?.(!checked);
           }}
-          data-testid={`button-privacy-${id}`}
-          title={isPrivate ? "Privat (nur für Sie sichtbar)" : "Geteilt (für beide Nutzer sichtbar)"}
-        >
-          {isPrivate ? (
-            <Lock className="h-4 w-4 text-destructive" />
-          ) : (
-            <LockOpen className="h-4 w-4 text-muted-foreground" />
-          )}
-        </Button>
+          data-testid={`switch-privacy-${id}`}
+          onClick={(e) => e.stopPropagation()}
+        />
       </div>
     </Card>
   );
