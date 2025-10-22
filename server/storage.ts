@@ -1,6 +1,6 @@
-import { type User, type UpsertUser, type Document, type InsertDocument, type Tag, type InsertTag, type DocumentTag, type InsertDocumentTag, type SharedAccess, type InsertSharedAccess, type Folder, type InsertFolder } from "@shared/schema";
+import { type User, type UpsertUser, type Document, type InsertDocument, type Tag, type InsertTag, type DocumentTag, type InsertDocumentTag, type SharedAccess, type InsertSharedAccess, type Folder, type InsertFolder, type TrialNotification, type InsertTrialNotification } from "@shared/schema";
 import { db } from "./db";
-import { users, documents, tags, documentTags, sharedAccess, folders } from "@shared/schema";
+import { users, documents, tags, documentTags, sharedAccess, folders, trialNotifications } from "@shared/schema";
 import { eq, and, or, like, desc, asc, isNull, isNotNull, inArray, sql } from "drizzle-orm";
 import { generateInboundEmail } from "./lib/emailInbound";
 
@@ -59,6 +59,11 @@ export interface IStorage {
   updateFolder(id: string, userId: string, data: Partial<InsertFolder>): Promise<Folder | undefined>;
   deleteFolder(id: string, userId: string): Promise<boolean>;
   createDefaultFolders(userId: string): Promise<void>;
+  
+  // Trial notifications tracking
+  createTrialNotification(data: InsertTrialNotification): Promise<TrialNotification>;
+  getTrialNotification(userId: string, notificationType: string): Promise<TrialNotification | undefined>;
+  getUsersNeedingTrialNotifications(): Promise<User[]>;
 }
 
 export class DbStorage implements IStorage {
@@ -640,6 +645,43 @@ export class DbStorage implements IStorage {
         isShared: false,
       }
     ]);
+  }
+
+  // Trial notifications implementations
+  async createTrialNotification(data: InsertTrialNotification): Promise<TrialNotification> {
+    const [notification] = await db
+      .insert(trialNotifications)
+      .values(data)
+      .returning();
+    return notification;
+  }
+
+  async getTrialNotification(userId: string, notificationType: string): Promise<TrialNotification | undefined> {
+    const [notification] = await db
+      .select()
+      .from(trialNotifications)
+      .where(
+        and(
+          eq(trialNotifications.userId, userId),
+          eq(trialNotifications.notificationType, notificationType)
+        )
+      );
+    return notification;
+  }
+
+  async getUsersNeedingTrialNotifications(): Promise<User[]> {
+    const now = new Date();
+    const allTrialUsers = await db
+      .select()
+      .from(users)
+      .where(
+        and(
+          eq(users.subscriptionPlan, 'trial'),
+          isNotNull(users.trialEndsAt)
+        )
+      );
+
+    return allTrialUsers;
   }
 }
 
