@@ -25,6 +25,7 @@ export interface IStorage {
   getDocumentsByUserId(userId: string, sortBy?: SortOption, includeOnlySharedFolders?: boolean): Promise<Document[]>;
   searchDocuments(userId: string, query?: string, categories?: string[], sortBy?: SortOption, includeOnlySharedFolders?: boolean): Promise<Document[]>;
   updateDocumentCategory(id: string, userId: string, category: string): Promise<Document | undefined>;
+  updateDocumentPrivacy(id: string, userId: string, isPrivate: boolean): Promise<Document | undefined>;
   deleteDocument(id: string, userId: string): Promise<boolean>;
   bulkDeleteDocuments(ids: string[], userId: string): Promise<number>;
   getTrashedDocuments(userId: string): Promise<Document[]>;
@@ -145,52 +146,24 @@ export class DbStorage implements IStorage {
   }
 
   async getDocumentsByUserId(userId: string, sortBy?: SortOption, includeOnlySharedFolders?: boolean): Promise<Document[]> {
-    // If we need to filter by shared folders only
+    // Build base where clause
+    let whereClause = and(
+      eq(documents.userId, userId),
+      isNull(documents.deletedAt)
+    ) as any;
+
+    // If shared user, filter to only show non-private documents
     if (includeOnlySharedFolders) {
-      return db
-        .select({
-          id: documents.id,
-          userId: documents.userId,
-          folderId: documents.folderId,
-          title: documents.title,
-          category: documents.category,
-          extractedText: documents.extractedText,
-          fileUrl: documents.fileUrl,
-          pageUrls: documents.pageUrls,
-          thumbnailUrl: documents.thumbnailUrl,
-          mimeType: documents.mimeType,
-          confidence: documents.confidence,
-          uploadedAt: documents.uploadedAt,
-          deletedAt: documents.deletedAt,
-          extractedDate: documents.extractedDate,
-          amount: documents.amount,
-          sender: documents.sender,
-        })
-        .from(documents)
-        .leftJoin(folders, eq(documents.folderId, folders.id))
-        .where(
-          and(
-            eq(documents.userId, userId),
-            isNull(documents.deletedAt),
-            or(
-              isNull(documents.folderId), // Documents with no folder are visible
-              eq(folders.isShared, true) // Or documents in shared folders
-            )
-          )
-        )
-        .orderBy(this.getSortOrder(sortBy));
+      whereClause = and(
+        whereClause,
+        eq(documents.isPrivate, false)
+      ) as any;
     }
 
-    // Normal query without folder filtering
     return db
       .select()
       .from(documents)
-      .where(
-        and(
-          eq(documents.userId, userId),
-          isNull(documents.deletedAt)
-        )
-      )
+      .where(whereClause)
       .orderBy(this.getSortOrder(sortBy));
   }
 
@@ -201,14 +174,11 @@ export class DbStorage implements IStorage {
       isNull(documents.deletedAt)
     ) as any;
 
-    // Add folder filtering for shared users
+    // Add privacy filtering for shared users - they can only see non-private documents
     if (includeOnlySharedFolders) {
       whereClause = and(
         whereClause,
-        or(
-          isNull(documents.folderId), // Documents with no folder
-          sql`EXISTS (SELECT 1 FROM ${folders} WHERE ${folders.id} = ${documents.folderId} AND ${folders.isShared} = true)` // Documents in shared folders
-        )
+        eq(documents.isPrivate, false)
       ) as any;
     }
 
@@ -237,6 +207,20 @@ export class DbStorage implements IStorage {
     const [updated] = await db
       .update(documents)
       .set({ category })
+      .where(
+        and(
+          eq(documents.id, id),
+          eq(documents.userId, userId)
+        )
+      )
+      .returning();
+    return updated;
+  }
+
+  async updateDocumentPrivacy(id: string, userId: string, isPrivate: boolean): Promise<Document | undefined> {
+    const [updated] = await db
+      .update(documents)
+      .set({ isPrivate })
       .where(
         and(
           eq(documents.id, id),

@@ -634,6 +634,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Toggle document privacy
+  app.patch('/api/documents/:id/privacy', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { id } = req.params;
+      const { isPrivate } = req.body;
+
+      if (typeof isPrivate !== 'boolean') {
+        return res.status(400).json({ message: "isPrivate must be a boolean" });
+      }
+
+      // Get effective user ID (supports shared access)
+      const effectiveUserId = await getEffectiveUserId(userId);
+
+      // Verify document exists and user owns it
+      const document = await storage.getDocument(id);
+
+      if (!document) {
+        return res.status(404).json({ message: "Document not found" });
+      }
+
+      if (document.userId !== effectiveUserId) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      // Update privacy
+      const updated = await storage.updateDocumentPrivacy(id, effectiveUserId, isPrivate);
+
+      if (!updated) {
+        return res.status(500).json({ message: "Failed to update privacy" });
+      }
+
+      res.json(updated);
+    } catch (error) {
+      console.error("Error updating document privacy:", error);
+      res.status(500).json({ message: "Failed to update privacy" });
+    }
+  });
+
   // Delete document (soft delete - moves to trash)
   app.delete('/api/documents/:id', isAuthenticated, async (req: any, res) => {
     try {
