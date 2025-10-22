@@ -1,7 +1,7 @@
 import { 
   FileText, Calendar, MoreVertical, Euro, FileSignature, Shield, Mail, FileQuestion,
   Landmark, Receipt, Briefcase, FileCheck, Building2, Stethoscope, Home, Car, 
-  GraduationCap, Baby, PiggyBank, ShoppingBag, Plane, User, Sparkles
+  GraduationCap, Baby, PiggyBank, ShoppingBag, Plane, User, Sparkles, Lock, LockOpen
 } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -22,9 +22,11 @@ interface DocumentCardProps {
   category: string;
   date: string;
   thumbnailUrl?: string;
+  isPrivate?: boolean;
   onView?: () => void;
   onDelete?: () => void;
   onCategoryChange?: (category: string) => void;
+  onPrivacyToggle?: (isPrivate: boolean) => void;
   // Phase 2: Smart metadata
   confidence?: number;
   extractedDate?: string;
@@ -152,9 +154,11 @@ export function DocumentCard({
   category,
   date,
   thumbnailUrl,
+  isPrivate = false,
   onView,
   onDelete,
   onCategoryChange,
+  onPrivacyToggle,
   confidence,
   extractedDate,
   amount,
@@ -181,7 +185,7 @@ export function DocumentCard({
   
   return (
     <Card 
-      className="hover-elevate cursor-pointer transition-all" 
+      className="relative hover-elevate cursor-pointer transition-all" 
       onClick={onView}
       data-testid={`card-document-${id}`}
     >
@@ -304,6 +308,27 @@ export function DocumentCard({
           </div>
         </div>
       </CardHeader>
+      
+      {/* Privacy toggle button - bottom right */}
+      <div className="absolute bottom-3 right-3">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8"
+          onClick={(e) => {
+            e.stopPropagation();
+            onPrivacyToggle?.(!isPrivate);
+          }}
+          data-testid={`button-privacy-${id}`}
+          title={isPrivate ? "Privat (nur für Sie sichtbar)" : "Geteilt (für beide Nutzer sichtbar)"}
+        >
+          {isPrivate ? (
+            <Lock className="h-4 w-4 text-muted-foreground" />
+          ) : (
+            <LockOpen className="h-4 w-4 text-muted-foreground" />
+          )}
+        </Button>
+      </div>
     </Card>
   );
 }
