@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { FileText, HardDrive, TrendingUp, Plus, Trash2, ArrowUpDown, Download, Camera, ChevronDown, Settings, MoreVertical } from "lucide-react";
+import { FileText, HardDrive, TrendingUp, Plus, Trash2, ArrowUpDown, Download, Camera, ChevronDown, Settings, MoreVertical, LogOut } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { Link } from "wouter";
@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
-import { uploadDocument, getDocuments, deleteDocument, updateDocumentCategory, updateDocumentSharing, getStorageStats, bulkDeleteDocuments, exportDocumentsAsZip, getCurrentUser, getSubscriptionStatus, type StorageStats, type SortOption, type SubscriptionStatus } from "@/lib/api";
+import { uploadDocument, getDocuments, deleteDocument, updateDocumentCategory, updateDocumentSharing, getStorageStats, bulkDeleteDocuments, exportDocumentsAsZip, getCurrentUser, getSubscriptionStatus, logout, type StorageStats, type SortOption, type SubscriptionStatus } from "@/lib/api";
 import { DocumentViewer } from "@/components/DocumentViewer";
 import { MultiPageUpload } from "@/components/MultiPageUpload";
 import { CameraMultiShot } from "@/components/CameraMultiShot";
@@ -63,6 +63,26 @@ export default function Dashboard() {
   const [selectedDocuments, setSelectedDocuments] = useState<Set<string>>(new Set());
   const [showUpload, setShowUpload] = useState(false);
   const [showCameraMultiShot, setShowCameraMultiShot] = useState(false);
+
+  // Logout mutation
+  const logoutMutation = useMutation({
+    mutationFn: logout,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      window.location.href = "/";
+      toast({
+        title: "Abgemeldet",
+        description: "Sie wurden erfolgreich abgemeldet.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Abmeldung fehlgeschlagen",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
   const [processingModal, setProcessingModal] = useState<{
     open: boolean;
     status: 'processing' | 'success' | 'error';
@@ -489,6 +509,16 @@ export default function Dashboard() {
                   Einstellungen
                 </Button>
               </Link>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => logoutMutation.mutate()}
+                disabled={logoutMutation.isPending}
+                data-testid="button-logout"
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Abmelden
+              </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button data-testid="button-upload-menu">
