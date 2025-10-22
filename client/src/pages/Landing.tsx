@@ -143,38 +143,52 @@ export default function Landing() {
       </header>
 
       {/* Hero Section */}
-      <section className="container mx-auto px-4 py-16 md:py-24">
-        <div className="max-w-4xl mx-auto text-center space-y-6">
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tight" data-testid="text-hero-title">
-            Ihre Dokumente.<br />Intelligent organisiert.
-          </h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto" data-testid="text-hero-subtitle">
-            KI-gestützte Dokumentenverwaltung für Familien. Einfach fotografieren, automatisch kategorisieren, gemeinsam organisieren.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-            <Button
-              size="lg"
-              onClick={() => {
-                setAuthTab("signup");
-                setAuthModalOpen(true);
-              }}
-              data-testid="button-hero-cta"
-            >
-              <Sparkles className="mr-2 h-5 w-5" />
-              14 Tage kostenlos testen
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              onClick={() => {
-                setAuthTab("login");
-                setAuthModalOpen(true);
-              }}
-              data-testid="button-hero-login"
-            >
-              Anmelden
-            </Button>
+      <section className="relative overflow-hidden">
+        {/* Background gradient */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-primary/10 dark:from-primary/10 dark:via-background dark:to-primary/5" />
+        
+        {/* Decorative elements */}
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
+        
+        <div className="container relative mx-auto px-4 py-16 md:py-24">
+          <div className="max-w-4xl mx-auto text-center space-y-6">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border bg-background/50 backdrop-blur-sm mb-4">
+              <Sparkles className="h-4 w-4 text-primary" />
+              <span className="text-sm font-medium">Jetzt 14 Tage kostenlos testen</span>
+            </div>
+            
+            <h1 className="text-4xl md:text-6xl font-bold tracking-tight" data-testid="text-hero-title">
+              Ihre Dokumente.<br />Intelligent organisiert.
+            </h1>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto" data-testid="text-hero-subtitle">
+              KI-gestützte Dokumentenverwaltung für Familien. Einfach fotografieren, automatisch kategorisieren, gemeinsam organisieren.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
+              <Button
+                size="lg"
+                onClick={() => {
+                  setAuthTab("signup");
+                  setAuthModalOpen(true);
+                }}
+                data-testid="button-hero-cta"
+              >
+                <Sparkles className="mr-2 h-5 w-5" />
+                Kostenlos starten
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                onClick={() => {
+                  setAuthTab("login");
+                  setAuthModalOpen(true);
+                }}
+                data-testid="button-hero-login"
+              >
+                Anmelden
+              </Button>
+            </div>
           </div>
         </div>
       </section>
