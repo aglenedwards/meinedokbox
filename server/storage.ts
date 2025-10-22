@@ -25,7 +25,7 @@ export interface IStorage {
   getDocumentsByUserId(userId: string, sortBy?: SortOption, includeOnlySharedFolders?: boolean): Promise<Document[]>;
   searchDocuments(userId: string, query?: string, categories?: string[], sortBy?: SortOption, includeOnlySharedFolders?: boolean): Promise<Document[]>;
   updateDocumentCategory(id: string, userId: string, category: string): Promise<Document | undefined>;
-  updateDocumentPrivacy(id: string, userId: string, isPrivate: boolean): Promise<Document | undefined>;
+  updateDocumentSharing(id: string, userId: string, isShared: boolean): Promise<Document | undefined>;
   deleteDocument(id: string, userId: string): Promise<boolean>;
   bulkDeleteDocuments(ids: string[], userId: string): Promise<number>;
   getTrashedDocuments(userId: string): Promise<Document[]>;
@@ -152,11 +152,11 @@ export class DbStorage implements IStorage {
       isNull(documents.deletedAt)
     ) as any;
 
-    // If shared user, filter to only show non-private documents
+    // If shared user, filter to only show shared documents
     if (includeOnlySharedFolders) {
       whereClause = and(
         whereClause,
-        eq(documents.isPrivate, false)
+        eq(documents.isShared, true)
       ) as any;
     }
 
@@ -174,11 +174,11 @@ export class DbStorage implements IStorage {
       isNull(documents.deletedAt)
     ) as any;
 
-    // Add privacy filtering for shared users - they can only see non-private documents
+    // Add privacy filtering for shared users - they can only see shared documents
     if (includeOnlySharedFolders) {
       whereClause = and(
         whereClause,
-        eq(documents.isPrivate, false)
+        eq(documents.isShared, true)
       ) as any;
     }
 
@@ -217,10 +217,10 @@ export class DbStorage implements IStorage {
     return updated;
   }
 
-  async updateDocumentPrivacy(id: string, userId: string, isPrivate: boolean): Promise<Document | undefined> {
+  async updateDocumentSharing(id: string, userId: string, isShared: boolean): Promise<Document | undefined> {
     const [updated] = await db
       .update(documents)
-      .set({ isPrivate })
+      .set({ isShared })
       .where(
         and(
           eq(documents.id, id),

@@ -478,7 +478,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       thumbnailUrl: thumbnailPath,
       mimeType: files[0].mimetype, // Store original MIME type
       confidence: analysisResult.confidence,
-      isPrivate: false, // Default: shared documents
+      isShared: false, // Default: private documents (user must manually share)
       // Phase 2: Smart metadata
       extractedDate: analysisResult.extractedDate ? new Date(analysisResult.extractedDate) : null,
       amount: analysisResult.amount ?? null,
@@ -663,15 +663,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Toggle document privacy
-  app.patch('/api/documents/:id/privacy', isAuthenticated, async (req: any, res) => {
+  // Toggle document sharing
+  app.patch('/api/documents/:id/sharing', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const { id } = req.params;
-      const { isPrivate } = req.body;
+      const { isShared } = req.body;
 
-      if (typeof isPrivate !== 'boolean') {
-        return res.status(400).json({ message: "isPrivate must be a boolean" });
+      if (typeof isShared !== 'boolean') {
+        return res.status(400).json({ message: "isShared must be a boolean" });
       }
 
       // Get effective user ID (supports shared access)
@@ -688,17 +688,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Access denied" });
       }
 
-      // Update privacy
-      const updated = await storage.updateDocumentPrivacy(id, effectiveUserId, isPrivate);
+      // Update sharing status
+      const updated = await storage.updateDocumentSharing(id, effectiveUserId, isShared);
 
       if (!updated) {
-        return res.status(500).json({ message: "Failed to update privacy" });
+        return res.status(500).json({ message: "Failed to update sharing" });
       }
 
       res.json(updated);
     } catch (error) {
-      console.error("Error updating document privacy:", error);
-      res.status(500).json({ message: "Failed to update privacy" });
+      console.error("Error updating document sharing:", error);
+      res.status(500).json({ message: "Failed to update sharing" });
     }
   });
 
