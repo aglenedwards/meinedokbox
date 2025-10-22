@@ -298,3 +298,38 @@ export async function getSubscriptionStatus(): Promise<SubscriptionStatus> {
   return await response.json();
 }
 
+// Email/Password Authentication
+
+export interface RegisterData {
+  email: string;
+  password: string;
+  firstName?: string;
+  lastName?: string;
+}
+
+export interface LoginData {
+  email: string;
+  password: string;
+}
+
+/**
+ * Register a new user with email and password
+ */
+export async function register(data: RegisterData): Promise<{ user: User; message: string }> {
+  return await apiRequest("POST", "/api/auth/register", data);
+}
+
+/**
+ * Login with email and password
+ */
+export async function login(data: LoginData): Promise<{ message: string }> {
+  return await apiRequest("POST", "/api/auth/login", data);
+}
+
+/**
+ * Logout current user
+ */
+export async function logout(): Promise<{ message: string }> {
+  return await apiRequest("POST", "/api/auth/logout");
+}
+

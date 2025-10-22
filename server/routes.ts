@@ -5,6 +5,9 @@ import path from "path";
 import fs from "fs";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated, optionalAuth } from "./replitAuth";
+import { setupLocalAuth, hashPassword, isAuthenticatedLocal } from "./localAuth";
+import passport from "passport";
+import { z } from "zod";
 import { analyzeDocument, analyzeDocumentFromText } from "./lib/openai";
 import { extractTextFromPdf } from "./lib/pdfParser";
 import { uploadFile } from "./lib/storage";
@@ -46,6 +49,7 @@ const upload = multer({
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
+  await setupLocalAuth();
 
   // Serve PWA files with correct MIME types (fix production deployment)
   app.get('/service-worker.js', (_req, res) => {
@@ -114,6 +118,105 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Error regenerating email:", error);
       res.status(500).json({ message: "Failed to regenerate email" });
     }
+  });
+
+  // Email/Password Authentication Routes
+  
+  // Register with email and password
+  app.post('/api/auth/register', async (req, res) => {
+    try {
+      const registerSchema = z.object({
+        email: z.string().email("Ungültige E-Mail-Adresse"),
+        password: z.string().min(8, "Passwort muss mindestens 8 Zeichen lang sein"),
+        firstName: z.string().optional(),
+        lastName: z.string().optional(),
+      });
+
+      const { email, password, firstName, lastName } = registerSchema.parse(req.body);
+      const normalizedEmail = email.toLowerCase();
+
+      // Check if user already exists
+      const existingUser = await storage.getUserByEmail(normalizedEmail);
+      if (existingUser) {
+        return res.status(400).json({ message: "E-Mail-Adresse bereits registriert" });
+      }
+
+      // Hash password
+      const passwordHash = await hashPassword(password);
+
+      // Generate unique user ID
+      const userId = `local_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+
+      // Create user
+      const user = await storage.upsertUser({
+        id: userId,
+        email: normalizedEmail,
+        firstName: firstName || null,
+        lastName: lastName || null,
+        profileImageUrl: null,
+        passwordHash,
+      });
+
+      // Log user in automatically
+      const sessionUser = {
+        claims: {
+          sub: user.id,
+          email: user.email,
+          first_name: user.firstName,
+          last_name: user.lastName,
+          profile_image_url: user.profileImageUrl,
+        },
+        isLocal: true,
+      };
+
+      req.login(sessionUser, (err) => {
+        if (err) {
+          console.error("Error logging in after registration:", err);
+          return res.status(500).json({ message: "Registrierung erfolgreich, aber Login fehlgeschlagen" });
+        }
+        res.json({ user, message: "Registrierung erfolgreich" });
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: error.errors[0].message });
+      }
+      console.error("Error during registration:", error);
+      res.status(500).json({ message: "Registrierung fehlgeschlagen" });
+    }
+  });
+
+  // Login with email and password
+  app.post('/api/auth/login', (req, res, next) => {
+    passport.authenticate('local', (err: any, user: any, info: any) => {
+      if (err) {
+        console.error("Login error:", err);
+        return res.status(500).json({ message: "Login fehlgeschlagen" });
+      }
+      
+      if (!user) {
+        return res.status(401).json({ message: info?.message || "Email oder Passwort falsch" });
+      }
+
+      req.login(user, (loginErr) => {
+        if (loginErr) {
+          console.error("Session error:", loginErr);
+          return res.status(500).json({ message: "Login fehlgeschlagen" });
+        }
+        
+        res.json({ message: "Login erfolgreich" });
+      });
+    })(req, res, next);
+  });
+
+  // Logout (works for both local and OIDC auth)
+  app.post('/api/auth/logout', (req, res) => {
+    req.logout((err) => {
+      if (err) {
+        console.error("Logout error:", err);
+        return res.status(500).json({ message: "Logout fehlgeschlagen" });
+      }
+      res.json({ message: "Logout erfolgreich" });
+    });
   });
 
   // Subscription management routes

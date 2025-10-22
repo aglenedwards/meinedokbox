@@ -7,6 +7,14 @@ PaperEase is a web and mobile application that digitizes paper documents using s
 **Core Purpose:** Minimize friction in document capture and retrieval; maximize clarity in organization through AI-assisted categorization.
 
 **Recent Updates (Oct 2025):**
+- **Email/Password Authentication (Oct 22, 2025):**
+  - ✅ Backend: Passport Local Strategy for email/password authentication
+  - ✅ Backend: Register endpoint (POST /api/auth/register) with bcrypt password hashing
+  - ✅ Backend: Login endpoint (POST /api/auth/login) with session management
+  - ✅ Backend: Logout endpoint (POST /api/auth/logout) works for both local and OIDC auth
+  - ✅ Backend: getUserByEmail() storage method for user lookup
+  - ✅ Frontend: register(), login(), logout() API functions in api.ts
+  - ⏳ Pending: Landing page with login/signup forms
 - **Folder-Based Privacy System (Oct 21, 2025):**
   - ✅ Backend: Folders table with `isShared` flag for granular privacy control
   - ✅ Backend: Shared users only see documents from folders marked as shared
@@ -64,10 +72,13 @@ Preferred communication style: Simple, everyday language.
 - File type validation (JPEG, PNG, WEBP, PDF)
 - 10MB file size limit
 
-**Authentication:** Replit Auth integration with OpenID Connect (OIDC) using Passport.js strategy.
-- Session-based authentication with PostgreSQL session storage
+**Authentication:** Dual authentication system supporting both Replit Auth (OIDC) and Email/Password.
+- **Replit Auth:** OpenID Connect (OIDC) integration using Passport.js Strategy
+- **Email/Password:** Passport Local Strategy with bcrypt password hashing (SALT_ROUNDS=10)
+- Session-based authentication with PostgreSQL session storage (express-session)
 - 7-day session TTL
-- User profile data stored in database upon first login
+- User profile data stored in database upon first login or registration
+- Users identified by `userId` format: Replit users have numeric IDs, local users have `local_` prefix
 
 **Document Processing Pipeline:**
 1. File upload received via Multer
