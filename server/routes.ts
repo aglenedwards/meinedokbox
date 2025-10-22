@@ -531,6 +531,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         isShared // Only show shared folder documents if user is a shared user
       );
 
+      // DEBUG: Log first document's privacy status
+      if (documents.length > 0) {
+        console.log('[GET /api/documents] First doc isPrivate:', documents[0].isPrivate, 'type:', typeof documents[0].isPrivate);
+      }
+
       // Disable caching to ensure fresh data after privacy toggle
       res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
       res.set('Pragma', 'no-cache');
@@ -690,6 +695,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Update privacy
       const updated = await storage.updateDocumentPrivacy(id, effectiveUserId, isPrivate);
+      console.log('[PATCH /privacy] Updated doc isPrivate:', updated?.isPrivate, 'type:', typeof updated?.isPrivate);
 
       if (!updated) {
         return res.status(500).json({ message: "Failed to update privacy" });

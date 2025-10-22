@@ -168,6 +168,10 @@ export function DocumentCard({
 }: DocumentCardProps) {
   // Handle null/undefined isPrivate values - default to false (shared)
   const privateStatus = isPrivate ?? false;
+  
+  // DEBUG: Log privacy status on render
+  console.log(`[DocumentCard ${id.slice(0, 8)}] isPrivate prop:`, isPrivate, 'type:', typeof isPrivate, 'privateStatus:', privateStatus);
+  
   const config = categoryConfig[category] || categoryConfig['Sonstiges / Privat'];
   const CategoryIcon = config.icon;
   
