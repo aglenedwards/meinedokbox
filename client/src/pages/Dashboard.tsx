@@ -242,24 +242,51 @@ export default function Dashboard() {
       const result = await updateDocumentPrivacy(id, isPrivate);
       return result;
     },
-    onMutate: ({ id }) => {
+    onMutate: async ({ id, isPrivate }) => {
       setUpdatingPrivacy(id);
+      
+      // Cancel outgoing queries
+      await queryClient.cancelQueries({ 
+        queryKey: ["/api/documents", searchQuery, selectedCategories, sortBy] 
+      });
+
+      // Get current data
+      const previousDocs = queryClient.getQueryData<Document[]>([
+        "/api/documents", 
+        searchQuery, 
+        selectedCategories, 
+        sortBy
+      ]);
+
+      // Optimistically update
+      if (previousDocs) {
+        queryClient.setQueryData<Document[]>(
+          ["/api/documents", searchQuery, selectedCategories, sortBy],
+          previousDocs.map(doc => 
+            doc.id === id ? { ...doc, isPrivate } : doc
+          )
+        );
+      }
+
+      return { previousDocs };
     },
-    onError: (error: Error) => {
+    onError: (error: Error, variables, context) => {
       setUpdatingPrivacy(null);
+      // Rollback on error
+      if (context?.previousDocs) {
+        queryClient.setQueryData(
+          ["/api/documents", searchQuery, selectedCategories, sortBy],
+          context.previousDocs
+        );
+      }
       toast({
         title: "Fehler",
         description: error.message,
         variant: "destructive",
       });
     },
-    onSettled: async () => {
+    onSuccess: () => {
       setUpdatingPrivacy(null);
-      // Force refetch with exact query key
-      await queryClient.refetchQueries({ 
-        queryKey: ["/api/documents", searchQuery, selectedCategories, sortBy],
-        exact: true
-      });
     },
   });
 
