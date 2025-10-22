@@ -319,20 +319,23 @@ export interface LoginData {
  * Register a new user with email and password
  */
 export async function register(data: RegisterData): Promise<{ user: User; message: string }> {
-  return await apiRequest("POST", "/api/auth/register", data);
+  const res = await apiRequest("POST", "/api/auth/register", data);
+  return await res.json();
 }
 
 /**
  * Login with email and password
  */
 export async function login(data: LoginData): Promise<{ message: string }> {
-  return await apiRequest("POST", "/api/auth/login", data);
+  const res = await apiRequest("POST", "/api/auth/login", data);
+  return await res.json();
 }
 
 /**
  * Logout current user
  */
 export async function logout(): Promise<{ message: string }> {
-  return await apiRequest("POST", "/api/auth/logout");
+  const res = await apiRequest("POST", "/api/auth/logout");
+  return await res.json();
 }
 

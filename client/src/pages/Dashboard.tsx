@@ -103,10 +103,6 @@ export default function Dashboard() {
   }>({ open: false });
   const [updatingSharing, setUpdatingSharing] = useState<string | null>(null);
 
-  // Check if uploads/edits should be disabled (grace period or read-only mode)
-  const isUploadDisabled = subscriptionStatus?.gracePeriod || subscriptionStatus?.isReadOnly;
-  const isReadOnly = subscriptionStatus?.isReadOnly;
-
   // Fetch documents with React Query
   const { data: documents = [], isLoading } = useQuery<Document[]>({
     queryKey: ["/api/documents", searchQuery, selectedCategories, sortBy],
@@ -138,6 +134,10 @@ export default function Dashboard() {
     refetchOnWindowFocus: false,
     staleTime: 1000 * 60, // 1 minute
   });
+
+  // Check if uploads/edits should be disabled (grace period or read-only mode)
+  const isUploadDisabled = subscriptionStatus?.gracePeriod || subscriptionStatus?.isReadOnly;
+  const isReadOnly = subscriptionStatus?.isReadOnly;
 
   // Upload mutation
   const uploadMutation = useMutation({
