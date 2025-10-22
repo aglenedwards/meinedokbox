@@ -253,13 +253,12 @@ export default function Dashboard() {
         variant: "destructive",
       });
     },
-    onSuccess: () => {
+    onSettled: async () => {
       setUpdatingPrivacy(null);
-    },
-    onSettled: () => {
-      // Refetch with correct query key including all parameters
-      queryClient.invalidateQueries({ 
-        queryKey: ["/api/documents", searchQuery, selectedCategories, sortBy] 
+      // Force refetch with exact query key
+      await queryClient.refetchQueries({ 
+        queryKey: ["/api/documents", searchQuery, selectedCategories, sortBy],
+        exact: true
       });
     },
   });
