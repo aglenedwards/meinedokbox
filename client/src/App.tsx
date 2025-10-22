@@ -1,4 +1,4 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import type { User } from "@shared/schema";
 import { queryClient } from "./lib/queryClient";
@@ -6,35 +6,29 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/ThemeProvider";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import { Button } from "@/components/ui/button";
-import { LogIn } from "lucide-react";
 import { getCurrentUser } from "@/lib/api";
+import Landing from "@/pages/Landing";
 import Dashboard from "@/pages/Dashboard";
 import Trash from "@/pages/Trash";
 import Settings from "@/pages/Settings";
 import NotFound from "@/pages/not-found";
-import logoImage from "@assets/meinedokbox_1760966015056.png";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { PWAUpdatePrompt } from "@/components/PWAUpdatePrompt";
+import { useEffect } from "react";
 
-function Router() {
-  return (
-    <Switch>
-      <Route path="/" component={Dashboard} />
-      <Route path="/trash" component={Trash} />
-      <Route path="/settings" component={Settings} />
-      <Route component={NotFound} />
-    </Switch>
-  );
-}
-
-function AuthenticatedApp() {
+function ProtectedRoute({ component: Component }: { component: () => JSX.Element }) {
+  const [location, setLocation] = useLocation();
   const { data: user, isLoading } = useQuery<User | null>({
     queryKey: ["/api/auth/user"],
     queryFn: getCurrentUser,
     retry: false,
   });
+
+  useEffect(() => {
+    if (!isLoading && !user) {
+      setLocation("/");
+    }
+  }, [user, isLoading, setLocation]);
 
   if (isLoading) {
     return (
@@ -45,25 +39,28 @@ function AuthenticatedApp() {
   }
 
   if (!user) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-background px-4">
-        <div className="max-w-md text-center space-y-6">
-          <img src={logoImage} alt="MeineDokBox" className="h-24 md:h-28 mx-auto dark:invert dark:brightness-0 dark:contrast-200" data-testid="img-logo-login" />
-          <p className="text-muted-foreground">
-            Bitte melden Sie sich an, um Ihre Dokumente zu verwalten.
-          </p>
-          <Button asChild size="lg" data-testid="button-login">
-            <a href="/api/login">
-              <LogIn className="h-4 w-4 mr-2" />
-              Anmelden
-            </a>
-          </Button>
-        </div>
-      </div>
-    );
+    return null;
   }
 
-  return <Router />;
+  return <Component />;
+}
+
+function Router() {
+  return (
+    <Switch>
+      <Route path="/" component={Landing} />
+      <Route path="/dashboard">
+        {() => <ProtectedRoute component={Dashboard} />}
+      </Route>
+      <Route path="/trash">
+        {() => <ProtectedRoute component={Trash} />}
+      </Route>
+      <Route path="/settings">
+        {() => <ProtectedRoute component={Settings} />}
+      </Route>
+      <Route component={NotFound} />
+    </Switch>
+  );
 }
 
 function App() {
@@ -74,7 +71,7 @@ function App() {
           <Toaster />
           <PWAInstallPrompt />
           <PWAUpdatePrompt />
-          <AuthenticatedApp />
+          <Router />
         </TooltipProvider>
       </ThemeProvider>
     </QueryClientProvider>
