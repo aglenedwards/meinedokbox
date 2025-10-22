@@ -708,7 +708,6 @@ export default function Dashboard() {
                     onDelete={() => handleDelete(doc.id)}
                     onCategoryChange={(category) => handleCategoryChange(doc.id, category)}
                     onPrivacyToggle={(isPrivate) => {
-                      console.log('BEFORE mutation - doc.isPrivate:', doc.isPrivate, 'new value will be:', isPrivate);
                       if (updatingPrivacy === null) {
                         updatePrivacyMutation.mutate({ id: doc.id, isPrivate });
                       }
