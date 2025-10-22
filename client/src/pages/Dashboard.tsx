@@ -386,6 +386,7 @@ export default function Dashboard() {
     category: doc.category,
     date: format(new Date(doc.uploadedAt), "d. MMM yyyy", { locale: de }),
     thumbnailUrl: doc.thumbnailUrl ?? undefined,
+    isPrivate: doc.isPrivate, // Privacy status for lock icon
     // Phase 2: Smart metadata
     confidence: doc.confidence,
     extractedDate: doc.extractedDate ? format(new Date(doc.extractedDate), "d. MMM yyyy", { locale: de }) : undefined,
