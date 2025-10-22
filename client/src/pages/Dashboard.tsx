@@ -239,9 +239,11 @@ export default function Dashboard() {
   // Update privacy mutation
   const updatePrivacyMutation = useMutation({
     mutationFn: async ({ id, isPrivate }: { id: string; isPrivate: boolean }) => {
-      setUpdatingPrivacy(id);
       const result = await updateDocumentPrivacy(id, isPrivate);
       return result;
+    },
+    onMutate: ({ id }) => {
+      setUpdatingPrivacy(id);
     },
     onError: (error: Error) => {
       setUpdatingPrivacy(null);
@@ -250,11 +252,15 @@ export default function Dashboard() {
         description: error.message,
         variant: "destructive",
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/documents"] });
     },
     onSuccess: () => {
       setUpdatingPrivacy(null);
-      queryClient.invalidateQueries({ queryKey: ["/api/documents"] });
+    },
+    onSettled: () => {
+      // Refetch with correct query key including all parameters
+      queryClient.invalidateQueries({ 
+        queryKey: ["/api/documents", searchQuery, selectedCategories, sortBy] 
+      });
     },
   });
 
