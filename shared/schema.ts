@@ -149,6 +149,15 @@ export const sharedAccess = pgTable("shared_access", {
   acceptedAt: timestamp("accepted_at"),
 });
 
+// Trial notification emails tracking
+export const trialNotifications = pgTable("trial_notifications", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
+  notificationType: varchar("notification_type", { length: 30 }).notNull(), // day_14, grace_start, grace_last_day, readonly_start
+  sentAt: timestamp("sent_at").notNull().default(sql`now()`),
+  emailStatus: varchar("email_status", { length: 20 }).notNull().default("sent"), // sent, failed, bounced
+});
+
 export const insertFolderSchema = createInsertSchema(folders).omit({
   id: true,
   createdAt: true,
@@ -178,6 +187,11 @@ export const insertSharedAccessSchema = createInsertSchema(sharedAccess).omit({
   invitedAt: true,
 });
 
+export const insertTrialNotificationSchema = createInsertSchema(trialNotifications).omit({
+  id: true,
+  sentAt: true,
+});
+
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
 export type InsertFolder = z.infer<typeof insertFolderSchema>;
@@ -192,3 +206,5 @@ export type InsertEmailLog = z.infer<typeof insertEmailLogSchema>;
 export type EmailLog = typeof emailLogs.$inferSelect;
 export type InsertSharedAccess = z.infer<typeof insertSharedAccessSchema>;
 export type SharedAccess = typeof sharedAccess.$inferSelect;
+export type InsertTrialNotification = z.infer<typeof insertTrialNotificationSchema>;
+export type TrialNotification = typeof trialNotifications.$inferSelect;
