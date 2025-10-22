@@ -33,6 +33,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { UpgradeModal } from "@/components/UpgradeModal";
 import { TrialBanner } from "@/components/TrialBanner";
+import { Footer } from "@/components/Footer";
 import logoImage from "@assets/meinedokbox_1760966015056.png";
 
 const categories = [
@@ -728,6 +729,8 @@ export default function Dashboard() {
         onClose={() => setUpgradeModal({ open: false })}
         reason={upgradeModal.reason}
       />
+
+      <Footer />
     </div>
   );
 }
