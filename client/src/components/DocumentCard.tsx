@@ -1,7 +1,7 @@
 import { 
   FileText, Calendar, MoreVertical, Euro, FileSignature, Shield, Mail, FileQuestion,
   Landmark, Receipt, Briefcase, FileCheck, Building2, Stethoscope, Home, Car, 
-  GraduationCap, Baby, PiggyBank, ShoppingBag, Plane, User, Sparkles, Lock, LockOpen
+  GraduationCap, Baby, PiggyBank, ShoppingBag, Plane, User, Sparkles, Lock, Users
 } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -22,12 +22,12 @@ interface DocumentCardProps {
   category: string;
   date: string;
   thumbnailUrl?: string;
-  isPrivate?: boolean;
-  isUpdatingPrivacy?: boolean;
+  isShared?: boolean;
+  isUpdatingSharing?: boolean;
   onView?: () => void;
   onDelete?: () => void;
   onCategoryChange?: (category: string) => void;
-  onPrivacyToggle?: (isPrivate: boolean) => void;
+  onSharingToggle?: (isShared: boolean) => void;
   // Phase 2: Smart metadata
   confidence?: number;
   extractedDate?: string;
@@ -155,19 +155,19 @@ export function DocumentCard({
   category,
   date,
   thumbnailUrl,
-  isPrivate,
-  isUpdatingPrivacy = false,
+  isShared,
+  isUpdatingSharing = false,
   onView,
   onDelete,
   onCategoryChange,
-  onPrivacyToggle,
+  onSharingToggle,
   confidence,
   extractedDate,
   amount,
   sender,
 }: DocumentCardProps) {
-  // Handle null/undefined isPrivate values - default to false (shared)
-  const privateStatus = isPrivate ?? false;
+  // Handle null/undefined isShared values - default to false (private, not shared)
+  const sharedStatus = isShared ?? false;
   
   const config = categoryConfig[category] || categoryConfig['Sonstiges / Privat'];
   const CategoryIcon = config.icon;
@@ -314,26 +314,26 @@ export function DocumentCard({
         </div>
       </CardHeader>
       
-      {/* Privacy toggle - bottom right */}
+      {/* Sharing toggle - bottom right */}
       <div className="absolute bottom-3 right-3">
         <Button
           variant="ghost"
           size="icon"
           className="h-8 w-8"
-          disabled={isUpdatingPrivacy}
+          disabled={isUpdatingSharing}
           onClick={(e) => {
             e.stopPropagation();
-            if (onPrivacyToggle && !isUpdatingPrivacy) {
-              onPrivacyToggle(!privateStatus);
+            if (onSharingToggle && !isUpdatingSharing) {
+              onSharingToggle(!sharedStatus);
             }
           }}
-          data-testid={`button-privacy-${id}`}
-          title={privateStatus ? "Privat (nur Sie sehen dieses Dokument)" : "Für beide Nutzer sichtbar"}
+          data-testid={`button-sharing-${id}`}
+          title={sharedStatus ? "Geteilt mit Partner" : "Privat (nur Sie)"}
         >
-          {privateStatus ? (
-            <Lock className="h-4 w-4 text-red-600 dark:text-red-500" />
+          {sharedStatus ? (
+            <Users className="h-4 w-4 text-blue-600 dark:text-blue-500" />
           ) : (
-            <LockOpen className="h-4 w-4 text-muted-foreground" />
+            <Lock className="h-4 w-4 text-muted-foreground" />
           )}
         </Button>
       </div>

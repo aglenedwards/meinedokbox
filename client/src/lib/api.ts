@@ -85,10 +85,10 @@ export async function updateDocumentCategory(id: string, category: string): Prom
 }
 
 /**
- * Toggle document privacy (private/shared)
+ * Toggle document sharing (share with partner or keep private)
  */
-export async function updateDocumentPrivacy(id: string, isPrivate: boolean): Promise<Document> {
-  const response = await apiRequest("PATCH", `/api/documents/${id}/privacy`, { isPrivate });
+export async function updateDocumentSharing(id: string, isShared: boolean): Promise<Document> {
+  const response = await apiRequest("PATCH", `/api/documents/${id}/sharing`, { isShared });
   return await response.json();
 }
 

@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
-import { uploadDocument, getDocuments, deleteDocument, updateDocumentCategory, updateDocumentPrivacy, getStorageStats, bulkDeleteDocuments, exportDocumentsAsZip, getCurrentUser, getSubscriptionStatus, type StorageStats, type SortOption, type SubscriptionStatus } from "@/lib/api";
+import { uploadDocument, getDocuments, deleteDocument, updateDocumentCategory, updateDocumentSharing, getStorageStats, bulkDeleteDocuments, exportDocumentsAsZip, getCurrentUser, getSubscriptionStatus, type StorageStats, type SortOption, type SubscriptionStatus } from "@/lib/api";
 import { DocumentViewer } from "@/components/DocumentViewer";
 import { MultiPageUpload } from "@/components/MultiPageUpload";
 import { CameraMultiShot } from "@/components/CameraMultiShot";
@@ -79,7 +79,7 @@ export default function Dashboard() {
     open: boolean;
     reason?: "document_limit" | "email_feature" | "trial_expired";
   }>({ open: false });
-  const [updatingPrivacy, setUpdatingPrivacy] = useState<string | null>(null);
+  const [updatingSharing, setUpdatingSharing] = useState<string | null>(null);
 
   // Fetch documents with React Query
   const { data: documents = [], isLoading } = useQuery<Document[]>({
@@ -236,14 +236,14 @@ export default function Dashboard() {
     },
   });
 
-  // Update privacy mutation
-  const updatePrivacyMutation = useMutation({
-    mutationFn: async ({ id, isPrivate }: { id: string; isPrivate: boolean }) => {
-      const result = await updateDocumentPrivacy(id, isPrivate);
+  // Update sharing mutation
+  const updateSharingMutation = useMutation({
+    mutationFn: async ({ id, isShared }: { id: string; isShared: boolean }) => {
+      const result = await updateDocumentSharing(id, isShared);
       return result;
     },
-    onMutate: async ({ id, isPrivate }) => {
-      setUpdatingPrivacy(id);
+    onMutate: async ({ id, isShared }) => {
+      setUpdatingSharing(id);
       
       // Cancel outgoing queries
       await queryClient.cancelQueries({ 
@@ -263,7 +263,7 @@ export default function Dashboard() {
         queryClient.setQueryData<Document[]>(
           ["/api/documents", searchQuery, selectedCategories, sortBy],
           previousDocs.map(doc => 
-            doc.id === id ? { ...doc, isPrivate } : doc
+            doc.id === id ? { ...doc, isShared } : doc
           )
         );
       }
@@ -271,7 +271,7 @@ export default function Dashboard() {
       return { previousDocs };
     },
     onError: (error: Error, variables, context) => {
-      setUpdatingPrivacy(null);
+      setUpdatingSharing(null);
       // Rollback on error
       if (context?.previousDocs) {
         queryClient.setQueryData(
@@ -286,10 +286,10 @@ export default function Dashboard() {
       });
     },
     onSuccess: () => {
-      setUpdatingPrivacy(null);
+      setUpdatingSharing(null);
     },
     onSettled: () => {
-      // Always refetch to ensure UI shows the correct privacy state
+      // Always refetch to ensure UI shows the correct sharing state
       queryClient.invalidateQueries({ queryKey: ["/api/documents"] });
     },
   });
@@ -386,7 +386,7 @@ export default function Dashboard() {
     category: doc.category,
     date: format(new Date(doc.uploadedAt), "d. MMM yyyy", { locale: de }),
     thumbnailUrl: doc.thumbnailUrl ?? undefined,
-    isPrivate: doc.isPrivate, // Privacy status for lock icon
+    isShared: doc.isShared, // Sharing status for share icon
     // Phase 2: Smart metadata
     confidence: doc.confidence,
     extractedDate: doc.extractedDate ? format(new Date(doc.extractedDate), "d. MMM yyyy", { locale: de }) : undefined,
@@ -708,13 +708,13 @@ export default function Dashboard() {
                   </div>
                   <DocumentCard
                     {...doc}
-                    isUpdatingPrivacy={updatingPrivacy === doc.id}
+                    isUpdatingSharing={updatingSharing === doc.id}
                     onView={() => handleView(doc.id)}
                     onDelete={() => handleDelete(doc.id)}
                     onCategoryChange={(category) => handleCategoryChange(doc.id, category)}
-                    onPrivacyToggle={(isPrivate) => {
-                      if (updatingPrivacy === null) {
-                        updatePrivacyMutation.mutate({ id: doc.id, isPrivate });
+                    onSharingToggle={(isShared) => {
+                      if (updatingSharing === null) {
+                        updateSharingMutation.mutate({ id: doc.id, isShared });
                       }
                     }}
                   />

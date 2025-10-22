@@ -449,6 +449,7 @@ export class DbStorage implements IStorage {
         thumbnailUrl: documents.thumbnailUrl,
         mimeType: documents.mimeType,
         confidence: documents.confidence,
+        isShared: documents.isShared,
         uploadedAt: documents.uploadedAt,
         deletedAt: documents.deletedAt,
         extractedDate: documents.extractedDate,
