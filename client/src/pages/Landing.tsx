@@ -115,7 +115,7 @@ export default function Landing() {
       <header className="border-b">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src={logoImage} alt="MeineDokBox" className="h-8 dark:invert dark:brightness-0 dark:contrast-200" data-testid="img-logo" />
+            <img src={logoImage} alt="MeineDokBox" className="h-12 md:h-16 dark:invert dark:brightness-0 dark:contrast-200" data-testid="img-logo" />
           </div>
           <div className="flex items-center gap-2">
             <ThemeToggle />
