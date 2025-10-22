@@ -99,10 +99,18 @@ Ihr MeineDokBox Team
     }
     .header {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
+      color: white !important;
       padding: 30px;
       border-radius: 8px 8px 0 0;
       text-align: center;
+    }
+    .header h1 {
+      color: white !important;
+      margin: 0 0 10px 0;
+    }
+    .header p {
+      color: white !important;
+      margin: 0;
     }
     .content {
       background: #f8f9fa;
@@ -139,9 +147,9 @@ Ihr MeineDokBox Team
   </style>
 </head>
 <body>
-  <div class="header">
-    <h1>📂 MeineDokBox</h1>
-    <p>Einladung zum gemeinsamen Dokumenten-Management</p>
+  <div class="header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #ffffff; padding: 30px; border-radius: 8px 8px 0 0; text-align: center;">
+    <h1 style="color: #ffffff; margin: 0 0 10px 0;">📂 MeineDokBox</h1>
+    <p style="color: #ffffff; margin: 0;">Einladung zum gemeinsamen Dokumenten-Management</p>
   </div>
   
   <div class="content">
