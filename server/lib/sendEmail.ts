@@ -73,7 +73,7 @@ ${ownerName} möchte sein MeineDokBox-Konto mit Ihnen teilen.
 Mit dieser Einladung erhalten Sie vollen Zugriff auf alle geteilten Dokumente und können gemeinsam Dokumente verwalten.
 
 So akzeptieren Sie die Einladung:
-1. Gehen Sie zu MeineDokBox: ${process.env.REPLIT_DOMAINS?.split(',')[0] || 'https://meinedokbox.replit.app'}
+1. Gehen Sie zu MeineDokBox: https://meinedokbox.de
 2. Melden Sie sich mit dieser E-Mail-Adresse an (${to})
 3. Die Einladung wird automatisch akzeptiert
 
@@ -147,9 +147,9 @@ Ihr MeineDokBox Team
   </style>
 </head>
 <body>
-  <div class="header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #ffffff; padding: 30px; border-radius: 8px 8px 0 0; text-align: center;">
-    <h1 style="color: #ffffff; margin: 0 0 10px 0;">📂 MeineDokBox</h1>
-    <p style="color: #ffffff; margin: 0;">Einladung zum gemeinsamen Dokumenten-Management</p>
+  <div style="background: #667eea; color: #ffffff; padding: 30px; border-radius: 8px 8px 0 0; text-align: center;">
+    <h1 style="color: #ffffff !important; margin: 0 0 10px 0; font-size: 24px;">📂 MeineDokBox</h1>
+    <p style="color: #ffffff !important; margin: 0; font-size: 16px;">Einladung zum gemeinsamen Dokumenten-Management</p>
   </div>
   
   <div class="content">
@@ -167,7 +167,7 @@ Ihr MeineDokBox Team
     </div>
     
     <center>
-      <a href="${process.env.REPLIT_DOMAINS?.split(',')[0] || 'https://meinedokbox.replit.app'}" class="button">
+      <a href="https://meinedokbox.de" class="button" style="display: inline-block; background: #667eea; color: #ffffff !important; padding: 12px 30px; text-decoration: none; border-radius: 6px; margin: 20px 0;">
         Jetzt anmelden
       </a>
     </center>
