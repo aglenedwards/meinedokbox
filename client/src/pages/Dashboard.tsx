@@ -708,8 +708,12 @@ export default function Dashboard() {
                     onDelete={() => handleDelete(doc.id)}
                     onCategoryChange={(category) => handleCategoryChange(doc.id, category)}
                     onPrivacyToggle={(isPrivate) => {
+                      console.log('Privacy toggle clicked:', doc.id, isPrivate, 'current updatingPrivacy:', updatingPrivacy);
                       if (updatingPrivacy === null) {
+                        console.log('Calling mutation for', doc.id, isPrivate);
                         updatePrivacyMutation.mutate({ id: doc.id, isPrivate });
+                      } else {
+                        console.log('Blocked because updatingPrivacy is not null:', updatingPrivacy);
                       }
                     }}
                   />
