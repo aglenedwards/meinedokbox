@@ -79,6 +79,7 @@ export default function Dashboard() {
     open: boolean;
     reason?: "document_limit" | "email_feature" | "trial_expired";
   }>({ open: false });
+  const [updatingPrivacy, setUpdatingPrivacy] = useState<string | null>(null);
 
   // Fetch documents with React Query
   const { data: documents = [], isLoading } = useQuery<Document[]>({
@@ -237,17 +238,22 @@ export default function Dashboard() {
 
   // Update privacy mutation
   const updatePrivacyMutation = useMutation({
-    mutationFn: ({ id, isPrivate }: { id: string; isPrivate: boolean }) => 
-      updateDocumentPrivacy(id, isPrivate),
+    mutationFn: async ({ id, isPrivate }: { id: string; isPrivate: boolean }) => {
+      setUpdatingPrivacy(id);
+      const result = await updateDocumentPrivacy(id, isPrivate);
+      return result;
+    },
     onError: (error: Error) => {
+      setUpdatingPrivacy(null);
       toast({
-        title: "Fehler beim Aktualisieren",
+        title: "Fehler",
         description: error.message,
         variant: "destructive",
       });
+      queryClient.invalidateQueries({ queryKey: ["/api/documents"] });
     },
     onSuccess: () => {
-      // Refetch to ensure sync
+      setUpdatingPrivacy(null);
       queryClient.invalidateQueries({ queryKey: ["/api/documents"] });
     },
   });
@@ -665,10 +671,15 @@ export default function Dashboard() {
                   </div>
                   <DocumentCard
                     {...doc}
+                    isUpdatingPrivacy={updatingPrivacy === doc.id}
                     onView={() => handleView(doc.id)}
                     onDelete={() => handleDelete(doc.id)}
                     onCategoryChange={(category) => handleCategoryChange(doc.id, category)}
-                    onPrivacyToggle={(isPrivate) => updatePrivacyMutation.mutate({ id: doc.id, isPrivate })}
+                    onPrivacyToggle={(isPrivate) => {
+                      if (updatingPrivacy === null) {
+                        updatePrivacyMutation.mutate({ id: doc.id, isPrivate });
+                      }
+                    }}
                   />
                 </div>
               ))}

@@ -1,12 +1,11 @@
 import { 
   FileText, Calendar, MoreVertical, Euro, FileSignature, Shield, Mail, FileQuestion,
   Landmark, Receipt, Briefcase, FileCheck, Building2, Stethoscope, Home, Car, 
-  GraduationCap, Baby, PiggyBank, ShoppingBag, Plane, User, Sparkles
+  GraduationCap, Baby, PiggyBank, ShoppingBag, Plane, User, Sparkles, Lock, LockOpen
 } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,6 +23,7 @@ interface DocumentCardProps {
   date: string;
   thumbnailUrl?: string;
   isPrivate?: boolean;
+  isUpdatingPrivacy?: boolean;
   onView?: () => void;
   onDelete?: () => void;
   onCategoryChange?: (category: string) => void;
@@ -156,6 +156,7 @@ export function DocumentCard({
   date,
   thumbnailUrl,
   isPrivate = false,
+  isUpdatingPrivacy = false,
   onView,
   onDelete,
   onCategoryChange,
@@ -311,18 +312,27 @@ export function DocumentCard({
       </CardHeader>
       
       {/* Privacy toggle - bottom right */}
-      <div className="absolute bottom-3 right-3 flex items-center gap-2 bg-background/90 backdrop-blur-sm px-3 py-1.5 rounded-md border">
-        <span className="text-xs text-muted-foreground">
-          {isPrivate ? "Privat" : "Geteilt"}
-        </span>
-        <Switch
-          checked={!isPrivate}
-          onCheckedChange={(checked) => {
-            onPrivacyToggle?.(!checked);
+      <div className="absolute bottom-3 right-3">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8"
+          disabled={isUpdatingPrivacy}
+          onClick={(e) => {
+            e.stopPropagation();
+            if (onPrivacyToggle && !isUpdatingPrivacy) {
+              onPrivacyToggle(!isPrivate);
+            }
           }}
-          data-testid={`switch-privacy-${id}`}
-          onClick={(e) => e.stopPropagation()}
-        />
+          data-testid={`button-privacy-${id}`}
+          title={isPrivate ? "Privat (nur Sie sehen dieses Dokument)" : "Für beide Nutzer sichtbar"}
+        >
+          {isPrivate ? (
+            <Lock className="h-4 w-4 text-red-600 dark:text-red-500" />
+          ) : (
+            <LockOpen className="h-4 w-4 text-muted-foreground" />
+          )}
+        </Button>
       </div>
     </Card>
   );
