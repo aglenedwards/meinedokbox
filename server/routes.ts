@@ -1299,6 +1299,79 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Testing routes for trial notification emails (Development only)
+  app.post('/api/test/send-trial-email', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { emailType } = req.body;
+      
+      const user = await storage.getUser(userId);
+      if (!user || !user.email) {
+        return res.status(404).json({ message: 'User not found or no email address' });
+      }
+
+      const { sendEmail, getDay14Email, getGraceStartEmail, getGraceLastDayEmail, getReadOnlyStartEmail } = await import('./emailService');
+      
+      let emailData: { subject: string; html: string; text: string };
+      
+      switch (emailType) {
+        case 'day_14':
+          emailData = getDay14Email(user.name || '');
+          break;
+        case 'grace_start':
+          emailData = getGraceStartEmail(user.name || '');
+          break;
+        case 'grace_last_day':
+          emailData = getGraceLastDayEmail(user.name || '');
+          break;
+        case 'readonly_start':
+          emailData = getReadOnlyStartEmail(user.name || '');
+          break;
+        default:
+          return res.status(400).json({ message: 'Invalid email type. Use: day_14, grace_start, grace_last_day, or readonly_start' });
+      }
+
+      await sendEmail({
+        to: user.email,
+        subject: emailData.subject,
+        html: emailData.html,
+        text: emailData.text
+      });
+
+      console.log(`[Test Email] Sent ${emailType} email to ${user.email}`);
+      
+      res.json({ 
+        message: `Test email sent successfully to ${user.email}`,
+        emailType,
+        subject: emailData.subject
+      });
+    } catch (error) {
+      console.error('[Test Email] Error:', error);
+      res.status(500).json({ 
+        message: 'Failed to send test email',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  // Manual trigger for trial notification check (Development only)
+  app.post('/api/test/trigger-trial-check', isAuthenticated, async (_req: any, res) => {
+    try {
+      const { checkAndSendTrialNotifications } = await import('./trialNotificationCron');
+      await checkAndSendTrialNotifications();
+      
+      res.json({ 
+        message: 'Trial notification check triggered successfully'
+      });
+    } catch (error) {
+      console.error('[Test Trigger] Error:', error);
+      res.status(500).json({ 
+        message: 'Failed to trigger trial notification check',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
