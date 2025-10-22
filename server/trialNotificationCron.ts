@@ -25,7 +25,8 @@ export async function checkAndSendTrialNotifications(): Promise<void> {
       if (daysUntilExpiry === 1) {
         const alreadySent = await storage.getTrialNotification(user.id, 'day_14');
         if (!alreadySent) {
-          const { subject, html, text } = getDay14Email(user.name || '');
+          const userName = user.firstName ? `${user.firstName}${user.lastName ? ' ' + user.lastName : ''}` : '';
+          const { subject, html, text } = getDay14Email(userName);
           await sendEmail({ to: user.email, subject, html, text });
           await storage.createTrialNotification({
             userId: user.id,
@@ -40,7 +41,8 @@ export async function checkAndSendTrialNotifications(): Promise<void> {
       if (daysAfterExpiry === 1) {
         const alreadySent = await storage.getTrialNotification(user.id, 'grace_start');
         if (!alreadySent) {
-          const { subject, html, text } = getGraceStartEmail(user.name || '');
+          const userName = user.firstName ? `${user.firstName}${user.lastName ? ' ' + user.lastName : ''}` : '';
+          const { subject, html, text } = getGraceStartEmail(userName);
           await sendEmail({ to: user.email, subject, html, text });
           await storage.createTrialNotification({
             userId: user.id,
@@ -55,7 +57,8 @@ export async function checkAndSendTrialNotifications(): Promise<void> {
       if (daysAfterExpiry === 3) {
         const alreadySent = await storage.getTrialNotification(user.id, 'grace_last_day');
         if (!alreadySent) {
-          const { subject, html, text } = getGraceLastDayEmail(user.name || '');
+          const userName = user.firstName ? `${user.firstName}${user.lastName ? ' ' + user.lastName : ''}` : '';
+          const { subject, html, text } = getGraceLastDayEmail(userName);
           await sendEmail({ to: user.email, subject, html, text });
           await storage.createTrialNotification({
             userId: user.id,
@@ -70,7 +73,8 @@ export async function checkAndSendTrialNotifications(): Promise<void> {
       if (daysAfterExpiry === 4) {
         const alreadySent = await storage.getTrialNotification(user.id, 'readonly_start');
         if (!alreadySent) {
-          const { subject, html, text } = getReadOnlyStartEmail(user.name || '');
+          const userName = user.firstName ? `${user.firstName}${user.lastName ? ' ' + user.lastName : ''}` : '';
+          const { subject, html, text } = getReadOnlyStartEmail(userName);
           await sendEmail({ to: user.email, subject, html, text });
           await storage.createTrialNotification({
             userId: user.id,
