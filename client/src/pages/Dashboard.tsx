@@ -235,29 +235,11 @@ export default function Dashboard() {
     },
   });
 
-  // Update privacy mutation with optimistic updates
+  // Update privacy mutation
   const updatePrivacyMutation = useMutation({
     mutationFn: ({ id, isPrivate }: { id: string; isPrivate: boolean }) => 
       updateDocumentPrivacy(id, isPrivate),
-    onMutate: async ({ id, isPrivate }) => {
-      // Cancel outgoing refetches
-      await queryClient.cancelQueries({ queryKey: ["/api/documents"] });
-
-      // Snapshot previous value
-      const previousDocuments = queryClient.getQueryData(["/api/documents", searchQuery, selectedCategories, sortBy]);
-
-      // Optimistically update to the new value
-      queryClient.setQueryData(["/api/documents", searchQuery, selectedCategories, sortBy], (old: Document[] | undefined) =>
-        old?.map(doc => doc.id === id ? { ...doc, isPrivate } : doc)
-      );
-
-      return { previousDocuments };
-    },
-    onError: (error: Error, variables, context) => {
-      // Rollback to previous value on error
-      if (context?.previousDocuments) {
-        queryClient.setQueryData(["/api/documents", searchQuery, selectedCategories, sortBy], context.previousDocuments);
-      }
+    onError: (error: Error) => {
       toast({
         title: "Fehler beim Aktualisieren",
         description: error.message,
@@ -265,10 +247,7 @@ export default function Dashboard() {
       });
     },
     onSuccess: () => {
-      // Visual feedback via icon color change is sufficient
-    },
-    onSettled: () => {
-      // Always refetch after error or success to ensure sync
+      // Refetch to ensure sync
       queryClient.invalidateQueries({ queryKey: ["/api/documents"] });
     },
   });
