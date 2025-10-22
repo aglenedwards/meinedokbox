@@ -1,15 +1,17 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { User, Mail, UserPlus, X, Crown, Calendar, FileText } from "lucide-react";
+import { User, Mail, UserPlus, X, Crown, Calendar, FileText, Folder as FolderIcon, Lock, Share2, Plus, Pencil, Trash2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
-import { getCurrentUser, getSubscriptionStatus, type SubscriptionStatus } from "@/lib/api";
+import { getCurrentUser, getSubscriptionStatus, getFolders, createFolder, updateFolder, deleteFolder, type SubscriptionStatus, type Folder } from "@/lib/api";
 import type { User as UserType, SharedAccess } from "@shared/schema";
 import { UpgradeModal } from "@/components/UpgradeModal";
 import { Footer } from "@/components/Footer";
@@ -21,6 +23,10 @@ export default function Settings() {
   const { toast } = useToast();
   const [inviteEmail, setInviteEmail] = useState("");
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
+  const [folderDialogOpen, setFolderDialogOpen] = useState(false);
+  const [editingFolder, setEditingFolder] = useState<Folder | null>(null);
+  const [folderName, setFolderName] = useState("");
+  const [folderIsShared, setFolderIsShared] = useState(true);
 
   // Fetch user data
   const { data: user } = useQuery<UserType | null>({
@@ -140,6 +146,121 @@ export default function Settings() {
     if (plan === "premium") return "default";
     if (plan === "trial") return "secondary";
     return "outline";
+  };
+
+  // Fetch folders
+  const { data: folders = [] } = useQuery<Folder[]>({
+    queryKey: ["/api/folders"],
+    queryFn: getFolders,
+  });
+
+  // Create folder mutation
+  const createFolderMutation = useMutation({
+    mutationFn: ({ name, isShared }: { name: string; isShared: boolean }) => createFolder(name, isShared),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/folders"] });
+      setFolderDialogOpen(false);
+      setFolderName("");
+      setFolderIsShared(true);
+      toast({
+        title: "Ordner erstellt",
+        description: "Der neue Ordner wurde erfolgreich erstellt.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Fehler",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Update folder mutation
+  const updateFolderMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: { name?: string; isShared?: boolean } }) => 
+      updateFolder(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/folders"] });
+      setFolderDialogOpen(false);
+      setEditingFolder(null);
+      setFolderName("");
+      setFolderIsShared(true);
+      toast({
+        title: "Ordner aktualisiert",
+        description: "Die Änderungen wurden gespeichert.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Fehler",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Delete folder mutation
+  const deleteFolderMutation = useMutation({
+    mutationFn: deleteFolder,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/folders"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/documents"] });
+      toast({
+        title: "Ordner gelöscht",
+        description: "Der Ordner wurde erfolgreich gelöscht.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Fehler",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleCreateFolder = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!folderName.trim()) return;
+    
+    if (editingFolder) {
+      updateFolderMutation.mutate({
+        id: editingFolder.id,
+        data: { name: folderName, isShared: folderIsShared },
+      });
+    } else {
+      createFolderMutation.mutate({ name: folderName, isShared: folderIsShared });
+    }
+  };
+
+  const handleEditFolder = (folder: Folder) => {
+    setEditingFolder(folder);
+    setFolderName(folder.name);
+    setFolderIsShared(folder.isShared);
+    setFolderDialogOpen(true);
+  };
+
+  const handleDeleteFolder = (folder: Folder) => {
+    if (folder.name === "Alle Dokumente" || folder.name === "Privat") {
+      toast({
+        title: "Aktion nicht möglich",
+        description: "Standard-Ordner können nicht gelöscht werden.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (confirm(`Möchten Sie den Ordner "${folder.name}" wirklich löschen? Alle Dokumente darin werden in "Alle Dokumente" verschoben.`)) {
+      deleteFolderMutation.mutate(folder.id);
+    }
+  };
+
+  const openCreateDialog = () => {
+    setEditingFolder(null);
+    setFolderName("");
+    setFolderIsShared(true);
+    setFolderDialogOpen(true);
   };
 
   return (
@@ -407,8 +528,145 @@ export default function Settings() {
               )}
             </CardContent>
           </Card>
+
+          {/* Folder Management Card */}
+          <Card data-testid="card-folder-management">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <FolderIcon className="h-5 w-5" />
+                    Ordner-Verwaltung
+                  </CardTitle>
+                  <CardDescription>
+                    Verwalten Sie Ihre Ordner und steuern Sie das Teilen
+                  </CardDescription>
+                </div>
+                <Button onClick={openCreateDialog} size="sm" data-testid="button-create-folder">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Neuer Ordner
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {folders.map((folder) => {
+                  const isDefault = folder.name === "Alle Dokumente" || folder.name === "Privat";
+                  return (
+                    <div
+                      key={folder.id}
+                      className="flex items-center justify-between p-3 border rounded-lg"
+                      data-testid={`folder-item-${folder.id}`}
+                    >
+                      <div className="flex items-center gap-3 flex-1">
+                        <div className="flex items-center gap-2">
+                          {folder.isShared ? (
+                            <Share2 className="h-4 w-4 text-primary" />
+                          ) : (
+                            <Lock className="h-4 w-4 text-muted-foreground" />
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-medium" data-testid={`folder-name-${folder.id}`}>
+                            {folder.name}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {folder.isShared ? "Geteilt" : "Privat"}
+                            {isDefault && " • Standard-Ordner"}
+                          </p>
+                        </div>
+                      </div>
+                      {!isDefault && (
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleEditFolder(folder)}
+                            data-testid={`button-edit-folder-${folder.id}`}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteFolder(folder)}
+                            disabled={deleteFolderMutation.isPending}
+                            data-testid={`button-delete-folder-${folder.id}`}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </main>
+
+      {/* Folder Dialog */}
+      <Dialog open={folderDialogOpen} onOpenChange={setFolderDialogOpen}>
+        <DialogContent data-testid="dialog-folder">
+          <DialogHeader>
+            <DialogTitle>
+              {editingFolder ? "Ordner bearbeiten" : "Neuen Ordner erstellen"}
+            </DialogTitle>
+            <DialogDescription>
+              {editingFolder
+                ? "Ändern Sie den Namen oder den Sharing-Status des Ordners"
+                : "Erstellen Sie einen neuen Ordner für Ihre Dokumente"}
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleCreateFolder}>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="folder-name">Ordnername</Label>
+                <Input
+                  id="folder-name"
+                  placeholder="z.B. Rechnungen 2025"
+                  value={folderName}
+                  onChange={(e) => setFolderName(e.target.value)}
+                  required
+                  data-testid="input-folder-name"
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="folder-shared">Mit zweiter Person teilen</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Geteilte Ordner sind für beide Nutzer sichtbar
+                  </p>
+                </div>
+                <Switch
+                  id="folder-shared"
+                  checked={folderIsShared}
+                  onCheckedChange={setFolderIsShared}
+                  data-testid="switch-folder-shared"
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setFolderDialogOpen(false)}
+                data-testid="button-cancel-folder"
+              >
+                Abbrechen
+              </Button>
+              <Button
+                type="submit"
+                disabled={createFolderMutation.isPending || updateFolderMutation.isPending}
+                data-testid="button-save-folder"
+              >
+                {editingFolder ? "Speichern" : "Erstellen"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       <UpgradeModal
         open={upgradeModalOpen}
