@@ -223,7 +223,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { token } = req.query;
 
+      console.log(`[Verify Email] Request received with token: ${token?.toString().substring(0, 10)}...`);
+
       if (!token || typeof token !== 'string') {
+        console.log('[Verify Email] Invalid token format');
         return res.status(400).json({ message: "Ungültiger Verifizierungslink" });
       }
 
@@ -234,21 +237,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .limit(1);
 
       if (!user) {
+        console.log(`[Verify Email] No user found with token: ${token.substring(0, 10)}...`);
         return res.status(400).json({ message: "Ungültiger oder abgelaufener Verifizierungslink" });
       }
 
+      console.log(`[Verify Email] Found user: ${user.email}, isVerified: ${user.isVerified}, tokenExpiry: ${user.verificationTokenExpiry}`);
+
       // Check if token is expired
       if (user.verificationTokenExpiry && user.verificationTokenExpiry < new Date()) {
+        console.log(`[Verify Email] Token expired for ${user.email}`);
         return res.status(400).json({ message: "Verifizierungslink ist abgelaufen. Bitte registrieren Sie sich erneut." });
       }
 
       // Check if already verified
       if (user.isVerified) {
+        console.log(`[Verify Email] User ${user.email} already verified`);
         return res.json({ message: "E-Mail-Adresse wurde bereits bestätigt", alreadyVerified: true });
       }
 
       // Verify user and clear token
-      await db.update(users)
+      const updateResult = await db.update(users)
         .set({
           isVerified: true,
           verificationToken: null,
@@ -256,12 +264,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         })
         .where(eq(users.id, user.id));
 
-      console.log(`[Verify Email] User ${user.email} verified successfully`);
+      console.log(`[Verify Email] ✅ User ${user.email} verified successfully (rowCount: ${updateResult.rowCount})`);
 
       res.json({ message: "E-Mail-Adresse erfolgreich bestätigt. Sie können sich jetzt anmelden." });
     } catch (error) {
-      console.error("Error during email verification:", error);
-      res.status(500).json({ message: "Verifizierung fehlgeschlagen" });
+      console.error("[Verify Email] ❌ Error during email verification:", error);
+      res.status(500).json({ 
+        message: "Verifizierung fehlgeschlagen",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
     }
   });
 
