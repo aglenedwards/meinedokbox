@@ -1151,6 +1151,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/documents/upload', isAuthenticated, uploadLimiter, checkDocumentLimit, upload.array('files', 20), async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
+      // CRITICAL: Use effectiveUserId so Slaves save documents under Master's account
+      const effectiveUserId = await getEffectiveUserId(userId);
+      
       const files = req.files as Express.Multer.File[];
       const folderId = req.body.folderId || null; // Optional folder assignment
 
@@ -1161,7 +1164,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const firstFile = files[0];
       const isPdf = firstFile.mimetype === 'application/pdf';
 
-      console.log(`Processing ${files.length} file(s) as ${isPdf ? 'PDF' : 'image'} document${folderId ? ` into folder ${folderId}` : ''}`);
+      console.log(`[Upload] User ${userId} (effective: ${effectiveUserId}) uploading ${files.length} file(s) as ${isPdf ? 'PDF' : 'image'}${folderId ? ` into folder ${folderId}` : ''}`);
 
       let analysisResult;
 
@@ -1199,7 +1202,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Upload files (images as pages, PDF as single file)
-      await processMultiPageUpload(userId, files, analysisResult, folderId, res);
+      // Use effectiveUserId so documents are saved under Master's account
+      await processMultiPageUpload(effectiveUserId, files, analysisResult, folderId, res);
     } catch (error) {
       console.error("Error uploading document:", error);
       res.status(500).json({ 
