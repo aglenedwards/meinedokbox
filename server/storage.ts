@@ -71,6 +71,10 @@ export interface IStorage {
   addEmailToWhitelist(userId: string, email: string): Promise<EmailWhitelist>;
   removeEmailFromWhitelist(id: string, userId: string): Promise<boolean>;
   isEmailWhitelisted(userId: string, email: string): Promise<boolean>;
+  
+  // Admin functions
+  getAllUsers(): Promise<User[]>;
+  deleteUserCompletely(userId: string): Promise<boolean>;
 }
 
 export class DbStorage implements IStorage {
@@ -745,6 +749,52 @@ export class DbStorage implements IStorage {
   async isEmailWhitelisted(userId: string, email: string): Promise<boolean> {
     const entry = await this.getEmailWhitelistEntry(userId, email);
     return !!entry;
+  }
+
+  // Admin functions
+  async getAllUsers(): Promise<User[]> {
+    const allUsers = await db
+      .select()
+      .from(users)
+      .orderBy(desc(users.createdAt));
+    return allUsers;
+  }
+
+  async deleteUserCompletely(userId: string): Promise<boolean> {
+    try {
+      // Delete all user's data in order (foreign key dependencies)
+      
+      // 1. Delete documents
+      await db.delete(documents).where(eq(documents.userId, userId));
+      
+      // 2. Delete email whitelist
+      await db.delete(emailWhitelist).where(eq(emailWhitelist.userId, userId));
+      
+      // 3. Delete folders
+      await db.delete(folders).where(eq(folders.userId, userId));
+      
+      // 4. Delete tags
+      await db.delete(tags).where(eq(tags.userId, userId));
+      
+      // 5. Delete trial notifications
+      await db.delete(trialNotifications).where(eq(trialNotifications.userId, userId));
+      
+      // 6. Delete shared access (both as owner and as shared user)
+      await db.delete(sharedAccess).where(
+        or(
+          eq(sharedAccess.ownerId, userId),
+          eq(sharedAccess.sharedWithUserId, userId)
+        )
+      );
+      
+      // 7. Finally delete the user
+      const result = await db.delete(users).where(eq(users.id, userId));
+      
+      return result.rowCount !== null && result.rowCount > 0;
+    } catch (error) {
+      console.error('[DeleteUserCompletely] Error:', error);
+      return false;
+    }
   }
 }
 
