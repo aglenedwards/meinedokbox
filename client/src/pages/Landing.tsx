@@ -36,6 +36,7 @@ export default function Landing() {
   const { toast } = useToast();
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authTab, setAuthTab] = useState<"login" | "signup">("login");
+  const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">("yearly");
 
   // Check if user is already logged in
   const { data: user, isLoading } = useQuery<User | null>({
@@ -651,9 +652,38 @@ export default function Landing() {
           <h2 className="text-3xl font-bold text-center mb-4" data-testid="text-pricing-title">
             Einfache, transparente Preise
           </h2>
-          <p className="text-center text-muted-foreground mb-12">
+          <p className="text-center text-muted-foreground mb-8">
             14 Tage kostenlos testen. Keine Kreditkarte erforderlich.
           </p>
+
+          {/* Billing Period Toggle */}
+          <div className="flex items-center justify-center gap-4 mb-12">
+            <button
+              onClick={() => setBillingPeriod("monthly")}
+              className={`px-6 py-2 rounded-lg font-medium transition-all ${
+                billingPeriod === "monthly"
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted text-muted-foreground hover-elevate"
+              }`}
+              data-testid="button-billing-monthly"
+            >
+              Monatlich
+            </button>
+            <button
+              onClick={() => setBillingPeriod("yearly")}
+              className={`px-6 py-2 rounded-lg font-medium transition-all ${
+                billingPeriod === "yearly"
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted text-muted-foreground hover-elevate"
+              }`}
+              data-testid="button-billing-yearly"
+            >
+              Jährlich
+              <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-primary-foreground/20">
+                Spare 20%
+              </span>
+            </button>
+          </div>
           
           <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
             {/* Solo Plan */}
@@ -661,9 +691,16 @@ export default function Landing() {
               <CardHeader className="text-center pb-6">
                 <CardTitle className="text-xl">Solo</CardTitle>
                 <div className="mt-4">
-                  <span className="text-4xl font-bold">€3,99</span>
+                  <span className="text-4xl font-bold">
+                    €{billingPeriod === "monthly" ? "4,99" : "3,99"}
+                  </span>
                   <span className="text-muted-foreground ml-2">/Monat</span>
                 </div>
+                {billingPeriod === "yearly" && (
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Jährlich abgerechnet (€47,88/Jahr)
+                  </p>
+                )}
               </CardHeader>
               <CardContent className="space-y-4">
                 <ul className="space-y-3">
@@ -674,10 +711,6 @@ export default function Landing() {
                   <li className="flex items-start gap-3">
                     <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
                     <span>2 GB Speicherplatz</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                    <span>Unbegrenzte Dokumente</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
@@ -717,9 +750,16 @@ export default function Landing() {
               <CardHeader className="text-center pb-6 pt-8">
                 <CardTitle className="text-2xl">Family</CardTitle>
                 <div className="mt-4">
-                  <span className="text-5xl font-bold">€6,99</span>
+                  <span className="text-5xl font-bold">
+                    €{billingPeriod === "monthly" ? "7,99" : "6,99"}
+                  </span>
                   <span className="text-muted-foreground ml-2">/Monat</span>
                 </div>
+                {billingPeriod === "yearly" && (
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Jährlich abgerechnet (€83,88/Jahr)
+                  </p>
+                )}
               </CardHeader>
               <CardContent className="space-y-4">
                 <ul className="space-y-3">
@@ -729,7 +769,7 @@ export default function Landing() {
                   </li>
                   <li className="flex items-start gap-3">
                     <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                    <span>5 GB Speicherplatz (geteilt)</span>
+                    <span>Unbegrenzter Speicherplatz</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
@@ -771,9 +811,16 @@ export default function Landing() {
               <CardHeader className="text-center pb-6">
                 <CardTitle className="text-xl">Family Plus</CardTitle>
                 <div className="mt-4">
-                  <span className="text-4xl font-bold">€9,99</span>
+                  <span className="text-4xl font-bold">
+                    €{billingPeriod === "monthly" ? "11,99" : "9,99"}
+                  </span>
                   <span className="text-muted-foreground ml-2">/Monat</span>
                 </div>
+                {billingPeriod === "yearly" && (
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Jährlich abgerechnet (€119,88/Jahr)
+                  </p>
+                )}
               </CardHeader>
               <CardContent className="space-y-4">
                 <ul className="space-y-3">
@@ -783,7 +830,7 @@ export default function Landing() {
                   </li>
                   <li className="flex items-start gap-3">
                     <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                    <span>15 GB Speicherplatz (geteilt)</span>
+                    <span>Unbegrenzter Speicherplatz</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
