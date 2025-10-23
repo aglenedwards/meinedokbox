@@ -206,7 +206,7 @@ export default function Landing() {
           <h2 className="text-4xl md:text-5xl font-bold text-center mb-16" data-testid="text-features-title">
             Alles, was Sie brauchen
           </h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-8">
             <Card className="border-0 shadow-lg hover-elevate" data-testid="card-feature-ai">
               <CardHeader>
                 <div className="w-14 h-14 rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mb-4">
@@ -231,6 +231,20 @@ export default function Landing() {
               <CardContent>
                 <CardDescription className="text-base leading-relaxed">
                   Fotografieren Sie Dokumente direkt mit Ihrem Handy – automatische Optimierung inklusive.
+                </CardDescription>
+              </CardContent>
+            </Card>
+
+            <Card className="border-0 shadow-lg hover-elevate" data-testid="card-feature-email">
+              <CardHeader>
+                <div className="w-14 h-14 rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mb-4">
+                  <Mail className="h-7 w-7 text-primary" />
+                </div>
+                <CardTitle className="text-xl">E-Mail-Eingang</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CardDescription className="text-base leading-relaxed">
+                  Ihre persönliche E-Mail-Adresse zum Weiterleiten von Rechnungen – automatische Verarbeitung inklusive.
                 </CardDescription>
               </CardContent>
             </Card>
@@ -282,14 +296,14 @@ export default function Landing() {
             {/* Step 1 */}
             <div className="text-center space-y-6" data-testid="card-step-1">
               <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 mb-2">
-                <Camera className="h-10 w-10 text-primary" />
+                <FileText className="h-10 w-10 text-primary" />
               </div>
               <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-primary text-primary-foreground font-bold text-lg">
                 1
               </div>
-              <h3 className="text-2xl font-semibold">Foto machen</h3>
+              <h3 className="text-2xl font-semibold">Upload, Foto oder E-Mail</h3>
               <p className="text-muted-foreground text-lg leading-relaxed">
-                Fotografieren Sie Ihr Dokument mit dem Smartphone. Die KI erkennt automatisch den Dokumententyp – ob Rechnung, Vertrag oder Brief.
+                Datei hochladen, mit dem Smartphone fotografieren oder an Ihre persönliche E-Mail weiterleiten. Die KI erkennt automatisch den Dokumententyp.
               </p>
             </div>
 
@@ -326,6 +340,93 @@ export default function Landing() {
             <div className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-primary/5 border border-primary/20">
               <Clock className="h-5 w-5 text-primary" />
               <span className="font-semibold">Spart durchschnittlich 10+ Stunden pro Monat</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Email Magic Section */}
+      <section className="py-24 bg-background">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center mb-16">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border bg-primary/5 mb-6">
+                <Mail className="h-4 w-4 text-primary" />
+                <span className="text-sm font-medium">Einzigartiges Feature</span>
+              </div>
+              <h2 className="text-4xl md:text-5xl font-bold mb-6" data-testid="text-email-magic-title">
+                Ihre persönliche Dokumenten-E-Mail
+              </h2>
+              <p className="text-xl text-muted-foreground leading-relaxed">
+                Jeder Nutzer erhält eine einzigartige E-Mail-Adresse. Einfach Rechnungen weiterleiten – automatisch verarbeitet und archiviert.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-8">
+              <Card className="border-0 shadow-lg">
+                <CardContent className="pt-8 pb-8">
+                  <div className="flex items-start gap-4">
+                    <div className="flex-shrink-0">
+                      <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                        <Mail className="h-6 w-6 text-primary" />
+                      </div>
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold mb-2">So funktioniert's</h3>
+                      <p className="text-muted-foreground text-base leading-relaxed">
+                        Sie erhalten eine E-Mail wie <span className="font-mono text-sm bg-muted px-2 py-1 rounded">ihre-dokumente@meinedokbox.de</span>. Leiten Sie einfach Rechnungen von Online-Shops, Versicherungen oder Ärzten weiter.
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-0 shadow-lg">
+                <CardContent className="pt-8 pb-8">
+                  <div className="flex items-start gap-4">
+                    <div className="flex-shrink-0">
+                      <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                        <Sparkles className="h-6 w-6 text-primary" />
+                      </div>
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold mb-2">Automatische Verarbeitung</h3>
+                      <p className="text-muted-foreground text-base leading-relaxed">
+                        PDF-Anhänge werden automatisch extrahiert, kategorisiert und in Ihrem Account gespeichert. Keine manuelle Arbeit mehr nötig.
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-0 shadow-lg md:col-span-2">
+                <CardContent className="pt-8 pb-8">
+                  <h3 className="text-lg font-semibold mb-4">Perfekt für:</h3>
+                  <div className="grid md:grid-cols-3 gap-4">
+                    <div className="flex items-start gap-3">
+                      <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="font-medium">Online-Bestellungen</p>
+                        <p className="text-sm text-muted-foreground">Amazon, Zalando & Co.</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="font-medium">Versicherungen</p>
+                        <p className="text-sm text-muted-foreground">Policen & Abrechnungen</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="font-medium">Arzt & Apotheke</p>
+                        <p className="text-sm text-muted-foreground">Rezepte & Befunde</p>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </div>
         </div>
@@ -580,7 +681,7 @@ export default function Landing() {
               </CardHeader>
               <CardContent>
                 <CardDescription className="mb-4">
-                  Kinderarzt-Befunde, Kita-Verträge, Nebenkostenabrechnungen – alles zentral organisiert. Beide Partner haben Zugriff.
+                  Kinderarzt-Rechnungen einfach weiterleiten, Kita-Verträge fotografieren, Nebenkostenabrechnungen hochladen – alles zentral organisiert. Beide Partner haben Zugriff.
                 </CardDescription>
                 <div className="space-y-2 text-sm">
                   <div className="flex items-center gap-2 text-muted-foreground">
@@ -589,11 +690,11 @@ export default function Landing() {
                   </div>
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <Check className="h-4 w-4 text-primary flex-shrink-0" />
-                    <span>Private & geteilte Ordner</span>
+                    <span>E-Mail-Weiterleitung für Rechnungen</span>
                   </div>
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <Check className="h-4 w-4 text-primary flex-shrink-0" />
-                    <span>Immer griffbereit</span>
+                    <span>Private & geteilte Ordner</span>
                   </div>
                 </div>
               </CardContent>
@@ -609,7 +710,7 @@ export default function Landing() {
               </CardHeader>
               <CardContent>
                 <CardDescription className="mb-4">
-                  Alle Belege für die Steuer automatisch erfasst. Rechnungen, Quittungen, Verträge – perfekt vorbereitet für den Steuerberater.
+                  Online-Bestellungen automatisch archivieren durch E-Mail-Weiterleitung. Alle Belege perfekt vorbereitet für den Steuerberater.
                 </CardDescription>
                 <div className="space-y-2 text-sm">
                   <div className="flex items-center gap-2 text-muted-foreground">
