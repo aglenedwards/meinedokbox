@@ -38,14 +38,23 @@ export async function uploadDocument(files: File | File[]): Promise<Document> {
 
 export type SortOption = "date-desc" | "date-asc" | "title-asc" | "title-desc" | "category-asc";
 
+export interface PaginatedDocuments {
+  documents: Document[];
+  nextCursor: string | null;
+  hasMore: boolean;
+  total: number;
+}
+
 /**
- * Get all documents for the current user with optional search, category filters, and sorting
+ * Get paginated documents for the current user with optional search, category filters, and sorting
  */
 export async function getDocuments(
   searchQuery?: string,
   categories?: string[],
-  sortBy?: SortOption
-): Promise<Document[]> {
+  sortBy?: SortOption,
+  limit?: number,
+  cursor?: string
+): Promise<PaginatedDocuments> {
   const params = new URLSearchParams();
   
   if (searchQuery) {
@@ -59,6 +68,14 @@ export async function getDocuments(
 
   if (sortBy) {
     params.append("sort", sortBy);
+  }
+
+  if (limit) {
+    params.append("limit", limit.toString());
+  }
+
+  if (cursor) {
+    params.append("cursor", cursor);
   }
 
   const queryString = params.toString();

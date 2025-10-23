@@ -1286,11 +1286,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get all documents for authenticated user with optional search/filter/sort
+  // Get all documents for authenticated user with optional search/filter/sort/pagination
   app.get('/api/documents', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const { search, categories, sort } = req.query;
+      const { search, categories, sort, limit, cursor } = req.query;
 
       // Get effective user ID (supports shared access)
       const effectiveUserId = await getEffectiveUserId(userId);
@@ -1303,19 +1303,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ? (categories as string).split(',').filter(c => c.trim())
         : undefined;
 
-      const documents = await storage.searchDocuments(
+      // Parse limit (default 50, max 100)
+      const pageLimit = limit ? Math.min(parseInt(limit as string, 10), 100) : 50;
+
+      const result = await storage.searchDocuments(
         effectiveUserId,
         search as string | undefined,
         categoryArray,
         sort as any,
-        isShared // Only show shared folder documents if user is a shared user
+        isShared, // Only show shared folder documents if user is a shared user
+        pageLimit,
+        cursor as string | undefined
       );
 
       // Disable caching to ensure fresh data after privacy toggle
       res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
       res.set('Pragma', 'no-cache');
       res.set('Expires', '0');
-      res.json(documents);
+      res.json(result);
     } catch (error) {
       console.error("Error fetching documents:", error);
       res.status(500).json({ message: "Failed to fetch documents" });

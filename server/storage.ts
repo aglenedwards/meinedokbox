@@ -16,6 +16,13 @@ export interface StorageStats {
 
 export type SortOption = "date-desc" | "date-asc" | "title-asc" | "title-desc" | "category-asc";
 
+export interface PaginatedDocuments {
+  documents: Document[];
+  nextCursor: string | null;
+  hasMore: boolean;
+  total: number;
+}
+
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
@@ -25,7 +32,7 @@ export interface IStorage {
   createDocument(document: InsertDocument): Promise<Document>;
   getDocument(id: string): Promise<Document | undefined>;
   getDocumentsByUserId(userId: string, sortBy?: SortOption, includeOnlySharedFolders?: boolean): Promise<Document[]>;
-  searchDocuments(userId: string, query?: string, categories?: string[], sortBy?: SortOption, includeOnlySharedFolders?: boolean): Promise<Document[]>;
+  searchDocuments(userId: string, query?: string, categories?: string[], sortBy?: SortOption, includeOnlySharedFolders?: boolean, limit?: number, cursor?: string): Promise<PaginatedDocuments>;
   updateDocumentCategory(id: string, userId: string, category: string): Promise<Document | undefined>;
   updateDocumentSharing(id: string, userId: string, isShared: boolean): Promise<Document | undefined>;
   deleteDocument(id: string, userId: string): Promise<boolean>;
@@ -199,7 +206,15 @@ export class DbStorage implements IStorage {
       .orderBy(this.getSortOrder(sortBy));
   }
 
-  async searchDocuments(userId: string, query?: string, categories?: string[], sortBy?: SortOption, includeOnlySharedFolders?: boolean): Promise<Document[]> {
+  async searchDocuments(
+    userId: string, 
+    query?: string, 
+    categories?: string[], 
+    sortBy?: SortOption, 
+    includeOnlySharedFolders?: boolean,
+    limit: number = 50,
+    cursor?: string
+  ): Promise<PaginatedDocuments> {
     // Build base where clause
     let whereClause = and(
       eq(documents.userId, userId),
@@ -228,11 +243,50 @@ export class DbStorage implements IStorage {
       ) as any;
     }
 
-    return db
+    // Apply cursor-based pagination (using uploadedAt + id for unique ordering)
+    if (cursor) {
+      const [cursorDate, cursorId] = cursor.split('_');
+      whereClause = and(
+        whereClause,
+        or(
+          sql`${documents.uploadedAt} < ${new Date(cursorDate)}`,
+          and(
+            sql`${documents.uploadedAt} = ${new Date(cursorDate)}`,
+            sql`${documents.id} < ${cursorId}`
+          )
+        )
+      ) as any;
+    }
+
+    // Get total count (without pagination)
+    const [countResult] = await db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(documents)
+      .where(whereClause);
+    const total = countResult?.count || 0;
+
+    // Fetch documents with limit + 1 to check if there are more
+    const results = await db
       .select()
       .from(documents)
       .where(whereClause)
-      .orderBy(this.getSortOrder(sortBy));
+      .orderBy(this.getSortOrder(sortBy), desc(documents.id)) // Secondary sort by id for stable ordering
+      .limit(limit + 1);
+
+    const hasMore = results.length > limit;
+    const documentsPage = hasMore ? results.slice(0, limit) : results;
+
+    // Generate next cursor from last document
+    const nextCursor = hasMore && documentsPage.length > 0
+      ? `${documentsPage[documentsPage.length - 1].uploadedAt.toISOString()}_${documentsPage[documentsPage.length - 1].id}`
+      : null;
+
+    return {
+      documents: documentsPage,
+      nextCursor,
+      hasMore,
+      total,
+    };
   }
 
   async updateDocumentCategory(id: string, userId: string, category: string): Promise<Document | undefined> {
