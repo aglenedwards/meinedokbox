@@ -35,6 +35,7 @@ import { CheckoutDialog } from "@/components/CheckoutDialog";
 import { TrialBanner } from "@/components/TrialBanner";
 import { GracePeriodBanner } from "@/components/GracePeriodBanner";
 import { ReadOnlyBanner } from "@/components/ReadOnlyBanner";
+import { FreeBanner } from "@/components/FreeBanner";
 import { Footer } from "@/components/Footer";
 import logoImage from "@assets/meinedokbox_1760966015056.png";
 
@@ -608,6 +609,11 @@ export default function Dashboard() {
               onUpgrade={() => setUpgradeModal({ open: true, reason: "trial_expired" })}
             />
           </div>
+        )}
+        
+        {/* Free Plan Banner */}
+        {subscriptionStatus?.plan === "free" && (
+          <FreeBanner onUpgrade={() => setUpgradeModal({ open: true })} />
         )}
         
         {/* Grace Period Banner (Days 15-17) */}
