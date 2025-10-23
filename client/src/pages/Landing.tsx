@@ -93,12 +93,46 @@ export default function Landing() {
       // Redirect to dashboard after user data is loaded
       setLocation("/dashboard");
     },
-    onError: (error: Error) => {
-      toast({
-        title: "Login fehlgeschlagen",
-        description: error.message,
-        variant: "destructive",
-      });
+    onError: (error: any) => {
+      // Check if error is due to unverified email
+      if (error.message?.includes("E-Mail-Adresse")) {
+        toast({
+          title: "E-Mail-Adresse nicht bestätigt",
+          description: error.message,
+          variant: "destructive",
+          action: {
+            label: "E-Mail erneut senden",
+            onClick: async () => {
+              try {
+                const email = loginForm.getValues("email");
+                const res = await fetch("/api/auth/resend-verification", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ email }),
+                  credentials: "include",
+                });
+                const data = await res.json();
+                toast({
+                  title: "E-Mail gesendet",
+                  description: data.message,
+                });
+              } catch (err) {
+                toast({
+                  title: "Fehler",
+                  description: "E-Mail konnte nicht gesendet werden",
+                  variant: "destructive",
+                });
+              }
+            },
+          },
+        });
+      } else {
+        toast({
+          title: "Login fehlgeschlagen",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
     },
   });
 

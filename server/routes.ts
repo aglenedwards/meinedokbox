@@ -256,7 +256,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       if (!user) {
-        return res.status(401).json({ message: info?.message || "Email oder Passwort falsch" });
+        return res.status(401).json({ 
+          message: info?.message || "Email oder Passwort falsch",
+          notVerified: info?.notVerified || false
+        });
       }
 
       req.login(user, (loginErr) => {
@@ -268,6 +271,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.json({ message: "Login erfolgreich" });
       });
     })(req, res, next);
+  });
+
+  // Resend verification email
+  app.post('/api/auth/resend-verification', async (req, res) => {
+    try {
+      const { email } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ message: "E-Mail-Adresse erforderlich" });
+      }
+
+      const normalizedEmail = email.toLowerCase().trim();
+      
+      // Find user
+      const [user] = await db.select()
+        .from(users)
+        .where(eq(users.email, normalizedEmail))
+        .limit(1);
+
+      if (!user) {
+        // Don't reveal if email exists (security)
+        return res.json({ message: "Falls ein Account mit dieser E-Mail existiert, wurde eine neue Bestätigungs-E-Mail gesendet." });
+      }
+
+      if (user.isVerified) {
+        return res.status(400).json({ message: "Dieser Account ist bereits verifiziert. Sie können sich einloggen." });
+      }
+
+      // Generate new verification token
+      const crypto = await import('crypto');
+      const verificationToken = crypto.randomBytes(32).toString('hex');
+      const verificationTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+      // Update user with new token
+      await db.update(users)
+        .set({
+          verificationToken,
+          verificationTokenExpiry,
+        })
+        .where(eq(users.id, user.id));
+
+      // Send new verification email
+      const { sendVerificationEmail } = await import('./lib/sendEmail');
+      const emailSent = await sendVerificationEmail(normalizedEmail, user.firstName, verificationToken);
+
+      if (!emailSent) {
+        console.error(`[ResendVerification] Failed to send email to ${normalizedEmail}`);
+        return res.status(500).json({ message: "E-Mail konnte nicht gesendet werden" });
+      }
+
+      console.log(`[ResendVerification] New verification email sent to ${normalizedEmail}`);
+      
+      res.json({ message: "Eine neue Bestätigungs-E-Mail wurde gesendet. Bitte prüfen Sie Ihr Postfach (auch Spam-Ordner)." });
+    } catch (error) {
+      console.error('[ResendVerification] Error:', error);
+      res.status(500).json({ message: "Fehler beim Senden der Bestätigungs-E-Mail" });
+    }
   });
 
   // Logout (works for both local and OIDC auth)
