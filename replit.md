@@ -7,6 +7,17 @@ PaperEase is a web and mobile application that digitizes paper documents using s
 **Core Purpose:** Minimize friction in document capture and retrieval; maximize clarity in organization through AI-assisted categorization.
 
 **Recent Updates (Oct 2025):**
+- **Dynamic Slave Plan Synchronization (Oct 23, 2025):**
+  - ✅ Backend: `getEffectiveUser()` helper function - returns Master's user data if current user is a Slave
+  - ✅ Backend: `getEffectiveSubscriptionPlan()` helper - returns Master's plan/trial dates for Slaves
+  - ✅ Backend: All subscription checks now use effective plan (upload limits, trial status, feature access)
+  - ✅ Backend: Slave registration simplified - gets 'free' plan in DB, inherits Master's plan dynamically
+  - ✅ Backend: `/api/subscription/status` returns Master's plan for Slaves in real-time
+  - ✅ Backend: `/api/shared-access/invite` checks Master's plan limits for Slaves
+  - ✅ Backend: `checkDocumentLimit` middleware uses Master's trial dates for Slaves
+  - ✅ Backend: `checkEmailFeature` middleware uses Master's plan for Slaves
+  - ✅ **CRITICAL FIX**: Slaves now always have same rights as Master - no manual sync needed!
+  - ✅ **BENEFIT**: When Master upgrades/downgrades, Slaves inherit changes instantly
 - **Token-Based Invitation System (Oct 23, 2025):**
   - ✅ Backend: Extended shared_access schema with invitationToken, tokenExpiresAt, invitedAt fields
   - ✅ Backend: Secure token generation (crypto.randomBytes) with 7-day expiry
