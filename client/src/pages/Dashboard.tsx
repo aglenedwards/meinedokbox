@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query";
 import { FileText, HardDrive, TrendingUp, Plus, Trash2, ArrowUpDown, Download, Camera, ChevronDown, Settings, MoreVertical, LogOut, Shield } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
-import { uploadDocument, getDocuments, deleteDocument, updateDocumentCategory, updateDocumentSharing, getStorageStats, bulkDeleteDocuments, exportDocumentsAsZip, getCurrentUser, getSubscriptionStatus, logout, type StorageStats, type SortOption, type SubscriptionStatus } from "@/lib/api";
+import { uploadDocument, getDocuments, deleteDocument, updateDocumentCategory, updateDocumentSharing, getStorageStats, bulkDeleteDocuments, exportDocumentsAsZip, getCurrentUser, getSubscriptionStatus, logout, type StorageStats, type SortOption, type SubscriptionStatus, type PaginatedDocuments } from "@/lib/api";
 import { DocumentViewer } from "@/components/DocumentViewer";
 import { MultiPageUpload } from "@/components/MultiPageUpload";
 import { CameraMultiShot } from "@/components/CameraMultiShot";
@@ -120,14 +120,27 @@ export default function Dashboard() {
   }>({ open: false });
   const [updatingSharing, setUpdatingSharing] = useState<string | null>(null);
 
-  // Fetch documents with React Query
-  const { data: documents = [], isLoading } = useQuery<Document[]>({
+  // Fetch documents with React Query using infinite query for pagination
+  const {
+    data,
+    isLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteQuery<PaginatedDocuments>({
     queryKey: ["/api/documents", searchQuery, selectedCategories, sortBy],
-    queryFn: () => getDocuments(searchQuery, selectedCategories, sortBy),
+    queryFn: ({ pageParam }) => 
+      getDocuments(searchQuery, selectedCategories, sortBy, undefined, pageParam as string | undefined),
+    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+    initialPageParam: undefined,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
     staleTime: 0, // Always refetch when invalidated
   });
+
+  // Flatten pages to get all documents
+  const documents = data?.pages.flatMap(page => page.documents) || [];
+  const totalDocuments = data?.pages[0]?.total || 0;
 
   // Fetch storage statistics
   const { data: storageStats } = useQuery<StorageStats>({
@@ -247,19 +260,34 @@ export default function Dashboard() {
       await queryClient.cancelQueries({ queryKey: ["/api/documents"] });
 
       // Snapshot previous value
-      const previousDocuments = queryClient.getQueryData(["/api/documents"]);
+      const previousData = queryClient.getQueryData(["/api/documents", searchQuery, selectedCategories, sortBy]);
 
-      // Optimistically update to the new value
-      queryClient.setQueryData(["/api/documents", searchQuery, selectedCategories], (old: Document[] | undefined) =>
-        old?.map(doc => doc.id === id ? { ...doc, category } : doc)
+      // Optimistically update to the new value for infinite query
+      queryClient.setQueryData(
+        ["/api/documents", searchQuery, selectedCategories, sortBy],
+        (old: any) => {
+          if (!old) return old;
+          return {
+            ...old,
+            pages: old.pages.map((page: PaginatedDocuments) => ({
+              ...page,
+              documents: page.documents.map((doc: Document) =>
+                doc.id === id ? { ...doc, category } : doc
+              ),
+            })),
+          };
+        }
       );
 
-      return { previousDocuments };
+      return { previousData };
     },
     onError: (error: Error, variables, context) => {
       // Rollback to previous value on error
-      if (context?.previousDocuments) {
-        queryClient.setQueryData(["/api/documents"], context.previousDocuments);
+      if (context?.previousData) {
+        queryClient.setQueryData(
+          ["/api/documents", searchQuery, selectedCategories, sortBy],
+          context.previousData
+        );
       }
       toast({
         title: "Fehler beim Aktualisieren",
@@ -293,33 +321,40 @@ export default function Dashboard() {
         queryKey: ["/api/documents", searchQuery, selectedCategories, sortBy] 
       });
 
-      // Get current data
-      const previousDocs = queryClient.getQueryData<Document[]>([
+      // Get current data for infinite query
+      const previousData = queryClient.getQueryData([
         "/api/documents", 
         searchQuery, 
         selectedCategories, 
         sortBy
       ]);
 
-      // Optimistically update
-      if (previousDocs) {
-        queryClient.setQueryData<Document[]>(
-          ["/api/documents", searchQuery, selectedCategories, sortBy],
-          previousDocs.map(doc => 
-            doc.id === id ? { ...doc, isShared } : doc
-          )
-        );
-      }
+      // Optimistically update for infinite query
+      queryClient.setQueryData(
+        ["/api/documents", searchQuery, selectedCategories, sortBy],
+        (old: any) => {
+          if (!old) return old;
+          return {
+            ...old,
+            pages: old.pages.map((page: PaginatedDocuments) => ({
+              ...page,
+              documents: page.documents.map((doc: Document) =>
+                doc.id === id ? { ...doc, isShared } : doc
+              ),
+            })),
+          };
+        }
+      );
 
-      return { previousDocs };
+      return { previousData };
     },
     onError: (error: Error, variables, context) => {
       setUpdatingSharing(null);
       // Rollback on error
-      if (context?.previousDocs) {
+      if (context?.previousData) {
         queryClient.setQueryData(
           ["/api/documents", searchQuery, selectedCategories, sortBy],
-          context.previousDocs
+          context.previousData
         );
       }
       toast({
@@ -438,7 +473,6 @@ export default function Dashboard() {
   }));
 
   // Calculate stats
-  const totalDocuments = documents.length;
   const thisMonthCount = documents.filter(doc => {
     const uploadDate = new Date(doc.uploadedAt);
     const now = new Date();
@@ -811,6 +845,25 @@ export default function Dashboard() {
                   />
                 </div>
               ))}
+            </div>
+
+            {/* Document count and Load More button */}
+            <div className="mt-8 flex flex-col items-center gap-4">
+              <p className="text-sm text-muted-foreground" data-testid="text-document-count">
+                Zeige {documents.length} von {totalDocuments} Dokumenten
+              </p>
+              
+              {hasNextPage && (
+                <Button
+                  variant="outline"
+                  onClick={() => fetchNextPage()}
+                  disabled={isFetchingNextPage}
+                  data-testid="button-load-more"
+                  className="min-w-[200px]"
+                >
+                  {isFetchingNextPage ? "Wird geladen..." : "Mehr laden"}
+                </Button>
+              )}
             </div>
           </>
         )}
