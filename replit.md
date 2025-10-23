@@ -14,11 +14,16 @@ PaperEase is a web and mobile application that digitizes paper documents using s
   - ✅ Backend: sendVerificationEmail() function sends beautiful HTML verification emails
   - ✅ Backend: GET /api/auth/verify-email endpoint verifies tokens and activates accounts
   - ✅ Backend: Login blocked for non-verified users with helpful error message
+  - ✅ Backend: **CRITICAL FIX** - isAuthenticated middleware now properly supports both OIDC and Local Auth users
+  - ✅ Backend: **CRITICAL FIX** - Session persistence enforced with req.session.save() in login flow
+  - ✅ Backend: Cookie settings optimized (secure/sameSite) for development and production environments
   - ✅ Frontend: Enhanced registration form with password confirmation, privacy checkbox, required name fields
   - ✅ Frontend: Password strength requirements displayed in placeholder
   - ✅ Frontend: Email verification page (/verify-email) with success/error states
   - ✅ Frontend: Post-registration flow shows email verification message instead of auto-login
+  - ✅ Frontend: Login with refetchQueries ensures proper authentication state before redirect
   - ✅ Database: users.isVerified, users.verificationToken, users.verificationTokenExpiry fields added
+  - ✅ **EMAIL/PASSWORD LOGIN FULLY FUNCTIONAL** - All authentication flows working in development and production
 - **Folder-Based Privacy System (Oct 21, 2025):**
   - ✅ Backend: Folders table with `isShared` flag for granular privacy control
   - ✅ Backend: Shared users only see documents from folders marked as shared
