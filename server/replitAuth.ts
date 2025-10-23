@@ -98,8 +98,17 @@ export async function setupAuth(app: Express) {
     passport.use(strategy);
   }
 
-  passport.serializeUser((user: Express.User, cb) => cb(null, user));
-  passport.deserializeUser((user: Express.User, cb) => cb(null, user));
+  // Serialize: Save minimal data to session (works for both OIDC and Local users)
+  passport.serializeUser((user: any, cb) => {
+    // For local auth users, save the user object (already minimal)
+    // For OIDC users, save the entire object (contains tokens)
+    cb(null, user);
+  });
+  
+  // Deserialize: Restore user from session
+  passport.deserializeUser((user: any, cb) => {
+    cb(null, user);
+  });
 
   app.get("/api/login", (req, res, next) => {
     passport.authenticate(`replitauth:${req.hostname}`, {
@@ -130,7 +139,17 @@ export async function setupAuth(app: Express) {
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
   const user = req.user as any;
 
-  if (!req.isAuthenticated() || !user.expires_at) {
+  if (!req.isAuthenticated()) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  // For local auth users, no token expiration check needed
+  if (user.isLocal) {
+    return next();
+  }
+
+  // For OIDC users, check token expiration
+  if (!user.expires_at) {
     return res.status(401).json({ message: "Unauthorized" });
   }
 
