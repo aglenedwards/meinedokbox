@@ -127,13 +127,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/auth/register', async (req, res) => {
     try {
       // Strong password validation: min 8 chars, 1 uppercase, 1 number, 1 special char
-      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/;
       
       const registerSchema = z.object({
         email: z.string().email("Ungültige E-Mail-Adresse"),
         password: z.string()
           .min(8, "Passwort muss mindestens 8 Zeichen lang sein")
-          .regex(passwordRegex, "Passwort muss mindestens einen Großbuchstaben, eine Zahl und ein Sonderzeichen enthalten"),
+          .regex(passwordRegex, "Passwort muss mindestens einen Kleinbuchstaben, einen Großbuchstaben, eine Zahl und ein Sonderzeichen enthalten"),
         passwordConfirm: z.string(),
         firstName: z.string().min(1, "Vorname ist erforderlich"),
         lastName: z.string().min(1, "Nachname ist erforderlich"),
