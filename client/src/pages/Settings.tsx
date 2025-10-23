@@ -250,6 +250,16 @@ export default function Settings() {
     return "outline";
   };
 
+  // Calculate invitation limits based on plan
+  const planLimits = {
+    'trial': 2,
+    'family': 2,
+    'family-plus': 4,
+  };
+  const maxUsers = planLimits[subscriptionStatus?.plan as keyof typeof planLimits] || 1;
+  const activeInvitations = allSharedAccess?.filter(a => a.status === 'pending' || a.status === 'active') || [];
+  const canInviteMore = activeInvitations.length < (maxUsers - 1);
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -488,19 +498,7 @@ export default function Settings() {
             <CardContent>
               {['family', 'family-plus', 'trial'].includes(subscriptionStatus?.plan || '') ? (
                 <>
-                  {/* Calculate max users based on plan */}
-                  {(() => {
-                    const planLimits = {
-                      'trial': 2,
-                      'family': 2,
-                      'family-plus': 4,
-                    };
-                    const maxUsers = planLimits[subscriptionStatus?.plan as keyof typeof planLimits] || 1;
-                    const activeInvitations = allSharedAccess?.filter(a => a.status === 'pending' || a.status === 'active') || [];
-                    const canInviteMore = activeInvitations.length < (maxUsers - 1);
-                    
-                    return (
-                      <div className="space-y-4">
+                  <div className="space-y-4">
                         {/* Show existing invitations */}
                         {allSharedAccess && allSharedAccess.length > 0 && allSharedAccess.map((access) => {
                           const statusVariant = access.status === 'active' ? 'default' : 
@@ -541,8 +539,8 @@ export default function Settings() {
                                       disabled={resendMutation.isPending}
                                       data-testid={`button-resend-${access.id}`}
                                     >
-                                      <Mail className="h-4 w-4 mr-2" />
-                                      Erneut senden
+                                      <Mail className="h-4 w-4 md:mr-2" />
+                                      <span className="hidden md:inline">Erneut senden</span>
                                     </Button>
                                   )}
                                   {access.status === 'expired' && (
@@ -553,8 +551,8 @@ export default function Settings() {
                                       disabled={resendMutation.isPending}
                                       data-testid={`button-resend-${access.id}`}
                                     >
-                                      <Mail className="h-4 w-4 mr-2" />
-                                      Neu einladen
+                                      <Mail className="h-4 w-4 md:mr-2" />
+                                      <span className="hidden md:inline">Neu einladen</span>
                                     </Button>
                                   )}
                                   {access.status === 'revoked' && (
@@ -569,8 +567,8 @@ export default function Settings() {
                                       disabled={deleteMutation.isPending}
                                       data-testid={`button-delete-${access.id}`}
                                     >
-                                      <Trash2 className="h-4 w-4 mr-2" />
-                                      Löschen
+                                      <Trash2 className="h-4 w-4 md:mr-2" />
+                                      <span className="hidden md:inline">Löschen</span>
                                     </Button>
                                   )}
                                   {(access.status === 'active' || access.status === 'pending') && (
@@ -581,8 +579,8 @@ export default function Settings() {
                                       disabled={revokeMutation.isPending}
                                       data-testid={`button-revoke-access-${access.id}`}
                                     >
-                                      <X className="h-4 w-4 mr-2" />
-                                      Widerrufen
+                                      <X className="h-4 w-4 md:mr-2" />
+                                      <span className="hidden md:inline">Widerrufen</span>
                                     </Button>
                                   )}
                                 </div>
@@ -643,9 +641,7 @@ export default function Settings() {
                             </div>
                           </>
                         )}
-                      </div>
-                    );
-                  })()}
+                  </div>
                 </>
               ) : (
                 <div className="text-center py-6 md:py-8">
