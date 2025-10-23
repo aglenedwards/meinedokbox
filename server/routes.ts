@@ -20,6 +20,7 @@ import { insertDocumentSchema, DOCUMENT_CATEGORIES, PLAN_LIMITS } from "@shared/
 import { combineImagesToPDF, type PageBuffer } from "./lib/pdfGenerator";
 import { parseMailgunWebhook, isSupportedAttachment, isEmailWhitelisted, verifyMailgunWebhook, extractEmailAddress } from "./lib/emailInbound";
 import { sendSharedAccessInvitation, sendVerificationEmail } from "./lib/sendEmail";
+import { emailQueue } from "./lib/emailQueue";
 import bcrypt from 'bcrypt';
 import { checkDocumentLimit, checkEmailFeature, checkAndDowngradeTrial, getEffectiveUserId, isSharedUser } from "./middleware/subscriptionLimits";
 import { 
@@ -204,18 +205,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.addEmailToWhitelist(userId, normalizedEmail);
       console.log(`[Register] Added ${normalizedEmail} to whitelist for user ${userId}`);
 
-      // Send verification email
-      const { sendVerificationEmail } = await import('./lib/sendEmail');
-      const emailSent = await sendVerificationEmail(normalizedEmail, firstName, verificationToken);
-
-      if (!emailSent) {
-        console.error(`[Register] Failed to send verification email to ${normalizedEmail}`);
-        // Don't fail registration if email sending fails
-      }
+      // Queue verification email (async, with auto-retry)
+      await emailQueue.enqueueVerificationEmail(normalizedEmail, firstName, verificationToken);
+      console.log(`[Register] Verification email queued for ${normalizedEmail}`);
 
       res.json({ 
         message: "Registrierung erfolgreich. Bitte bestätigen Sie Ihre E-Mail-Adresse.",
-        emailSent 
+        emailQueued: true
       });
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -358,14 +354,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         })
         .where(eq(users.id, user.id));
 
-      // Send new verification email
-      const { sendVerificationEmail } = await import('./lib/sendEmail');
-      const emailSent = await sendVerificationEmail(normalizedEmail, user.firstName, verificationToken);
-
-      if (!emailSent) {
-        console.error(`[ResendVerification] Failed to send email to ${normalizedEmail}`);
-        return res.status(500).json({ message: "E-Mail konnte nicht gesendet werden" });
-      }
+      // Queue new verification email (async, with auto-retry)
+      await emailQueue.enqueueVerificationEmail(normalizedEmail, user.firstName, verificationToken);
+      console.log(`[ResendVerification] Verification email queued for ${normalizedEmail}`);
 
       console.log(`[ResendVerification] New verification email sent to ${normalizedEmail}`);
       
@@ -606,14 +597,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
             ? `${user.firstName} ${user.lastName}`
             : user.email || "Ein Nutzer";
           
-          console.log(`[Invite] Sending reactivation email to ${normalizedEmail} with token ${invitationToken}`);
-          const emailSent = await sendSharedAccessInvitation(normalizedEmail, ownerName, invitationToken);
-          
-          if (!emailSent) {
-            console.warn("[Invite] ⚠️ Failed to send reactivation email");
-          } else {
-            console.log("[Invite] ✅ Reactivation email sent successfully");
-          }
+          console.log(`[Invite] Queueing reactivation email to ${normalizedEmail} with token ${invitationToken}`);
+          await emailQueue.enqueueInvitationEmail(normalizedEmail, ownerName, invitationToken);
+          console.log("[Invite] ✅ Reactivation email queued successfully");
           
           // Get updated invitation
           const updatedInvitation = await db.select()
@@ -624,7 +610,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return res.json({
             message: "Einladung reaktiviert und erneut gesendet",
             sharedAccess: updatedInvitation[0],
-            emailSent,
+            emailQueued: true,
             reactivated: true,
           });
         }
@@ -667,19 +653,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ? `${user.firstName} ${user.lastName}`
         : user.email || "Ein Nutzer";
       
-      console.log(`[Invite] Sending invitation email to ${normalizedEmail} from ${ownerName} with token ${invitationToken}`);
-      const emailSent = await sendSharedAccessInvitation(normalizedEmail, ownerName, invitationToken);
-      
-      if (!emailSent) {
-        console.warn("[Invite] ⚠️ Failed to send invitation email, but invitation was created");
-      } else {
-        console.log("[Invite] ✅ Invitation email sent successfully");
-      }
+      console.log(`[Invite] Queueing invitation email to ${normalizedEmail} from ${ownerName} with token ${invitationToken}`);
+      await emailQueue.enqueueInvitationEmail(normalizedEmail, ownerName, invitationToken);
+      console.log("[Invite] ✅ Invitation email queued successfully");
 
       res.json({
         message: "Einladung gesendet",
         sharedAccess: sharedAccessData,
-        emailSent,
+        emailQueued: true,
         reactivated: false,
       });
     } catch (error) {
@@ -742,22 +723,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ? `${user.firstName} ${user.lastName}`
         : user?.email || "Ein Nutzer";
       
-      // Send new invitation email
-      console.log(`[Resend Invite] Sending new invitation to ${updatedAccess.sharedWithEmail}`);
-      const emailSent = await sendSharedAccessInvitation(
+      // Queue new invitation email (async, with auto-retry)
+      console.log(`[Resend Invite] Queueing new invitation to ${updatedAccess.sharedWithEmail}`);
+      await emailQueue.enqueueInvitationEmail(
         updatedAccess.sharedWithEmail, 
         ownerName,
         updatedAccess.invitationToken!
       );
-      
-      if (!emailSent) {
-        console.warn("[Resend Invite] ⚠️ Failed to send invitation email");
-      }
+      console.log("[Resend Invite] ✅ Invitation email queued successfully");
       
       res.json({
         message: "Einladung erneut gesendet",
         sharedAccess: updatedAccess,
-        emailSent,
+        emailQueued: true,
       });
     } catch (error) {
       console.error("Error resending invitation:", error);
@@ -1060,14 +1038,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Link invitation to new user
       await storage.acceptSharedInvitationByToken(token, newUser.id);
       
-      // Send email verification
-      const verificationSent = await sendVerificationEmail(invitedEmail, firstName, verificationToken);
+      // Queue email verification (async, with auto-retry)
+      await emailQueue.enqueueVerificationEmail(invitedEmail, firstName, verificationToken);
       
-      console.log(`[Invite Register] Created new user ${newUser.id} for invited email ${invitedEmail}`);
+      console.log(`[Invite Register] Created new user ${newUser.id} for invited email ${invitedEmail}, verification email queued`);
       
       res.json({
         message: "Registrierung erfolgreich! Bitte überprüfen Sie Ihre E-Mails zur Verifizierung.",
-        emailSent: verificationSent,
+        emailQueued: true,
         userId: newUser.id,
       });
     } catch (error) {
