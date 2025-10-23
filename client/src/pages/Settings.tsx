@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { User, Mail, UserPlus, X, Crown, Calendar, FileText } from "lucide-react";
+import { User, Mail, UserPlus, X, Crown, Calendar, FileText, LogOut, Home, Trash2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
-import { getCurrentUser, getSubscriptionStatus, type SubscriptionStatus } from "@/lib/api";
+import { getCurrentUser, getSubscriptionStatus, logout, type SubscriptionStatus } from "@/lib/api";
 import type { User as UserType, SharedAccess } from "@shared/schema";
 import { UpgradeModal } from "@/components/UpgradeModal";
 import { CheckoutDialog } from "@/components/CheckoutDialog";
@@ -122,6 +122,26 @@ export default function Settings() {
     },
   });
 
+  // Logout mutation
+  const logoutMutation = useMutation({
+    mutationFn: logout,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      window.location.href = "/";
+      toast({
+        title: "Abgemeldet",
+        description: "Sie wurden erfolgreich abgemeldet.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Abmeldung fehlgeschlagen",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleInvite = (e: React.FormEvent) => {
     e.preventDefault();
     if (!inviteEmail.trim()) return;
@@ -154,12 +174,41 @@ export default function Settings() {
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-4">
             <div className="flex items-center justify-between md:justify-start gap-3">
               <img src={logoImage} alt="MeineDokBox" className="h-12 md:h-16" data-testid="img-logo" />
+              <div className="flex items-center gap-2 md:hidden">
+                <Link href="/">
+                  <Button variant="ghost" size="sm" data-testid="button-dashboard-mobile">
+                    <Home className="h-4 w-4" />
+                  </Button>
+                </Link>
+              </div>
             </div>
             
             <div className="flex-1 min-w-0">
             </div>
             
             <div className="hidden md:flex items-center gap-2">
+              <Link href="/trash">
+                <Button variant="outline" size="sm" data-testid="button-trash">
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Papierkorb
+                </Button>
+              </Link>
+              <Link href="/">
+                <Button variant="outline" size="sm" data-testid="button-dashboard">
+                  <Home className="h-4 w-4 mr-2" />
+                  Dashboard
+                </Button>
+              </Link>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => logoutMutation.mutate()}
+                disabled={logoutMutation.isPending}
+                data-testid="button-logout"
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Abmelden
+              </Button>
             </div>
           </div>
         </div>

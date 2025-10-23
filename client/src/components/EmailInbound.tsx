@@ -74,22 +74,9 @@ export function EmailInbound({ user }: EmailInboundProps) {
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <label className="text-sm font-medium text-muted-foreground">
-              Ihre persönliche E-Mail-Adresse:
-            </label>
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => regenerateEmailMutation.mutate()}
-              disabled={regenerateEmailMutation.isPending}
-              data-testid="button-regenerate-email"
-              className="h-7 text-xs gap-1.5"
-            >
-              <RefreshCw className={`h-3 w-3 ${regenerateEmailMutation.isPending ? 'animate-spin' : ''}`} />
-              Neu generieren
-            </Button>
-          </div>
+          <label className="text-sm font-medium text-muted-foreground">
+            Ihre persönliche E-Mail-Adresse:
+          </label>
           <div className="flex gap-2">
             <div 
               className="flex-1 px-3 py-2 bg-muted rounded-md font-mono text-sm break-all"
