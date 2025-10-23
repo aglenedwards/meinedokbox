@@ -45,9 +45,13 @@ export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   email: varchar("email").notNull().unique(),
   passwordHash: varchar("password_hash"), // bcrypt hash for password authentication
-  firstName: varchar("first_name"),
-  lastName: varchar("last_name"),
+  firstName: varchar("first_name").notNull(),
+  lastName: varchar("last_name").notNull(),
   profileImageUrl: varchar("profile_image_url"),
+  // E-Mail verification (Double Opt-in)
+  isVerified: boolean("is_verified").notNull().default(false),
+  verificationToken: varchar("verification_token"),
+  verificationTokenExpiry: timestamp("verification_token_expiry"),
   // E-Mail Inbound feature
   inboundEmail: varchar("inbound_email").unique(),
   emailWhitelist: text("email_whitelist").array(),
