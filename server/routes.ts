@@ -1268,6 +1268,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const validatedData = insertDocumentSchema.parse(documentData);
     const document = await storage.createDocument(validatedData);
 
+    // Increment upload counter (monthly limit tracking)
+    await storage.incrementUploadCounter(userId, 1);
+
     res.json(document);
   }
 
