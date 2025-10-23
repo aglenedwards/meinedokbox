@@ -271,12 +271,13 @@ export function exportDocumentsAsZip(): void {
 // Subscription management
 
 export interface SubscriptionStatus {
-  plan: "free" | "trial" | "premium";
+  plan: "free" | "trial" | "solo" | "family" | "family-plus";
   displayName: string;
   maxDocuments: number;
   currentDocuments: number;
   canUseEmailInbound: boolean;
-  price: number;
+  canUpload: boolean;
+  isUploadDisabled: boolean;
   trialEndsAt?: Date;
   daysRemaining?: number | null;
   gracePeriod?: boolean;
