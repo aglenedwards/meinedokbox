@@ -19,7 +19,7 @@ import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { PWAUpdatePrompt } from "@/components/PWAUpdatePrompt";
 import { useEffect } from "react";
 
-function ProtectedRoute({ component: Component }: { component: () => JSX.Element }) {
+function ProtectedRoute({ component: Component }: { component: () => JSX.Element | null }) {
   const [location, setLocation] = useLocation();
   const { data: user, isLoading } = useQuery<User | null>({
     queryKey: ["/api/auth/user"],
