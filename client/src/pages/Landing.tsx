@@ -982,6 +982,10 @@ export default function Landing() {
                   </li>
                   <li className="flex items-start gap-3">
                     <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                    <span>50 Uploads/Monat</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
                     <span>2 GB Speicherplatz</span>
                   </li>
                   <li className="flex items-start gap-3">
@@ -1041,11 +1045,11 @@ export default function Landing() {
                   </li>
                   <li className="flex items-start gap-3">
                     <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                    <span>Unbegrenzter Speicherplatz</span>
+                    <span>200 Uploads/Monat</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                    <span>Unbegrenzte Dokumente</span>
+                    <span>10 GB Speicherplatz</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
@@ -1102,11 +1106,11 @@ export default function Landing() {
                   </li>
                   <li className="flex items-start gap-3">
                     <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                    <span>Unbegrenzter Speicherplatz</span>
+                    <span>500 Uploads/Monat</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                    <span>Unbegrenzte Dokumente</span>
+                    <span>25 GB Speicherplatz</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />

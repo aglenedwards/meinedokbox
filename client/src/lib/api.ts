@@ -290,11 +290,19 @@ export function exportDocumentsAsZip(): void {
 export interface SubscriptionStatus {
   plan: "free" | "trial" | "solo" | "family" | "family-plus";
   displayName: string;
+  // NEW: Hybrid limit system
+  maxUploadsPerMonth: number;
+  uploadsThisMonth: number;
+  maxStorageGB: number;
+  storageUsedGB: number;
+  // Legacy fields (backward compatibility)
   maxDocuments: number;
   currentDocuments: number;
+  // Features
   canUseEmailInbound: boolean;
   canUpload: boolean;
   isUploadDisabled: boolean;
+  // Trial status
   trialEndsAt?: Date;
   daysRemaining?: number | null;
   gracePeriod?: boolean;
