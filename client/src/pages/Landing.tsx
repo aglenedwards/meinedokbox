@@ -163,7 +163,7 @@ export default function Landing() {
               Ihre Dokumente.<br />Intelligent organisiert.
             </h1>
             <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto leading-relaxed" data-testid="text-hero-subtitle">
-              KI-gestützte Dokumentenverwaltung für Familien. Einfach fotografieren, automatisch kategorisieren, gemeinsam organisieren.
+              Einfach fotografieren, per E-Mail weiterleiten oder hochladen. Automatisch kategorisiert und sicher archiviert.
             </p>
             
             {/* Social Proof */}
