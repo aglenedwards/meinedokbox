@@ -503,20 +503,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Sie haben bereits eine Person eingeladen" });
       }
 
+      // Generate invitation token (7-day expiry)
+      const invitationToken = crypto.randomBytes(32).toString('hex');
+      const tokenExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
       // Create invitation
       const sharedAccess = await storage.createSharedAccess({
         ownerId: userId,
         sharedWithEmail: email.toLowerCase(),
+        invitationToken,
+        tokenExpiresAt,
         status: 'pending',
       });
 
-      // Send email invitation via Mailgun
+      // Send email invitation via Mailgun with token link
       const ownerName = user.firstName && user.lastName 
         ? `${user.firstName} ${user.lastName}`
         : user.email || "Ein Nutzer";
       
-      console.log(`[Invite] Sending invitation email to ${email.toLowerCase()} from ${ownerName}`);
-      const emailSent = await sendSharedAccessInvitation(email.toLowerCase(), ownerName);
+      console.log(`[Invite] Sending invitation email to ${email.toLowerCase()} from ${ownerName} with token ${invitationToken}`);
+      const emailSent = await sendSharedAccessInvitation(email.toLowerCase(), ownerName, invitationToken);
       
       if (!emailSent) {
         console.warn("[Invite] ⚠️ Failed to send invitation email, but invitation was created");
@@ -544,6 +550,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching shared access:", error);
       res.status(500).json({ message: "Fehler beim Laden des Zugriffsstatus" });
+    }
+  });
+
+  // Get all invitations with status (for master to see pending/active/expired)
+  app.get('/api/shared-access/all', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const allAccess = await storage.getAllSharedAccessByOwner(userId);
+      
+      // Mark expired tokens
+      const now = new Date();
+      const accessWithStatus = allAccess.map(access => {
+        const isExpired = access.tokenExpiresAt && access.tokenExpiresAt < now && access.status === 'pending';
+        return {
+          ...access,
+          status: isExpired ? 'expired' : access.status,
+        };
+      });
+      
+      res.json(accessWithStatus);
+    } catch (error) {
+      console.error("Error fetching all shared access:", error);
+      res.status(500).json({ message: "Fehler beim Laden der Einladungen" });
+    }
+  });
+
+  // Resend invitation (generates new token and sends new email)
+  app.post('/api/shared-access/resend/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { id } = req.params;
+      
+      // Resend invitation (generates new token)
+      const updatedAccess = await storage.resendInvitation(id, userId);
+      
+      if (!updatedAccess) {
+        return res.status(404).json({ message: "Einladung nicht gefunden" });
+      }
+      
+      // Get owner info for email
+      const user = await storage.getUser(userId);
+      const ownerName = user?.firstName && user?.lastName 
+        ? `${user.firstName} ${user.lastName}`
+        : user?.email || "Ein Nutzer";
+      
+      // Send new invitation email
+      console.log(`[Resend Invite] Sending new invitation to ${updatedAccess.sharedWithEmail}`);
+      const emailSent = await sendSharedAccessInvitation(
+        updatedAccess.sharedWithEmail, 
+        ownerName,
+        updatedAccess.invitationToken!
+      );
+      
+      if (!emailSent) {
+        console.warn("[Resend Invite] ⚠️ Failed to send invitation email");
+      }
+      
+      res.json({
+        message: "Einladung erneut gesendet",
+        sharedAccess: updatedAccess,
+        emailSent,
+      });
+    } catch (error) {
+      console.error("Error resending invitation:", error);
+      res.status(500).json({ message: "Fehler beim erneuten Senden der Einladung" });
     }
   });
 

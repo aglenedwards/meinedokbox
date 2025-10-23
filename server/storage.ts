@@ -3,6 +3,7 @@ import { db } from "./db";
 import { users, documents, tags, documentTags, sharedAccess, folders, trialNotifications, emailWhitelist } from "@shared/schema";
 import { eq, and, or, like, desc, asc, isNull, isNotNull, inArray, sql } from "drizzle-orm";
 import { generateInboundEmail } from "./lib/emailInbound";
+import crypto from "crypto";
 
 export interface StorageStats {
   usedBytes: number;
@@ -47,9 +48,13 @@ export interface IStorage {
   // Shared Access management (Premium feature)
   createSharedAccess(data: InsertSharedAccess): Promise<SharedAccess>;
   getSharedAccessByOwner(ownerId: string): Promise<SharedAccess | undefined>;
+  getAllSharedAccessByOwner(ownerId: string): Promise<SharedAccess[]>;
   getSharedAccessByEmail(email: string): Promise<SharedAccess | undefined>;
+  getSharedAccessByToken(token: string): Promise<SharedAccess | undefined>;
   acceptSharedInvitation(email: string, userId: string): Promise<SharedAccess | undefined>;
+  acceptSharedInvitationByToken(token: string, userId: string): Promise<SharedAccess | undefined>;
   revokeSharedAccess(ownerId: string): Promise<boolean>;
+  resendInvitation(invitationId: string, ownerId: string): Promise<SharedAccess | undefined>;
   getAccessibleAccounts(userId: string): Promise<{ ownedAccount: User | undefined; sharedAccounts: (SharedAccess & { owner: User })[] }>;
   
   // Folders management
@@ -519,6 +524,15 @@ export class DbStorage implements IStorage {
     return access;
   }
 
+  async getAllSharedAccessByOwner(ownerId: string): Promise<SharedAccess[]> {
+    const accesses = await db
+      .select()
+      .from(sharedAccess)
+      .where(eq(sharedAccess.ownerId, ownerId))
+      .orderBy(desc(sharedAccess.invitedAt));
+    return accesses;
+  }
+
   async getSharedAccessByEmail(email: string): Promise<SharedAccess | undefined> {
     const [access] = await db
       .select()
@@ -529,6 +543,14 @@ export class DbStorage implements IStorage {
           eq(sharedAccess.status, 'pending')
         )
       );
+    return access;
+  }
+
+  async getSharedAccessByToken(token: string): Promise<SharedAccess | undefined> {
+    const [access] = await db
+      .select()
+      .from(sharedAccess)
+      .where(eq(sharedAccess.invitationToken, token));
     return access;
   }
 
@@ -550,12 +572,53 @@ export class DbStorage implements IStorage {
     return access;
   }
 
+  async acceptSharedInvitationByToken(token: string, userId: string): Promise<SharedAccess | undefined> {
+    const [access] = await db
+      .update(sharedAccess)
+      .set({
+        sharedWithUserId: userId,
+        status: 'active',
+        acceptedAt: new Date(),
+      })
+      .where(
+        and(
+          eq(sharedAccess.invitationToken, token),
+          eq(sharedAccess.status, 'pending')
+        )
+      )
+      .returning();
+    return access;
+  }
+
   async revokeSharedAccess(ownerId: string): Promise<boolean> {
     const result = await db
       .update(sharedAccess)
       .set({ status: 'revoked' })
       .where(eq(sharedAccess.ownerId, ownerId));
     return result.rowCount ? result.rowCount > 0 : false;
+  }
+
+  async resendInvitation(invitationId: string, ownerId: string): Promise<SharedAccess | undefined> {
+    // Generate new token and expiry
+    const newToken = crypto.randomBytes(32).toString('hex');
+    const tokenExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+
+    const [access] = await db
+      .update(sharedAccess)
+      .set({
+        invitationToken: newToken,
+        tokenExpiresAt,
+        invitedAt: new Date(), // Update invitation date
+        status: 'pending', // Reset to pending if it was expired
+      })
+      .where(
+        and(
+          eq(sharedAccess.id, invitationId),
+          eq(sharedAccess.ownerId, ownerId)
+        )
+      )
+      .returning();
+    return access;
   }
 
   async getAccessibleAccounts(userId: string): Promise<{

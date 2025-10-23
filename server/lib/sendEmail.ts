@@ -57,12 +57,14 @@ export async function sendEmail(options: EmailOptions): Promise<boolean> {
 }
 
 /**
- * Send shared access invitation email
+ * Send shared access invitation email with token link
  */
 export async function sendSharedAccessInvitation(
   to: string,
-  ownerName: string
+  ownerName: string,
+  invitationToken: string
 ): Promise<boolean> {
+  const inviteLink = `https://meinedokbox.de/invite?token=${invitationToken}`;
   const subject = `${ownerName} lädt Sie zu MeineDokBox ein`;
   
   const text = `
@@ -73,9 +75,11 @@ ${ownerName} möchte sein MeineDokBox-Konto mit Ihnen teilen.
 Mit dieser Einladung erhalten Sie vollen Zugriff auf alle geteilten Dokumente und können gemeinsam Dokumente verwalten.
 
 So akzeptieren Sie die Einladung:
-1. Gehen Sie zu MeineDokBox: https://meinedokbox.de
-2. Melden Sie sich mit dieser E-Mail-Adresse an (${to})
-3. Die Einladung wird automatisch akzeptiert
+1. Klicken Sie auf diesen Link: ${inviteLink}
+2. Registrieren Sie sich mit dieser E-Mail-Adresse (${to})
+3. Nach der Verifizierung haben Sie sofort Zugriff
+
+Der Einladungslink ist 7 Tage gültig.
 
 Bei Fragen können Sie sich jederzeit an ${ownerName} wenden.
 
@@ -161,16 +165,20 @@ Ihr MeineDokBox Team
     
     <div class="steps">
       <h3>So akzeptieren Sie die Einladung:</h3>
-      <div class="step">Gehen Sie zu MeineDokBox</div>
-      <div class="step">Melden Sie sich mit dieser E-Mail-Adresse an (<strong>${to}</strong>)</div>
-      <div class="step">Die Einladung wird automatisch akzeptiert</div>
+      <div class="step">Klicken Sie auf den Button unten</div>
+      <div class="step">Registrieren Sie sich mit dieser E-Mail-Adresse (<strong>${to}</strong>)</div>
+      <div class="step">Nach der Verifizierung haben Sie sofort Zugriff</div>
     </div>
     
     <center>
-      <a href="https://meinedokbox.de" class="button" style="display: inline-block; background: #667eea; color: #ffffff !important; padding: 12px 30px; text-decoration: none; border-radius: 6px; margin: 20px 0;">
-        Jetzt anmelden
+      <a href="${inviteLink}" class="button" style="display: inline-block; background: #667eea; color: #ffffff !important; padding: 12px 30px; text-decoration: none; border-radius: 6px; margin: 20px 0;">
+        Einladung annehmen
       </a>
     </center>
+    
+    <p style="margin-top: 15px; font-size: 13px; color: #666; text-align: center;">
+      Der Einladungslink ist 7 Tage gültig.
+    </p>
     
     <p style="margin-top: 30px; font-size: 14px; color: #666;">
       Bei Fragen können Sie sich jederzeit an ${ownerName} wenden.
