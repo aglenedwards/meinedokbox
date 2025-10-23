@@ -306,8 +306,10 @@ export async function getSubscriptionStatus(): Promise<SubscriptionStatus> {
 export interface RegisterData {
   email: string;
   password: string;
-  firstName?: string;
-  lastName?: string;
+  passwordConfirm: string;
+  firstName: string;
+  lastName: string;
+  acceptPrivacy: boolean;
 }
 
 export interface LoginData {

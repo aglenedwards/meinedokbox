@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
@@ -23,11 +24,22 @@ const loginSchema = z.object({
   password: z.string().min(1, "Passwort erforderlich"),
 });
 
+const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
 const registerSchema = z.object({
   email: z.string().email("Ungültige E-Mail-Adresse"),
-  password: z.string().min(8, "Passwort muss mindestens 8 Zeichen lang sein"),
-  firstName: z.string().optional(),
-  lastName: z.string().optional(),
+  password: z.string()
+    .min(8, "Passwort muss mindestens 8 Zeichen lang sein")
+    .regex(passwordRegex, "Passwort muss mindestens einen Großbuchstaben, eine Zahl und ein Sonderzeichen enthalten"),
+  passwordConfirm: z.string(),
+  firstName: z.string().min(1, "Vorname ist erforderlich"),
+  lastName: z.string().min(1, "Nachname ist erforderlich"),
+  acceptPrivacy: z.boolean().refine(val => val === true, {
+    message: "Sie müssen den Datenschutzbestimmungen zustimmen"
+  }),
+}).refine(data => data.password === data.passwordConfirm, {
+  message: "Passwörter stimmen nicht überein",
+  path: ["passwordConfirm"],
 });
 
 export default function Landing() {
@@ -58,7 +70,14 @@ export default function Landing() {
 
   const registerForm = useForm<RegisterData>({
     resolver: zodResolver(registerSchema),
-    defaultValues: { email: "", password: "", firstName: "", lastName: "" },
+    defaultValues: { 
+      email: "", 
+      password: "", 
+      passwordConfirm: "",
+      firstName: "", 
+      lastName: "",
+      acceptPrivacy: false
+    },
   });
 
   const loginMutation = useMutation({
@@ -84,13 +103,14 @@ export default function Landing() {
   const registerMutation = useMutation({
     mutationFn: register,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-      setAuthModalOpen(false);
-      setLocation("/dashboard");
+      // Don't redirect - show email verification message
       toast({
-        title: "Willkommen bei MeineDokBox!",
-        description: "Ihr Account wurde erfolgreich erstellt.",
+        title: "Registrierung erfolgreich!",
+        description: "Bitte bestätigen Sie Ihre E-Mail-Adresse. Wir haben Ihnen einen Bestätigungslink gesendet.",
+        duration: 10000,
       });
+      registerForm.reset();
+      setAuthTab("login");
     },
     onError: (error: Error) => {
       toast({
@@ -1168,7 +1188,7 @@ export default function Landing() {
                       name="firstName"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Vorname (optional)</FormLabel>
+                          <FormLabel>Vorname *</FormLabel>
                           <FormControl>
                             <Input
                               placeholder="Max"
@@ -1186,7 +1206,7 @@ export default function Landing() {
                       name="lastName"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Nachname (optional)</FormLabel>
+                          <FormLabel>Nachname *</FormLabel>
                           <FormControl>
                             <Input
                               placeholder="Mustermann"
@@ -1205,7 +1225,7 @@ export default function Landing() {
                     name="email"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>E-Mail</FormLabel>
+                        <FormLabel>E-Mail *</FormLabel>
                         <FormControl>
                           <Input
                             type="email"
@@ -1224,16 +1244,66 @@ export default function Landing() {
                     name="password"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Passwort</FormLabel>
+                        <FormLabel>Passwort *</FormLabel>
                         <FormControl>
                           <Input
                             type="password"
-                            placeholder="Mindestens 8 Zeichen"
+                            placeholder="Min. 8 Zeichen, Großbuchstabe, Zahl, Sonderzeichen"
                             {...field}
                             data-testid="input-signup-password"
                           />
                         </FormControl>
                         <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={registerForm.control}
+                    name="passwordConfirm"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Passwort wiederholen *</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="password"
+                            placeholder="Passwort erneut eingeben"
+                            {...field}
+                            data-testid="input-signup-password-confirm"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={registerForm.control}
+                    name="acceptPrivacy"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                            data-testid="checkbox-signup-privacy"
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel className="text-sm font-normal">
+                            Ich habe die{" "}
+                            <a 
+                              href="/datenschutz" 
+                              target="_blank" 
+                              className="text-primary underline"
+                              data-testid="link-privacy-policy"
+                            >
+                              Datenschutzerklärung
+                            </a>{" "}
+                            gelesen und akzeptiere diese. *
+                          </FormLabel>
+                          <FormMessage />
+                        </div>
                       </FormItem>
                     )}
                   />
