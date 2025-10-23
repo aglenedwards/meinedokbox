@@ -410,7 +410,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
         graceDaysRemaining = trialStatus.graceDaysRemaining;
       }
 
-      // Count current documents - use real userId (each user has their own document space)
+      // === NEW HYBRID LIMIT SYSTEM ===
+      // Calculate combined stats for Master + all Slaves
+
+      // Get all partner IDs (Master gets Slaves, Slave gets Master)
+      const partnerIds = await storage.getPartnerUserIds(effectiveUser.id);
+      const allUserIds = [effectiveUser.id, ...partnerIds];
+
+      // Auto-reset upload counters if new month
+      await Promise.all(allUserIds.map(id => storage.checkAndResetUploadCounter(id)));
+
+      // 1. Sum up monthly uploads (Master + Slaves)
+      let uploadsThisMonth = 0;
+      for (const id of allUserIds) {
+        const user = await storage.getUser(id);
+        if (user) {
+          uploadsThisMonth += user.uploadedThisMonth || 0;
+        }
+      }
+
+      // 2. Sum up total storage (Master + Slaves)
+      let storageUsedBytes = 0;
+      for (const id of allUserIds) {
+        const stats = await storage.getUserStorageStats(id);
+        storageUsedBytes += stats.usedBytes;
+      }
+      const storageUsedGB = parseFloat((storageUsedBytes / (1024 * 1024 * 1024)).toFixed(2));
+
+      // 3. Count documents (for backward compatibility)
       const documents = await storage.getDocumentsByUserId(userId);
       const documentCount = documents.length;
 
@@ -420,11 +447,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({
         plan: effectiveUser.subscriptionPlan,
         displayName: limits.displayName,
-        maxDocuments: limits.maxDocuments,
+        // NEW: Hybrid limit system
+        maxUploadsPerMonth: limits.maxUploadsPerMonth,
+        uploadsThisMonth,
+        maxStorageGB: limits.maxStorageGB,
+        storageUsedGB,
+        // Legacy fields (for backward compatibility)
+        maxDocuments: -1, // Deprecated, now using monthly uploads + storage
         currentDocuments: documentCount,
+        // Plan features
         canUseEmailInbound: limits.canUseEmailInbound,
         canUpload: limits.canUpload,
         isUploadDisabled,
+        // Trial status
         trialEndsAt: effectiveUser.trialEndsAt,
         daysRemaining,
         gracePeriod,
