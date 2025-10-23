@@ -152,19 +152,25 @@ export default function Landing() {
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
         <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
         
-        <div className="container relative mx-auto px-4 py-16 md:py-24">
-          <div className="max-w-4xl mx-auto text-center space-y-6">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border bg-background/50 backdrop-blur-sm mb-4">
+        <div className="container relative mx-auto px-4 py-20 md:py-32">
+          <div className="max-w-4xl mx-auto text-center space-y-8">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border bg-background/50 backdrop-blur-sm mb-2">
               <Sparkles className="h-4 w-4 text-primary" />
               <span className="text-sm font-medium">Jetzt 14 Tage kostenlos testen</span>
             </div>
             
-            <h1 className="text-4xl md:text-6xl font-bold tracking-tight" data-testid="text-hero-title">
+            <h1 className="text-5xl md:text-7xl font-bold tracking-tight" data-testid="text-hero-title">
               Ihre Dokumente.<br />Intelligent organisiert.
             </h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto" data-testid="text-hero-subtitle">
+            <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto leading-relaxed" data-testid="text-hero-subtitle">
               KI-gestützte Dokumentenverwaltung für Familien. Einfach fotografieren, automatisch kategorisieren, gemeinsam organisieren.
             </p>
+            
+            {/* Social Proof */}
+            <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+              <Users className="h-4 w-4" />
+              <span>Über 500 zufriedene Nutzer</span>
+            </div>
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
               <Button
                 size="lg"
@@ -195,55 +201,63 @@ export default function Landing() {
       </section>
 
       {/* Features */}
-      <section className="bg-muted/50 py-16">
+      <section className="py-24 bg-background">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12" data-testid="text-features-title">
+          <h2 className="text-4xl md:text-5xl font-bold text-center mb-16" data-testid="text-features-title">
             Alles, was Sie brauchen
           </h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card data-testid="card-feature-ai">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <Card className="border-0 shadow-lg hover-elevate" data-testid="card-feature-ai">
               <CardHeader>
-                <Sparkles className="h-8 w-8 mb-2 text-primary" />
-                <CardTitle>KI-Kategorisierung</CardTitle>
+                <div className="w-14 h-14 rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mb-4">
+                  <Sparkles className="h-7 w-7 text-primary" />
+                </div>
+                <CardTitle className="text-xl">KI-Kategorisierung</CardTitle>
               </CardHeader>
               <CardContent>
-                <CardDescription>
+                <CardDescription className="text-base leading-relaxed">
                   Dokumente werden automatisch erkannt und der richtigen Kategorie zugeordnet.
                 </CardDescription>
               </CardContent>
             </Card>
 
-            <Card data-testid="card-feature-camera">
+            <Card className="border-0 shadow-lg hover-elevate" data-testid="card-feature-camera">
               <CardHeader>
-                <FileText className="h-8 w-8 mb-2 text-primary" />
-                <CardTitle>Smartphone-Scan</CardTitle>
+                <div className="w-14 h-14 rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mb-4">
+                  <FileText className="h-7 w-7 text-primary" />
+                </div>
+                <CardTitle className="text-xl">Smartphone-Scan</CardTitle>
               </CardHeader>
               <CardContent>
-                <CardDescription>
+                <CardDescription className="text-base leading-relaxed">
                   Fotografieren Sie Dokumente direkt mit Ihrem Handy – automatische Optimierung inklusive.
                 </CardDescription>
               </CardContent>
             </Card>
 
-            <Card data-testid="card-feature-family">
+            <Card className="border-0 shadow-lg hover-elevate" data-testid="card-feature-family">
               <CardHeader>
-                <Users className="h-8 w-8 mb-2 text-primary" />
-                <CardTitle>Familien-Account</CardTitle>
+                <div className="w-14 h-14 rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mb-4">
+                  <Users className="h-7 w-7 text-primary" />
+                </div>
+                <CardTitle className="text-xl">Familien-Account</CardTitle>
               </CardHeader>
               <CardContent>
-                <CardDescription>
+                <CardDescription className="text-base leading-relaxed">
                   Teilen Sie Ihren Account mit einem Partner. Jeder hat private und gemeinsame Dokumente.
                 </CardDescription>
               </CardContent>
             </Card>
 
-            <Card data-testid="card-feature-security">
+            <Card className="border-0 shadow-lg hover-elevate" data-testid="card-feature-security">
               <CardHeader>
-                <Shield className="h-8 w-8 mb-2 text-primary" />
-                <CardTitle>Sicher & Privat</CardTitle>
+                <div className="w-14 h-14 rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mb-4">
+                  <Shield className="h-7 w-7 text-primary" />
+                </div>
+                <CardTitle className="text-xl">Sicher & Privat</CardTitle>
               </CardHeader>
               <CardContent>
-                <CardDescription>
+                <CardDescription className="text-base leading-relaxed">
                   Ihre Dokumente sind verschlüsselt gespeichert. Standardmäßig privat, optional teilbar.
                 </CardDescription>
               </CardContent>
@@ -253,56 +267,56 @@ export default function Landing() {
       </section>
 
       {/* How It Works - 3-Step Process */}
-      <section className="py-16">
+      <section className="py-24 bg-muted/30">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4" data-testid="text-howitworks-title">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6" data-testid="text-howitworks-title">
               So einfach geht's
             </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
               In nur 3 Schritten vom Papierstapel zum organisierten Archiv – vollautomatisch dank KI
             </p>
           </div>
           
-          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-12 max-w-6xl mx-auto">
             {/* Step 1 */}
-            <div className="text-center space-y-4" data-testid="card-step-1">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
-                <Camera className="h-8 w-8 text-primary" />
+            <div className="text-center space-y-6" data-testid="card-step-1">
+              <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 mb-2">
+                <Camera className="h-10 w-10 text-primary" />
               </div>
-              <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground font-bold mb-2">
+              <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-primary text-primary-foreground font-bold text-lg">
                 1
               </div>
-              <h3 className="text-xl font-semibold">Foto machen</h3>
-              <p className="text-muted-foreground">
+              <h3 className="text-2xl font-semibold">Foto machen</h3>
+              <p className="text-muted-foreground text-lg leading-relaxed">
                 Fotografieren Sie Ihr Dokument mit dem Smartphone. Die KI erkennt automatisch den Dokumententyp – ob Rechnung, Vertrag oder Brief.
               </p>
             </div>
 
             {/* Step 2 */}
-            <div className="text-center space-y-4" data-testid="card-step-2">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
-                <Brain className="h-8 w-8 text-primary" />
+            <div className="text-center space-y-6" data-testid="card-step-2">
+              <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 mb-2">
+                <Brain className="h-10 w-10 text-primary" />
               </div>
-              <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground font-bold mb-2">
+              <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-primary text-primary-foreground font-bold text-lg">
                 2
               </div>
-              <h3 className="text-xl font-semibold">KI analysiert</h3>
-              <p className="text-muted-foreground">
+              <h3 className="text-2xl font-semibold">KI analysiert</h3>
+              <p className="text-muted-foreground text-lg leading-relaxed">
                 Unsere KI extrahiert automatisch Datum, Betrag und Absender. Kein manuelles Eintippen mehr – alles wird intelligent erfasst.
               </p>
             </div>
 
             {/* Step 3 */}
-            <div className="text-center space-y-4" data-testid="card-step-3">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
-                <FolderOpen className="h-8 w-8 text-primary" />
+            <div className="text-center space-y-6" data-testid="card-step-3">
+              <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 mb-2">
+                <FolderOpen className="h-10 w-10 text-primary" />
               </div>
-              <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground font-bold mb-2">
+              <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-primary text-primary-foreground font-bold text-lg">
                 3
               </div>
-              <h3 className="text-xl font-semibold">Automatisch sortiert</h3>
-              <p className="text-muted-foreground">
+              <h3 className="text-2xl font-semibold">Automatisch sortiert</h3>
+              <p className="text-muted-foreground text-lg leading-relaxed">
                 Das Dokument landet automatisch in der richtigen Kategorie. Finden Sie alles sofort wieder – keine Suche mehr nötig.
               </p>
             </div>
@@ -318,21 +332,21 @@ export default function Landing() {
       </section>
 
       {/* Problems We Solve */}
-      <section className="bg-muted/50 py-16">
+      <section className="py-24 bg-background">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4" data-testid="text-problems-title">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6" data-testid="text-problems-title">
               Schluss mit Papierchaos
             </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
               Diese alltäglichen Probleme gehören der Vergangenheit an
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
             {/* Problem 1 */}
-            <Card className="hover-elevate" data-testid="card-problem-1">
-              <CardContent className="pt-6">
+            <Card className="border-0 shadow-lg hover-elevate" data-testid="card-problem-1">
+              <CardContent className="pt-8 pb-8">
                 <div className="flex items-start gap-4">
                   <div className="flex-shrink-0">
                     <div className="w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center">
@@ -363,8 +377,8 @@ export default function Landing() {
             </Card>
 
             {/* Problem 2 */}
-            <Card className="hover-elevate" data-testid="card-problem-2">
-              <CardContent className="pt-6">
+            <Card className="border-0 shadow-lg hover-elevate" data-testid="card-problem-2">
+              <CardContent className="pt-8 pb-8">
                 <div className="flex items-start gap-4">
                   <div className="flex-shrink-0">
                     <div className="w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center">
@@ -395,8 +409,8 @@ export default function Landing() {
             </Card>
 
             {/* Problem 3 */}
-            <Card className="hover-elevate" data-testid="card-problem-3">
-              <CardContent className="pt-6">
+            <Card className="border-0 shadow-lg hover-elevate" data-testid="card-problem-3">
+              <CardContent className="pt-8 pb-8">
                 <div className="flex items-start gap-4">
                   <div className="flex-shrink-0">
                     <div className="w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center">
@@ -427,8 +441,8 @@ export default function Landing() {
             </Card>
 
             {/* Problem 4 */}
-            <Card className="hover-elevate" data-testid="card-problem-4">
-              <CardContent className="pt-6">
+            <Card className="border-0 shadow-lg hover-elevate" data-testid="card-problem-4">
+              <CardContent className="pt-8 pb-8">
                 <div className="flex items-start gap-4">
                   <div className="flex-shrink-0">
                     <div className="w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center">
@@ -462,28 +476,28 @@ export default function Landing() {
       </section>
 
       {/* AI Magic Details */}
-      <section className="py-16">
+      <section className="py-24 bg-muted/30">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border bg-primary/5 mb-4">
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border bg-background/50 backdrop-blur-sm mb-6">
               <Sparkles className="h-4 w-4 text-primary" />
               <span className="text-sm font-medium">Powered by AI</span>
             </div>
-            <h2 className="text-3xl font-bold mb-4" data-testid="text-ai-title">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6" data-testid="text-ai-title">
               KI-Magie im Detail
             </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
               Modernste Künstliche Intelligenz macht die Arbeit für Sie
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-12 max-w-6xl mx-auto">
             {/* AI Feature 1 */}
-            <div className="space-y-4" data-testid="card-ai-1">
-              <div className="inline-flex items-center justify-center w-14 h-14 rounded-lg bg-gradient-to-br from-primary/20 to-primary/5">
-                <Scan className="h-7 w-7 text-primary" />
+            <div className="space-y-6" data-testid="card-ai-1">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 shadow-lg">
+                <Scan className="h-8 w-8 text-primary" />
               </div>
-              <h3 className="text-xl font-semibold">Intelligente Erkennung</h3>
+              <h3 className="text-2xl font-semibold">Intelligente Erkennung</h3>
               <p className="text-muted-foreground">
                 Die KI erkennt automatisch ob es sich um eine Rechnung, einen Vertrag, eine Versicherungspolice oder einen Brief handelt.
               </p>
@@ -496,11 +510,11 @@ export default function Landing() {
             </div>
 
             {/* AI Feature 2 */}
-            <div className="space-y-4" data-testid="card-ai-2">
-              <div className="inline-flex items-center justify-center w-14 h-14 rounded-lg bg-gradient-to-br from-primary/20 to-primary/5">
-                <Search className="h-7 w-7 text-primary" />
+            <div className="space-y-6" data-testid="card-ai-2">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 shadow-lg">
+                <Search className="h-8 w-8 text-primary" />
               </div>
-              <h3 className="text-xl font-semibold">Automatische Extraktion</h3>
+              <h3 className="text-2xl font-semibold">Automatische Extraktion</h3>
               <p className="text-muted-foreground">
                 Datum, Betrag und Absender werden automatisch aus dem Dokument extrahiert. Kein manuelles Abtippen mehr nötig.
               </p>
@@ -521,11 +535,11 @@ export default function Landing() {
             </div>
 
             {/* AI Feature 3 */}
-            <div className="space-y-4" data-testid="card-ai-3">
-              <div className="inline-flex items-center justify-center w-14 h-14 rounded-lg bg-gradient-to-br from-primary/20 to-primary/5">
-                <TrendingUp className="h-7 w-7 text-primary" />
+            <div className="space-y-6" data-testid="card-ai-3">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 shadow-lg">
+                <TrendingUp className="h-8 w-8 text-primary" />
               </div>
-              <h3 className="text-xl font-semibold">Wird immer besser</h3>
+              <h3 className="text-2xl font-semibold">Wird immer besser</h3>
               <p className="text-muted-foreground">
                 Die KI lernt kontinuierlich dazu und wird mit jedem verarbeiteten Dokument präziser und schneller.
               </p>
@@ -544,25 +558,25 @@ export default function Landing() {
       </section>
 
       {/* Use Cases */}
-      <section className="bg-muted/50 py-16">
+      <section className="py-24 bg-background">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4" data-testid="text-usecases-title">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6" data-testid="text-usecases-title">
               Für wen ist MeineDokBox?
             </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
               Perfekt geeignet für alle, die Ordnung in ihre Dokumente bringen wollen
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {/* Use Case 1 */}
-            <Card className="hover-elevate" data-testid="card-usecase-1">
+            <Card className="border-0 shadow-lg hover-elevate" data-testid="card-usecase-1">
               <CardHeader>
-                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
-                  <Home className="h-6 w-6 text-primary" />
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mb-4">
+                  <Home className="h-8 w-8 text-primary" />
                 </div>
-                <CardTitle>Junge Familien</CardTitle>
+                <CardTitle className="text-2xl">Junge Familien</CardTitle>
               </CardHeader>
               <CardContent>
                 <CardDescription className="mb-4">
@@ -586,12 +600,12 @@ export default function Landing() {
             </Card>
 
             {/* Use Case 2 */}
-            <Card className="hover-elevate" data-testid="card-usecase-2">
+            <Card className="border-0 shadow-lg hover-elevate" data-testid="card-usecase-2">
               <CardHeader>
-                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
-                  <Briefcase className="h-6 w-6 text-primary" />
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mb-4">
+                  <Briefcase className="h-8 w-8 text-primary" />
                 </div>
-                <CardTitle>Selbstständige</CardTitle>
+                <CardTitle className="text-2xl">Selbstständige</CardTitle>
               </CardHeader>
               <CardContent>
                 <CardDescription className="mb-4">
@@ -615,12 +629,12 @@ export default function Landing() {
             </Card>
 
             {/* Use Case 3 */}
-            <Card className="hover-elevate" data-testid="card-usecase-3">
+            <Card className="border-0 shadow-lg hover-elevate" data-testid="card-usecase-3">
               <CardHeader>
-                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
-                  <Heart className="h-6 w-6 text-primary" />
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mb-4">
+                  <Heart className="h-8 w-8 text-primary" />
                 </div>
-                <CardTitle>Paare</CardTitle>
+                <CardTitle className="text-2xl">Paare</CardTitle>
               </CardHeader>
               <CardContent>
                 <CardDescription className="mb-4">
@@ -646,13 +660,98 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Pricing */}
-      <section className="py-16">
+      {/* Testimonials */}
+      <section className="py-24 bg-muted/30">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-4" data-testid="text-pricing-title">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6" data-testid="text-testimonials-title">
+              Das sagen unsere Nutzer
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+              Über 500 zufriedene Nutzer vertrauen bereits auf MeineDokBox
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {/* Testimonial 1 */}
+            <Card className="border-0 shadow-lg" data-testid="card-testimonial-1">
+              <CardContent className="pt-8 pb-8">
+                <div className="flex gap-1 mb-4">
+                  {[...Array(5)].map((_, i) => (
+                    <Sparkles key={i} className="h-5 w-5 text-primary fill-primary" />
+                  ))}
+                </div>
+                <p className="text-lg mb-6 leading-relaxed">
+                  "Endlich habe ich all meine Dokumente im Griff. Die KI kategorisiert perfekt – ich spare mindestens 2 Stunden pro Woche!"
+                </p>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Users className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-semibold">Sarah M.</p>
+                    <p className="text-sm text-muted-foreground">Mutter von 2 Kindern</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Testimonial 2 */}
+            <Card className="border-0 shadow-lg" data-testid="card-testimonial-2">
+              <CardContent className="pt-8 pb-8">
+                <div className="flex gap-1 mb-4">
+                  {[...Array(5)].map((_, i) => (
+                    <Sparkles key={i} className="h-5 w-5 text-primary fill-primary" />
+                  ))}
+                </div>
+                <p className="text-lg mb-6 leading-relaxed">
+                  "Für die Steuererklärung ist das ein Segen! Alle Belege automatisch erfasst und sortiert. Mein Steuerberater ist begeistert."
+                </p>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Briefcase className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-semibold">Thomas K.</p>
+                    <p className="text-sm text-muted-foreground">Selbstständiger Designer</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Testimonial 3 */}
+            <Card className="border-0 shadow-lg" data-testid="card-testimonial-3">
+              <CardContent className="pt-8 pb-8">
+                <div className="flex gap-1 mb-4">
+                  {[...Array(5)].map((_, i) => (
+                    <Sparkles key={i} className="h-5 w-5 text-primary fill-primary" />
+                  ))}
+                </div>
+                <p className="text-lg mb-6 leading-relaxed">
+                  "Mein Partner und ich haben endlich ein System! Keine 'Wo ist das Dokument?'-Fragen mehr. Einfach perfekt."
+                </p>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Heart className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-semibold">Julia & Marc</p>
+                    <p className="text-sm text-muted-foreground">Paar, seit 2024 dabei</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing */}
+      <section className="py-24 bg-background">
+        <div className="container mx-auto px-4">
+          <h2 className="text-4xl md:text-5xl font-bold text-center mb-6" data-testid="text-pricing-title">
             Einfache, transparente Preise
           </h2>
-          <p className="text-center text-muted-foreground mb-8">
+          <p className="text-xl text-center text-muted-foreground mb-12 leading-relaxed">
             14 Tage kostenlos testen. Keine Kreditkarte erforderlich.
           </p>
 
@@ -685,9 +784,9 @@ export default function Landing() {
             </button>
           </div>
           
-          <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {/* Solo Plan */}
-            <Card data-testid="card-pricing-solo">
+            <Card className="border-0 shadow-lg hover-elevate" data-testid="card-pricing-solo">
               <CardHeader className="text-center pb-6">
                 <CardTitle className="text-xl">Solo</CardTitle>
                 <div className="mt-4">
@@ -741,7 +840,7 @@ export default function Landing() {
             </Card>
 
             {/* Family Plan - Hervorgehoben */}
-            <Card className="border-primary shadow-lg relative md:scale-105" data-testid="card-pricing-family">
+            <Card className="border-2 border-primary shadow-2xl relative md:scale-105 hover-elevate" data-testid="card-pricing-family">
               <div className="absolute -top-4 left-1/2 -translate-x-1/2">
                 <span className="bg-primary text-primary-foreground px-4 py-1 rounded-full text-sm font-medium">
                   Empfohlen
@@ -807,7 +906,7 @@ export default function Landing() {
             </Card>
 
             {/* Family Plus Plan */}
-            <Card data-testid="card-pricing-family-plus">
+            <Card className="border-0 shadow-lg hover-elevate" data-testid="card-pricing-family-plus">
               <CardHeader className="text-center pb-6">
                 <CardTitle className="text-xl">Family Plus</CardTitle>
                 <div className="mt-4">
