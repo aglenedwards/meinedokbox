@@ -82,14 +82,16 @@ export default function Landing() {
 
   const loginMutation = useMutation({
     mutationFn: login,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+    onSuccess: async () => {
+      // Refetch user data and wait for it to complete
+      await queryClient.refetchQueries({ queryKey: ["/api/auth/user"] });
       setAuthModalOpen(false);
-      setLocation("/dashboard");
       toast({
         title: "Willkommen zurück!",
         description: "Sie wurden erfolgreich angemeldet.",
       });
+      // Redirect to dashboard after user data is loaded
+      setLocation("/dashboard");
     },
     onError: (error: Error) => {
       toast({
