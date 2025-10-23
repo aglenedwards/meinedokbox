@@ -15,28 +15,58 @@ export const sessions = pgTable(
 );
 
 // Subscription plans
-export const SUBSCRIPTION_PLANS = ["free", "trial", "premium"] as const;
+export const SUBSCRIPTION_PLANS = ["free", "trial", "solo", "family", "family-plus"] as const;
 
 // Document limits per subscription plan
 export const PLAN_LIMITS = {
   free: {
     maxDocuments: 50,
+    canUpload: false,        // Read-only: can only view/download existing documents
+    canUseAI: false,
     canUseEmailInbound: false,
+    maxUsers: 1,
     displayName: "Free",
     price: 0,
   },
   trial: {
-    maxDocuments: -1, // unlimited during trial
+    maxDocuments: -1,        // unlimited during trial
+    canUpload: true,
+    canUseAI: true,
     canUseEmailInbound: true,
-    displayName: "Trial (2 Wochen)",
+    maxUsers: 2,             // Can invite 1 user during trial
+    displayName: "Family-Trial",
     price: 0,
     trialDurationDays: 14,
   },
-  premium: {
-    maxDocuments: -1, // unlimited
+  solo: {
+    maxDocuments: 2000,      // ~2GB storage (1MB avg per doc)
+    canUpload: true,
+    canUseAI: true,
+    canUseEmailInbound: false,
+    maxUsers: 1,
+    displayName: "Solo",
+    priceMonthly: 3.99,
+    priceYearly: 38.30,      // 20% discount
+  },
+  family: {
+    maxDocuments: -1,        // unlimited
+    canUpload: true,
+    canUseAI: true,
     canUseEmailInbound: true,
-    displayName: "Premium",
-    price: 4.99,
+    maxUsers: 2,             // Master + 1 invited user
+    displayName: "Family",
+    priceMonthly: 6.99,
+    priceYearly: 67.10,      // 20% discount
+  },
+  "family-plus": {
+    maxDocuments: -1,        // unlimited
+    canUpload: true,
+    canUseAI: true,
+    canUseEmailInbound: true,
+    maxUsers: 4,             // Master + 3 invited users
+    displayName: "Family Plus",
+    priceMonthly: 9.99,
+    priceYearly: 95.90,      // 20% discount
   },
 } as const;
 
