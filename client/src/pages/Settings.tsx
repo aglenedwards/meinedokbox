@@ -14,6 +14,7 @@ import { queryClient } from "@/lib/queryClient";
 import { getCurrentUser, getSubscriptionStatus, type SubscriptionStatus } from "@/lib/api";
 import type { User as UserType, SharedAccess } from "@shared/schema";
 import { UpgradeModal } from "@/components/UpgradeModal";
+import { CheckoutDialog } from "@/components/CheckoutDialog";
 import { Footer } from "@/components/Footer";
 import logoImage from "@assets/meinedokbox_1760966015056.png";
 import { Link } from "wouter";
@@ -22,6 +23,7 @@ export default function Settings() {
   const { toast } = useToast();
   const [inviteEmail, setInviteEmail] = useState("");
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
+  const [checkoutDialogOpen, setCheckoutDialogOpen] = useState(false);
 
   // Fetch user data
   const { data: user } = useQuery<UserType | null>({
@@ -271,7 +273,7 @@ export default function Settings() {
                       </div>
                       {subscriptionStatus.plan !== "premium" && (
                         <Button
-                          onClick={() => setUpgradeModalOpen(true)}
+                          onClick={() => setCheckoutDialogOpen(true)}
                           data-testid="button-upgrade"
                           size="sm"
                         >
@@ -411,6 +413,11 @@ export default function Settings() {
       <UpgradeModal
         open={upgradeModalOpen}
         onClose={() => setUpgradeModalOpen(false)}
+      />
+
+      <CheckoutDialog
+        open={checkoutDialogOpen}
+        onClose={() => setCheckoutDialogOpen(false)}
       />
 
       <Footer />
