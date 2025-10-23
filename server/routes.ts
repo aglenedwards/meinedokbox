@@ -335,6 +335,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Upgrade to premium with billing address
+  app.post('/api/subscription/upgrade', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // Validate billing address
+      const billingSchema = z.object({
+        billingCompany: z.string().optional(),
+        billingStreet: z.string().min(1, "Straße ist erforderlich"),
+        billingPostalCode: z.string().min(1, "PLZ ist erforderlich"),
+        billingCity: z.string().min(1, "Stadt ist erforderlich"),
+        billingCountry: z.string().default("Deutschland"),
+      });
+
+      const billingData = billingSchema.parse(req.body);
+
+      // Get current user
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Check if already premium
+      if (user.subscriptionPlan === "premium") {
+        return res.status(400).json({ message: "Sie haben bereits ein Premium-Abo" });
+      }
+
+      // Update user to premium with billing address
+      await db.update(users)
+        .set({
+          subscriptionPlan: "premium",
+          subscriptionEndsAt: null, // Premium is permanent until cancelled
+          billingCompany: billingData.billingCompany || null,
+          billingStreet: billingData.billingStreet,
+          billingPostalCode: billingData.billingPostalCode,
+          billingCity: billingData.billingCity,
+          billingCountry: billingData.billingCountry,
+          updatedAt: new Date(),
+        })
+        .where(eq(users.id, userId));
+
+      console.log(`[Upgrade] User ${userId} upgraded to premium`);
+
+      // TODO: Generate and send invoice via email
+
+      res.json({ 
+        message: "Erfolgreich auf Premium upgradet!",
+        plan: "premium"
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: error.errors[0].message });
+      }
+      console.error("Error upgrading subscription:", error);
+      res.status(500).json({ message: "Upgrade fehlgeschlagen" });
+    }
+  });
+
   // Shared Access API routes (Premium feature)
   
   // Invite second person (Premium only)

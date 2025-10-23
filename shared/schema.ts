@@ -59,6 +59,12 @@ export const users = pgTable("users", {
   subscriptionPlan: varchar("subscription_plan", { length: 20 }).notNull().default("trial"),
   trialEndsAt: timestamp("trial_ends_at"),
   subscriptionEndsAt: timestamp("subscription_ends_at"),
+  // Billing address (collected only when upgrading to premium)
+  billingCompany: varchar("billing_company"),
+  billingStreet: varchar("billing_street"),
+  billingPostalCode: varchar("billing_postal_code"),
+  billingCity: varchar("billing_city"),
+  billingCountry: varchar("billing_country").default("Deutschland"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
