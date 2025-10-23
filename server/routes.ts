@@ -779,7 +779,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Check if slave has userId (was registered)
       if (access.sharedWithUserId) {
         // Check if slave has any documents
-        const slaveDocuments = await storage.getDocuments(access.sharedWithUserId);
+        const slaveDocuments = await storage.getDocumentsByUserId(access.sharedWithUserId);
         
         if (slaveDocuments.length > 0) {
           return res.status(400).json({ 

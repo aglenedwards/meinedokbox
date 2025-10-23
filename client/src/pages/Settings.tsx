@@ -69,7 +69,7 @@ export default function Settings() {
       }
       return response.json();
     },
-    enabled: subscriptionStatus?.plan === "premium" || subscriptionStatus?.plan === "trial",
+    enabled: ['family', 'family-plus', 'trial'].includes(subscriptionStatus?.plan || ''),
   });
 
   // For backward compatibility, get the first active invitation
@@ -229,7 +229,8 @@ export default function Settings() {
     e.preventDefault();
     if (!inviteEmail.trim()) return;
     
-    if (subscriptionStatus?.plan !== "premium" && subscriptionStatus?.plan !== "trial") {
+    const hasMultiUserPlan = ['family', 'family-plus', 'trial'].includes(subscriptionStatus?.plan || '');
+    if (!hasMultiUserPlan) {
       setUpgradeModalOpen(true);
       return;
     }
@@ -244,7 +245,7 @@ export default function Settings() {
   };
 
   const getPlanBadgeVariant = (plan: string) => {
-    if (plan === "premium") return "default";
+    if (plan === "family" || plan === "family-plus") return "default";
     if (plan === "trial") return "secondary";
     return "outline";
   };
@@ -409,10 +410,13 @@ export default function Settings() {
                           variant={getPlanBadgeVariant(subscriptionStatus.plan)}
                           data-testid="badge-plan-status"
                         >
-                          {subscriptionStatus.plan === "premium" ? "Premium" : subscriptionStatus.plan === "trial" ? "Trial" : "Free"}
+                          {subscriptionStatus.plan === "family" ? "Family" : 
+                           subscriptionStatus.plan === "family-plus" ? "Family Plus" : 
+                           subscriptionStatus.plan === "solo" ? "Solo" :
+                           subscriptionStatus.plan === "trial" ? "Trial" : "Free"}
                         </Badge>
                       </div>
-                      {subscriptionStatus.plan !== "premium" && (
+                      {!['family', 'family-plus'].includes(subscriptionStatus.plan) && (
                         <Button
                           onClick={() => setCheckoutDialogOpen(true)}
                           data-testid="button-upgrade"
@@ -450,14 +454,6 @@ export default function Settings() {
                       </div>
                     )}
 
-                    {subscriptionStatus.plan === "premium" && (
-                      <div>
-                        <p className="text-sm text-muted-foreground">Preis</p>
-                        <p className="text-lg font-medium mt-1" data-testid="text-price">
-                          €{subscriptionStatus.price.toFixed(2)} / Monat
-                        </p>
-                      </div>
-                    )}
                   </div>
                 </>
               ) : null}
@@ -475,13 +471,13 @@ export default function Settings() {
                 Weitere Personen einladen
               </CardTitle>
               <CardDescription>
-                {subscriptionStatus?.plan === "premium" || subscriptionStatus?.plan === "trial"
+                {['family', 'family-plus', 'trial'].includes(subscriptionStatus?.plan || '')
                   ? "Laden Sie weitere Personen ein, um gemeinsam auf geteilte Ordner zuzugreifen"
                   : "Verfügbar in den Tarifen Family und Family Plus"}
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {subscriptionStatus?.plan === "premium" || subscriptionStatus?.plan === "trial" ? (
+              {['family', 'family-plus', 'trial'].includes(subscriptionStatus?.plan || '') ? (
                 <>
                   {allSharedAccess && allSharedAccess.length > 0 ? (
                     <div className="space-y-4">
