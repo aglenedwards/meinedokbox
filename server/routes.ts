@@ -16,14 +16,14 @@ import { uploadFile } from "./lib/storage";
 import { convertPdfToImages } from "./lib/pdfToImage";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { ObjectPermission } from "./objectAcl";
-import { insertDocumentSchema, DOCUMENT_CATEGORIES } from "@shared/schema";
+import { insertDocumentSchema, DOCUMENT_CATEGORIES, PLAN_LIMITS } from "@shared/schema";
 import { combineImagesToPDF, type PageBuffer } from "./lib/pdfGenerator";
 import { parseMailgunWebhook, isSupportedAttachment, isEmailWhitelisted, verifyMailgunWebhook, extractEmailAddress } from "./lib/emailInbound";
 import { sendSharedAccessInvitation, sendVerificationEmail } from "./lib/sendEmail";
 import bcrypt from 'bcrypt';
 import { checkDocumentLimit, checkEmailFeature, checkAndDowngradeTrial, getEffectiveUserId, isSharedUser } from "./middleware/subscriptionLimits";
 import { db } from "./db";
-import { users, emailLogs } from "@shared/schema";
+import { users, emailLogs, sharedAccess } from "@shared/schema";
 import { eq } from "drizzle-orm";
 
 // Configure multer for file uploads (memory storage for processing)
