@@ -402,6 +402,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const documents = await storage.getDocumentsByUserId(userId);
       const documentCount = documents.length;
 
+      // isUploadDisabled combines all upload restrictions
+      const isUploadDisabled = !limits.canUpload || gracePeriod || isReadOnly;
+
       res.json({
         plan: user.subscriptionPlan,
         displayName: limits.displayName,
@@ -409,6 +412,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         currentDocuments: documentCount,
         canUseEmailInbound: limits.canUseEmailInbound,
         canUpload: limits.canUpload,
+        isUploadDisabled,
         trialEndsAt: user.trialEndsAt,
         daysRemaining,
         gracePeriod,
