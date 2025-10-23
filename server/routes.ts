@@ -408,7 +408,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         maxDocuments: limits.maxDocuments,
         currentDocuments: documentCount,
         canUseEmailInbound: limits.canUseEmailInbound,
-        price: limits.price,
+        canUpload: limits.canUpload,
         trialEndsAt: user.trialEndsAt,
         daysRemaining,
         gracePeriod,
@@ -422,13 +422,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Upgrade to premium with billing address
+  // Upgrade/change subscription plan with billing address
   app.post('/api/subscription/upgrade', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       
-      // Validate billing address
-      const billingSchema = z.object({
+      // Validate request body
+      const upgradeSchema = z.object({
+        plan: z.enum(["solo", "family", "family-plus"]),
+        period: z.enum(["monthly", "yearly"]),
         billingCompany: z.string().optional(),
         billingStreet: z.string().min(1, "Straße ist erforderlich"),
         billingPostalCode: z.string().min(1, "PLZ ist erforderlich"),
@@ -436,7 +438,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         billingCountry: z.string().default("Deutschland"),
       });
 
-      const billingData = billingSchema.parse(req.body);
+      const data = upgradeSchema.parse(req.body);
 
       // Get current user
       const user = await storage.getUser(userId);
@@ -444,32 +446,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "User not found" });
       }
 
-      // Check if already premium
-      if (user.subscriptionPlan === "premium") {
-        return res.status(400).json({ message: "Sie haben bereits ein Premium-Abo" });
+      const { PLAN_LIMITS } = await import('@shared/schema');
+      const newPlanLimits = PLAN_LIMITS[data.plan];
+      const currentPlanLimits = PLAN_LIMITS[user.subscriptionPlan as keyof typeof PLAN_LIMITS];
+
+      // Downgrade logic: If reducing maxUsers, revoke excess shared users
+      if (newPlanLimits.maxUsers < currentPlanLimits.maxUsers) {
+        const { sharedAccess } = await import('@shared/schema');
+        const activeInvites = await db
+          .select()
+          .from(sharedAccess)
+          .where(eq(sharedAccess.ownerId, userId));
+
+        const activeCount = activeInvites.filter(
+          inv => inv.status === 'active' || inv.status === 'pending'
+        ).length;
+
+        // Calculate how many users will be allowed: maxUsers - 1 (owner takes 1 slot)
+        const allowedInvites = newPlanLimits.maxUsers - 1;
+
+        if (activeCount > allowedInvites) {
+          // Revoke excess invitations (keep newest, revoke oldest)
+          const toRevoke = activeInvites
+            .filter(inv => inv.status === 'active' || inv.status === 'pending')
+            .sort((a, b) => new Date(a.invitedAt || 0).getTime() - new Date(b.invitedAt || 0).getTime())
+            .slice(0, activeCount - allowedInvites);
+
+          for (const invite of toRevoke) {
+            await storage.revokeSharedAccess(invite.id);
+            console.log(`[Downgrade] Revoked shared access ${invite.id} for ${invite.sharedWithEmail}`);
+          }
+
+          console.log(`[Downgrade] Revoked ${toRevoke.length} invitations due to plan downgrade`);
+        }
       }
 
-      // Update user to premium with billing address
+      // Update user subscription plan with billing address
       await db.update(users)
         .set({
-          subscriptionPlan: "premium",
-          subscriptionEndsAt: null, // Premium is permanent until cancelled
-          billingCompany: billingData.billingCompany || null,
-          billingStreet: billingData.billingStreet,
-          billingPostalCode: billingData.billingPostalCode,
-          billingCity: billingData.billingCity,
-          billingCountry: billingData.billingCountry,
+          subscriptionPlan: data.plan,
+          subscriptionEndsAt: null, // Paid plans are active until cancelled
+          billingCompany: data.billingCompany || null,
+          billingStreet: data.billingStreet,
+          billingPostalCode: data.billingPostalCode,
+          billingCity: data.billingCity,
+          billingCountry: data.billingCountry,
           updatedAt: new Date(),
         })
         .where(eq(users.id, userId));
 
-      console.log(`[Upgrade] User ${userId} upgraded to premium`);
+      console.log(`[Upgrade] User ${userId} upgraded to ${data.plan} (${data.period})`);
 
       // TODO: Generate and send invoice via email
 
       res.json({ 
-        message: "Erfolgreich auf Premium upgradet!",
-        plan: "premium"
+        message: `Erfolgreich auf ${newPlanLimits.displayName} upgradet!`,
+        plan: data.plan,
+        period: data.period,
       });
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -843,7 +876,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.acceptSharedInvitationByToken(token, newUser.id);
       
       // Send email verification
-      const verificationSent = await sendVerificationEmail(invitedEmail, verificationToken);
+      const verificationSent = await sendVerificationEmail(invitedEmail, firstName, verificationToken);
       
       console.log(`[Invite Register] Created new user ${newUser.id} for invited email ${invitedEmail}`);
       
