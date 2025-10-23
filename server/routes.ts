@@ -746,6 +746,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Delete revoked slave completely (only if no documents)
+  app.delete('/api/shared-access/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { id } = req.params;
+      
+      // Get the invitation
+      const invitation = await db.select()
+        .from(sharedAccess)
+        .where(eq(sharedAccess.id, id))
+        .limit(1);
+      
+      if (!invitation || invitation.length === 0) {
+        return res.status(404).json({ message: "Einladung nicht gefunden" });
+      }
+      
+      const access = invitation[0];
+      
+      // Verify ownership
+      if (access.ownerId !== userId) {
+        return res.status(403).json({ message: "Keine Berechtigung" });
+      }
+      
+      // Only allow deletion of revoked slaves
+      if (access.status !== 'revoked') {
+        return res.status(400).json({ 
+          message: `Nur widerrufene Einladungen können gelöscht werden. Status: ${access.status}` 
+        });
+      }
+      
+      // Check if slave has userId (was registered)
+      if (access.sharedWithUserId) {
+        // Check if slave has any documents
+        const slaveDocuments = await storage.getDocuments(access.sharedWithUserId);
+        
+        if (slaveDocuments.length > 0) {
+          return res.status(400).json({ 
+            message: `Dieser Nutzer hat ${slaveDocuments.length} Dokument(e) und kann nicht gelöscht werden.` 
+          });
+        }
+        
+        // Delete user account
+        await db.delete(users)
+          .where(eq(users.id, access.sharedWithUserId));
+        
+        console.log(`[Delete Slave] Deleted user account ${access.sharedWithUserId} (${access.sharedWithEmail})`);
+      }
+      
+      // Delete shared_access entry
+      await db.delete(sharedAccess)
+        .where(eq(sharedAccess.id, id));
+      
+      console.log(`[Delete Slave] Deleted invitation ${id} for ${access.sharedWithEmail}`);
+      
+      res.json({ 
+        message: "Einladung und Nutzer erfolgreich gelöscht",
+        deletedUserId: access.sharedWithUserId || null
+      });
+    } catch (error) {
+      console.error("Error deleting shared access:", error);
+      res.status(500).json({ message: "Fehler beim Löschen der Einladung" });
+    }
+  });
+
   // Accept shared access invitation (when invited user logs in)
   app.post('/api/shared-access/accept', isAuthenticated, async (req: any, res) => {
     try {
