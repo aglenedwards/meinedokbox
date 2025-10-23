@@ -19,7 +19,7 @@ export function TrialBanner({ daysRemaining, onUpgrade }: TrialBannerProps) {
       <Sparkles className="h-4 w-4" />
       <AlertTitle className="flex items-center justify-between">
         <span>
-          {isUrgent ? "⚡ Trial endet bald!" : "🎉 Premium-Trial aktiv"}
+          {isUrgent ? "⚡ Trial endet bald!" : "🎉 Family-Trial aktiv"}
         </span>
         <Button 
           variant={isUrgent ? "default" : "outline"} 
@@ -27,7 +27,7 @@ export function TrialBanner({ daysRemaining, onUpgrade }: TrialBannerProps) {
           onClick={onUpgrade}
           data-testid="button-upgrade-from-banner"
         >
-          Jetzt Premium sichern
+          Tarife vergleichen
         </Button>
       </AlertTitle>
       <AlertDescription className="flex items-center gap-2 mt-1">
@@ -36,7 +36,7 @@ export function TrialBanner({ daysRemaining, onUpgrade }: TrialBannerProps) {
           {isUrgent ? (
             <strong>Nur noch {daysRemaining} {daysRemaining === 1 ? "Tag" : "Tage"} bis zum Ende Ihrer Trial-Phase!</strong>
           ) : (
-            <span>Sie nutzen alle Premium-Features. Noch {daysRemaining} Tage bis zum Ende Ihrer Trial-Phase.</span>
+            <span>Sie testen den Family-Tarif mit allen Features kostenfrei. Noch {daysRemaining} Tage verbleibend.</span>
           )}
         </span>
       </AlertDescription>
