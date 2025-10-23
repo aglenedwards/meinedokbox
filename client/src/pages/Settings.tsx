@@ -488,147 +488,164 @@ export default function Settings() {
             <CardContent>
               {['family', 'family-plus', 'trial'].includes(subscriptionStatus?.plan || '') ? (
                 <>
-                  {allSharedAccess && allSharedAccess.length > 0 ? (
-                    <div className="space-y-4">
-                      {allSharedAccess.map((access) => {
-                        const statusVariant = access.status === 'active' ? 'default' : 
-                                             access.status === 'pending' ? 'secondary' : 
-                                             'destructive';
-                        const statusText = access.status === 'active' ? 'Aktiv' : 
-                                          access.status === 'pending' ? 'Ausstehend' : 
-                                          access.status === 'expired' ? 'Abgelaufen' : 
-                                          'Widerrufen';
-                        
-                        return (
-                          <div key={access.id} className="p-4 border rounded-lg">
-                            <div className="flex items-center justify-between">
-                              <div className="flex-1">
-                                <p className="font-medium" data-testid={`text-shared-email-${access.id}`}>
-                                  {access.sharedWithEmail}
-                                </p>
-                                <div className="flex items-center gap-2 mt-2">
-                                  <Badge
-                                    variant={statusVariant}
-                                    data-testid={`badge-shared-status-${access.id}`}
-                                  >
-                                    {statusText}
-                                  </Badge>
-                                  {access.invitedAt && (
-                                    <span className="text-xs text-muted-foreground">
-                                      Eingeladen: {new Date(access.invitedAt).toLocaleDateString('de-DE')}
-                                    </span>
+                  {/* Calculate max users based on plan */}
+                  {(() => {
+                    const planLimits = {
+                      'trial': 2,
+                      'family': 2,
+                      'family-plus': 4,
+                    };
+                    const maxUsers = planLimits[subscriptionStatus?.plan as keyof typeof planLimits] || 1;
+                    const activeInvitations = allSharedAccess?.filter(a => a.status === 'pending' || a.status === 'active') || [];
+                    const canInviteMore = activeInvitations.length < (maxUsers - 1);
+                    
+                    return (
+                      <div className="space-y-4">
+                        {/* Show existing invitations */}
+                        {allSharedAccess && allSharedAccess.length > 0 && allSharedAccess.map((access) => {
+                          const statusVariant = access.status === 'active' ? 'default' : 
+                                               access.status === 'pending' ? 'secondary' : 
+                                               'destructive';
+                          const statusText = access.status === 'active' ? 'Aktiv' : 
+                                            access.status === 'pending' ? 'Ausstehend' : 
+                                            access.status === 'expired' ? 'Abgelaufen' : 
+                                            'Widerrufen';
+                          
+                          return (
+                            <div key={access.id} className="p-4 border rounded-lg">
+                              <div className="flex items-center justify-between">
+                                <div className="flex-1">
+                                  <p className="font-medium" data-testid={`text-shared-email-${access.id}`}>
+                                    {access.sharedWithEmail}
+                                  </p>
+                                  <div className="flex items-center gap-2 mt-2">
+                                    <Badge
+                                      variant={statusVariant}
+                                      data-testid={`badge-shared-status-${access.id}`}
+                                    >
+                                      {statusText}
+                                    </Badge>
+                                    {access.invitedAt && (
+                                      <span className="text-xs text-muted-foreground">
+                                        Eingeladen: {new Date(access.invitedAt).toLocaleDateString('de-DE')}
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                                <div className="flex gap-2">
+                                  {access.status === 'pending' && (
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => resendMutation.mutate(access.id)}
+                                      disabled={resendMutation.isPending}
+                                      data-testid={`button-resend-${access.id}`}
+                                    >
+                                      <Mail className="h-4 w-4 mr-2" />
+                                      Erneut senden
+                                    </Button>
+                                  )}
+                                  {access.status === 'expired' && (
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => resendMutation.mutate(access.id)}
+                                      disabled={resendMutation.isPending}
+                                      data-testid={`button-resend-${access.id}`}
+                                    >
+                                      <Mail className="h-4 w-4 mr-2" />
+                                      Neu einladen
+                                    </Button>
+                                  )}
+                                  {access.status === 'revoked' && (
+                                    <Button
+                                      variant="destructive"
+                                      size="sm"
+                                      onClick={() => {
+                                        if (confirm("Möchten Sie diese Einladung und den Nutzer wirklich vollständig löschen? Dies kann nicht rückgängig gemacht werden.")) {
+                                          deleteMutation.mutate(access.id);
+                                        }
+                                      }}
+                                      disabled={deleteMutation.isPending}
+                                      data-testid={`button-delete-${access.id}`}
+                                    >
+                                      <Trash2 className="h-4 w-4 mr-2" />
+                                      Löschen
+                                    </Button>
+                                  )}
+                                  {(access.status === 'active' || access.status === 'pending') && (
+                                    <Button
+                                      variant="destructive"
+                                      size="sm"
+                                      onClick={handleRevoke}
+                                      disabled={revokeMutation.isPending}
+                                      data-testid={`button-revoke-access-${access.id}`}
+                                    >
+                                      <X className="h-4 w-4 mr-2" />
+                                      Widerrufen
+                                    </Button>
                                   )}
                                 </div>
                               </div>
-                              <div className="flex gap-2">
-                                {access.status === 'pending' && (
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => resendMutation.mutate(access.id)}
-                                    disabled={resendMutation.isPending}
-                                    data-testid={`button-resend-${access.id}`}
-                                  >
-                                    <Mail className="h-4 w-4 mr-2" />
-                                    Erneut senden
-                                  </Button>
-                                )}
-                                {access.status === 'expired' && (
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => resendMutation.mutate(access.id)}
-                                    disabled={resendMutation.isPending}
-                                    data-testid={`button-resend-${access.id}`}
-                                  >
-                                    <Mail className="h-4 w-4 mr-2" />
-                                    Neu einladen
-                                  </Button>
-                                )}
-                                {access.status === 'revoked' && (
-                                  <Button
-                                    variant="destructive"
-                                    size="sm"
-                                    onClick={() => {
-                                      if (confirm("Möchten Sie diese Einladung und den Nutzer wirklich vollständig löschen? Dies kann nicht rückgängig gemacht werden.")) {
-                                        deleteMutation.mutate(access.id);
-                                      }
-                                    }}
-                                    disabled={deleteMutation.isPending}
-                                    data-testid={`button-delete-${access.id}`}
-                                  >
-                                    <Trash2 className="h-4 w-4 mr-2" />
-                                    Löschen
-                                  </Button>
-                                )}
-                                {(access.status === 'active' || access.status === 'pending') && (
-                                  <Button
-                                    variant="destructive"
-                                    size="sm"
-                                    onClick={handleRevoke}
-                                    disabled={revokeMutation.isPending}
-                                    data-testid={`button-revoke-access-${access.id}`}
-                                  >
-                                    <X className="h-4 w-4 mr-2" />
-                                    Widerrufen
-                                  </Button>
-                                )}
-                              </div>
                             </div>
-                          </div>
-                        );
-                      })}
-                      
-                      {/* Show invitation form only if no active invitation exists */}
-                      {!sharedAccess && (
-                        <form onSubmit={handleInvite} className="space-y-4">
-                          <Separator />
-                          <div>
-                            <Label htmlFor="invite-email">Weitere Person einladen</Label>
-                            <Input
-                              id="invite-email"
-                              type="email"
-                              placeholder="beispiel@email.de"
-                              value={inviteEmail}
-                              onChange={(e) => setInviteEmail(e.target.value)}
-                              required
-                              data-testid="input-invite-email"
-                            />
-                          </div>
-                          <Button
-                            type="submit"
-                            disabled={inviteMutation.isPending}
-                            data-testid="button-send-invite"
-                          >
-                            {inviteMutation.isPending ? "Wird gesendet..." : "Einladung senden"}
-                          </Button>
-                        </form>
-                      )}
-                    </div>
-                  ) : (
-                    <form onSubmit={handleInvite} className="space-y-4">
-                      <div>
-                        <Label htmlFor="invite-email">E-Mail-Adresse</Label>
-                        <Input
-                          id="invite-email"
-                          type="email"
-                          placeholder="beispiel@email.de"
-                          value={inviteEmail}
-                          onChange={(e) => setInviteEmail(e.target.value)}
-                          required
-                          data-testid="input-invite-email"
-                        />
+                          );
+                        })}
+                        
+                        {/* Show invitation form if user can invite more people */}
+                        {canInviteMore && (
+                          <>
+                            {allSharedAccess && allSharedAccess.length > 0 && <Separator />}
+                            <form onSubmit={handleInvite} className="space-y-4">
+                              <div>
+                                <Label htmlFor="invite-email">
+                                  {allSharedAccess && allSharedAccess.length > 0 ? 'Weitere Person einladen' : 'E-Mail-Adresse'}
+                                  {subscriptionStatus?.plan === 'family-plus' && (
+                                    <span className="text-xs text-muted-foreground ml-2">
+                                      ({activeInvitations.length} von {maxUsers - 1} Plätzen belegt)
+                                    </span>
+                                  )}
+                                </Label>
+                                <Input
+                                  id="invite-email"
+                                  type="email"
+                                  placeholder="beispiel@email.de"
+                                  value={inviteEmail}
+                                  onChange={(e) => setInviteEmail(e.target.value)}
+                                  required
+                                  data-testid="input-invite-email"
+                                />
+                              </div>
+                              <Button
+                                type="submit"
+                                disabled={inviteMutation.isPending}
+                                data-testid="button-send-invite"
+                              >
+                                {inviteMutation.isPending ? "Wird gesendet..." : (
+                                  <>
+                                    <UserPlus className="h-4 w-4 mr-2" />
+                                    Einladung senden
+                                  </>
+                                )}
+                              </Button>
+                            </form>
+                          </>
+                        )}
+                        
+                        {/* Show message when max users reached */}
+                        {!canInviteMore && (
+                          <>
+                            <Separator />
+                            <div className="text-center py-4 text-sm text-muted-foreground">
+                              Maximale Anzahl an Nutzern erreicht ({maxUsers} Personen). 
+                              {subscriptionStatus?.plan === 'family' && (
+                                <span> Upgraden Sie auf Family Plus für bis zu 4 Personen.</span>
+                              )}
+                            </div>
+                          </>
+                        )}
                       </div>
-                      <Button
-                        type="submit"
-                        disabled={inviteMutation.isPending}
-                        data-testid="button-send-invite"
-                      >
-                        <UserPlus className="h-4 w-4 mr-2" />
-                        Einladung senden
-                      </Button>
-                    </form>
-                  )}
+                    );
+                  })()}
                 </>
               ) : (
                 <div className="text-center py-6 md:py-8">
