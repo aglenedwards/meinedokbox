@@ -993,7 +993,7 @@ export class DbStorage implements IStorage {
     if (!user) return undefined;
 
     const now = new Date();
-    const lastReset = user.uploadCounterResetAt || user.createdAt;
+    const lastReset = user.uploadCounterResetAt || user.createdAt || now;
 
     // Check if we're in a new month
     const needsReset =

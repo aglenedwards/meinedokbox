@@ -3,9 +3,9 @@ import { storage } from "../storage";
 import { PLAN_LIMITS } from "../../shared/schema";
 
 /**
- * Middleware to check if user has reached document limit for their subscription plan
- * Blocks uploads during grace period and read-only mode
- * Also checks if plan allows uploads (free plan = read-only)
+ * Middleware to check upload limits for subscription plan
+ * Checks BOTH monthly upload counter AND total storage
+ * Master + Slaves share both limits
  */
 export const checkDocumentLimit: RequestHandler = async (req: any, res, next) => {
   try {
@@ -56,21 +56,55 @@ export const checkDocumentLimit: RequestHandler = async (req: any, res, next) =>
       });
     }
 
-    // If plan has unlimited documents (-1), allow
-    if (limits.maxDocuments === -1) {
-      return next();
+    // === NEW HYBRID LIMIT SYSTEM ===
+    // Master + all Slaves share BOTH limits:
+    // 1. Monthly upload counter
+    // 2. Total storage space
+
+    // Get all partner IDs (Master gets Slaves, Slave gets Master)
+    const partnerIds = await storage.getPartnerUserIds(effectiveUser.id);
+    const allUserIds = [effectiveUser.id, ...partnerIds];
+
+    // Check 1: Monthly Upload Counter
+    // Auto-reset counters if new month for all users
+    await Promise.all(allUserIds.map(id => storage.checkAndResetUploadCounter(id)));
+
+    // Sum up uploads this month across Master + Slaves
+    let totalUploadsThisMonth = 0;
+    for (const id of allUserIds) {
+      const user = await storage.getUser(id);
+      if (user) {
+        totalUploadsThisMonth += user.uploadedThisMonth || 0;
+      }
     }
 
-    // Count user's documents (use effectiveUserId for shared users)
-    const effectiveUserId = await getEffectiveUserId(userId);
-    const documents = await storage.getDocumentsByUserId(effectiveUserId);
-    const documentCount = documents.length;
-
-    if (documentCount >= limits.maxDocuments) {
+    if (totalUploadsThisMonth >= limits.maxUploadsPerMonth) {
       return res.status(403).json({
-        message: "Dokumenten-Limit erreicht",
-        limit: limits.maxDocuments,
-        current: documentCount,
+        message: "Monatliches Upload-Limit erreicht",
+        reason: "monthly_upload_limit",
+        limit: limits.maxUploadsPerMonth,
+        current: totalUploadsThisMonth,
+        plan: limits.displayName,
+      });
+    }
+
+    // Check 2: Total Storage Space
+    // Sum up storage across Master + Slaves
+    let totalStorageBytes = 0;
+    for (const id of allUserIds) {
+      const stats = await storage.getUserStorageStats(id);
+      totalStorageBytes += stats.usedBytes;
+    }
+
+    const totalStorageGB = totalStorageBytes / (1024 * 1024 * 1024);
+    const maxStorageGB = limits.maxStorageGB;
+
+    if (totalStorageGB >= maxStorageGB) {
+      return res.status(403).json({
+        message: "Speicher-Limit erreicht",
+        reason: "storage_limit",
+        limit: maxStorageGB,
+        current: parseFloat(totalStorageGB.toFixed(2)),
         plan: limits.displayName,
       });
     }
