@@ -162,7 +162,9 @@ export const sharedAccess = pgTable("shared_access", {
   ownerId: varchar("owner_id").notNull(), // Premium user who owns the account
   sharedWithEmail: varchar("shared_with_email").notNull(), // Email of invited person
   sharedWithUserId: varchar("shared_with_user_id"), // Set when invitation is accepted and user logs in
-  status: varchar("status", { length: 20 }).notNull().default("pending"), // pending, active, revoked
+  invitationToken: varchar("invitation_token").unique(), // Unique token for invitation link
+  tokenExpiresAt: timestamp("token_expires_at"), // Token expiry (7 days from invitation)
+  status: varchar("status", { length: 20 }).notNull().default("pending"), // pending, active, revoked, expired
   invitedAt: timestamp("invited_at").notNull().default(sql`now()`),
   acceptedAt: timestamp("accepted_at"),
 });
