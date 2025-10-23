@@ -7,6 +7,7 @@ import crypto from "crypto";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated, optionalAuth } from "./replitAuth";
 import { setupLocalAuth, hashPassword, isAuthenticatedLocal } from "./localAuth";
+import { isAdmin } from "./middleware/adminAuth";
 import passport from "passport";
 import { z } from "zod";
 import { analyzeDocument, analyzeDocumentFromText } from "./lib/openai";
@@ -1646,6 +1647,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: 'Failed to trigger trial notification check',
         error: error instanceof Error ? error.message : 'Unknown error'
       });
+    }
+  });
+
+  // ============================================
+  // ADMIN ROUTES (service@meinedokbox.de only)
+  // ============================================
+  
+  // Get all users (Admin only)
+  app.get('/api/admin/users', isAuthenticated, isAdmin, async (_req: any, res) => {
+    try {
+      const allUsers = await storage.getAllUsers();
+      
+      // Calculate document counts and storage stats for each user
+      const usersWithStats = await Promise.all(
+        allUsers.map(async (user) => {
+          const docs = await storage.getDocumentsByUserId(user.id);
+          const stats = await storage.getUserStorageStats(user.id);
+          
+          return {
+            ...user,
+            documentCount: docs.length,
+            storageUsed: stats.usedMB,
+          };
+        })
+      );
+      
+      res.json(usersWithStats);
+    } catch (error) {
+      console.error('[Admin] Get all users error:', error);
+      res.status(500).json({ message: 'Failed to fetch users' });
+    }
+  });
+
+  // Delete user completely (Admin only)
+  app.delete('/api/admin/users/:id', isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      
+      // Prevent admin from deleting themselves
+      const adminUserId = req.user.claims?.sub || req.user.id;
+      if (id === adminUserId) {
+        return res.status(400).json({ message: 'Sie können Ihren eigenen Account nicht löschen.' });
+      }
+      
+      const success = await storage.deleteUserCompletely(id);
+      
+      if (!success) {
+        return res.status(404).json({ message: 'User nicht gefunden' });
+      }
+      
+      console.log(`[Admin] User ${id} completely deleted by admin`);
+      res.json({ message: 'User erfolgreich gelöscht' });
+    } catch (error) {
+      console.error('[Admin] Delete user error:', error);
+      res.status(500).json({ message: 'Failed to delete user' });
     }
   });
 
