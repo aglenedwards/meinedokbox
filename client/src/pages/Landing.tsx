@@ -373,8 +373,11 @@ export default function Landing() {
                     </div>
                     <div>
                       <h3 className="text-lg font-semibold mb-2">So funktioniert's</h3>
-                      <p className="text-muted-foreground text-base leading-relaxed">
+                      <p className="text-muted-foreground text-base leading-relaxed mb-3">
                         Sie erhalten eine E-Mail wie <span className="font-mono text-sm bg-muted px-2 py-1 rounded">ihre-dokumente@meinedokbox.de</span>. Leiten Sie einfach Rechnungen von Online-Shops, Versicherungen oder Ärzten weiter.
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        <strong>Pro-Tipp:</strong> Richten Sie in Ihrem E-Mail-Postfach eine automatische Weiterleitung ein – z.B. für alle Amazon-Bestellbestätigungen. So landet jede Rechnung automatisch in MeineDokBox.
                       </p>
                     </div>
                   </div>
