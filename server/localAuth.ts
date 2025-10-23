@@ -30,6 +30,14 @@ export async function setupLocalAuth() {
           return done(null, false, { message: 'Email oder Passwort falsch' });
         }
 
+        // Check if email is verified (DSGVO compliance - double opt-in)
+        if (!user.isVerified) {
+          return done(null, false, { 
+            message: 'Bitte bestätigen Sie zuerst Ihre E-Mail-Adresse. Prüfen Sie Ihr Postfach.',
+            notVerified: true 
+          });
+        }
+
         // Create session user object
         const sessionUser = {
           claims: {

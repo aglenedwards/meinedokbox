@@ -187,3 +187,102 @@ Ihr MeineDokBox Team
 
   return sendEmail({ to, subject, text, html });
 }
+
+/**
+ * Send email verification link
+ */
+export async function sendVerificationEmail(
+  to: string,
+  firstName: string,
+  verificationToken: string
+): Promise<boolean> {
+  const verificationLink = `${process.env.REPLIT_DEV_DOMAIN || 'https://meinedokbox.de'}/verify-email?token=${verificationToken}`;
+  
+  const subject = `Bestätigen Sie Ihre E-Mail-Adresse für MeineDokBox`;
+  
+  const text = `
+Hallo ${firstName}!
+
+Willkommen bei MeineDokBox!
+
+Bitte bestätigen Sie Ihre E-Mail-Adresse, um Ihr Konto zu aktivieren:
+
+${verificationLink}
+
+Dieser Link ist 24 Stunden gültig.
+
+Falls Sie sich nicht bei MeineDokBox registriert haben, können Sie diese E-Mail ignorieren.
+
+Viele Grüße,
+Ihr MeineDokBox Team
+  `.trim();
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .content {
+      background: #f8f9fa;
+      padding: 30px;
+      border-radius: 8px;
+    }
+    .button {
+      display: inline-block;
+      background: #667eea;
+      color: white !important;
+      padding: 14px 32px;
+      text-decoration: none;
+      border-radius: 6px;
+      margin: 20px 0;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div style="background: #667eea; color: #ffffff; padding: 30px; border-radius: 8px 8px 0 0; text-align: center;">
+    <h1 style="color: #ffffff !important; margin: 0 0 10px 0; font-size: 24px;">📂 MeineDokBox</h1>
+    <p style="color: #ffffff !important; margin: 0; font-size: 16px;">E-Mail-Adresse bestätigen</p>
+  </div>
+  
+  <div class="content">
+    <p>Hallo ${firstName}!</p>
+    
+    <p><strong>Willkommen bei MeineDokBox!</strong></p>
+    
+    <p>Bitte bestätigen Sie Ihre E-Mail-Adresse, um Ihr Konto zu aktivieren:</p>
+    
+    <center>
+      <a href="${verificationLink}" class="button" style="display: inline-block; background: #667eea; color: #ffffff !important; padding: 14px 32px; text-decoration: none; border-radius: 6px; margin: 20px 0; font-weight: 600;">
+        E-Mail-Adresse bestätigen
+      </a>
+    </center>
+    
+    <p style="font-size: 14px; color: #666;">
+      Dieser Link ist 24 Stunden gültig.
+    </p>
+    
+    <p style="margin-top: 30px; font-size: 14px; color: #666;">
+      Falls Sie sich nicht bei MeineDokBox registriert haben, können Sie diese E-Mail ignorieren.
+    </p>
+    
+    <p style="margin-top: 20px; font-size: 14px; color: #999;">
+      Viele Grüße,<br>
+      Ihr MeineDokBox Team
+    </p>
+  </div>
+</body>
+</html>
+  `.trim();
+
+  return sendEmail({ to, subject, text, html });
+}

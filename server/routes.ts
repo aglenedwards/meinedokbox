@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import crypto from "crypto";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated, optionalAuth } from "./replitAuth";
 import { setupLocalAuth, hashPassword, isAuthenticatedLocal } from "./localAuth";
@@ -122,14 +123,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Email/Password Authentication Routes
   
-  // Register with email and password
+  // Register with email and password (DSGVO-compliant with double opt-in)
   app.post('/api/auth/register', async (req, res) => {
     try {
+      // Strong password validation: min 8 chars, 1 uppercase, 1 number, 1 special char
+      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+      
       const registerSchema = z.object({
         email: z.string().email("Ungültige E-Mail-Adresse"),
-        password: z.string().min(8, "Passwort muss mindestens 8 Zeichen lang sein"),
-        firstName: z.string().optional(),
-        lastName: z.string().optional(),
+        password: z.string()
+          .min(8, "Passwort muss mindestens 8 Zeichen lang sein")
+          .regex(passwordRegex, "Passwort muss mindestens einen Großbuchstaben, eine Zahl und ein Sonderzeichen enthalten"),
+        passwordConfirm: z.string(),
+        firstName: z.string().min(1, "Vorname ist erforderlich"),
+        lastName: z.string().min(1, "Nachname ist erforderlich"),
+        acceptPrivacy: z.boolean().refine(val => val === true, {
+          message: "Sie müssen den Datenschutzbestimmungen zustimmen"
+        }),
+      }).refine(data => data.password === data.passwordConfirm, {
+        message: "Passwörter stimmen nicht überein",
+        path: ["passwordConfirm"],
       });
 
       const { email, password, firstName, lastName } = registerSchema.parse(req.body);
@@ -144,37 +157,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Hash password
       const passwordHash = await hashPassword(password);
 
+      // Generate verification token (24 hour expiry)
+      const verificationToken = crypto.randomBytes(32).toString('hex');
+      const verificationTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
       // Generate unique user ID
       const userId = `local_${Date.now()}_${Math.random().toString(36).substring(7)}`;
 
-      // Create user
-      const user = await storage.upsertUser({
+      // Create user (NOT verified yet)
+      await db.insert(users).values({
         id: userId,
         email: normalizedEmail,
-        firstName: firstName || null,
-        lastName: lastName || null,
-        profileImageUrl: null,
+        firstName,
+        lastName,
         passwordHash,
+        isVerified: false,
+        verificationToken,
+        verificationTokenExpiry,
+        subscriptionPlan: "trial",
+        trialEndsAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // 14 days trial
       });
 
-      // Log user in automatically
-      const sessionUser = {
-        claims: {
-          sub: user.id,
-          email: user.email,
-          first_name: user.firstName,
-          last_name: user.lastName,
-          profile_image_url: user.profileImageUrl,
-        },
-        isLocal: true,
-      };
+      // Send verification email
+      const { sendVerificationEmail } = await import('./lib/sendEmail');
+      const emailSent = await sendVerificationEmail(normalizedEmail, firstName, verificationToken);
 
-      req.login(sessionUser, (err) => {
-        if (err) {
-          console.error("Error logging in after registration:", err);
-          return res.status(500).json({ message: "Registrierung erfolgreich, aber Login fehlgeschlagen" });
-        }
-        res.json({ user, message: "Registrierung erfolgreich" });
+      if (!emailSent) {
+        console.error(`[Register] Failed to send verification email to ${normalizedEmail}`);
+        // Don't fail registration if email sending fails
+      }
+
+      res.json({ 
+        message: "Registrierung erfolgreich. Bitte bestätigen Sie Ihre E-Mail-Adresse.",
+        emailSent 
       });
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -182,6 +197,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       console.error("Error during registration:", error);
       res.status(500).json({ message: "Registrierung fehlgeschlagen" });
+    }
+  });
+
+  // Verify email address (Double Opt-in)
+  app.get('/api/auth/verify-email', async (req, res) => {
+    try {
+      const { token } = req.query;
+
+      if (!token || typeof token !== 'string') {
+        return res.status(400).json({ message: "Ungültiger Verifizierungslink" });
+      }
+
+      // Find user with this verification token
+      const [user] = await db.select()
+        .from(users)
+        .where(eq(users.verificationToken, token))
+        .limit(1);
+
+      if (!user) {
+        return res.status(400).json({ message: "Ungültiger oder abgelaufener Verifizierungslink" });
+      }
+
+      // Check if token is expired
+      if (user.verificationTokenExpiry && user.verificationTokenExpiry < new Date()) {
+        return res.status(400).json({ message: "Verifizierungslink ist abgelaufen. Bitte registrieren Sie sich erneut." });
+      }
+
+      // Check if already verified
+      if (user.isVerified) {
+        return res.json({ message: "E-Mail-Adresse wurde bereits bestätigt", alreadyVerified: true });
+      }
+
+      // Verify user and clear token
+      await db.update(users)
+        .set({
+          isVerified: true,
+          verificationToken: null,
+          verificationTokenExpiry: null,
+        })
+        .where(eq(users.id, user.id));
+
+      console.log(`[Verify Email] User ${user.email} verified successfully`);
+
+      res.json({ message: "E-Mail-Adresse erfolgreich bestätigt. Sie können sich jetzt anmelden." });
+    } catch (error) {
+      console.error("Error during email verification:", error);
+      res.status(500).json({ message: "Verifizierung fehlgeschlagen" });
     }
   });
 
