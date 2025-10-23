@@ -15,15 +15,16 @@ export const checkDocumentLimit: RequestHandler = async (req: any, res, next) =>
       return res.status(401).json({ message: "Unauthorized" });
     }
 
-    const user = await storage.getUser(userId);
+    // Get effective user (Master if this user is a Slave)
+    const effectiveUser = await getEffectiveUser(userId);
 
-    if (!user) {
+    if (!effectiveUser) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Check trial status with grace period
-    if (user.subscriptionPlan === "trial" && user.trialEndsAt) {
-      const trialStatus = getTrialStatus(user.trialEndsAt);
+    // Check trial status with grace period (using Master's trial dates if Slave)
+    if (effectiveUser.subscriptionPlan === "trial" && effectiveUser.trialEndsAt) {
+      const trialStatus = getTrialStatus(effectiveUser.trialEndsAt);
       
       // Block uploads during grace period (days 15-17)
       if (trialStatus.status === "grace_period") {
@@ -43,7 +44,7 @@ export const checkDocumentLimit: RequestHandler = async (req: any, res, next) =>
       }
     }
 
-    const plan = user.subscriptionPlan as keyof typeof PLAN_LIMITS;
+    const plan = effectiveUser.subscriptionPlan as keyof typeof PLAN_LIMITS;
     const limits = PLAN_LIMITS[plan];
 
     // Check if plan allows uploads (free plan = read-only)
@@ -60,8 +61,9 @@ export const checkDocumentLimit: RequestHandler = async (req: any, res, next) =>
       return next();
     }
 
-    // Count user's documents
-    const documents = await storage.getDocumentsByUserId(userId);
+    // Count user's documents (use effectiveUserId for shared users)
+    const effectiveUserId = await getEffectiveUserId(userId);
+    const documents = await storage.getDocumentsByUserId(effectiveUserId);
     const documentCount = documents.length;
 
     if (documentCount >= limits.maxDocuments) {
@@ -91,20 +93,21 @@ export const checkEmailFeature: RequestHandler = async (req: any, res, next) => 
       return res.status(401).json({ message: "Unauthorized" });
     }
 
-    const user = await storage.getUser(userId);
+    // Get effective user (Master if this user is a Slave)
+    const effectiveUser = await getEffectiveUser(userId);
 
-    if (!user) {
+    if (!effectiveUser) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Check if trial has expired
+    // Get effective plan (handles trial expiry check)
+    let plan = effectiveUser.subscriptionPlan;
     const now = new Date();
-    if (user.subscriptionPlan === "trial" && user.trialEndsAt && now > user.trialEndsAt) {
-      user.subscriptionPlan = "free";
+    if (plan === "trial" && effectiveUser.trialEndsAt && now > effectiveUser.trialEndsAt) {
+      plan = "free";
     }
 
-    const plan = user.subscriptionPlan as keyof typeof PLAN_LIMITS;
-    const limits = PLAN_LIMITS[plan];
+    const limits = PLAN_LIMITS[plan as keyof typeof PLAN_LIMITS];
 
     if (!limits.canUseEmailInbound) {
       return res.status(403).json({
@@ -227,4 +230,60 @@ export async function isSharedUser(userId: string): Promise<boolean> {
     console.error("Error checking if user is shared user:", error);
     return false;
   }
+}
+
+/**
+ * Get effective user for subscription checks.
+ * If user is a Slave (has shared access to another account), returns the Master user.
+ * Otherwise returns the user's own data.
+ * This ensures Slaves inherit subscription plan from Master in real-time.
+ */
+export async function getEffectiveUser(userId: string) {
+  try {
+    const user = await storage.getUser(userId);
+    if (!user) return null;
+
+    // Check if this user has shared access to another account (is a Slave)
+    const accessibleAccounts = await storage.getAccessibleAccounts(userId);
+    
+    if (accessibleAccounts.sharedAccounts.length > 0) {
+      // User is a Slave - return Master's user data
+      const masterUserId = accessibleAccounts.sharedAccounts[0].ownerId;
+      const masterUser = await storage.getUser(masterUserId);
+      return masterUser;
+    }
+    
+    // User is not a Slave - return their own data
+    return user;
+  } catch (error) {
+    console.error("Error getting effective user:", error);
+    return null;
+  }
+}
+
+/**
+ * Get effective subscription plan for a user.
+ * If user is a Slave, returns Master's plan.
+ * This ensures real-time plan synchronization without database updates.
+ */
+export async function getEffectiveSubscriptionPlan(userId: string): Promise<{
+  subscriptionPlan: string;
+  trialEndsAt: Date | null;
+  subscriptionEndsAt: Date | null;
+}> {
+  const effectiveUser = await getEffectiveUser(userId);
+  
+  if (!effectiveUser) {
+    return {
+      subscriptionPlan: 'free',
+      trialEndsAt: null,
+      subscriptionEndsAt: null,
+    };
+  }
+
+  return {
+    subscriptionPlan: effectiveUser.subscriptionPlan,
+    trialEndsAt: effectiveUser.trialEndsAt,
+    subscriptionEndsAt: effectiveUser.subscriptionEndsAt,
+  };
 }
