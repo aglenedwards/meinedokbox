@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { User, Mail, UserPlus, X, Crown, Calendar, FileText, LogOut, Home, Trash2, Shield } from "lucide-react";
+import { User, Mail, UserPlus, X, Crown, Calendar, FileText, LogOut, Home, Trash2, Shield, TrendingUp, HardDrive } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -450,29 +450,81 @@ export default function Settings() {
 
                   <Separator />
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-4">
+                    {/* Monthly Upload Limit */}
                     <div>
-                      <p className="text-sm text-muted-foreground flex items-center gap-2">
-                        <FileText className="h-4 w-4" />
-                        Dokumente
-                      </p>
-                      <p className="text-lg font-medium mt-1" data-testid="text-document-count">
-                        {subscriptionStatus.currentDocuments} / {subscriptionStatus.maxDocuments === -1 ? "∞" : subscriptionStatus.maxDocuments}
-                      </p>
-                    </div>
-
-                    {subscriptionStatus.plan === "trial" && subscriptionStatus.daysRemaining !== null && (
-                      <div>
+                      <div className="flex items-center justify-between mb-2">
                         <p className="text-sm text-muted-foreground flex items-center gap-2">
-                          <Calendar className="h-4 w-4" />
-                          Verbleibende Tage
+                          <TrendingUp className="h-4 w-4" />
+                          Uploads diesen Monat
                         </p>
-                        <p className="text-lg font-medium mt-1" data-testid="text-trial-days">
-                          {subscriptionStatus.daysRemaining} Tage
+                        <p className="text-sm font-medium" data-testid="text-upload-count">
+                          {subscriptionStatus.uploadsThisMonth} / {subscriptionStatus.maxUploadsPerMonth}
                         </p>
                       </div>
-                    )}
+                      <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                        <div 
+                          className={`h-full transition-all ${
+                            ((subscriptionStatus.uploadsThisMonth ?? 0) / (subscriptionStatus.maxUploadsPerMonth ?? 1)) >= 0.9 
+                              ? 'bg-destructive' 
+                              : ((subscriptionStatus.uploadsThisMonth ?? 0) / (subscriptionStatus.maxUploadsPerMonth ?? 1)) >= 0.7 
+                                ? 'bg-yellow-500' 
+                                : 'bg-primary'
+                          }`}
+                          style={{ 
+                            width: `${Math.min(
+                              ((subscriptionStatus.uploadsThisMonth ?? 0) / (subscriptionStatus.maxUploadsPerMonth ?? 1)) * 100,
+                              100
+                            )}%` 
+                          }}
+                        />
+                      </div>
+                    </div>
 
+                    {/* Storage Limit */}
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-sm text-muted-foreground flex items-center gap-2">
+                          <HardDrive className="h-4 w-4" />
+                          Speicher verwendet
+                        </p>
+                        <p className="text-sm font-medium" data-testid="text-storage-used">
+                          {subscriptionStatus.storageUsedGB?.toFixed(2)} GB / {subscriptionStatus.maxStorageGB} GB
+                        </p>
+                      </div>
+                      <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                        <div 
+                          className={`h-full transition-all ${
+                            ((subscriptionStatus.storageUsedGB ?? 0) / (subscriptionStatus.maxStorageGB ?? 1)) >= 0.9 
+                              ? 'bg-destructive' 
+                              : ((subscriptionStatus.storageUsedGB ?? 0) / (subscriptionStatus.maxStorageGB ?? 1)) >= 0.7 
+                                ? 'bg-yellow-500' 
+                                : 'bg-primary'
+                          }`}
+                          style={{ 
+                            width: `${Math.min(
+                              ((subscriptionStatus.storageUsedGB ?? 0) / (subscriptionStatus.maxStorageGB ?? 1)) * 100,
+                              100
+                            )}%` 
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Trial Days (if applicable) */}
+                    {subscriptionStatus.plan === "trial" && subscriptionStatus.daysRemaining !== null && (
+                      <div className="pt-2">
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm text-muted-foreground flex items-center gap-2">
+                            <Calendar className="h-4 w-4" />
+                            Verbleibende Tage
+                          </p>
+                          <p className="text-lg font-medium" data-testid="text-trial-days">
+                            {subscriptionStatus.daysRemaining} Tage
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </>
               ) : null}
