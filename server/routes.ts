@@ -1434,18 +1434,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       let emailData: { subject: string; html: string; text: string };
       
+      const userName = user.firstName || 'dort';
+      
       switch (emailType) {
         case 'day_14':
-          emailData = getDay14Email(user.name || '');
+          emailData = getDay14Email(userName);
           break;
         case 'grace_start':
-          emailData = getGraceStartEmail(user.name || '');
+          emailData = getGraceStartEmail(userName);
           break;
         case 'grace_last_day':
-          emailData = getGraceLastDayEmail(user.name || '');
+          emailData = getGraceLastDayEmail(userName);
           break;
         case 'readonly_start':
-          emailData = getReadOnlyStartEmail(user.name || '');
+          emailData = getReadOnlyStartEmail(userName);
           break;
         default:
           return res.status(400).json({ message: 'Invalid email type. Use: day_14, grace_start, grace_last_day, or readonly_start' });
