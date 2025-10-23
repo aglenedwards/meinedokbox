@@ -8,6 +8,13 @@ import memoize from "memoizee";
 import connectPg from "connect-pg-simple";
 import { storage } from "./storage";
 
+// Extend session data to include admin authentication flag
+declare module "express-session" {
+  interface SessionData {
+    isAdminAuthenticated?: boolean;
+  }
+}
+
 if (!process.env.REPLIT_DOMAINS) {
   throw new Error("Environment variable REPLIT_DOMAINS not provided");
 }
