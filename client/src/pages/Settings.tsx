@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { User, Mail, UserPlus, X, Crown, Calendar, FileText, LogOut, Home, Trash2 } from "lucide-react";
+import { User, Mail, UserPlus, X, Crown, Calendar, FileText, LogOut, Home, Trash2, Shield } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -199,6 +199,14 @@ export default function Settings() {
                   Dashboard
                 </Button>
               </Link>
+              {user?.email === "service@meinedokbox.de" && (
+                <Link href="/admin">
+                  <Button variant="outline" size="sm" data-testid="button-admin">
+                    <Shield className="h-4 w-4 mr-2" />
+                    Admin
+                  </Button>
+                </Link>
+              )}
               <Button 
                 variant="outline" 
                 size="sm" 
