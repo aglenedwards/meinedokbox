@@ -41,21 +41,24 @@ export default function Settings() {
     staleTime: 1000 * 60, // 1 minute
   });
 
-  // Fetch shared access status
-  const { data: sharedAccess } = useQuery<SharedAccess | null>({
-    queryKey: ["/api/shared-access"],
+  // Fetch all shared access (with status tracking)
+  const { data: allSharedAccess } = useQuery<SharedAccess[]>({
+    queryKey: ["/api/shared-access/all"],
     queryFn: async () => {
-      const response = await fetch("/api/shared-access", {
+      const response = await fetch("/api/shared-access/all", {
         credentials: "include",
       });
       if (!response.ok) {
-        if (response.status === 404) return null;
+        if (response.status === 404) return [];
         throw new Error("Failed to fetch shared access");
       }
       return response.json();
     },
     enabled: subscriptionStatus?.plan === "premium" || subscriptionStatus?.plan === "trial",
   });
+
+  // For backward compatibility, get the first active invitation
+  const sharedAccess = allSharedAccess?.find(a => a.status === 'active' || a.status === 'pending') || null;
 
   // Invite mutation
   const inviteMutation = useMutation({
@@ -75,6 +78,7 @@ export default function Settings() {
       return response.json();
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/shared-access/all"] });
       queryClient.invalidateQueries({ queryKey: ["/api/shared-access"] });
       setInviteEmail("");
       toast({
@@ -107,10 +111,42 @@ export default function Settings() {
       return response.json();
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/shared-access/all"] });
       queryClient.invalidateQueries({ queryKey: ["/api/shared-access"] });
       toast({
         title: "Zugriff widerrufen",
         description: "Die Person hat keinen Zugriff mehr auf Ihre Dokumente.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Fehler",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Resend invitation mutation
+  const resendMutation = useMutation({
+    mutationFn: async (invitationId: string) => {
+      const response = await fetch(`/api/shared-access/resend/${invitationId}`, {
+        method: "POST",
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message || "Fehler beim erneuten Senden der Einladung");
+      }
+
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/shared-access/all"] });
+      toast({
+        title: "Einladung erneut gesendet",
+        description: "Eine neue Einladungs-E-Mail wurde versendet.",
       });
     },
     onError: (error: Error) => {
@@ -400,34 +436,106 @@ export default function Settings() {
             <CardContent>
               {subscriptionStatus?.plan === "premium" || subscriptionStatus?.plan === "trial" ? (
                 <>
-                  {sharedAccess?.status === "active" || sharedAccess?.status === "pending" ? (
+                  {allSharedAccess && allSharedAccess.length > 0 ? (
                     <div className="space-y-4">
-                      <div className="p-4 border rounded-lg">
-                        <div className="flex items-center justify-between">
+                      {allSharedAccess.map((access) => {
+                        const statusVariant = access.status === 'active' ? 'default' : 
+                                             access.status === 'pending' ? 'secondary' : 
+                                             'destructive';
+                        const statusText = access.status === 'active' ? 'Aktiv' : 
+                                          access.status === 'pending' ? 'Ausstehend' : 
+                                          access.status === 'expired' ? 'Abgelaufen' : 
+                                          'Widerrufen';
+                        
+                        return (
+                          <div key={access.id} className="p-4 border rounded-lg">
+                            <div className="flex items-center justify-between">
+                              <div className="flex-1">
+                                <p className="font-medium" data-testid={`text-shared-email-${access.id}`}>
+                                  {access.sharedWithEmail}
+                                </p>
+                                <div className="flex items-center gap-2 mt-2">
+                                  <Badge
+                                    variant={statusVariant}
+                                    data-testid={`badge-shared-status-${access.id}`}
+                                  >
+                                    {statusText}
+                                  </Badge>
+                                  {access.invitedAt && (
+                                    <span className="text-xs text-muted-foreground">
+                                      Eingeladen: {new Date(access.invitedAt).toLocaleDateString('de-DE')}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="flex gap-2">
+                                {access.status === 'pending' && (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => resendMutation.mutate(access.id)}
+                                    disabled={resendMutation.isPending}
+                                    data-testid={`button-resend-${access.id}`}
+                                  >
+                                    <Mail className="h-4 w-4 mr-2" />
+                                    Erneut senden
+                                  </Button>
+                                )}
+                                {access.status === 'expired' && (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => resendMutation.mutate(access.id)}
+                                    disabled={resendMutation.isPending}
+                                    data-testid={`button-resend-${access.id}`}
+                                  >
+                                    <Mail className="h-4 w-4 mr-2" />
+                                    Neu einladen
+                                  </Button>
+                                )}
+                                {(access.status === 'active' || access.status === 'pending') && (
+                                  <Button
+                                    variant="destructive"
+                                    size="sm"
+                                    onClick={handleRevoke}
+                                    disabled={revokeMutation.isPending}
+                                    data-testid={`button-revoke-access-${access.id}`}
+                                  >
+                                    <X className="h-4 w-4 mr-2" />
+                                    Widerrufen
+                                  </Button>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                      
+                      {/* Show invitation form only if no active invitation exists */}
+                      {!sharedAccess && (
+                        <form onSubmit={handleInvite} className="space-y-4">
+                          <Separator />
                           <div>
-                            <p className="font-medium" data-testid="text-shared-email">
-                              {sharedAccess.sharedWithEmail}
-                            </p>
-                            <Badge
-                              variant={sharedAccess.status === "active" ? "default" : "secondary"}
-                              className="mt-2"
-                              data-testid="badge-shared-status"
-                            >
-                              {sharedAccess.status === "active" ? "Aktiv" : "Ausstehend"}
-                            </Badge>
+                            <Label htmlFor="invite-email">Weitere Person einladen</Label>
+                            <Input
+                              id="invite-email"
+                              type="email"
+                              placeholder="beispiel@email.de"
+                              value={inviteEmail}
+                              onChange={(e) => setInviteEmail(e.target.value)}
+                              required
+                              data-testid="input-invite-email"
+                            />
                           </div>
                           <Button
-                            variant="destructive"
-                            size="sm"
-                            onClick={handleRevoke}
-                            disabled={revokeMutation.isPending}
-                            data-testid="button-revoke-access"
+                            type="submit"
+                            disabled={inviteMutation.isPending}
+                            data-testid="button-send-invite"
                           >
-                            <X className="h-4 w-4 mr-2" />
-                            Widerrufen
+                            {inviteMutation.isPending ? "Wird gesendet..." : "Einladung senden"}
                           </Button>
-                        </div>
-                      </div>
+                        </form>
+                      )}
                     </div>
                   ) : (
                     <form onSubmit={handleInvite} className="space-y-4">
