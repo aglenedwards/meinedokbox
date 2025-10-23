@@ -33,6 +33,7 @@ const pricingPlans: PricingPlan[] = [
     yearlyPrice: 47.88, // €3,99 * 12 = €47,88
     features: [
       "1 Benutzer",
+      "50 Uploads/Monat",
       "2 GB Speicherplatz",
       "KI-Kategorisierung",
       "Smartphone-App & PWA",
@@ -47,8 +48,8 @@ const pricingPlans: PricingPlan[] = [
     trialAvailable: true,
     features: [
       "2 Benutzer",
-      "Unbegrenzter Speicherplatz",
-      "Unbegrenzte Dokumente",
+      "200 Uploads/Monat",
+      "10 GB Speicherplatz",
       "KI-Kategorisierung",
       "Smartphone-App & PWA",
       "Private & geteilte Ordner",
@@ -61,8 +62,8 @@ const pricingPlans: PricingPlan[] = [
     yearlyPrice: 119.88, // €9,99 * 12 = €119,88
     features: [
       "4 Benutzer",
-      "Unbegrenzter Speicherplatz",
-      "Unbegrenzte Dokumente",
+      "500 Uploads/Monat",
+      "25 GB Speicherplatz",
       "KI-Kategorisierung",
       "Smartphone-App & PWA",
       "Private & geteilte Ordner",
@@ -77,8 +78,8 @@ export function UpgradeModal({ open, onClose, reason = "document_limit" }: Upgra
 
   const reasons = {
     document_limit: {
-      title: "Speicher-Limit erreicht",
-      description: "Sie haben das Maximum von 2 GB im Solo-Plan erreicht. Upgraden Sie für unbegrenzten Speicher!",
+      title: "Limit erreicht",
+      description: "Sie haben Ihr Upload- oder Speicher-Limit erreicht. Upgraden Sie für mehr Kapazität!",
     },
     email_feature: {
       title: "Premium-Feature",
