@@ -589,6 +589,75 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Email Whitelist API routes (Security feature for inbound email)
+  
+  // Get whitelist for user
+  app.get('/api/email-whitelist', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const effectiveUserId = await getEffectiveUserId(userId);
+      
+      const whitelistEntries = await storage.getEmailWhitelist(effectiveUserId);
+      res.json(whitelistEntries);
+    } catch (error) {
+      console.error("Error fetching email whitelist:", error);
+      res.status(500).json({ message: "Fehler beim Laden der Whitelist" });
+    }
+  });
+  
+  // Add email to whitelist
+  app.post('/api/email-whitelist', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const effectiveUserId = await getEffectiveUserId(userId);
+      const { email } = req.body;
+      
+      if (!email || typeof email !== 'string') {
+        return res.status(400).json({ message: "E-Mail-Adresse erforderlich" });
+      }
+      
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({ message: "Ungültige E-Mail-Adresse" });
+      }
+      
+      const normalizedEmail = email.toLowerCase().trim();
+      
+      // Check if already in whitelist
+      const existing = await storage.getEmailWhitelistEntry(effectiveUserId, normalizedEmail);
+      if (existing) {
+        return res.status(400).json({ message: "E-Mail-Adresse bereits in der Whitelist" });
+      }
+      
+      const entry = await storage.addEmailToWhitelist(effectiveUserId, normalizedEmail);
+      res.json(entry);
+    } catch (error) {
+      console.error("Error adding to whitelist:", error);
+      res.status(500).json({ message: "Fehler beim Hinzufügen zur Whitelist" });
+    }
+  });
+  
+  // Remove email from whitelist
+  app.delete('/api/email-whitelist/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const effectiveUserId = await getEffectiveUserId(userId);
+      const { id } = req.params;
+      
+      const deleted = await storage.removeEmailFromWhitelist(id, effectiveUserId);
+      
+      if (!deleted) {
+        return res.status(404).json({ message: "Eintrag nicht gefunden" });
+      }
+      
+      res.json({ message: "E-Mail-Adresse entfernt" });
+    } catch (error) {
+      console.error("Error removing from whitelist:", error);
+      res.status(500).json({ message: "Fehler beim Entfernen aus der Whitelist" });
+    }
+  });
+
   // Folders API routes
   
   // Get all folders for user

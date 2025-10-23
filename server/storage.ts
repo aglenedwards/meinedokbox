@@ -1,6 +1,6 @@
-import { type User, type UpsertUser, type Document, type InsertDocument, type Tag, type InsertTag, type DocumentTag, type InsertDocumentTag, type SharedAccess, type InsertSharedAccess, type Folder, type InsertFolder, type TrialNotification, type InsertTrialNotification } from "@shared/schema";
+import { type User, type UpsertUser, type Document, type InsertDocument, type Tag, type InsertTag, type DocumentTag, type InsertDocumentTag, type SharedAccess, type InsertSharedAccess, type Folder, type InsertFolder, type TrialNotification, type InsertTrialNotification, type EmailWhitelist } from "@shared/schema";
 import { db } from "./db";
-import { users, documents, tags, documentTags, sharedAccess, folders, trialNotifications } from "@shared/schema";
+import { users, documents, tags, documentTags, sharedAccess, folders, trialNotifications, emailWhitelist } from "@shared/schema";
 import { eq, and, or, like, desc, asc, isNull, isNotNull, inArray, sql } from "drizzle-orm";
 import { generateInboundEmail } from "./lib/emailInbound";
 
@@ -64,6 +64,13 @@ export interface IStorage {
   createTrialNotification(data: InsertTrialNotification): Promise<TrialNotification>;
   getTrialNotification(userId: string, notificationType: string): Promise<TrialNotification | undefined>;
   getUsersNeedingTrialNotifications(): Promise<User[]>;
+  
+  // Email whitelist management (Security feature for inbound email)
+  getEmailWhitelist(userId: string): Promise<EmailWhitelist[]>;
+  getEmailWhitelistEntry(userId: string, email: string): Promise<EmailWhitelist | undefined>;
+  addEmailToWhitelist(userId: string, email: string): Promise<EmailWhitelist>;
+  removeEmailFromWhitelist(id: string, userId: string): Promise<boolean>;
+  isEmailWhitelisted(userId: string, email: string): Promise<boolean>;
 }
 
 export class DbStorage implements IStorage {
@@ -687,6 +694,57 @@ export class DbStorage implements IStorage {
       );
 
     return allTrialUsers;
+  }
+
+  // Email whitelist implementations
+  async getEmailWhitelist(userId: string): Promise<EmailWhitelist[]> {
+    const entries = await db
+      .select()
+      .from(emailWhitelist)
+      .where(eq(emailWhitelist.userId, userId))
+      .orderBy(asc(emailWhitelist.createdAt));
+    return entries;
+  }
+
+  async getEmailWhitelistEntry(userId: string, email: string): Promise<EmailWhitelist | undefined> {
+    const [entry] = await db
+      .select()
+      .from(emailWhitelist)
+      .where(
+        and(
+          eq(emailWhitelist.userId, userId),
+          eq(emailWhitelist.allowedEmail, email)
+        )
+      );
+    return entry;
+  }
+
+  async addEmailToWhitelist(userId: string, email: string): Promise<EmailWhitelist> {
+    const [entry] = await db
+      .insert(emailWhitelist)
+      .values({
+        userId,
+        allowedEmail: email,
+      })
+      .returning();
+    return entry;
+  }
+
+  async removeEmailFromWhitelist(id: string, userId: string): Promise<boolean> {
+    const result = await db
+      .delete(emailWhitelist)
+      .where(
+        and(
+          eq(emailWhitelist.id, id),
+          eq(emailWhitelist.userId, userId)
+        )
+      );
+    return result.rowCount !== null && result.rowCount > 0;
+  }
+
+  async isEmailWhitelisted(userId: string, email: string): Promise<boolean> {
+    const entry = await this.getEmailWhitelistEntry(userId, email);
+    return !!entry;
   }
 }
 
