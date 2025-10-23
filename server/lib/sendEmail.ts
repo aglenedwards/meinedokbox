@@ -196,7 +196,14 @@ export async function sendVerificationEmail(
   firstName: string,
   verificationToken: string
 ): Promise<boolean> {
-  const verificationLink = `${process.env.REPLIT_DEV_DOMAIN || 'https://meinedokbox.de'}/verify-email?token=${verificationToken}`;
+  // Get the base URL - use production domain in production, dev domain in development
+  const baseUrl = process.env.NODE_ENV === 'production' 
+    ? 'https://meinedokbox.de' 
+    : `https://${process.env.REPLIT_DEV_DOMAIN || 'localhost:5000'}`;
+  
+  const verificationLink = `${baseUrl}/verify-email?token=${verificationToken}`;
+  
+  console.log(`[VerificationEmail] Sending to ${to} with link: ${verificationLink}`);
   
   const subject = `Bestätigen Sie Ihre E-Mail-Adresse für MeineDokBox`;
   
