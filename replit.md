@@ -7,14 +7,18 @@ PaperEase is a web and mobile application that digitizes paper documents using s
 **Core Purpose:** Minimize friction in document capture and retrieval; maximize clarity in organization through AI-assisted categorization.
 
 **Recent Updates (Oct 2025):**
-- **Email/Password Authentication (Oct 22, 2025):**
-  - ✅ Backend: Passport Local Strategy for email/password authentication
-  - ✅ Backend: Register endpoint (POST /api/auth/register) with bcrypt password hashing
-  - ✅ Backend: Login endpoint (POST /api/auth/login) with session management
-  - ✅ Backend: Logout endpoint (POST /api/auth/logout) works for both local and OIDC auth
-  - ✅ Backend: getUserByEmail() storage method for user lookup
-  - ✅ Frontend: register(), login(), logout() API functions in api.ts
-  - ⏳ Pending: Landing page with login/signup forms
+- **DSGVO-Compliant Email/Password Authentication with Double Opt-in (Oct 23, 2025):**
+  - ✅ Backend: Strong password validation (min 8 chars, uppercase, lowercase, number, special char)
+  - ✅ Backend: Register endpoint requires firstName, lastName, password confirmation, privacy checkbox
+  - ✅ Backend: Email verification system with 24-hour token expiry
+  - ✅ Backend: sendVerificationEmail() function sends beautiful HTML verification emails
+  - ✅ Backend: GET /api/auth/verify-email endpoint verifies tokens and activates accounts
+  - ✅ Backend: Login blocked for non-verified users with helpful error message
+  - ✅ Frontend: Enhanced registration form with password confirmation, privacy checkbox, required name fields
+  - ✅ Frontend: Password strength requirements displayed in placeholder
+  - ✅ Frontend: Email verification page (/verify-email) with success/error states
+  - ✅ Frontend: Post-registration flow shows email verification message instead of auto-login
+  - ✅ Database: users.isVerified, users.verificationToken, users.verificationTokenExpiry fields added
 - **Folder-Based Privacy System (Oct 21, 2025):**
   - ✅ Backend: Folders table with `isShared` flag for granular privacy control
   - ✅ Backend: Shared users only see documents from folders marked as shared
