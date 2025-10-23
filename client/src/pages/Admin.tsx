@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { User, Trash2, Search, Home, LogOut, Shield, AlertTriangle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -36,16 +37,35 @@ interface UserWithStats extends UserType {
 
 export default function Admin() {
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
   const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; user: UserWithStats | null }>({
     open: false,
     user: null,
   });
 
+  // Check admin authentication status
+  const { data: adminStatus, isLoading: checkingAuth } = useQuery<{
+    isAdminEmail: boolean;
+    isAdminAuthenticated: boolean;
+    requiresLogin: boolean;
+  }>({
+    queryKey: ["/api/admin/check"],
+    retry: false,
+  });
+
+  // Redirect to admin login if not authenticated
+  useEffect(() => {
+    if (!checkingAuth && adminStatus?.requiresLogin) {
+      setLocation("/admin/login");
+    }
+  }, [adminStatus, checkingAuth, setLocation]);
+
   // Fetch all users
   const { data: users = [], isLoading } = useQuery<UserWithStats[]>({
     queryKey: ["/api/admin/users"],
     retry: false,
+    enabled: adminStatus?.isAdminAuthenticated === true,
   });
 
   // Delete user mutation
@@ -106,6 +126,20 @@ export default function Admin() {
       deleteMutation.mutate(deleteDialog.user.id);
     }
   };
+
+  // Show loading while checking authentication
+  if (checkingAuth) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <p className="text-muted-foreground">Authentifizierung wird überprüft...</p>
+      </div>
+    );
+  }
+
+  // Don't render if user needs to login (will redirect)
+  if (adminStatus?.requiresLogin) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-background">

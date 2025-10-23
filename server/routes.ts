@@ -1680,7 +1680,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       req.session.isAdminAuthenticated = true;
       
       // Save session to ensure flag is persisted
-      req.session.save((err) => {
+      req.session.save((err: any) => {
         if (err) {
           console.error('[Admin Login] Session save error:', err);
           return res.status(500).json({ message: 'Fehler beim Speichern der Session' });
@@ -1712,7 +1712,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Admin logout - clear admin authentication flag
   app.post('/api/admin/logout', isAuthenticated, async (req: any, res) => {
     req.session.isAdminAuthenticated = false;
-    req.session.save((err) => {
+    req.session.save((err: any) => {
       if (err) {
         console.error('[Admin Logout] Session save error:', err);
         return res.status(500).json({ message: 'Fehler beim Speichern der Session' });
