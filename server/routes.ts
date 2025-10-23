@@ -996,18 +996,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Hash password
       const hashedPassword = await bcrypt.hash(password, 10);
       
+      // Get master user to inherit subscription plan
+      const masterUser = await storage.getUser(invitation.ownerId);
+      if (!masterUser) {
+        return res.status(500).json({ message: "Master-Account nicht gefunden" });
+      }
+      
       // Generate email verification token
       const verificationToken = crypto.randomBytes(32).toString('hex');
       const verificationTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
       
-      // Create user with invited email
+      // Create user with invited email - inherit master's subscription plan
       const newUser = await storage.upsertUser({
         id: `local_${crypto.randomBytes(16).toString('hex')}`,
         email: invitedEmail,
         firstName,
         lastName,
         passwordHash: hashedPassword,
-        subscriptionPlan: 'free', // Invited users start with free plan
+        subscriptionPlan: masterUser.subscriptionPlan, // Slave inherits master's plan
+        trialEndsAt: masterUser.trialEndsAt, // Also inherit trial end date if applicable
+        subscriptionEndsAt: masterUser.subscriptionEndsAt, // Also inherit subscription end date
         isVerified: false,
         verificationToken,
         verificationTokenExpiry,
