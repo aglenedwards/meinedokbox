@@ -383,53 +383,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/subscription/status', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
       
-      if (!user) {
+      const { PLAN_LIMITS } = await import('@shared/schema');
+      const { getTrialStatus, getEffectiveUser, getEffectiveUserId } = await import('./middleware/subscriptionLimits');
+      
+      // Get effective user (Master if this user is a Slave)
+      const effectiveUser = await getEffectiveUser(userId);
+      
+      if (!effectiveUser) {
         return res.status(404).json({ message: "User not found" });
       }
-
-      const { PLAN_LIMITS } = await import('@shared/schema');
-      const { getTrialStatus } = await import('./middleware/subscriptionLimits');
       
-      const plan = user.subscriptionPlan as keyof typeof PLAN_LIMITS;
+      const plan = effectiveUser.subscriptionPlan as keyof typeof PLAN_LIMITS;
       const limits = PLAN_LIMITS[plan];
 
-      // Calculate trial status with grace period
+      // Calculate trial status with grace period (using Master's dates if Slave)
       let daysRemaining = null;
       let gracePeriod = false;
       let isReadOnly = false;
       let graceDaysRemaining = 0;
       
-      if (user.subscriptionPlan === 'trial' && user.trialEndsAt) {
-        const trialStatus = getTrialStatus(user.trialEndsAt);
+      if (effectiveUser.subscriptionPlan === 'trial' && effectiveUser.trialEndsAt) {
+        const trialStatus = getTrialStatus(effectiveUser.trialEndsAt);
         daysRemaining = trialStatus.daysRemaining;
         gracePeriod = trialStatus.status === 'grace_period';
         isReadOnly = trialStatus.status === 'expired';
         graceDaysRemaining = trialStatus.graceDaysRemaining;
       }
 
-      // Count current documents
-      const documents = await storage.getDocumentsByUserId(userId);
+      // Count current documents (use effectiveUserId for shared access)
+      const effectiveUserId = await getEffectiveUserId(userId);
+      const documents = await storage.getDocumentsByUserId(effectiveUserId);
       const documentCount = documents.length;
 
       // isUploadDisabled combines all upload restrictions
       const isUploadDisabled = !limits.canUpload || gracePeriod || isReadOnly;
 
       res.json({
-        plan: user.subscriptionPlan,
+        plan: effectiveUser.subscriptionPlan,
         displayName: limits.displayName,
         maxDocuments: limits.maxDocuments,
         currentDocuments: documentCount,
         canUseEmailInbound: limits.canUseEmailInbound,
         canUpload: limits.canUpload,
         isUploadDisabled,
-        trialEndsAt: user.trialEndsAt,
+        trialEndsAt: effectiveUser.trialEndsAt,
         daysRemaining,
         gracePeriod,
         isReadOnly,
         graceDaysRemaining,
-        subscriptionEndsAt: user.subscriptionEndsAt,
+        subscriptionEndsAt: effectiveUser.subscriptionEndsAt,
       });
     } catch (error) {
       console.error("Error fetching subscription status:", error);
@@ -542,14 +545,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const normalizedEmail = email.toLowerCase();
 
-      // Check if user is Premium or Trial
+      // Get user and effective subscription plan
       const user = await storage.getUser(userId);
-      if (!user || (user.subscriptionPlan !== 'premium' && user.subscriptionPlan !== 'trial')) {
-        return res.status(403).json({ message: "Diese Funktion ist nur für Premium- und Trial-Nutzer verfügbar" });
+      if (!user) {
+        return res.status(404).json({ message: "Benutzer nicht gefunden" });
       }
 
-      // Get subscription plan limits
-      const planLimits = PLAN_LIMITS[user.subscriptionPlan as keyof typeof PLAN_LIMITS] || PLAN_LIMITS.free;
+      // Get effective plan (Master's plan if this user is a Slave)
+      const { getEffectiveUser } = await import('./middleware/subscriptionLimits');
+      const effectiveUser = await getEffectiveUser(userId);
+      
+      if (!effectiveUser) {
+        return res.status(404).json({ message: "Benutzer nicht gefunden" });
+      }
+
+      // Check if effective plan allows invitations
+      const effectivePlan = effectiveUser.subscriptionPlan;
+      if (effectivePlan !== 'family' && effectivePlan !== 'family-plus' && effectivePlan !== 'trial') {
+        return res.status(403).json({ message: "Diese Funktion ist nur für Family- und Trial-Nutzer verfügbar" });
+      }
+
+      // Get subscription plan limits (using effective plan)
+      const planLimits = PLAN_LIMITS[effectivePlan as keyof typeof PLAN_LIMITS] || PLAN_LIMITS.free;
       
       // Get all existing invitations
       const allInvitations = await storage.getAllSharedAccessByOwner(userId);
