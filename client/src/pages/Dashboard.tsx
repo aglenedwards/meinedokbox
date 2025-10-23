@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { FileText, HardDrive, TrendingUp, Plus, Trash2, ArrowUpDown, Download, Camera, ChevronDown, Settings, MoreVertical, LogOut, Shield } from "lucide-react";
 import { format } from "date-fns";
@@ -31,6 +31,7 @@ import { EmailInbound } from "@/components/EmailInbound";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { UpgradeModal } from "@/components/UpgradeModal";
+import { CheckoutDialog } from "@/components/CheckoutDialog";
 import { TrialBanner } from "@/components/TrialBanner";
 import { GracePeriodBanner } from "@/components/GracePeriodBanner";
 import { ReadOnlyBanner } from "@/components/ReadOnlyBanner";
@@ -64,6 +65,22 @@ export default function Dashboard() {
   const [selectedDocuments, setSelectedDocuments] = useState<Set<string>>(new Set());
   const [showUpload, setShowUpload] = useState(false);
   const [showCameraMultiShot, setShowCameraMultiShot] = useState(false);
+  const [checkoutDialogOpen, setCheckoutDialogOpen] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<"solo" | "family" | "family-plus">("family");
+  const [selectedPeriod, setSelectedPeriod] = useState<"monthly" | "yearly">("yearly");
+
+  // Listen for checkout events from UpgradeModal
+  useEffect(() => {
+    const handleOpenCheckout = (e: CustomEvent) => {
+      const { plan, period } = e.detail;
+      setSelectedPlan(plan);
+      setSelectedPeriod(period);
+      setCheckoutDialogOpen(true);
+    };
+
+    window.addEventListener('openCheckout' as any, handleOpenCheckout);
+    return () => window.removeEventListener('openCheckout' as any, handleOpenCheckout);
+  }, []);
 
   // Logout mutation
   const logoutMutation = useMutation({
@@ -806,6 +823,13 @@ export default function Dashboard() {
         open={upgradeModal.open}
         onClose={() => setUpgradeModal({ open: false })}
         reason={upgradeModal.reason}
+      />
+
+      <CheckoutDialog
+        open={checkoutDialogOpen}
+        onClose={() => setCheckoutDialogOpen(false)}
+        selectedPlan={selectedPlan}
+        selectedPeriod={selectedPeriod}
       />
 
       <Footer />
