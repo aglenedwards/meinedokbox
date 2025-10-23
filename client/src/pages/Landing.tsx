@@ -113,13 +113,15 @@ export default function Landing() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <img src={logoImage} alt="MeineDokBox" className="h-12 md:h-16" data-testid="img-logo" />
+        <div className="container mx-auto px-4 py-3 flex items-center justify-between gap-4">
+          <div className="flex items-center flex-shrink-0">
+            <img src={logoImage} alt="MeineDokBox" className="h-10 md:h-16 w-auto" data-testid="img-logo" />
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-shrink-0">
             <Button
               variant="ghost"
+              size="sm"
+              className="hidden sm:inline-flex"
               onClick={() => {
                 setAuthTab("login");
                 setAuthModalOpen(true);
@@ -129,6 +131,7 @@ export default function Landing() {
               Anmelden
             </Button>
             <Button
+              size="sm"
               onClick={() => {
                 setAuthTab("signup");
                 setAuthModalOpen(true);
