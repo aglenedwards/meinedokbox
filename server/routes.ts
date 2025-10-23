@@ -22,6 +22,14 @@ import { parseMailgunWebhook, isSupportedAttachment, isEmailWhitelisted, verifyM
 import { sendSharedAccessInvitation, sendVerificationEmail } from "./lib/sendEmail";
 import bcrypt from 'bcrypt';
 import { checkDocumentLimit, checkEmailFeature, checkAndDowngradeTrial, getEffectiveUserId, isSharedUser } from "./middleware/subscriptionLimits";
+import { 
+  loginLimiter, 
+  registerLimiter, 
+  emailVerificationLimiter, 
+  resendEmailLimiter, 
+  inviteLimiter, 
+  uploadLimiter 
+} from "./middleware/rateLimiters";
 import { db } from "./db";
 import { users, emailLogs, sharedAccess } from "@shared/schema";
 import { eq } from "drizzle-orm";
@@ -133,7 +141,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Email/Password Authentication Routes
   
   // Register with email and password (DSGVO-compliant with double opt-in)
-  app.post('/api/auth/register', async (req, res) => {
+  app.post('/api/auth/register', registerLimiter, async (req, res) => {
     try {
       // Strong password validation: min 8 chars, 1 uppercase, 1 number, 1 special char
       const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/;
@@ -219,7 +227,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Verify email address (Double Opt-in)
-  app.get('/api/auth/verify-email', async (req, res) => {
+  app.get('/api/auth/verify-email', emailVerificationLimiter, async (req, res) => {
     try {
       const { token } = req.query;
 
@@ -277,7 +285,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Login with email and password
-  app.post('/api/auth/login', (req, res, next) => {
+  app.post('/api/auth/login', loginLimiter, (req, res, next) => {
     passport.authenticate('local', (err: any, user: any, info: any) => {
       if (err) {
         console.error("Login error:", err);
@@ -312,7 +320,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Resend verification email
-  app.post('/api/auth/resend-verification', async (req, res) => {
+  app.post('/api/auth/resend-verification', resendEmailLimiter, async (req, res) => {
     try {
       const { email } = req.body;
       
@@ -534,7 +542,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Shared Access API routes (Premium feature)
   
   // Invite second person (Premium only)
-  app.post('/api/shared-access/invite', isAuthenticated, async (req: any, res) => {
+  app.post('/api/shared-access/invite', isAuthenticated, inviteLimiter, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const { email } = req.body;
@@ -1162,7 +1170,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Document upload endpoint - supports single or multiple files
-  app.post('/api/documents/upload', isAuthenticated, checkDocumentLimit, upload.array('files', 20), async (req: any, res) => {
+  app.post('/api/documents/upload', isAuthenticated, uploadLimiter, checkDocumentLimit, upload.array('files', 20), async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const files = req.files as Express.Multer.File[];
