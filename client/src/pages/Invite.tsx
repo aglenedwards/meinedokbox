@@ -128,15 +128,6 @@ export default function Invite() {
       }
       
       setRegistrationSuccess(true);
-      toast({
-        title: "Registrierung erfolgreich!",
-        description: "Bitte überprüfen Sie Ihre E-Mails zur Verifizierung.",
-      });
-      
-      // Redirect to verification info page after 3 seconds
-      setTimeout(() => {
-        navigate("/verify-email");
-      }, 3000);
       
     } catch (error: any) {
       toast({
@@ -202,13 +193,29 @@ export default function Invite() {
             <CardTitle>Registrierung erfolgreich!</CardTitle>
             <CardDescription className="text-base mt-4">
               Wir haben Ihnen eine Bestätigungs-E-Mail an <strong>{inviteEmail}</strong> gesendet.
-              Bitte überprüfen Sie Ihr Postfach und klicken Sie auf den Bestätigungslink.
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground text-center">
-              Sie werden automatisch weitergeleitet...
+          <CardContent className="space-y-4">
+            <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+              <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">Nächste Schritte:</h3>
+              <ol className="list-decimal list-inside space-y-2 text-sm text-blue-800 dark:text-blue-200">
+                <li>Öffnen Sie Ihr E-Mail-Postfach</li>
+                <li>Suchen Sie nach der Bestätigungs-E-Mail von MeineDokBox</li>
+                <li>Klicken Sie auf den Bestätigungslink</li>
+                <li>Nach der Bestätigung können Sie sich einloggen</li>
+              </ol>
+            </div>
+            <p className="text-xs text-muted-foreground text-center">
+              Keine E-Mail erhalten? Überprüfen Sie auch Ihren Spam-Ordner.
             </p>
+            <Button
+              onClick={() => navigate("/")}
+              variant="outline"
+              className="w-full"
+              data-testid="button-back-home"
+            >
+              Zurück zur Startseite
+            </Button>
           </CardContent>
         </Card>
       </div>
