@@ -190,6 +190,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         inboundEmail, // Add unique email address for forwarding documents
       });
 
+      // Add user's own email to whitelist (allows forwarding from their own address)
+      await storage.addEmailToWhitelist(userId, normalizedEmail);
+      console.log(`[Register] Added ${normalizedEmail} to whitelist for user ${userId}`);
+
       // Send verification email
       const { sendVerificationEmail } = await import('./lib/sendEmail');
       const emailSent = await sendVerificationEmail(normalizedEmail, firstName, verificationToken);
@@ -1449,9 +1453,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(200).json({ message: 'Unknown recipient' });
       }
       
-      // Check whitelist
-      if (!isEmailWhitelisted(cleanFrom, user.emailWhitelist || null)) {
-        console.log('[Email Webhook] Sender not whitelisted:', cleanFrom);
+      // Check whitelist (security feature)
+      const isWhitelisted = await storage.isEmailWhitelisted(user.id, cleanFrom);
+      if (!isWhitelisted) {
+        console.log('[Email Webhook] Sender not whitelisted:', cleanFrom, 'for user:', user.id);
         await db.insert(emailLogs).values({
           userId: user.id,
           fromAddress: cleanFrom,
@@ -1459,9 +1464,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           attachmentCount: attachments.length,
           processedCount: 0,
           status: 'error',
-          errorMessage: 'Sender not in whitelist'
+          errorMessage: 'Absender nicht in Whitelist - E-Mail blockiert'
         });
-        return res.status(200).json({ message: 'Sender not allowed' });
+        return res.status(200).json({ message: 'Sender not whitelisted' });
       }
       
       // Create email log
