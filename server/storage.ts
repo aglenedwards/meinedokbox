@@ -87,6 +87,11 @@ export interface IStorage {
   // Partner access helper (for Master-Slave document sharing)
   getPartnerUserIds(userId: string): Promise<string[]>;
   
+  // Upload counter management (monthly limit tracking)
+  incrementUploadCounter(userId: string, incrementBy?: number): Promise<User | undefined>;
+  resetUploadCounter(userId: string): Promise<User | undefined>;
+  checkAndResetUploadCounter(userId: string): Promise<User | undefined>;
+  
   // Admin functions
   getAllUsers(): Promise<User[]>;
   deleteUserCompletely(userId: string): Promise<boolean>;
@@ -943,6 +948,64 @@ export class DbStorage implements IStorage {
       .from(users)
       .orderBy(desc(users.createdAt));
     return allUsers;
+  }
+
+  /**
+   * Increment upload counter for user (after successful upload)
+   */
+  async incrementUploadCounter(userId: string, incrementBy: number = 1): Promise<User | undefined> {
+    // First check if we need to reset the counter (new month)
+    await this.checkAndResetUploadCounter(userId);
+
+    const [updated] = await db
+      .update(users)
+      .set({
+        uploadedThisMonth: sql`${users.uploadedThisMonth} + ${incrementBy}`,
+      })
+      .where(eq(users.id, userId))
+      .returning();
+
+    return updated;
+  }
+
+  /**
+   * Reset upload counter to 0 and update reset timestamp
+   */
+  async resetUploadCounter(userId: string): Promise<User | undefined> {
+    const [updated] = await db
+      .update(users)
+      .set({
+        uploadedThisMonth: 0,
+        uploadCounterResetAt: new Date(),
+      })
+      .where(eq(users.id, userId))
+      .returning();
+
+    return updated;
+  }
+
+  /**
+   * Check if upload counter needs to be reset (new month) and reset if needed
+   * Returns the user with potentially reset counter
+   */
+  async checkAndResetUploadCounter(userId: string): Promise<User | undefined> {
+    const user = await this.getUser(userId);
+    if (!user) return undefined;
+
+    const now = new Date();
+    const lastReset = user.uploadCounterResetAt || user.createdAt;
+
+    // Check if we're in a new month
+    const needsReset =
+      now.getFullYear() > lastReset.getFullYear() ||
+      (now.getFullYear() === lastReset.getFullYear() && now.getMonth() > lastReset.getMonth());
+
+    if (needsReset) {
+      console.log(`[UploadCounter] Resetting counter for user ${userId} (last reset: ${lastReset})`);
+      return await this.resetUploadCounter(userId);
+    }
+
+    return user;
   }
 
   async deleteUserCompletely(userId: string): Promise<boolean> {
