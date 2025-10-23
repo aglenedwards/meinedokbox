@@ -1983,6 +1983,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
             amount: analysisResult.amount,
             sender: analysisResult.sender,
           });
+
+          // Increment upload counter (monthly limit tracking)
+          await storage.incrementUploadCounter(user.id, 1);
           
           processedCount++;
           console.log('[Email Webhook] Successfully processed:', attachment.filename);
