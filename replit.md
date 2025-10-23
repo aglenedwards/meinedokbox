@@ -7,6 +7,19 @@ PaperEase is a web and mobile application that digitizes paper documents using s
 **Core Purpose:** Minimize friction in document capture and retrieval; maximize clarity in organization through AI-assisted categorization.
 
 **Recent Updates (Oct 2025):**
+- **Hybrid Limit System: Monthly Uploads + Total Storage (Oct 23, 2025):**
+  - ✅ Database: Added `uploadedThisMonth` counter and `uploadCounterResetAt` timestamp to users table
+  - ✅ Schema: PLAN_LIMITS extended with `maxUploadsPerMonth` and `maxStorageGB`
+  - ✅ Plan Limits: Solo (50 uploads/month + 2GB), Family (200/month + 10GB), Family Plus (500/month + 25GB)
+  - ✅ Storage: `incrementUploadCounter()`, `resetUploadCounter()`, `checkAndResetUploadCounter()` methods
+  - ✅ Middleware: `checkDocumentLimit` enforces both upload counter (monthly) and storage (total) limits
+  - ✅ Middleware: Limits shared across Master + all Slaves (combined quota)
+  - ✅ Routes: Upload counter incremented after successful manual upload
+  - ✅ Routes: Upload counter incremented after successful email-inbound upload
+  - ✅ API: `/api/subscription/status` returns `uploadsThisMonth`, `maxUploadsPerMonth`, `storageUsedGB`, `maxStorageGB`
+  - ✅ Auto-Reset: Upload counter auto-resets monthly via timestamp comparison
+  - ✅ **ANTI-ABUSE**: Monthly upload quota prevents spam, storage quota ensures fairness for long-term users
+  - ✅ **FAMILY QUOTA**: Both limits shared across all family members (Master + Slaves)
 - **Dynamic Slave Plan Synchronization (Oct 23, 2025):**
   - ✅ Backend: `getEffectiveUser()` helper function - returns Master's user data if current user is a Slave
   - ✅ Backend: `getEffectiveSubscriptionPlan()` helper - returns Master's plan/trial dates for Slaves
