@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { EmptyState } from "@/components/EmptyState";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import { Footer } from "@/components/Footer";
 import logoImage from "@assets/meinedokbox_1760966015056.png";
 
@@ -86,7 +85,7 @@ export default function Trash() {
                 <img 
                   src={logoImage} 
                   alt="MeineDokBox" 
-                  className="h-12 md:h-16 dark:invert dark:brightness-0 dark:contrast-200 cursor-pointer" 
+                  className="h-12 md:h-16 cursor-pointer" 
                   data-testid="img-logo" 
                 />
               </Link>
@@ -96,7 +95,6 @@ export default function Trash() {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <ThemeToggle />
               <Link href="/">
                 <Button variant="outline" size="sm" data-testid="button-back-to-dashboard">
                   <X className="h-4 w-4 mr-2" />

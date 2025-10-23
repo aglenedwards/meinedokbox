@@ -16,7 +16,6 @@ import type { User as UserType, SharedAccess } from "@shared/schema";
 import { UpgradeModal } from "@/components/UpgradeModal";
 import { Footer } from "@/components/Footer";
 import logoImage from "@assets/meinedokbox_1760966015056.png";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import { Link } from "wouter";
 
 export default function Settings() {
@@ -152,16 +151,12 @@ export default function Settings() {
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-4">
             <div className="flex items-center justify-between md:justify-start gap-3">
               <img src={logoImage} alt="MeineDokBox" className="h-12 md:h-16" data-testid="img-logo" />
-              <div className="flex items-center gap-2 md:hidden">
-                <ThemeToggle />
-              </div>
             </div>
             
             <div className="flex-1 min-w-0">
             </div>
             
             <div className="hidden md:flex items-center gap-2">
-              <ThemeToggle />
             </div>
           </div>
         </div>

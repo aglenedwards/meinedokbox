@@ -27,7 +27,6 @@ import { uploadDocument, getDocuments, deleteDocument, updateDocumentCategory, u
 import { DocumentViewer } from "@/components/DocumentViewer";
 import { MultiPageUpload } from "@/components/MultiPageUpload";
 import { CameraMultiShot } from "@/components/CameraMultiShot";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import { EmailInbound } from "@/components/EmailInbound";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
@@ -457,7 +456,6 @@ export default function Dashboard() {
             <div className="flex items-center justify-between md:justify-start gap-3">
               <img src={logoImage} alt="MeineDokBox" className="h-12 md:h-16" data-testid="img-logo" />
               <div className="flex items-center gap-2 md:hidden">
-                <ThemeToggle />
                 <Link href="/settings">
                   <Button variant="ghost" size="sm" data-testid="button-settings-mobile">
                     <Settings className="h-4 w-4" />
@@ -493,7 +491,6 @@ export default function Dashboard() {
             </div>
             
             <div className="hidden md:flex items-center gap-2">
-              <ThemeToggle />
               {documents.length > 0 && (
                 <Button 
                   variant="outline" 

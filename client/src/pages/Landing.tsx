@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -116,10 +115,9 @@ export default function Landing() {
       <header className="border-b">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src={logoImage} alt="MeineDokBox" className="h-12 md:h-16 dark:invert dark:brightness-0 dark:contrast-200" data-testid="img-logo" />
+            <img src={logoImage} alt="MeineDokBox" className="h-12 md:h-16" data-testid="img-logo" />
           </div>
           <div className="flex items-center gap-2">
-            <ThemeToggle />
             <Button
               variant="ghost"
               onClick={() => {
