@@ -140,28 +140,40 @@ export default function Landing() {
             <img src={logoImage} alt="MeineDokBox" className="h-12 md:h-16 w-auto" data-testid="img-logo" />
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="hidden sm:inline-flex"
-              onClick={() => {
-                setAuthTab("login");
-                setAuthModalOpen(true);
-              }}
-              data-testid="button-header-login"
-            >
-              Anmelden
-            </Button>
-            <Button
-              size="sm"
-              onClick={() => {
-                setAuthTab("signup");
-                setAuthModalOpen(true);
-              }}
-              data-testid="button-header-signup"
-            >
-              Kostenlos testen
-            </Button>
+            {user ? (
+              <Button
+                size="sm"
+                onClick={() => setLocation("/dashboard")}
+                data-testid="button-header-dashboard"
+              >
+                Zum Dashboard
+              </Button>
+            ) : (
+              <>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="hidden sm:inline-flex"
+                  onClick={() => {
+                    setAuthTab("login");
+                    setAuthModalOpen(true);
+                  }}
+                  data-testid="button-header-login"
+                >
+                  Anmelden
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    setAuthTab("signup");
+                    setAuthModalOpen(true);
+                  }}
+                  data-testid="button-header-signup"
+                >
+                  Kostenlos testen
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </header>
