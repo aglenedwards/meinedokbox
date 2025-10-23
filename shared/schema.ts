@@ -20,7 +20,8 @@ export const SUBSCRIPTION_PLANS = ["free", "trial", "solo", "family", "family-pl
 // Document limits per subscription plan
 export const PLAN_LIMITS = {
   free: {
-    maxDocuments: 50,
+    maxUploadsPerMonth: 0,   // Read-only: no uploads allowed
+    maxStorageGB: 2,         // Can keep existing documents up to 2GB
     canUpload: false,        // Read-only: can only view/download existing documents
     canUseAI: false,
     canUseEmailInbound: false,
@@ -29,7 +30,8 @@ export const PLAN_LIMITS = {
     price: 0,
   },
   trial: {
-    maxDocuments: -1,        // unlimited during trial
+    maxUploadsPerMonth: 500, // Generous trial limit
+    maxStorageGB: 25,        // Generous trial storage
     canUpload: true,
     canUseAI: true,
     canUseEmailInbound: true,
@@ -39,7 +41,8 @@ export const PLAN_LIMITS = {
     trialDurationDays: 14,
   },
   solo: {
-    maxDocuments: 2000,      // ~2GB storage (1MB avg per doc)
+    maxUploadsPerMonth: 50,  // 50 new documents per month
+    maxStorageGB: 2,         // 2GB total storage
     canUpload: true,
     canUseAI: true,
     canUseEmailInbound: false,
@@ -49,7 +52,8 @@ export const PLAN_LIMITS = {
     priceYearly: 38.30,      // 20% discount
   },
   family: {
-    maxDocuments: -1,        // unlimited
+    maxUploadsPerMonth: 200, // 200 new documents per month
+    maxStorageGB: 10,        // 10GB total storage
     canUpload: true,
     canUseAI: true,
     canUseEmailInbound: true,
@@ -59,7 +63,8 @@ export const PLAN_LIMITS = {
     priceYearly: 67.10,      // 20% discount
   },
   "family-plus": {
-    maxDocuments: -1,        // unlimited
+    maxUploadsPerMonth: 500, // 500 new documents per month
+    maxStorageGB: 25,        // 25GB total storage
     canUpload: true,
     canUseAI: true,
     canUseEmailInbound: true,
@@ -89,6 +94,9 @@ export const users = pgTable("users", {
   subscriptionPlan: varchar("subscription_plan", { length: 20 }).notNull().default("trial"),
   trialEndsAt: timestamp("trial_ends_at"),
   subscriptionEndsAt: timestamp("subscription_ends_at"),
+  // Upload tracking (monthly limit)
+  uploadedThisMonth: real("uploaded_this_month").notNull().default(0),
+  uploadCounterResetAt: timestamp("upload_counter_reset_at").defaultNow(),
   // Billing address (collected only when upgrading to premium)
   billingCompany: varchar("billing_company"),
   billingStreet: varchar("billing_street"),
