@@ -1654,6 +1654,73 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // ADMIN ROUTES (service@meinedokbox.de only)
   // ============================================
   
+  // Admin login endpoint - verify admin password
+  app.post('/api/admin/login', isAuthenticated, async (req: any, res) => {
+    try {
+      const user = req.user;
+      const userEmail = user.email || user.claims?.email;
+      
+      // Check if user is the admin email
+      if (userEmail?.toLowerCase() !== 'service@meinedokbox.de') {
+        return res.status(403).json({ message: 'Nur Administratoren können sich hier anmelden.' });
+      }
+      
+      const { password } = req.body;
+      
+      if (!password) {
+        return res.status(400).json({ message: 'Passwort erforderlich' });
+      }
+      
+      // Check against environment variable
+      if (password !== process.env.ADMIN_PASSWORD) {
+        return res.status(401).json({ message: 'Ungültiges Admin-Passwort' });
+      }
+      
+      // Set admin authentication flag in session
+      req.session.isAdminAuthenticated = true;
+      
+      // Save session to ensure flag is persisted
+      req.session.save((err) => {
+        if (err) {
+          console.error('[Admin Login] Session save error:', err);
+          return res.status(500).json({ message: 'Fehler beim Speichern der Session' });
+        }
+        
+        res.json({ success: true, message: 'Admin-Authentifizierung erfolgreich' });
+      });
+    } catch (error) {
+      console.error('[Admin Login] Error:', error);
+      res.status(500).json({ message: 'Fehler bei der Admin-Authentifizierung' });
+    }
+  });
+  
+  // Check admin authentication status
+  app.get('/api/admin/check', isAuthenticated, async (req: any, res) => {
+    const user = req.user;
+    const userEmail = user.email || user.claims?.email;
+    
+    const isAdminEmail = userEmail?.toLowerCase() === 'service@meinedokbox.de';
+    const isAdminAuthenticated = req.session.isAdminAuthenticated === true;
+    
+    res.json({ 
+      isAdminEmail,
+      isAdminAuthenticated,
+      requiresLogin: isAdminEmail && !isAdminAuthenticated
+    });
+  });
+  
+  // Admin logout - clear admin authentication flag
+  app.post('/api/admin/logout', isAuthenticated, async (req: any, res) => {
+    req.session.isAdminAuthenticated = false;
+    req.session.save((err) => {
+      if (err) {
+        console.error('[Admin Logout] Session save error:', err);
+        return res.status(500).json({ message: 'Fehler beim Speichern der Session' });
+      }
+      res.json({ success: true });
+    });
+  });
+  
   // Get all users (Admin only)
   app.get('/api/admin/users', isAuthenticated, isAdmin, async (_req: any, res) => {
     try {
