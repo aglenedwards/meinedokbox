@@ -115,7 +115,7 @@ export default function Landing() {
       <header className="border-b">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between gap-4">
           <div className="flex items-center flex-shrink-0">
-            <img src={logoImage} alt="MeineDokBox" className="h-10 md:h-16 w-auto" data-testid="img-logo" />
+            <img src={logoImage} alt="MeineDokBox" className="h-12 md:h-16 w-auto" data-testid="img-logo" />
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
             <Button
