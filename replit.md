@@ -7,6 +7,21 @@ PaperEase is a web and mobile application that digitizes paper documents using s
 **Core Purpose:** Minimize friction in document capture and retrieval; maximize clarity in organization through AI-assisted categorization.
 
 **Recent Updates (Oct 2025):**
+- **Token-Based Invitation System (Oct 23, 2025):**
+  - ✅ Backend: Extended shared_access schema with invitationToken, tokenExpiresAt, invitedAt fields
+  - ✅ Backend: Secure token generation (crypto.randomBytes) with 7-day expiry
+  - ✅ Backend: POST /api/shared-access/invite generates token and sends invitation email with signup link
+  - ✅ Backend: GET /api/shared-access/all returns all invitations with status (pending/active/expired/revoked)
+  - ✅ Backend: POST /api/shared-access/resend/:id generates new token and resends invitation
+  - ✅ Backend: GET /api/invite/validate validates token and checks expiry (public endpoint)
+  - ✅ Backend: POST /api/invite/register creates new user with invited email and links to master account
+  - ✅ Backend: Auto-registration includes email verification flow for invited users
+  - ✅ Frontend: /invite page validates token and shows registration form with pre-filled email
+  - ✅ Frontend: Settings page shows all invitations with status badges and action buttons
+  - ✅ Frontend: "Erneut senden" button for pending/expired invitations generates new token
+  - ✅ Email: Beautiful HTML invitation emails with direct signup link containing token
+  - ✅ Security: One-time use tokens, automatic expiry after 7 days, strong password validation
+  - ✅ **INVITATION SYSTEM FULLY FUNCTIONAL** - Invited users can register via token link and get automatic access
 - **DSGVO-Compliant Email/Password Authentication with Double Opt-in (Oct 23, 2025):**
   - ✅ Backend: Strong password validation (min 8 chars, uppercase, lowercase, number, special char)
   - ✅ Backend: Register endpoint requires firstName, lastName, password confirmation, privacy checkbox
