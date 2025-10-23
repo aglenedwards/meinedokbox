@@ -268,7 +268,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return res.status(500).json({ message: "Login fehlgeschlagen" });
         }
         
-        res.json({ message: "Login erfolgreich" });
+        // CRITICAL: Force session save before responding
+        req.session.save((saveErr) => {
+          if (saveErr) {
+            console.error("Session save error:", saveErr);
+            return res.status(500).json({ message: "Login fehlgeschlagen" });
+          }
+          
+          console.log(`[Login Success] Session saved for user: ${user.claims.sub}`);
+          res.json({ message: "Login erfolgreich" });
+        });
       });
     })(req, res, next);
   });
