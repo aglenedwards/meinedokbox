@@ -19,7 +19,8 @@ import { ObjectPermission } from "./objectAcl";
 import { insertDocumentSchema, DOCUMENT_CATEGORIES } from "@shared/schema";
 import { combineImagesToPDF, type PageBuffer } from "./lib/pdfGenerator";
 import { parseMailgunWebhook, isSupportedAttachment, isEmailWhitelisted, verifyMailgunWebhook, extractEmailAddress } from "./lib/emailInbound";
-import { sendSharedAccessInvitation } from "./lib/sendEmail";
+import { sendSharedAccessInvitation, sendVerificationEmail } from "./lib/sendEmail";
+import bcrypt from 'bcrypt';
 import { checkDocumentLimit, checkEmailFeature, checkAndDowngradeTrial, getEffectiveUserId, isSharedUser } from "./middleware/subscriptionLimits";
 import { db } from "./db";
 import { users, emailLogs } from "@shared/schema";
@@ -731,6 +732,129 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error removing from whitelist:", error);
       res.status(500).json({ message: "Fehler beim Entfernen aus der Whitelist" });
+    }
+  });
+
+  // Public Invitation API routes (Token-based registration)
+  
+  // Validate invitation token (public endpoint)
+  app.get('/api/invite/validate', async (req: any, res) => {
+    try {
+      const { token } = req.query;
+      
+      if (!token || typeof token !== 'string') {
+        return res.status(400).json({ valid: false, message: "Token erforderlich" });
+      }
+      
+      const invitation = await storage.getSharedAccessByToken(token);
+      
+      if (!invitation) {
+        return res.status(404).json({ valid: false, message: "Einladung nicht gefunden" });
+      }
+      
+      // Check expiry
+      const now = new Date();
+      if (invitation.tokenExpiresAt && invitation.tokenExpiresAt < now) {
+        return res.json({ valid: false, expired: true, message: "Einladung abgelaufen" });
+      }
+      
+      // Check if already accepted
+      if (invitation.status === 'accepted' || invitation.sharedWithUserId) {
+        return res.json({ valid: false, alreadyAccepted: true, message: "Einladung bereits verwendet" });
+      }
+      
+      res.json({
+        valid: true,
+        email: invitation.sharedWithEmail,
+        message: "Gültige Einladung"
+      });
+    } catch (error) {
+      console.error("Error validating invitation:", error);
+      res.status(500).json({ valid: false, message: "Fehler bei der Validierung" });
+    }
+  });
+  
+  // Register with invitation token (public endpoint)
+  app.post('/api/invite/register', async (req: any, res) => {
+    try {
+      const { token, firstName, lastName, password } = req.body;
+      
+      if (!token || !firstName || !lastName || !password) {
+        return res.status(400).json({ message: "Alle Felder sind erforderlich" });
+      }
+      
+      // Validate token and get invitation
+      const invitation = await storage.getSharedAccessByToken(token);
+      
+      if (!invitation) {
+        return res.status(404).json({ message: "Einladung nicht gefunden" });
+      }
+      
+      // Check expiry
+      const now = new Date();
+      if (invitation.tokenExpiresAt && invitation.tokenExpiresAt < now) {
+        return res.status(400).json({ message: "Einladung abgelaufen" });
+      }
+      
+      // Check if already accepted
+      if (invitation.status === 'accepted' || invitation.sharedWithUserId) {
+        return res.status(400).json({ message: "Einladung bereits verwendet" });
+      }
+      
+      const invitedEmail = invitation.sharedWithEmail;
+      
+      // Check if user with this email already exists
+      const existingUser = await storage.getUserByEmail(invitedEmail);
+      if (existingUser) {
+        return res.status(400).json({ message: "Benutzer mit dieser E-Mail existiert bereits" });
+      }
+      
+      // Validate password (strong password requirements)
+      if (password.length < 8) {
+        return res.status(400).json({ message: "Passwort muss mindestens 8 Zeichen lang sein" });
+      }
+      if (!/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password) || !/[^A-Za-z0-9]/.test(password)) {
+        return res.status(400).json({ 
+          message: "Passwort muss Groß-, Kleinbuchstaben, Zahlen und Sonderzeichen enthalten" 
+        });
+      }
+      
+      // Hash password
+      const hashedPassword = await bcrypt.hash(password, 10);
+      
+      // Generate email verification token
+      const verificationToken = crypto.randomBytes(32).toString('hex');
+      const verificationTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+      
+      // Create user with invited email
+      const newUser = await storage.upsertUser({
+        id: `local_${crypto.randomBytes(16).toString('hex')}`,
+        email: invitedEmail,
+        firstName,
+        lastName,
+        passwordHash: hashedPassword,
+        subscriptionPlan: 'free', // Invited users start with free plan
+        isVerified: false,
+        verificationToken,
+        verificationTokenExpiry,
+      });
+      
+      // Link invitation to new user
+      await storage.acceptSharedInvitationByToken(token, newUser.id);
+      
+      // Send email verification
+      const verificationSent = await sendVerificationEmail(invitedEmail, verificationToken);
+      
+      console.log(`[Invite Register] Created new user ${newUser.id} for invited email ${invitedEmail}`);
+      
+      res.json({
+        message: "Registrierung erfolgreich! Bitte überprüfen Sie Ihre E-Mails zur Verifizierung.",
+        emailSent: verificationSent,
+        userId: newUser.id,
+      });
+    } catch (error) {
+      console.error("Error registering with invitation:", error);
+      res.status(500).json({ message: "Fehler bei der Registrierung" });
     }
   });
 

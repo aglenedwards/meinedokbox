@@ -14,6 +14,7 @@ import Settings from "@/pages/Settings";
 import Admin from "@/pages/Admin";
 import AdminLogin from "@/pages/AdminLogin";
 import VerifyEmail from "@/pages/VerifyEmail";
+import Invite from "@/pages/Invite";
 import NotFound from "@/pages/not-found";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { PWAUpdatePrompt } from "@/components/PWAUpdatePrompt";
@@ -53,6 +54,7 @@ function Router() {
     <Switch>
       <Route path="/" component={Landing} />
       <Route path="/verify-email" component={VerifyEmail} />
+      <Route path="/invite" component={Invite} />
       <Route path="/dashboard">
         {() => <ProtectedRoute component={Dashboard} />}
       </Route>
