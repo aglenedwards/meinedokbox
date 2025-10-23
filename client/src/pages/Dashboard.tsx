@@ -479,6 +479,15 @@ export default function Dashboard() {
                     <Settings className="h-4 w-4" />
                   </Button>
                 </Link>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => logoutMutation.mutate()}
+                  disabled={logoutMutation.isPending}
+                  data-testid="button-logout-mobile"
+                >
+                  <LogOut className="h-4 w-4" />
+                </Button>
                 {!isUploadDisabled && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
