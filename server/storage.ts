@@ -101,10 +101,15 @@ export class DbStorage implements IStorage {
     const isNewUser = !existingUser;
     const trialDurationMs = 14 * 24 * 60 * 60 * 1000; // 14 days
     
-    // Generate inbound email only for new users
+    // Generate inbound email only for new users (using firstname.lastname format)
+    let inboundEmail = existingUser?.inboundEmail;
+    if (!inboundEmail && userData.firstName && userData.lastName) {
+      inboundEmail = await generateInboundEmail(userData.firstName, userData.lastName);
+    }
+    
     const dataToInsert = {
       ...userData,
-      inboundEmail: existingUser?.inboundEmail || generateInboundEmail(userData.id!),
+      inboundEmail,
       // Set trial end date for new users
       subscriptionPlan: isNewUser ? 'trial' : existingUser?.subscriptionPlan,
       trialEndsAt: isNewUser ? new Date(Date.now() + trialDurationMs) : existingUser?.trialEndsAt,

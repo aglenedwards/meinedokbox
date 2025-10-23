@@ -21,15 +21,54 @@ export function verifyMailgunWebhook(timestamp: string, token: string, signature
 
 /**
  * Generates a unique inbound email address for a user
- * Format: u_{short_user_id}_{random}@in.meinedokbox.de
+ * Format: firstname.lastname@in.meinedokbox.de (with auto-numbering if duplicate)
  */
-export function generateInboundEmail(userId: string): string {
-  // Take first 8 chars of UUID and add random suffix for uniqueness
-  const shortId = userId.replace(/-/g, '').substring(0, 8);
-  const random = crypto.randomBytes(4).toString('hex');
+export async function generateInboundEmail(firstName: string, lastName: string): Promise<string> {
+  const { db } = await import('../db');
+  const { users } = await import('@shared/schema');
+  const { eq, sql } = await import('drizzle-orm');
+  
   const domain = process.env.INBOUND_EMAIL_DOMAIN || 'in.meinedokbox.de';
   
-  return `u_${shortId}_${random}@${domain}`;
+  // Normalize name: lowercase, remove special chars, replace spaces/umlauts
+  const normalize = (name: string) => {
+    return name
+      .toLowerCase()
+      .normalize('NFD') // Decompose umlauts
+      .replace(/[\u0300-\u036f]/g, '') // Remove accents
+      .replace(/ä/g, 'ae')
+      .replace(/ö/g, 'oe')
+      .replace(/ü/g, 'ue')
+      .replace(/ß/g, 'ss')
+      .replace(/[^a-z0-9]/g, ''); // Remove all non-alphanumeric
+  };
+  
+  const normalizedFirst = normalize(firstName);
+  const normalizedLast = normalize(lastName);
+  const baseEmail = `${normalizedFirst}.${normalizedLast}@${domain}`;
+  
+  // Check if base email is available
+  const existingBase = await db.select().from(users).where(eq(users.inboundEmail, baseEmail)).limit(1);
+  
+  if (existingBase.length === 0) {
+    return baseEmail;
+  }
+  
+  // Base email taken, find next available number
+  let number = 2;
+  while (number < 1000) { // Safety limit
+    const numberedEmail = `${normalizedFirst}.${normalizedLast}${number}@${domain}`;
+    const existing = await db.select().from(users).where(eq(users.inboundEmail, numberedEmail)).limit(1);
+    
+    if (existing.length === 0) {
+      return numberedEmail;
+    }
+    number++;
+  }
+  
+  // Fallback to random if we somehow have 998 duplicates
+  const random = crypto.randomBytes(4).toString('hex');
+  return `${normalizedFirst}.${normalizedLast}.${random}@${domain}`;
 }
 
 /**

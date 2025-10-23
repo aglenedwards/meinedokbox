@@ -104,8 +104,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/auth/regenerate-email', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
+      
+      // Get user's name for generating email
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
       const { generateInboundEmail } = await import('./lib/emailInbound');
-      const newEmail = generateInboundEmail(userId);
+      const newEmail = await generateInboundEmail(user.firstName, user.lastName);
       
       // Update user in database
       await db.update(users)
@@ -164,9 +171,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Generate unique user ID
       const userId = `local_${Date.now()}_${Math.random().toString(36).substring(7)}`;
 
-      // Generate unique inbound email address for document forwarding
+      // Generate unique inbound email address for document forwarding (firstname.lastname@in.meinedokbox.de)
       const { generateInboundEmail } = await import('./lib/emailInbound');
-      const inboundEmail = generateInboundEmail(userId);
+      const inboundEmail = await generateInboundEmail(firstName, lastName);
 
       // Create user (NOT verified yet)
       await db.insert(users).values({
