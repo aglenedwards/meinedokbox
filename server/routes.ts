@@ -164,6 +164,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Generate unique user ID
       const userId = `local_${Date.now()}_${Math.random().toString(36).substring(7)}`;
 
+      // Generate unique inbound email address for document forwarding
+      const { generateInboundEmail } = await import('./lib/emailInbound');
+      const inboundEmail = generateInboundEmail(userId);
+
       // Create user (NOT verified yet)
       await db.insert(users).values({
         id: userId,
@@ -176,6 +180,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         verificationTokenExpiry,
         subscriptionPlan: "trial",
         trialEndsAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // 14 days trial
+        inboundEmail, // Add unique email address for forwarding documents
       });
 
       // Send verification email
