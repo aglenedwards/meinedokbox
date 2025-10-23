@@ -529,26 +529,98 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "E-Mail-Adresse erforderlich" });
       }
 
+      const normalizedEmail = email.toLowerCase();
+
       // Check if user is Premium or Trial
       const user = await storage.getUser(userId);
       if (!user || (user.subscriptionPlan !== 'premium' && user.subscriptionPlan !== 'trial')) {
         return res.status(403).json({ message: "Diese Funktion ist nur für Premium- und Trial-Nutzer verfügbar" });
       }
 
-      // Check if already has an active shared access
-      const existingAccess = await storage.getSharedAccessByOwner(userId);
-      if (existingAccess) {
-        return res.status(400).json({ message: "Sie haben bereits eine Person eingeladen" });
+      // Get subscription plan limits
+      const planLimits = PLAN_LIMITS[user.subscriptionPlan as keyof typeof PLAN_LIMITS] || PLAN_LIMITS.free;
+      
+      // Get all existing invitations
+      const allInvitations = await storage.getAllSharedAccessByOwner(userId);
+      
+      // Check if invitation for this email already exists
+      const existingInvitation = allInvitations.find(inv => inv.sharedWithEmail === normalizedEmail);
+      
+      if (existingInvitation) {
+        // If revoked, reactivate the invitation
+        if (existingInvitation.status === 'revoked') {
+          console.log(`[Invite] Reactivating revoked invitation for ${normalizedEmail}`);
+          
+          // Generate new token (7-day expiry)
+          const invitationToken = crypto.randomBytes(32).toString('hex');
+          const tokenExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+          
+          // Update invitation: revoked → pending, new token
+          await db.update(sharedAccess)
+            .set({
+              status: 'pending',
+              invitationToken,
+              tokenExpiresAt,
+              invitedAt: new Date(),
+            })
+            .where(eq(sharedAccess.id, existingInvitation.id));
+          
+          // Send new invitation email
+          const ownerName = user.firstName && user.lastName 
+            ? `${user.firstName} ${user.lastName}`
+            : user.email || "Ein Nutzer";
+          
+          console.log(`[Invite] Sending reactivation email to ${normalizedEmail} with token ${invitationToken}`);
+          const emailSent = await sendSharedAccessInvitation(normalizedEmail, ownerName, invitationToken);
+          
+          if (!emailSent) {
+            console.warn("[Invite] ⚠️ Failed to send reactivation email");
+          } else {
+            console.log("[Invite] ✅ Reactivation email sent successfully");
+          }
+          
+          // Get updated invitation
+          const updatedInvitation = await db.select()
+            .from(sharedAccess)
+            .where(eq(sharedAccess.id, existingInvitation.id))
+            .limit(1);
+          
+          return res.json({
+            message: "Einladung reaktiviert und erneut gesendet",
+            sharedAccess: updatedInvitation[0],
+            emailSent,
+            reactivated: true,
+          });
+        }
+        
+        // If pending or active, return error
+        if (existingInvitation.status === 'pending') {
+          return res.status(400).json({ message: "Diese Person wurde bereits eingeladen" });
+        }
+        if (existingInvitation.status === 'active') {
+          return res.status(400).json({ message: "Diese Person hat bereits Zugriff" });
+        }
+      }
+
+      // Check if max users limit reached (count only pending and active invitations)
+      const activeInvitations = allInvitations.filter(inv => 
+        inv.status === 'pending' || inv.status === 'active'
+      );
+      
+      if (activeInvitations.length >= planLimits.maxUsers - 1) {
+        return res.status(400).json({ 
+          message: `Ihr ${planLimits.displayName} Plan erlaubt maximal ${planLimits.maxUsers} Nutzer. Sie haben bereits ${activeInvitations.length} Einladung(en).`
+        });
       }
 
       // Generate invitation token (7-day expiry)
       const invitationToken = crypto.randomBytes(32).toString('hex');
       const tokenExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
-      // Create invitation
-      const sharedAccess = await storage.createSharedAccess({
+      // Create new invitation
+      const sharedAccessData = await storage.createSharedAccess({
         ownerId: userId,
-        sharedWithEmail: email.toLowerCase(),
+        sharedWithEmail: normalizedEmail,
         invitationToken,
         tokenExpiresAt,
         status: 'pending',
@@ -559,8 +631,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ? `${user.firstName} ${user.lastName}`
         : user.email || "Ein Nutzer";
       
-      console.log(`[Invite] Sending invitation email to ${email.toLowerCase()} from ${ownerName} with token ${invitationToken}`);
-      const emailSent = await sendSharedAccessInvitation(email.toLowerCase(), ownerName, invitationToken);
+      console.log(`[Invite] Sending invitation email to ${normalizedEmail} from ${ownerName} with token ${invitationToken}`);
+      const emailSent = await sendSharedAccessInvitation(normalizedEmail, ownerName, invitationToken);
       
       if (!emailSent) {
         console.warn("[Invite] ⚠️ Failed to send invitation email, but invitation was created");
@@ -570,8 +642,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json({
         message: "Einladung gesendet",
-        sharedAccess,
+        sharedAccess: sharedAccessData,
         emailSent,
+        reactivated: false,
       });
     } catch (error) {
       console.error("Error creating shared access:", error);
