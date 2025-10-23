@@ -148,6 +148,14 @@ export const emailLogs = pgTable("email_logs", {
   errorMessage: text("error_message"),
 });
 
+// Email whitelist for inbound email security
+export const emailWhitelist = pgTable("email_whitelist", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
+  allowedEmail: varchar("allowed_email").notNull(),
+  createdAt: timestamp("created_at").notNull().default(sql`now()`),
+});
+
 // Shared Access - Premium feature to share account with a second person
 export const sharedAccess = pgTable("shared_access", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -202,6 +210,11 @@ export const insertTrialNotificationSchema = createInsertSchema(trialNotificatio
   sentAt: true,
 });
 
+export const insertEmailWhitelistSchema = createInsertSchema(emailWhitelist).omit({
+  id: true,
+  createdAt: true,
+});
+
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
 export type InsertFolder = z.infer<typeof insertFolderSchema>;
@@ -218,3 +231,5 @@ export type InsertSharedAccess = z.infer<typeof insertSharedAccessSchema>;
 export type SharedAccess = typeof sharedAccess.$inferSelect;
 export type InsertTrialNotification = z.infer<typeof insertTrialNotificationSchema>;
 export type TrialNotification = typeof trialNotifications.$inferSelect;
+export type InsertEmailWhitelist = z.infer<typeof insertEmailWhitelistSchema>;
+export type EmailWhitelist = typeof emailWhitelist.$inferSelect;
