@@ -173,6 +173,38 @@ export default function Settings() {
     },
   });
 
+  // Delete invitation mutation (for revoked slaves without documents)
+  const deleteMutation = useMutation({
+    mutationFn: async (invitationId: string) => {
+      const response = await fetch(`/api/shared-access/${invitationId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message || "Fehler beim Löschen der Einladung");
+      }
+
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/shared-access/all"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/shared-access"] });
+      toast({
+        title: "Einladung gelöscht",
+        description: "Die Einladung und der Nutzer wurden vollständig entfernt.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Fehler",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   // Logout mutation
   const logoutMutation = useMutation({
     mutationFn: logout,
@@ -506,6 +538,22 @@ export default function Settings() {
                                   >
                                     <Mail className="h-4 w-4 mr-2" />
                                     Neu einladen
+                                  </Button>
+                                )}
+                                {access.status === 'revoked' && (
+                                  <Button
+                                    variant="destructive"
+                                    size="sm"
+                                    onClick={() => {
+                                      if (confirm("Möchten Sie diese Einladung und den Nutzer wirklich vollständig löschen? Dies kann nicht rückgängig gemacht werden.")) {
+                                        deleteMutation.mutate(access.id);
+                                      }
+                                    }}
+                                    disabled={deleteMutation.isPending}
+                                    data-testid={`button-delete-${access.id}`}
+                                  >
+                                    <Trash2 className="h-4 w-4 mr-2" />
+                                    Löschen
                                   </Button>
                                 )}
                                 {(access.status === 'active' || access.status === 'pending') && (
