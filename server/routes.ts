@@ -1024,7 +1024,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Hash password
       const hashedPassword = await bcrypt.hash(password, 10);
       
-      // Get master user to inherit subscription plan
+      // Validate master exists
       const masterUser = await storage.getUser(invitation.ownerId);
       if (!masterUser) {
         return res.status(500).json({ message: "Master-Account nicht gefunden" });
@@ -1034,16 +1034,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const verificationToken = crypto.randomBytes(32).toString('hex');
       const verificationTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
       
-      // Create user with invited email - inherit master's subscription plan
+      // Create Slave user
+      // NOTE: Slave gets 'free' plan in database, but will inherit Master's plan dynamically
+      // via getEffectiveUser() function for all subscription checks
       const newUser = await storage.upsertUser({
         id: `local_${crypto.randomBytes(16).toString('hex')}`,
         email: invitedEmail,
         firstName,
         lastName,
         passwordHash: hashedPassword,
-        subscriptionPlan: masterUser.subscriptionPlan, // Slave inherits master's plan
-        trialEndsAt: masterUser.trialEndsAt, // Also inherit trial end date if applicable
-        subscriptionEndsAt: masterUser.subscriptionEndsAt, // Also inherit subscription end date
+        subscriptionPlan: 'free', // Slave default plan (actual plan comes from Master via getEffectiveUser)
         isVerified: false,
         verificationToken,
         verificationTokenExpiry,
