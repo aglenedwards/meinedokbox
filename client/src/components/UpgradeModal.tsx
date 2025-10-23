@@ -178,7 +178,14 @@ export function UpgradeModal({ open, onClose, reason = "document_limit" }: Upgra
 
                 <Button
                   onClick={() => {
-                    window.location.href = `/settings?tab=subscription&plan=${plan.name.toLowerCase().replace(" ", "-")}&period=${billingPeriod}`;
+                    // Open checkout dialog with selected plan
+                    onClose();
+                    window.dispatchEvent(new CustomEvent('openCheckout', { 
+                      detail: { 
+                        plan: plan.name.toLowerCase().replace(" ", "-"),
+                        period: billingPeriod 
+                      } 
+                    }));
                   }}
                   variant={isRecommended ? "default" : "outline"}
                   className="w-full"

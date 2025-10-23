@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { User, Mail, UserPlus, X, Crown, Calendar, FileText, LogOut, Home, Trash2, Shield } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,6 +25,21 @@ export default function Settings() {
   const [inviteEmail, setInviteEmail] = useState("");
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
   const [checkoutDialogOpen, setCheckoutDialogOpen] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<"solo" | "family" | "family-plus">("family");
+  const [selectedPeriod, setSelectedPeriod] = useState<"monthly" | "yearly">("yearly");
+
+  // Listen for checkout events from UpgradeModal
+  useEffect(() => {
+    const handleOpenCheckout = (e: CustomEvent) => {
+      const { plan, period } = e.detail;
+      setSelectedPlan(plan);
+      setSelectedPeriod(period);
+      setCheckoutDialogOpen(true);
+    };
+
+    window.addEventListener('openCheckout' as any, handleOpenCheckout);
+    return () => window.removeEventListener('openCheckout' as any, handleOpenCheckout);
+  }, []);
 
   // Fetch user data
   const { data: user } = useQuery<UserType | null>({
@@ -587,6 +602,8 @@ export default function Settings() {
       <CheckoutDialog
         open={checkoutDialogOpen}
         onClose={() => setCheckoutDialogOpen(false)}
+        selectedPlan={selectedPlan}
+        selectedPeriod={selectedPeriod}
       />
 
       <Footer />
