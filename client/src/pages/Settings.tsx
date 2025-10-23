@@ -16,6 +16,7 @@ import type { User as UserType, SharedAccess } from "@shared/schema";
 import { UpgradeModal } from "@/components/UpgradeModal";
 import { CheckoutDialog } from "@/components/CheckoutDialog";
 import { Footer } from "@/components/Footer";
+import { EmailWhitelistSettings } from "@/components/EmailWhitelistSettings";
 import logoImage from "@assets/meinedokbox_1760966015056.png";
 import { Link } from "wouter";
 
@@ -322,6 +323,9 @@ export default function Settings() {
               ) : null}
             </CardContent>
           </Card>
+
+          {/* Email Whitelist (Security Feature) */}
+          <EmailWhitelistSettings />
 
           {/* Shared Access Card (Premium & Trial) */}
           <Card data-testid="card-shared-access">

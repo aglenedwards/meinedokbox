@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { Mail, Copy, Check, Info, RefreshCw } from "lucide-react";
+import { Mail, Copy, Check, Info, RefreshCw, Shield, Settings } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { Link } from "wouter";
 import type { User } from "@shared/schema";
 
 interface EmailInboundProps {
@@ -122,6 +123,30 @@ export function EmailInbound({ user }: EmailInboundProps) {
                 <li>Anhänge werden automatisch erkannt und kategorisiert</li>
                 <li>Dokumente erscheinen sofort in Ihrer Übersicht</li>
               </ol>
+            </div>
+          </div>
+        </div>
+
+        {/* Whitelist Security Reminder */}
+        <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 rounded-md p-3">
+          <div className="flex items-start gap-2">
+            <Shield className="h-4 w-4 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
+            <div className="text-sm text-amber-900 dark:text-amber-100 space-y-2">
+              <p className="font-medium">Sicherheitshinweis: E-Mail Whitelist</p>
+              <p className="text-amber-800 dark:text-amber-200">
+                Nur E-Mails von erlaubten Absendern werden akzeptiert. Verwalten Sie Ihre Whitelist in den Einstellungen.
+              </p>
+              <Link href="/settings">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-2 bg-white dark:bg-gray-800"
+                  data-testid="link-whitelist-settings"
+                >
+                  <Settings className="h-3 w-3 mr-1.5" />
+                  Whitelist verwalten
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
