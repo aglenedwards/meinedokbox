@@ -420,17 +420,17 @@ export default function Settings() {
           {/* Email Whitelist (Security Feature) */}
           <EmailWhitelistSettings />
 
-          {/* Shared Access Card (Premium & Trial) */}
+          {/* Shared Access Card (Family & Family Plus) */}
           <Card data-testid="card-shared-access">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <UserPlus className="h-5 w-5" />
-                Zweite Person einladen
+                Weitere Personen einladen
               </CardTitle>
               <CardDescription>
                 {subscriptionStatus?.plan === "premium" || subscriptionStatus?.plan === "trial"
-                  ? "Laden Sie eine weitere Person ein, um gemeinsam auf geteilte Ordner zuzugreifen"
-                  : "Verfügbar im Premium-Plan und während der Trial-Phase"}
+                  ? "Laden Sie weitere Personen ein, um gemeinsam auf geteilte Ordner zuzugreifen"
+                  : "Verfügbar in den Tarifen Family und Family Plus"}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -565,11 +565,11 @@ export default function Settings() {
               ) : (
                 <div className="text-center py-6 md:py-8">
                   <p className="text-sm md:text-base text-muted-foreground mb-4">
-                    Upgraden Sie auf Premium oder starten Sie eine Trial, um eine zweite Person einzuladen
+                    Upgraden Sie auf Family (2 Personen) oder Family Plus (4 Personen), um weitere Personen einzuladen
                   </p>
                   <Button onClick={() => setUpgradeModalOpen(true)} data-testid="button-upgrade-for-share">
                     <Crown className="h-4 w-4 mr-2" />
-                    Jetzt upgraden
+                    Tarife vergleichen
                   </Button>
                 </div>
               )}
