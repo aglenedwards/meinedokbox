@@ -84,6 +84,9 @@ export interface IStorage {
   removeEmailFromWhitelist(id: string, userId: string): Promise<boolean>;
   isEmailWhitelisted(userId: string, email: string): Promise<boolean>;
   
+  // Partner access helper (for Master-Slave document sharing)
+  getPartnerUserIds(userId: string): Promise<string[]>;
+  
   // Admin functions
   getAllUsers(): Promise<User[]>;
   deleteUserCompletely(userId: string): Promise<boolean>;
@@ -215,13 +218,37 @@ export class DbStorage implements IStorage {
     limit: number = 50,
     cursor?: string
   ): Promise<PaginatedDocuments> {
-    // Build base where clause
-    let whereClause = and(
-      eq(documents.userId, userId),
-      isNull(documents.deletedAt)
-    ) as any;
+    // Get partner IDs for document sharing (Master <-> Slave)
+    const partnerIds = await this.getPartnerUserIds(userId);
 
-    // Add privacy filtering for shared users - they can only see shared documents
+    // Build base where clause:
+    // Show documents that are either:
+    // 1. User's own documents (userId = myId)
+    // 2. Shared documents from partners (userId IN partnerIds AND isShared = true)
+    let whereClause: any;
+    
+    if (partnerIds.length > 0) {
+      // User has partners - show own docs + shared partner docs
+      whereClause = and(
+        or(
+          eq(documents.userId, userId), // Own documents
+          and(
+            inArray(documents.userId, partnerIds), // Partner's documents
+            eq(documents.isShared, true) // Only if shared
+          )
+        ),
+        isNull(documents.deletedAt)
+      );
+    } else {
+      // No partners - show only own documents
+      whereClause = and(
+        eq(documents.userId, userId),
+        isNull(documents.deletedAt)
+      );
+    }
+
+    // Legacy support: if includeOnlySharedFolders is set (deprecated, not used anymore)
+    // This was for the old folder-based privacy system
     if (includeOnlySharedFolders) {
       whereClause = and(
         whereClause,
@@ -703,6 +730,47 @@ export class DbStorage implements IStorage {
       ownedAccount,
       sharedAccounts,
     };
+  }
+
+  /**
+   * Get partner user IDs for document sharing
+   * Returns all active partner IDs (Master returns Slave IDs, Slave returns Master ID)
+   */
+  async getPartnerUserIds(userId: string): Promise<string[]> {
+    const partnerIds: string[] = [];
+
+    // Case 1: User is Master - get Slave IDs
+    const asOwner = await db
+      .select({ partnerId: sharedAccess.sharedWithUserId })
+      .from(sharedAccess)
+      .where(
+        and(
+          eq(sharedAccess.ownerId, userId),
+          eq(sharedAccess.status, 'active'),
+          isNotNull(sharedAccess.sharedWithUserId)
+        )
+      );
+
+    asOwner.forEach(record => {
+      if (record.partnerId) partnerIds.push(record.partnerId);
+    });
+
+    // Case 2: User is Slave - get Master ID
+    const asShared = await db
+      .select({ partnerId: sharedAccess.ownerId })
+      .from(sharedAccess)
+      .where(
+        and(
+          eq(sharedAccess.sharedWithUserId, userId),
+          eq(sharedAccess.status, 'active')
+        )
+      );
+
+    asShared.forEach(record => {
+      if (record.partnerId) partnerIds.push(record.partnerId);
+    });
+
+    return partnerIds;
   }
 
   // Folders implementations

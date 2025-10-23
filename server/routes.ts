@@ -410,9 +410,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         graceDaysRemaining = trialStatus.graceDaysRemaining;
       }
 
-      // Count current documents (use effectiveUserId for shared access)
-      const effectiveUserId = await getEffectiveUserId(userId);
-      const documents = await storage.getDocumentsByUserId(effectiveUserId);
+      // Count current documents - use real userId (each user has their own document space)
+      const documents = await storage.getDocumentsByUserId(userId);
       const documentCount = documents.length;
 
       // isUploadDisabled combines all upload restrictions
@@ -1292,12 +1291,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const { search, categories, sort, limit, cursor } = req.query;
 
-      // Get effective user ID (supports shared access)
-      const effectiveUserId = await getEffectiveUserId(userId);
+      // IMPORTANT: Use userId directly, NOT effectiveUserId
+      // Each user (Master/Slave) has their own document space
+      // searchDocuments() internally handles showing shared partner documents
       
-      // Check if user is accessing shared documents (only show shared folders)
-      const isShared = await isSharedUser(userId);
-
       // Parse categories from query string (comma-separated)
       const categoryArray = categories 
         ? (categories as string).split(',').filter(c => c.trim())
@@ -1307,11 +1304,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const pageLimit = limit ? Math.min(parseInt(limit as string, 10), 100) : 50;
 
       const result = await storage.searchDocuments(
-        effectiveUserId,
+        userId, // Use real userId, not effectiveUserId
         search as string | undefined,
         categoryArray,
         sort as any,
-        isShared, // Only show shared folder documents if user is a shared user
+        false, // includeOnlySharedFolders deprecated - now handled internally
         pageLimit,
         cursor as string | undefined
       );
@@ -1339,8 +1336,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Document not found" });
       }
 
-      // Verify user owns the document
-      if (document.userId !== userId) {
+      // Verify user owns the document OR has access as partner (if shared)
+      const partnerIds = await storage.getPartnerUserIds(userId);
+      const hasAccess = document.userId === userId || 
+                       (partnerIds.includes(document.userId) && document.isShared);
+
+      if (!hasAccess) {
         return res.status(403).json({ message: "Access denied" });
       }
 
@@ -1363,7 +1364,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Document not found" });
       }
 
-      if (document.userId !== userId) {
+      // Verify user owns the document OR has access as partner (if shared)
+      const partnerIds = await storage.getPartnerUserIds(userId);
+      const hasAccess = document.userId === userId || 
+                       (partnerIds.includes(document.userId) && document.isShared);
+
+      if (!hasAccess) {
         return res.status(403).json({ message: "Access denied" });
       }
 
@@ -1459,22 +1465,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "isShared must be a boolean" });
       }
 
-      // Get effective user ID (supports shared access)
-      const effectiveUserId = await getEffectiveUserId(userId);
-
-      // Verify document exists and user owns it
+      // Verify document exists and user owns it (or has access to it as partner)
       const document = await storage.getDocument(id);
 
       if (!document) {
         return res.status(404).json({ message: "Document not found" });
       }
 
-      if (document.userId !== effectiveUserId) {
+      // Check if user owns this document OR has access as partner
+      const partnerIds = await storage.getPartnerUserIds(userId);
+      const hasAccess = document.userId === userId || partnerIds.includes(document.userId);
+
+      if (!hasAccess) {
         return res.status(403).json({ message: "Access denied" });
       }
 
+      // Only owner can toggle sharing (partners can't change sharing status)
+      if (document.userId !== userId) {
+        return res.status(403).json({ message: "Only document owner can toggle sharing" });
+      }
+
       // Update sharing status
-      const updated = await storage.updateDocumentSharing(id, effectiveUserId, isShared);
+      const updated = await storage.updateDocumentSharing(id, userId, isShared);
 
       if (!updated) {
         return res.status(500).json({ message: "Failed to update sharing" });
@@ -1493,9 +1505,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const { id } = req.params;
 
-      // Get effective user ID (supports shared access)
-      const effectiveUserId = await getEffectiveUserId(userId);
-
       // Verify document exists and user owns it
       const document = await storage.getDocument(id);
 
@@ -1503,12 +1512,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Document not found" });
       }
 
-      if (document.userId !== effectiveUserId) {
-        return res.status(403).json({ message: "Access denied" });
+      // Only document owner can delete (not partners, even if shared)
+      if (document.userId !== userId) {
+        return res.status(403).json({ message: "Only document owner can delete" });
       }
 
       // Soft delete document (moves to trash)
-      const deleted = await storage.deleteDocument(id, effectiveUserId);
+      const deleted = await storage.deleteDocument(id, userId);
 
       if (!deleted) {
         return res.status(500).json({ message: "Failed to delete document" });
