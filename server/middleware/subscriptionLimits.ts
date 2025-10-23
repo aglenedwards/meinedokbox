@@ -5,6 +5,7 @@ import { PLAN_LIMITS } from "../../shared/schema";
 /**
  * Middleware to check if user has reached document limit for their subscription plan
  * Blocks uploads during grace period and read-only mode
+ * Also checks if plan allows uploads (free plan = read-only)
  */
 export const checkDocumentLimit: RequestHandler = async (req: any, res, next) => {
   try {
@@ -44,6 +45,15 @@ export const checkDocumentLimit: RequestHandler = async (req: any, res, next) =>
 
     const plan = user.subscriptionPlan as keyof typeof PLAN_LIMITS;
     const limits = PLAN_LIMITS[plan];
+
+    // Check if plan allows uploads (free plan = read-only)
+    if (!limits.canUpload) {
+      return res.status(403).json({
+        message: "Upload nicht verfügbar - Bitte upgraden Sie Ihren Plan",
+        reason: "upload_not_allowed",
+        plan: limits.displayName,
+      });
+    }
 
     // If plan has unlimited documents (-1), allow
     if (limits.maxDocuments === -1) {
