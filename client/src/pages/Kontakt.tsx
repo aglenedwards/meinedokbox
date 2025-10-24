@@ -13,6 +13,7 @@ import { z } from "zod";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
+import { apiRequest } from "@/lib/queryClient";
 
 const contactSchema = z.object({
   name: z.string().min(2, "Name muss mindestens 2 Zeichen lang sein"),
@@ -44,18 +45,36 @@ export default function Kontakt() {
   const onSubmit = async (data: ContactFormData) => {
     setIsSubmitting(true);
     
-    // Simuliere Formular-Versand
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    console.log("Contact form data:", data);
-    
-    toast({
-      title: "Nachricht gesendet!",
-      description: "Wir haben Ihre Nachricht erhalten und melden uns in Kürze bei Ihnen.",
-    });
-    
-    form.reset();
-    setIsSubmitting(false);
+    try {
+      const response = await apiRequest('/api/contact', {
+        method: 'POST',
+        body: JSON.stringify(data),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Fehler beim Senden der Nachricht');
+      }
+
+      toast({
+        title: "Nachricht gesendet!",
+        description: "Wir haben Ihre Nachricht erhalten und melden uns in Kürze bei Ihnen.",
+      });
+      
+      form.reset();
+    } catch (error) {
+      console.error("Error sending contact form:", error);
+      toast({
+        title: "Fehler",
+        description: error instanceof Error ? error.message : "Die Nachricht konnte nicht gesendet werden. Bitte versuchen Sie es später erneut.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
