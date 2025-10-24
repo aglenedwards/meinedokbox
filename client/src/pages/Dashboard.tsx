@@ -107,6 +107,7 @@ export default function Dashboard() {
     status: 'processing' | 'success' | 'error';
     progress: number;
     detectedCategory?: string;
+    uploadedDocumentId?: string;
   }>({
     open: false,
     status: 'processing',
@@ -180,6 +181,7 @@ export default function Dashboard() {
         status: 'success',
         progress: 100,
         detectedCategory: document.category,
+        uploadedDocumentId: document.id,
       });
       toast({
         title: "Dokument erfolgreich hochgeladen",
@@ -943,7 +945,13 @@ export default function Dashboard() {
         status={processingModal.status}
         progress={processingModal.progress}
         detectedCategory={processingModal.detectedCategory}
-        onClose={() => setProcessingModal(prev => ({ ...prev, open: false }))}
+        onClose={() => {
+          setProcessingModal(prev => ({ ...prev, open: false }));
+          // Open the uploaded document in viewer
+          if (processingModal.uploadedDocumentId) {
+            handleView(processingModal.uploadedDocumentId);
+          }
+        }}
         onAddAnother={() => {
           setProcessingModal(prev => ({ ...prev, open: false }));
           setShowUpload(true);
