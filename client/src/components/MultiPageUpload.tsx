@@ -173,6 +173,7 @@ export function MultiPageUpload({ onComplete, onCancel }: MultiPageUploadProps) 
           </Button>
           <Button
             onClick={handleComplete}
+            className="btn-upload-shimmer text-white border-green-700"
             data-testid="button-finish-upload"
           >
             Fertig und analysieren
