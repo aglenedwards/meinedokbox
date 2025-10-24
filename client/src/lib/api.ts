@@ -10,11 +10,17 @@ export interface StorageStats {
   documentCount: number;
 }
 
+export interface UploadResult {
+  message: string;
+  documents: Document[];
+  errors?: Array<{ filename: string; error: string }>;
+}
+
 /**
  * Upload one or more document files and process them with AI
- * If multiple files are provided, they will be combined into a single multi-page PDF
+ * Each file is processed as a separate document with individual AI analysis
  */
-export async function uploadDocument(files: File | File[]): Promise<Document> {
+export async function uploadDocument(files: File | File[]): Promise<UploadResult> {
   const formData = new FormData();
   const fileArray = Array.isArray(files) ? files : [files];
   
@@ -29,8 +35,9 @@ export async function uploadDocument(files: File | File[]): Promise<Document> {
   });
 
   if (!response.ok) {
-    const text = (await response.text()) || response.statusText;
-    throw new Error(`${response.status}: ${text}`);
+    const errorData = await response.json().catch(() => null);
+    const message = errorData?.message || response.statusText;
+    throw new Error(message);
   }
 
   return await response.json();

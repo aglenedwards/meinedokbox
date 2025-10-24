@@ -173,20 +173,45 @@ export default function Dashboard() {
   // Upload mutation
   const uploadMutation = useMutation({
     mutationFn: uploadDocument,
-    onSuccess: (document) => {
+    onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ["/api/documents"] });
       queryClient.invalidateQueries({ queryKey: ["/api/storage/stats"] });
-      setProcessingModal({
-        open: true,
-        status: 'success',
-        progress: 100,
-        detectedCategory: document.category,
-        uploadedDocumentId: document.id,
-      });
-      toast({
-        title: "Dokument erfolgreich hochgeladen",
-        description: `"${document.title}" wurde als ${document.category} klassifiziert.`,
-      });
+      
+      const { documents, errors, message } = result;
+      
+      // Show success for uploaded documents
+      if (documents.length > 0) {
+        const firstDocument = documents[0];
+        setProcessingModal({
+          open: true,
+          status: 'success',
+          progress: 100,
+          detectedCategory: firstDocument.category,
+          uploadedDocumentId: firstDocument.id,
+        });
+        
+        // Show appropriate success message
+        if (documents.length === 1) {
+          toast({
+            title: "Dokument erfolgreich hochgeladen",
+            description: `"${firstDocument.title}" wurde als ${firstDocument.category} klassifiziert.`,
+          });
+        } else {
+          toast({
+            title: message || `${documents.length} Dokumente erfolgreich hochgeladen`,
+            description: `Alle Dokumente wurden automatisch kategorisiert.`,
+          });
+        }
+      }
+      
+      // Show warnings for any errors
+      if (errors && errors.length > 0) {
+        toast({
+          title: "Einige Dateien konnten nicht hochgeladen werden",
+          description: `${errors.length} von ${documents.length + errors.length} Dateien sind fehlgeschlagen.`,
+          variant: "destructive",
+        });
+      }
     },
     onError: (error: Error) => {
       // Check if it's a 403 error (limit reached)
