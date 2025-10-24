@@ -392,4 +392,92 @@ html, body, #root {
       radial-gradient(at 90% 20%, hsl(210deg 40% 98.04% / 0.07) 0px, transparent 55%),
       hsl(var(--background));
   }
+
+  /* Premium Section Backgrounds */
+  .section-premium-subtle {
+    background: 
+      radial-gradient(ellipse at top, hsl(var(--primary) / 0.03) 0%, transparent 60%),
+      radial-gradient(ellipse at bottom, hsl(var(--primary) / 0.02) 0%, transparent 60%),
+      hsl(var(--background));
+  }
+
+  .dark .section-premium-subtle {
+    background: 
+      radial-gradient(ellipse at top, hsl(var(--primary) / 0.04) 0%, transparent 60%),
+      radial-gradient(ellipse at bottom, hsl(var(--primary) / 0.03) 0%, transparent 60%),
+      hsl(var(--background));
+  }
+
+  /* Enhanced Cards with Border Glow */
+  .card-premium {
+    position: relative;
+    transition: all 0.3s ease;
+  }
+
+  .card-premium::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, 
+      hsl(var(--primary) / 0.1) 0%, 
+      transparent 50%, 
+      hsl(var(--primary) / 0.1) 100%
+    );
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+  }
+
+  .card-premium:hover::before {
+    opacity: 1;
+  }
+
+  .dark .card-premium::before {
+    background: linear-gradient(135deg, 
+      hsl(var(--primary) / 0.15) 0%, 
+      transparent 50%, 
+      hsl(var(--primary) / 0.15) 100%
+    );
+  }
+
+  /* Step Numbers with Glow */
+  .step-number-glow {
+    position: relative;
+    box-shadow: 0 0 0 0 hsl(var(--primary) / 0);
+    transition: box-shadow 0.3s ease;
+  }
+
+  .step-number-glow:hover {
+    box-shadow: 0 0 20px 4px hsl(var(--primary) / 0.25);
+  }
+
+  .dark .step-number-glow:hover {
+    box-shadow: 0 0 25px 6px hsl(var(--primary) / 0.35);
+  }
+
+  /* Feature Grid Cards Enhancement */
+  .feature-card-enhanced {
+    background: linear-gradient(135deg, 
+      hsl(var(--card)) 0%, 
+      hsl(var(--card) / 0.8) 100%
+    );
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid hsl(var(--border));
+    transition: all 0.3s ease;
+  }
+
+  .feature-card-enhanced:hover {
+    transform: translateY(-4px);
+    border-color: hsl(var(--primary) / 0.3);
+  }
+
+  .dark .feature-card-enhanced:hover {
+    border-color: hsl(var(--primary) / 0.4);
+  }
 }
