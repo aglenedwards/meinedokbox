@@ -870,8 +870,8 @@ export default function Dashboard() {
                 ? `Keine Dokumente für "${searchQuery}" gefunden.`
                 : "Laden Sie Ihr erstes Dokument hoch, um loszulegen."
             }
-            actionLabel={!searchQuery && !isUploadDisabled ? "Dokument hochladen" : undefined}
-            onAction={!searchQuery && !isUploadDisabled ? () => setShowUpload(true) : undefined}
+            onCameraClick={!searchQuery && !isUploadDisabled ? () => { setShowUpload(false); setShowCameraMultiShot(true); } : undefined}
+            onMultiPageClick={!searchQuery && !isUploadDisabled ? () => { setShowCameraMultiShot(false); setShowUpload(true); } : undefined}
           />
         ) : (
           <>
