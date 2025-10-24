@@ -1,17 +1,29 @@
 import { useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Download, ChevronLeft, ChevronRight } from "lucide-react";
-import type { Document } from "@shared/schema";
+import { Download, ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from "lucide-react";
+import { Document, Page, pdfjs } from 'react-pdf';
+import type { Document as DocumentType } from "@shared/schema";
+import 'react-pdf/dist/Page/AnnotationLayer.css';
+import 'react-pdf/dist/Page/TextLayer.css';
+
+// Configure PDF.js worker
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+  'pdfjs-dist/build/pdf.worker.min.mjs',
+  import.meta.url,
+).toString();
 
 interface DocumentViewerProps {
-  document: Document | null;
+  document: DocumentType | null;
   open: boolean;
   onClose: () => void;
 }
 
 export function DocumentViewer({ document, open, onClose }: DocumentViewerProps) {
   const [currentPage, setCurrentPage] = useState(0);
+  const [pdfNumPages, setPdfNumPages] = useState<number | null>(null);
+  const [pdfScale, setPdfScale] = useState(1.0);
+  const [pdfLoading, setPdfLoading] = useState(true);
 
   if (!document) return null;
 
@@ -30,8 +42,8 @@ export function DocumentViewer({ document, open, onClose }: DocumentViewerProps)
   // Check if the document is a PDF using mimeType
   const isPdf = document.mimeType === 'application/pdf';
   
-  // For PDFs, use our proxy endpoint instead of direct S3 URL to avoid Chrome blocking
-  const viewUrl = isPdf ? `/api/documents/${document.id}/view` : currentPageUrl;
+  // For PDFs, use our proxy endpoint instead of direct S3 URL
+  const pdfViewUrl = isPdf ? `/api/documents/${document.id}/view` : currentPageUrl;
 
   // Get file extension from MIME type
   const getExtensionFromMimeType = (mimeType: string | null | undefined): string => {
@@ -66,8 +78,14 @@ export function DocumentViewer({ document, open, onClose }: DocumentViewerProps)
   };
 
   const goToNextPage = () => {
-    if (currentPage < totalPages - 1) {
-      setCurrentPage(currentPage + 1);
+    if (isPdf && pdfNumPages) {
+      if (currentPage < pdfNumPages - 1) {
+        setCurrentPage(currentPage + 1);
+      }
+    } else {
+      if (currentPage < totalPages - 1) {
+        setCurrentPage(currentPage + 1);
+      }
     }
   };
 
@@ -77,6 +95,22 @@ export function DocumentViewer({ document, open, onClose }: DocumentViewerProps)
     }
   };
 
+  const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
+    setPdfNumPages(numPages);
+    setPdfLoading(false);
+    setCurrentPage(0);
+  };
+
+  const handleZoomIn = () => {
+    setPdfScale(scale => Math.min(2.5, scale + 0.2));
+  };
+
+  const handleZoomOut = () => {
+    setPdfScale(scale => Math.max(0.5, scale - 0.2));
+  };
+
+  const displayedPages = isPdf && pdfNumPages ? pdfNumPages : totalPages;
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl w-full h-[90vh] flex flex-col p-0 gap-0">
@@ -85,10 +119,16 @@ export function DocumentViewer({ document, open, onClose }: DocumentViewerProps)
           <h2 className="text-lg sm:text-xl font-semibold truncate pr-10">{document.title}</h2>
           <div className="flex items-center gap-3 text-sm text-muted-foreground mt-1 flex-wrap">
             <span>{document.category}</span>
-            {totalPages > 1 && (
+            {displayedPages > 1 && (
               <>
                 <span>•</span>
-                <span>Seite {currentPage + 1} von {totalPages}</span>
+                <span>Seite {currentPage + 1} von {displayedPages}</span>
+              </>
+            )}
+            {isPdf && (
+              <>
+                <span>•</span>
+                <span>{Math.round(pdfScale * 100)}%</span>
               </>
             )}
           </div>
@@ -96,49 +136,89 @@ export function DocumentViewer({ document, open, onClose }: DocumentViewerProps)
 
         {/* Main viewer area */}
         <div className="flex-1 overflow-auto bg-muted/30 relative">
-          {/* Floating download button - desktop only */}
-          <div className="hidden sm:block absolute top-4 right-4 z-10">
-            <Button
-              variant="default"
-              size="sm"
-              onClick={handleDownloadPDF}
-              data-testid="button-download-pdf"
-              className="h-9 shadow-lg"
-            >
-              <Download className="h-4 w-4 mr-2" />
-              <span>PDF</span>
-            </Button>
-          </div>
+          {/* Floating toolbar for PDF - desktop only */}
+          {isPdf && (
+            <div className="hidden sm:flex absolute top-4 right-4 z-10 gap-2">
+              <Button
+                variant="default"
+                size="icon"
+                onClick={handleZoomOut}
+                disabled={pdfScale <= 0.5}
+                data-testid="button-zoom-out"
+                className="h-9 w-9 shadow-lg"
+              >
+                <ZoomOut className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="default"
+                size="icon"
+                onClick={handleZoomIn}
+                disabled={pdfScale >= 2.5}
+                data-testid="button-zoom-in"
+                className="h-9 w-9 shadow-lg"
+              >
+                <ZoomIn className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="default"
+                size="sm"
+                onClick={handleDownloadPDF}
+                data-testid="button-download-pdf"
+                className="h-9 shadow-lg"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                <span>PDF</span>
+              </Button>
+            </div>
+          )}
+
+          {/* Floating download button for images - desktop only */}
+          {!isPdf && (
+            <div className="hidden sm:block absolute top-4 right-4 z-10">
+              <Button
+                variant="default"
+                size="sm"
+                onClick={() => handleDownloadPage(currentPage)}
+                data-testid="button-download-image"
+                className="h-9 shadow-lg"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                <span>Bild</span>
+              </Button>
+            </div>
+          )}
+
           <div className="flex items-center justify-center h-full p-4">
             {isPdf ? (
-              <div className="flex flex-col items-center justify-center gap-6 max-w-md mx-auto text-center">
-                <div className="rounded-full bg-primary/10 p-6">
-                  <svg className="w-16 h-16 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="text-xl font-semibold mb-2">{document.title}</h3>
-                  <p className="text-muted-foreground mb-4">
-                    PDF-Dokument • {document.category}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Browser können PDFs nicht immer direkt anzeigen. Laden Sie das PDF herunter, um es zu öffnen.
-                  </p>
-                </div>
-                <Button
-                  size="lg"
-                  onClick={handleDownloadPDF}
-                  data-testid="button-download-pdf-viewer"
-                  className="w-full"
+              <div className="flex flex-col items-center justify-center w-full h-full">
+                {pdfLoading && (
+                  <div className="text-center text-muted-foreground mb-4">
+                    PDF wird geladen...
+                  </div>
+                )}
+                <Document
+                  file={pdfViewUrl}
+                  onLoadSuccess={onDocumentLoadSuccess}
+                  onLoadError={(error) => {
+                    console.error('PDF load error:', error);
+                    setPdfLoading(false);
+                  }}
+                  loading=""
+                  className="flex items-center justify-center"
                 >
-                  <Download className="h-5 w-5 mr-2" />
-                  PDF herunterladen und öffnen
-                </Button>
+                  <Page 
+                    pageNumber={currentPage + 1}
+                    scale={pdfScale}
+                    renderTextLayer={true}
+                    renderAnnotationLayer={true}
+                    className="shadow-lg"
+                    data-testid={`pdf-page-${currentPage + 1}`}
+                  />
+                </Document>
               </div>
             ) : (
               <img
-                src={viewUrl}
+                src={currentPageUrl}
                 alt={`${document.title} - Seite ${currentPage + 1}`}
                 className="max-w-full max-h-full object-contain"
                 data-testid={`img-page-${currentPage}`}
@@ -147,7 +227,7 @@ export function DocumentViewer({ document, open, onClose }: DocumentViewerProps)
           </div>
 
           {/* Navigation arrows for multi-page documents */}
-          {totalPages > 1 && (
+          {displayedPages > 1 && (
             <>
               <Button
                 variant="outline"
@@ -163,7 +243,7 @@ export function DocumentViewer({ document, open, onClose }: DocumentViewerProps)
                 variant="outline"
                 size="icon"
                 onClick={goToNextPage}
-                disabled={currentPage === totalPages - 1}
+                disabled={currentPage === displayedPages - 1}
                 className="absolute right-4 top-1/2 -translate-y-1/2 h-12 w-12 bg-background/90 hover:bg-background"
                 data-testid="button-next-page"
               >
@@ -177,12 +257,12 @@ export function DocumentViewer({ document, open, onClose }: DocumentViewerProps)
             <Button
               variant="default"
               size="lg"
-              onClick={handleDownloadPDF}
-              data-testid="button-download-pdf-mobile"
+              onClick={isPdf ? handleDownloadPDF : () => handleDownloadPage(currentPage)}
+              data-testid="button-download-mobile"
               className="shadow-lg"
             >
               <Download className="h-5 w-5 mr-2" />
-              PDF herunterladen
+              {isPdf ? 'PDF herunterladen' : 'Bild herunterladen'}
             </Button>
           </div>
         </div>
