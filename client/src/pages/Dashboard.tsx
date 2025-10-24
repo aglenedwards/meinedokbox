@@ -1036,6 +1036,10 @@ export default function Dashboard() {
         document={viewerDocument}
         open={viewerOpen}
         onClose={handleCloseViewer}
+        onDelete={viewerDocument && !isReadOnly ? () => {
+          handleDelete(viewerDocument.id);
+          handleCloseViewer();
+        } : undefined}
       />
 
       <UpgradeModal
