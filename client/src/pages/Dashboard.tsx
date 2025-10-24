@@ -501,8 +501,8 @@ export default function Dashboard() {
     .slice(0, 10); // Top 10 categories
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-10 bg-background border-b">
+    <div className="min-h-screen bg-background flex flex-col">
+      <header className="sticky top-0 z-50 bg-background border-b shrink-0">
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-3 md:py-4">
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-4">
             <div className="flex items-center justify-between md:justify-start gap-3">
