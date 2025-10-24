@@ -1,0 +1,134 @@
+Datenschutzerklärung
+1. Verantwortlicher
+
+Verantwortlich für die Datenverarbeitung auf dieser Website und in der App ist:
+
+Alvin Edwards
+Am Kümmerling 20
+55294 Bodenheim
+Deutschland
+
+E-Mail: service@meinedokbox.de
+
+2. Allgemeines zur Datenverarbeitung
+
+Wir verarbeiten personenbezogene Daten der Nutzer grundsätzlich nur, soweit dies zur Bereitstellung einer funktionsfähigen Website, App sowie unserer Inhalte und Leistungen erforderlich ist. Die Verarbeitung personenbezogener Daten erfolgt regelmäßig nur nach Einwilligung des Nutzers oder wenn eine gesetzliche Grundlage besteht.
+
+3. Hosting und Infrastruktur
+3.1 Hosting
+
+Unsere Website wird über die folgenden Anbieter betrieben:
+
+Hostinger International Ltd. (Website-Hosting)
+
+Cloudflare Inc. (Content Delivery Network und Sicherheit)
+
+Replit Inc. (Applikations-Hosting für die Web-App)
+
+Zwischen uns und den genannten Anbietern bestehen Auftragsverarbeitungsverträge gemäß Art. 28 DSGVO.
+Daten können im Rahmen von Cloudflare oder Replit in die USA übermittelt werden. Die Anbieter sind nach dem EU-U.S. Data Privacy Framework zertifiziert, wodurch ein angemessenes Datenschutzniveau gewährleistet wird.
+
+3.2 Dokumentenspeicherung (IONOS S3)
+
+Hochgeladene Dokumente und Scans werden ausschließlich auf Servern der IONOS SE (Deutschland) gespeichert.
+Diese Server befinden sich innerhalb der Europäischen Union (Deutschland).
+Mit IONOS besteht ein Auftragsverarbeitungsvertrag gemäß Art. 28 DSGVO.
+
+Die Verarbeitung personenbezogener Daten erfolgt somit DSGVO-konform auf Grundlage von Art. 6 Abs. 1 lit. b (Vertragserfüllung) und lit. f DSGVO (berechtigtes Interesse an einer sicheren Speicherung).
+
+4. Erhebung und Speicherung personenbezogener Daten
+4.1 Registrierung und Nutzerkonto
+
+Für die Nutzung der App ist eine Registrierung erforderlich.
+Hierbei werden folgende Daten erhoben und verarbeitet:
+
+Vorname, Nachname (optional)
+
+E-Mail-Adresse
+
+Passwort (verschlüsselt)
+
+Zeitpunkt der Registrierung und Login-Vorgänge
+
+Die Verarbeitung erfolgt auf Grundlage von Art. 6 Abs. 1 lit. b DSGVO (Vertragserfüllung).
+Nach erfolgter Registrierung erhält der Nutzer eine Bestätigungs-E-Mail (Double-Opt-In).
+
+4.2 Dokumentenupload
+
+Beim Hochladen von Dokumenten oder Scans werden folgende Daten verarbeitet:
+
+Dateiname und -inhalt (personenbezogene Dokumente, z. B. Rechnungen)
+
+Uploadzeitpunkt
+
+zugeordnete Metadaten (z. B. Kategorie, Titel, Betrag)
+
+Die Verarbeitung dient der Vertragserfüllung (Art. 6 Abs. 1 lit. b DSGVO).
+Alle Daten werden ausschließlich auf IONOS-Servern in Deutschland gespeichert.
+
+4.3 Kontaktformular
+
+Bei Kontaktaufnahme per Formular oder E-Mail werden die übermittelten Angaben verarbeitet, um die Anfrage zu bearbeiten.
+Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO (Vertragserfüllung bzw. vorvertragliche Maßnahmen).
+
+5. E-Mail-Kommunikation
+
+Für den Versand von System- und Bestätigungs-E-Mails verwenden wir Mailgun Technologies, Inc.
+Mailgun ist nach dem EU-U.S. Data Privacy Framework zertifiziert, wodurch ein angemessenes Datenschutzniveau gewährleistet ist.
+Mit Mailgun besteht ein Auftragsverarbeitungsvertrag nach Art. 28 DSGVO.
+
+6. Tracking & Marketing
+6.1 Google Ads Conversion Tracking
+
+Unsere Website nutzt den Dienst Google Ads Conversion Tracking der Google Ireland Limited.
+Hierbei wird ein Cookie gesetzt, sobald der Nutzer über eine Google-Anzeige auf unsere Website gelangt.
+Cookies dienen der Reichweitenmessung und Erfolgsauswertung unserer Werbung.
+
+Rechtsgrundlage: Art. 6 Abs. 1 lit. a DSGVO (Einwilligung).
+Die Einwilligung erfolgt über den Cookie-Banner und kann jederzeit widerrufen werden.
+
+6.2 Meta Pixel (Facebook & Instagram Ads)
+
+Wir nutzen den „Meta Pixel“ der Meta Platforms Ireland Ltd.
+Hierdurch kann das Verhalten von Besuchern nachverfolgt werden, nachdem diese eine Anzeige gesehen oder angeklickt haben.
+
+Rechtsgrundlage: Art. 6 Abs. 1 lit. a DSGVO (Einwilligung).
+Auch hier erfolgt die Steuerung über unseren Cookie-Banner.
+
+Daten können in die USA übermittelt werden; Meta ist nach dem EU-U.S. Data Privacy Framework zertifiziert.
+
+7. Cookies und Einwilligung
+
+Beim Besuch der Website wird ein Cookie-Banner angezeigt, über das Nutzer ihre Einwilligung für Marketing-, Statistik- und Funktions-Cookies erteilen oder ablehnen können.
+Rechtsgrundlage: Art. 6 Abs. 1 lit. a DSGVO.
+Die Einwilligung kann jederzeit widerrufen werden.
+
+8. Rechte der betroffenen Personen
+
+Nutzer haben jederzeit das Recht auf:
+
+Auskunft über gespeicherte Daten (Art. 15 DSGVO)
+
+Berichtigung unrichtiger Daten (Art. 16 DSGVO)
+
+Löschung personenbezogener Daten (Art. 17 DSGVO)
+
+Einschränkung der Verarbeitung (Art. 18 DSGVO)
+
+Datenübertragbarkeit (Art. 20 DSGVO)
+
+Widerspruch gegen die Verarbeitung (Art. 21 DSGVO)
+
+Zur Ausübung der Rechte genügt eine E-Mail an: [Kontaktadresse einfügen]
+
+9. Sicherheit der Datenverarbeitung
+
+Wir verwenden SSL-Verschlüsselung (HTTPS) und rollenbasierte Zugriffskontrollen.
+Passwörter werden ausschließlich gehasht gespeichert (bcrypt).
+Backups erfolgen täglich verschlüsselt auf EU-Servern.
+
+10. Änderungen dieser Datenschutzerklärung
+
+Wir behalten uns vor, diese Datenschutzerklärung anzupassen, um sie an geänderte Rechtslagen oder neue Funktionen anzupassen.
+Die jeweils aktuelle Version ist jederzeit unter https://meinedokbox.de/datenschutz
+ abrufbar.

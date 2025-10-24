@@ -7,11 +7,11 @@ export function Header() {
   return (
     <header className="border-b bg-background sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-        <Link href="/">
-          <a className="flex items-center gap-3 hover-elevate px-3 py-2 rounded-md transition-colors" data-testid="link-home">
+        <Link href="/" data-testid="link-home">
+          <div className="flex items-center gap-3 hover-elevate px-3 py-2 rounded-md transition-colors cursor-pointer">
             <img src={logoImage} alt="MeineDokBox Logo" className="h-8 w-8" />
             <span className="text-xl font-bold">MeineDokBox</span>
-          </a>
+          </div>
         </Link>
         <Link href="/">
           <Button variant="ghost" size="sm" data-testid="button-back">
