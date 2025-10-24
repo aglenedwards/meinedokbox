@@ -17,7 +17,7 @@ export function TrialBanner({ daysRemaining, onUpgrade }: TrialBannerProps) {
   return (
     <Alert className={isUrgent ? "border-orange-500 bg-orange-50 dark:bg-orange-950/20" : "border-primary bg-primary/5"}>
       <Sparkles className="h-4 w-4" />
-      <AlertTitle className="flex items-center justify-between">
+      <AlertTitle className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <span>
           {isUrgent ? "⚡ Trial endet bald!" : "🎉 Family-Trial aktiv"}
         </span>
@@ -26,6 +26,7 @@ export function TrialBanner({ daysRemaining, onUpgrade }: TrialBannerProps) {
           size="sm" 
           onClick={onUpgrade}
           data-testid="button-upgrade-from-banner"
+          className="w-full sm:w-auto"
         >
           Tarife vergleichen
         </Button>

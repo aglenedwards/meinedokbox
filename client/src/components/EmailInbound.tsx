@@ -65,10 +65,10 @@ export function EmailInbound({ user }: EmailInboundProps) {
     <Card data-testid="card-email-inbound">
       <CardHeader className="pb-3">
         <div className="flex items-center gap-2">
-          <Mail className="h-5 w-5 text-primary" />
-          <CardTitle className="text-lg">Dokumente per E-Mail senden</CardTitle>
+          <Mail className="h-5 w-5 text-primary shrink-0" />
+          <CardTitle className="text-base sm:text-lg">Dokumente per E-Mail senden</CardTitle>
         </div>
-        <CardDescription>
+        <CardDescription className="text-sm">
           Leiten Sie E-Mails mit Anhängen an Ihre persönliche Adresse weiter
         </CardDescription>
       </CardHeader>
@@ -79,7 +79,7 @@ export function EmailInbound({ user }: EmailInboundProps) {
           </label>
           <div className="flex gap-2">
             <div 
-              className="flex-1 px-3 py-2 bg-muted rounded-md font-mono text-sm break-all"
+              className="flex-1 min-w-0 px-3 py-2 bg-muted rounded-md font-mono text-xs sm:text-sm break-all overflow-wrap-anywhere"
               data-testid="text-inbound-email"
             >
               {user.inboundEmail}
