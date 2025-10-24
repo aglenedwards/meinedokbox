@@ -501,9 +501,9 @@ export default function Dashboard() {
     .slice(0, 10); // Top 10 categories
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <header className="sticky top-0 z-50 bg-background border-b shrink-0">
-        <div className="max-w-7xl mx-auto px-4 md:px-6 py-3 md:py-4">
+    <div className="min-h-screen w-full bg-background flex flex-col overflow-x-hidden">
+      <header className="sticky top-0 z-50 w-full bg-background border-b shrink-0">
+        <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-3 md:py-4">
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-4">
             <div className="flex items-center justify-between md:justify-start gap-3">
               <img src={logoImage} alt="MeineDokBox" className="h-12 md:h-16" data-testid="img-logo" />
@@ -621,7 +621,7 @@ export default function Dashboard() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-6 md:py-8 overflow-x-hidden">
+      <main className="w-full max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-6 md:py-8">
         <div>
           {showUpload && (
             <div className="mb-8">
