@@ -1618,32 +1618,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const objectStorageService = new ObjectStorageService();
       
-      // For PDFs, stream directly with inline disposition
-      if (document.mimeType === 'application/pdf' && document.fileUrl) {
-        const objectFile = await objectStorageService.getObjectEntityFile(document.fileUrl);
-        const buffer = await objectStorageService.getObjectBuffer(objectFile);
-        
-        res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', 'inline');
+      // Get the file URL (either from fileUrl or first pageUrl)
+      const fileToServe = document.fileUrl || 
+                         (document.pageUrls && document.pageUrls.length > 0 ? document.pageUrls[0] : null);
+      
+      if (!fileToServe) {
+        return res.status(400).json({ message: "No file found" });
+      }
+
+      const objectFile = await objectStorageService.getObjectEntityFile(fileToServe);
+      const buffer = await objectStorageService.getObjectBuffer(objectFile);
+      
+      const contentType = document.mimeType || 'image/jpeg';
+      res.setHeader('Content-Type', contentType);
+      res.setHeader('Content-Disposition', 'inline');
+      
+      // Add frame security headers for PDFs
+      if (document.mimeType === 'application/pdf') {
         res.setHeader('X-Frame-Options', 'SAMEORIGIN');
         res.setHeader('Content-Security-Policy', "frame-ancestors 'self'");
-        res.send(buffer);
-        return;
       }
-
-      // For images, return the image directly
-      if (document.fileUrl) {
-        const objectFile = await objectStorageService.getObjectEntityFile(document.fileUrl);
-        const buffer = await objectStorageService.getObjectBuffer(objectFile);
-        
-        const contentType = document.mimeType || 'image/jpeg';
-        res.setHeader('Content-Type', contentType);
-        res.setHeader('Content-Disposition', 'inline');
-        res.send(buffer);
-        return;
-      }
-
-      res.status(400).json({ message: "No file found" });
+      
+      res.send(buffer);
     } catch (error) {
       console.error("Error viewing document:", error);
       res.status(500).json({ message: "Failed to view document" });
