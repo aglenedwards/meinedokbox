@@ -252,17 +252,17 @@ export function DocumentViewer({ document, open, onClose }: DocumentViewerProps)
             </>
           )}
 
-          {/* Floating download button for mobile */}
-          <div className="sm:hidden absolute bottom-6 left-1/2 -translate-x-1/2">
+          {/* Floating download button for mobile - compact icon-only */}
+          <div className="sm:hidden absolute top-4 right-4 z-10">
             <Button
               variant="default"
-              size="lg"
+              size="icon"
               onClick={isPdf ? handleDownloadPDF : () => handleDownloadPage(currentPage)}
               data-testid="button-download-mobile"
-              className="shadow-lg"
+              className="h-10 w-10 shadow-lg"
+              aria-label={isPdf ? 'PDF herunterladen' : 'Bild herunterladen'}
             >
-              <Download className="h-5 w-5 mr-2" />
-              {isPdf ? 'PDF herunterladen' : 'Bild herunterladen'}
+              <Download className="h-5 w-5" />
             </Button>
           </div>
         </div>
