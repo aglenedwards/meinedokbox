@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query";
 import { FileText, HardDrive, TrendingUp, Plus, Trash2, ArrowUpDown, Download, Camera, ChevronDown, Settings, MoreVertical, LogOut, Shield } from "lucide-react";
 import { format } from "date-fns";
@@ -69,7 +69,6 @@ export default function Dashboard() {
   const [checkoutDialogOpen, setCheckoutDialogOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<"solo" | "family" | "family-plus">("family");
   const [selectedPeriod, setSelectedPeriod] = useState<"monthly" | "yearly">("yearly");
-  const uploadSectionRef = useRef<HTMLDivElement>(null);
 
   // Listen for checkout events from UpgradeModal
   useEffect(() => {
@@ -83,25 +82,6 @@ export default function Dashboard() {
     window.addEventListener('openCheckout' as any, handleOpenCheckout);
     return () => window.removeEventListener('openCheckout' as any, handleOpenCheckout);
   }, []);
-
-  // Auto-scroll when upload areas are opened
-  useEffect(() => {
-    if ((showUpload || showCameraMultiShot) && uploadSectionRef.current) {
-      const timer = setTimeout(() => {
-        if (uploadSectionRef.current) {
-          const elementPosition = uploadSectionRef.current.getBoundingClientRect().top;
-          const offsetPosition = elementPosition + window.pageYOffset - 100;
-          
-          window.scrollTo({
-            top: offsetPosition,
-            behavior: 'smooth'
-          });
-        }
-      }, 150);
-      
-      return () => clearTimeout(timer);
-    }
-  }, [showUpload, showCameraMultiShot]);
 
   // Logout mutation
   const logoutMutation = useMutation({
@@ -392,34 +372,6 @@ export default function Dashboard() {
     },
   });
 
-  const openCameraScanner = () => {
-    if (showCameraMultiShot) {
-      // If already open, close briefly then reopen to trigger scroll
-      setShowCameraMultiShot(false);
-      setTimeout(() => {
-        setShowUpload(false);
-        setShowCameraMultiShot(true);
-      }, 50);
-    } else {
-      setShowUpload(false);
-      setShowCameraMultiShot(true);
-    }
-  };
-
-  const openFileUpload = () => {
-    if (showUpload) {
-      // If already open, close briefly then reopen to trigger scroll
-      setShowUpload(false);
-      setTimeout(() => {
-        setShowCameraMultiShot(false);
-        setShowUpload(true);
-      }, 50);
-    } else {
-      setShowCameraMultiShot(false);
-      setShowUpload(true);
-    }
-  };
-
   const handleCategoryToggle = (category: string) => {
     if (category === "Alle") {
       setSelectedCategories(["Alle"]);
@@ -573,16 +525,16 @@ export default function Dashboard() {
                 {!isUploadDisabled && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button size="sm" data-testid="button-upload-menu-mobile">
+                      <Button size="sm" className="btn-upload-shimmer text-white border-green-700" data-testid="button-upload-menu-mobile">
                         <Plus className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={openCameraScanner} data-testid="menu-item-camera-scanner">
+                      <DropdownMenuItem onClick={() => { setShowUpload(false); setShowCameraMultiShot(true); }} data-testid="menu-item-camera-scanner">
                         <Camera className="h-4 w-4 mr-2" />
                         Kamera-Scanner
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={openFileUpload} data-testid="menu-item-multi-page">
+                      <DropdownMenuItem onClick={() => { setShowCameraMultiShot(false); setShowUpload(true); }} data-testid="menu-item-multi-page">
                         <Plus className="h-4 w-4 mr-2" />
                         Datei hochladen
                       </DropdownMenuItem>
@@ -646,18 +598,18 @@ export default function Dashboard() {
               {!isUploadDisabled && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button data-testid="button-upload-menu">
+                    <Button className="btn-upload-shimmer text-white border-green-700" data-testid="button-upload-menu">
                       <Plus className="h-4 w-4 mr-2" />
                       Hochladen
                       <ChevronDown className="h-4 w-4 ml-2" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={openCameraScanner} data-testid="menu-item-camera-scanner-desktop">
+                    <DropdownMenuItem onClick={() => { setShowUpload(false); setShowCameraMultiShot(true); }} data-testid="menu-item-camera-scanner-desktop">
                       <Camera className="h-4 w-4 mr-2" />
                       Kamera-Scanner
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={openFileUpload} data-testid="menu-item-multi-page-desktop">
+                    <DropdownMenuItem onClick={() => { setShowCameraMultiShot(false); setShowUpload(true); }} data-testid="menu-item-multi-page-desktop">
                       <Plus className="h-4 w-4 mr-2" />
                       Datei hochladen
                     </DropdownMenuItem>
@@ -670,7 +622,7 @@ export default function Dashboard() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 md:px-6 py-8">
-        <div ref={uploadSectionRef}>
+        <div>
           {showUpload && (
             <div className="mb-8">
               <MultiPageUpload 
@@ -920,8 +872,6 @@ export default function Dashboard() {
                 ? `Keine Dokumente für "${searchQuery}" gefunden.`
                 : "Laden Sie Ihr erstes Dokument hoch, um loszulegen."
             }
-            onCameraClick={!searchQuery && !isUploadDisabled ? openCameraScanner : undefined}
-            onMultiPageClick={!searchQuery && !isUploadDisabled ? openFileUpload : undefined}
           />
         ) : (
           <>

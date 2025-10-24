@@ -480,4 +480,51 @@ html, body, #root {
   .dark .feature-card-enhanced:hover {
     border-color: hsl(var(--primary) / 0.4);
   }
+
+  /* Shimmer Animation for Upload Button */
+  @keyframes shimmer {
+    0% {
+      background-position: -200% center;
+    }
+    100% {
+      background-position: 200% center;
+    }
+  }
+
+  .btn-upload-shimmer {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(
+      90deg,
+      rgb(22, 163, 74) 0%,
+      rgb(22, 163, 74) 40%,
+      rgb(74, 222, 128) 50%,
+      rgb(22, 163, 74) 60%,
+      rgb(22, 163, 74) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 3s ease-in-out infinite;
+  }
+
+  .btn-upload-shimmer:hover {
+    background: rgb(21, 128, 61);
+    animation: none;
+  }
+
+  .dark .btn-upload-shimmer {
+    background: linear-gradient(
+      90deg,
+      rgb(34, 197, 94) 0%,
+      rgb(34, 197, 94) 40%,
+      rgb(134, 239, 172) 50%,
+      rgb(34, 197, 94) 60%,
+      rgb(34, 197, 94) 100%
+    );
+    background-size: 200% 100%;
+  }
+
+  .dark .btn-upload-shimmer:hover {
+    background: rgb(22, 163, 74);
+    animation: none;
+  }
 }
