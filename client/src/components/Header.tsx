@@ -1,9 +1,13 @@
+import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Menu } from "lucide-react";
 import logoImage from "@assets/meinedokbox_1760966015056.png";
 
 export function Header() {
   const [location] = useLocation();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
   const navItems = [
     { href: "/funktionen", label: "Funktionen" },
@@ -44,7 +48,7 @@ export function Header() {
           ))}
         </nav>
 
-        {/* CTA Button */}
+        {/* Desktop CTA Button */}
         <div className="hidden md:block">
           <Link href="/">
             <Button size="sm" data-testid="button-header-cta">
@@ -53,34 +57,49 @@ export function Header() {
           </Link>
         </div>
 
-        {/* Mobile: Back Button */}
+        {/* Mobile Menu */}
         <div className="md:hidden">
-          {location !== "/" && (
-            <Link href="/">
-              <Button variant="ghost" size="sm" data-testid="button-back">
-                Zurück
+          <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" data-testid="button-mobile-menu">
+                <Menu className="h-6 w-6" />
+                <span className="sr-only">Menü öffnen</span>
               </Button>
-            </Link>
-          )}
+            </SheetTrigger>
+            <SheetContent side="right" className="w-[300px]">
+              <SheetHeader>
+                <SheetTitle>Navigation</SheetTitle>
+              </SheetHeader>
+              <nav className="flex flex-col gap-4 mt-8">
+                {navItems.map((item) => (
+                  <Link key={item.href} href={item.href}>
+                    <Button
+                      variant={isActive(item.href) ? "secondary" : "ghost"}
+                      className="w-full justify-start text-lg"
+                      onClick={() => setMobileMenuOpen(false)}
+                      data-testid={`nav-mobile-${item.label.toLowerCase().replace(/\s/g, '-')}`}
+                    >
+                      {item.label}
+                    </Button>
+                  </Link>
+                ))}
+                
+                <div className="pt-4 border-t">
+                  <Link href="/">
+                    <Button 
+                      className="w-full" 
+                      size="lg"
+                      onClick={() => setMobileMenuOpen(false)}
+                      data-testid="button-mobile-cta"
+                    >
+                      Kostenlos testen
+                    </Button>
+                  </Link>
+                </div>
+              </nav>
+            </SheetContent>
+          </Sheet>
         </div>
-      </div>
-
-      {/* Mobile Navigation */}
-      <div className="md:hidden border-t">
-        <nav className="container mx-auto px-4 py-2 flex gap-2 overflow-x-auto">
-          {navItems.map((item) => (
-            <Link key={item.href} href={item.href}>
-              <Button
-                variant={isActive(item.href) ? "secondary" : "ghost"}
-                size="sm"
-                className="whitespace-nowrap text-xs"
-                data-testid={`nav-mobile-${item.label.toLowerCase().replace(/\s/g, '-')}`}
-              >
-                {item.label}
-              </Button>
-            </Link>
-          ))}
-        </nav>
       </div>
     </header>
   );
