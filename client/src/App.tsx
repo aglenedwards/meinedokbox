@@ -15,6 +15,9 @@ import Admin from "@/pages/Admin";
 import AdminLogin from "@/pages/AdminLogin";
 import VerifyEmail from "@/pages/VerifyEmail";
 import Invite from "@/pages/Invite";
+import Impressum from "@/pages/Impressum";
+import Datenschutz from "@/pages/Datenschutz";
+import Kontakt from "@/pages/Kontakt";
 import NotFound from "@/pages/not-found";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { PWAUpdatePrompt } from "@/components/PWAUpdatePrompt";
@@ -55,6 +58,9 @@ function Router() {
       <Route path="/" component={Landing} />
       <Route path="/verify-email" component={VerifyEmail} />
       <Route path="/invite" component={Invite} />
+      <Route path="/impressum" component={Impressum} />
+      <Route path="/datenschutz" component={Datenschutz} />
+      <Route path="/kontakt" component={Kontakt} />
       <Route path="/dashboard">
         {() => <ProtectedRoute component={Dashboard} />}
       </Route>
