@@ -3,7 +3,6 @@ import { Footer } from "@/components/Footer";
 import { Check, Sparkles, ArrowRight, Users, Zap } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState } from "react";
 import { useLocation } from "wouter";
 
@@ -42,19 +41,6 @@ export default function Preise() {
               Wählen Sie den Plan, der zu Ihnen passt. Jederzeit kündbar, ohne versteckte Kosten.
             </p>
 
-            {/* Billing Toggle */}
-            <div className="flex justify-center mb-16">
-              <Tabs value={billingPeriod} onValueChange={(v) => setBillingPeriod(v as "monthly" | "yearly")}>
-                <TabsList className="grid w-full grid-cols-2 max-w-md bg-background/50 backdrop-blur-sm">
-                  <TabsTrigger value="monthly" data-testid="tab-monthly">Monatlich</TabsTrigger>
-                  <TabsTrigger value="yearly" data-testid="tab-yearly">
-                    Jährlich 
-                    <span className="ml-2 text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full">-17%</span>
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
-            </div>
-
             {/* Pricing Quick Stats */}
             <div className="grid grid-cols-2 md:grid-cols-3 gap-6 max-w-3xl mx-auto">
               <div className="flex flex-col items-center gap-2 p-4 rounded-lg bg-background/50 backdrop-blur-sm border">
@@ -82,6 +68,35 @@ export default function Preise() {
       {/* Pricing Cards */}
       <section className="py-24 section-premium-subtle">
         <div className="container mx-auto px-4">
+          {/* Billing Period Toggle */}
+          <div className="flex items-center justify-center gap-4 mb-12">
+            <button
+              onClick={() => setBillingPeriod("monthly")}
+              className={`px-6 py-2 rounded-lg font-medium transition-all ${
+                billingPeriod === "monthly"
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted text-muted-foreground hover-elevate"
+              }`}
+              data-testid="button-billing-monthly"
+            >
+              Monatlich
+            </button>
+            <button
+              onClick={() => setBillingPeriod("yearly")}
+              className={`px-6 py-2 rounded-lg font-medium transition-all ${
+                billingPeriod === "yearly"
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted text-muted-foreground hover-elevate"
+              }`}
+              data-testid="button-billing-yearly"
+            >
+              Jährlich
+              <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-primary-foreground/20">
+                Spare 20%
+              </span>
+            </button>
+          </div>
+
           <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             
             {/* Solo Plan */}
