@@ -115,22 +115,38 @@ export function DocumentViewer({ document, open, onClose }: DocumentViewerProps)
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl w-full h-[90vh] flex flex-col p-0 gap-0">
         {/* Header */}
-        <div className="px-4 sm:px-6 py-4 border-b">
-          <h2 className="text-lg sm:text-xl font-semibold truncate pr-10">{document.title}</h2>
-          <div className="flex items-center gap-3 text-sm text-muted-foreground mt-1 flex-wrap">
-            <span>{document.category}</span>
-            {displayedPages > 1 && (
-              <>
-                <span>•</span>
-                <span>Seite {currentPage + 1} von {displayedPages}</span>
-              </>
-            )}
-            {isPdf && (
-              <>
-                <span>•</span>
-                <span>{Math.round(pdfScale * 100)}%</span>
-              </>
-            )}
+        <div className="px-4 sm:px-6 py-4 border-b relative">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex-1 min-w-0">
+              <h2 className="text-lg sm:text-xl font-semibold truncate">{document.title}</h2>
+              <div className="flex items-center gap-3 text-sm text-muted-foreground mt-1 flex-wrap">
+                <span>{document.category}</span>
+                {displayedPages > 1 && (
+                  <>
+                    <span>•</span>
+                    <span>Seite {currentPage + 1} von {displayedPages}</span>
+                  </>
+                )}
+                {isPdf && (
+                  <>
+                    <span>•</span>
+                    <span>{Math.round(pdfScale * 100)}%</span>
+                  </>
+                )}
+              </div>
+            </div>
+            
+            {/* Download button - mobile only, in header */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={isPdf ? handleDownloadPDF : () => handleDownloadPage(currentPage)}
+              data-testid="button-download-mobile"
+              className="sm:hidden h-9 w-9 flex-shrink-0"
+              aria-label={isPdf ? 'PDF herunterladen' : 'Bild herunterladen'}
+            >
+              <Download className="h-5 w-5" />
+            </Button>
           </div>
         </div>
 
@@ -188,33 +204,36 @@ export function DocumentViewer({ document, open, onClose }: DocumentViewerProps)
             </div>
           )}
 
-          <div className="flex items-center justify-center h-full p-4">
+          <div className="flex items-center justify-center h-full p-4 overflow-x-hidden">
             {isPdf ? (
-              <div className="flex flex-col items-center justify-center w-full h-full">
+              <div className="flex flex-col items-center justify-center w-full h-full max-w-full">
                 {pdfLoading && (
                   <div className="text-center text-muted-foreground mb-4">
                     PDF wird geladen...
                   </div>
                 )}
-                <Document
-                  file={pdfViewUrl}
-                  onLoadSuccess={onDocumentLoadSuccess}
-                  onLoadError={(error) => {
-                    console.error('PDF load error:', error);
-                    setPdfLoading(false);
-                  }}
-                  loading=""
-                  className="flex items-center justify-center"
-                >
-                  <Page 
-                    pageNumber={currentPage + 1}
-                    scale={pdfScale}
-                    renderTextLayer={true}
-                    renderAnnotationLayer={true}
-                    className="shadow-lg"
-                    data-testid={`pdf-page-${currentPage + 1}`}
-                  />
-                </Document>
+                <div className="w-full max-w-full overflow-hidden flex justify-center">
+                  <Document
+                    file={pdfViewUrl}
+                    onLoadSuccess={onDocumentLoadSuccess}
+                    onLoadError={(error) => {
+                      console.error('PDF load error:', error);
+                      setPdfLoading(false);
+                    }}
+                    loading=""
+                    className="flex items-center justify-center max-w-full"
+                  >
+                    <Page 
+                      pageNumber={currentPage + 1}
+                      scale={pdfScale}
+                      renderTextLayer={true}
+                      renderAnnotationLayer={true}
+                      className="shadow-lg sm:max-w-none max-w-full"
+                      data-testid={`pdf-page-${currentPage + 1}`}
+                      width={window.innerWidth < 640 ? Math.min(window.innerWidth - 32, 800) : undefined}
+                    />
+                  </Document>
+                </div>
               </div>
             ) : (
               <img
@@ -252,19 +271,6 @@ export function DocumentViewer({ document, open, onClose }: DocumentViewerProps)
             </>
           )}
 
-          {/* Floating download button for mobile - compact icon-only */}
-          <div className="sm:hidden absolute top-4 right-4 z-10">
-            <Button
-              variant="default"
-              size="icon"
-              onClick={isPdf ? handleDownloadPDF : () => handleDownloadPage(currentPage)}
-              data-testid="button-download-mobile"
-              className="h-10 w-10 shadow-lg"
-              aria-label={isPdf ? 'PDF herunterladen' : 'Bild herunterladen'}
-            >
-              <Download className="h-5 w-5" />
-            </Button>
-          </div>
         </div>
 
         {/* Page thumbnails for multi-page documents (only for images, not PDFs) */}
