@@ -79,12 +79,24 @@ export async function setObjectAclPolicy(
   });
   const currentObject = await s3Client.send(getCommand);
 
+  // Convert stream to buffer
+  const streamToBuffer = async (stream: any): Promise<Buffer> => {
+    const chunks: Buffer[] = [];
+    for await (const chunk of stream) {
+      chunks.push(Buffer.from(chunk));
+    }
+    return Buffer.concat(chunks);
+  };
+
+  const bodyBuffer = await streamToBuffer(currentObject.Body);
+
   // Update metadata using PutObject with existing body
   const putCommand = new PutObjectCommand({
     Bucket: s3Object.bucket,
     Key: s3Object.key,
-    Body: currentObject.Body,
+    Body: bodyBuffer,
     ContentType: currentObject.ContentType,
+    ContentLength: bodyBuffer.length,
     Metadata: {
       aclpolicy: JSON.stringify(aclPolicy),
     },
