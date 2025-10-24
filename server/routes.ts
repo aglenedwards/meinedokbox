@@ -1794,7 +1794,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           try {
             const pageUrl = pageUrls[i];
             const objectFile = await objectStorageService.getObjectEntityFile(pageUrl);
-            const [fileBuffer] = await objectFile.download();
+            const fileBuffer = await objectStorageService.getObjectBuffer(objectFile);
             
             // Create safe filename with correct extension from MIME type
             const safeTitle = doc.title.replace(/[^a-zA-Z0-9äöüÄÖÜß\s-]/g, '_');

@@ -1,9 +1,10 @@
-// Object storage utilities for file management
-// Reference: javascript_object_storage blueprint
+// IONOS S3 storage utilities for file management
+// Migrated from Google Cloud Storage to IONOS S3
 
-import { ObjectStorageService, objectStorageClient } from "../objectStorage";
+import { ObjectStorageService } from "../objectStorage";
 import { setObjectAclPolicy, ObjectPermission } from "../objectAcl";
 import sharp from "sharp";
+import { randomUUID } from "crypto";
 
 // Determine content type based on file extension
 function getContentType(fileName: string): string {
@@ -26,24 +27,19 @@ export async function uploadFile(
 ): Promise<{ filePath: string; thumbnailPath: string | null }> {
   const objectStorageService = new ObjectStorageService();
   
-  // Get upload URL for the main file
-  const uploadURL = await objectStorageService.getObjectEntityUploadURL();
+  // Generate unique object key
+  const objectId = randomUUID();
+  const key = `.private/uploads/${objectId}`;
   
   // Determine correct content type
   const contentType = getContentType(fileName);
-  console.log('Uploading file:', fileName, 'Content-Type:', contentType);
+  console.log('Uploading file to S3:', fileName, 'Key:', key, 'Content-Type:', contentType);
   
-  // Upload file to object storage using presigned URL
-  await fetch(uploadURL, {
-    method: "PUT",
-    body: file,
-    headers: {
-      "Content-Type": contentType,
-    },
-  });
+  // Upload file directly to S3
+  await objectStorageService.uploadBuffer(file, key, contentType);
   
-  // Normalize the path
-  const filePath = objectStorageService.normalizeObjectEntityPath(uploadURL);
+  // Construct normalized path
+  const filePath = `/objects/uploads/${objectId}`;
   
   // Set ACL policy so the owner can access the file
   try {
