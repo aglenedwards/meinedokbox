@@ -338,7 +338,7 @@ export default function Preise() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-muted-foreground">
-                    Der Master-Account kann bis zu 3 weitere Familienmitglieder (Slaves) einladen. Jeder hat seinen 
+                    Der Master-Account kann bis zu 3 weitere Familienmitglieder einladen. Jeder hat seinen 
                     eigenen Login und private Ordner. Uploads und Speicher werden gemeinsam genutzt. Sie können 
                     selektiv Dokumente miteinander teilen oder privat halten.
                   </p>
@@ -351,7 +351,7 @@ export default function Preise() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-muted-foreground">
-                    Wir akzeptieren Kreditkarten (Visa, Mastercard, American Express), SEPA-Lastschrift und PayPal. 
+                    Wir akzeptieren Kreditkarten (Visa, Mastercard, American Express) und PayPal. 
                     Die Abrechnung erfolgt sicher über unseren Zahlungspartner Stripe.
                   </p>
                 </CardContent>
@@ -376,7 +376,7 @@ export default function Preise() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-muted-foreground">
-                    Ja! Gemeinnützige Organisationen, Bildungseinrichtungen und NGOs erhalten 30% Rabatt. 
+                    Ja! Gemeinnützige Organisationen, Bildungseinrichtungen und NGOs erhalten einen Rabatt. 
                     Kontaktieren Sie uns einfach unter service@meinedokbox.de mit Ihrem Nachweis.
                   </p>
                 </CardContent>
