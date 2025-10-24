@@ -111,12 +111,23 @@ export function DocumentViewer({ document, open, onClose }: DocumentViewerProps)
           </div>
           <div className="flex items-center justify-center h-full p-4">
             {isPdf ? (
-              <iframe
-                src={viewUrl}
+              <object
+                data={viewUrl}
+                type="application/pdf"
                 className="w-full h-full border-0"
                 title={document.title}
                 data-testid="pdf-viewer"
-              />
+              >
+                <p className="text-center">
+                  PDF kann nicht angezeigt werden. 
+                  <button 
+                    onClick={handleDownloadPDF}
+                    className="text-primary underline ml-2"
+                  >
+                    PDF herunterladen
+                  </button>
+                </p>
+              </object>
             ) : (
               <img
                 src={viewUrl}
