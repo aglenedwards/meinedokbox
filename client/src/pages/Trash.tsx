@@ -118,27 +118,27 @@ export default function Trash() {
             
             <div className="grid gap-3 sm:gap-4">
               {documents.map((doc) => (
-                <Card key={doc.id} className="hover-elevate active-elevate-2">
+                <Card key={doc.id} className="hover-elevate active-elevate-2 overflow-hidden">
                   <CardHeader className="pb-3">
-                    <div className="flex flex-col gap-3">
+                    <div className="flex flex-col gap-3 min-w-0">
                       <div className="flex-1 min-w-0">
-                        <CardTitle className="text-base sm:text-lg truncate">{doc.title}</CardTitle>
+                        <CardTitle className="text-base sm:text-lg break-words line-clamp-2">{doc.title}</CardTitle>
                         <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-2 text-xs sm:text-sm text-muted-foreground">
-                          <span className="px-2 py-0.5 sm:py-1 bg-muted rounded text-xs">
+                          <span className="px-2 py-0.5 sm:py-1 bg-muted rounded text-xs shrink-0">
                             {doc.category}
                           </span>
-                          <span className="hidden sm:inline">
+                          <span className="hidden sm:inline shrink-0">
                             Hochgeladen: {format(new Date(doc.uploadedAt), "d. MMM yyyy", { locale: de })}
                           </span>
-                          <span className="sm:hidden">
+                          <span className="sm:hidden shrink-0">
                             {format(new Date(doc.uploadedAt), "d. MMM yy", { locale: de })}
                           </span>
                           {doc.deletedAt && (
                             <>
-                              <span className="hidden sm:inline">
+                              <span className="hidden sm:inline shrink-0">
                                 Gelöscht: {format(new Date(doc.deletedAt), "d. MMM yyyy", { locale: de })}
                               </span>
-                              <span className="sm:hidden">
+                              <span className="sm:hidden shrink-0">
                                 Gelöscht: {format(new Date(doc.deletedAt), "d. MMM yy", { locale: de })}
                               </span>
                             </>
@@ -152,10 +152,10 @@ export default function Trash() {
                           onClick={() => handleRestore(doc.id)}
                           disabled={restoreMutation.isPending}
                           data-testid={`button-restore-${doc.id}`}
-                          className="w-full sm:w-auto"
+                          className="w-full sm:w-auto shrink-0"
                         >
-                          <RotateCcw className="h-4 w-4 mr-2" />
-                          Wiederherstellen
+                          <RotateCcw className="h-4 w-4 mr-2 shrink-0" />
+                          <span className="truncate">Wiederherstellen</span>
                         </Button>
                         <Button
                           variant="destructive"
@@ -163,17 +163,17 @@ export default function Trash() {
                           onClick={() => handlePermanentDelete(doc.id)}
                           disabled={deleteMutation.isPending}
                           data-testid={`button-permanent-delete-${doc.id}`}
-                          className="w-full sm:w-auto"
+                          className="w-full sm:w-auto shrink-0"
                         >
-                          <Trash2 className="h-4 w-4 mr-2" />
-                          Endgültig löschen
+                          <Trash2 className="h-4 w-4 mr-2 shrink-0" />
+                          <span className="truncate">Endgültig löschen</span>
                         </Button>
                       </div>
                     </div>
                   </CardHeader>
                   {doc.extractedText && (
-                    <CardContent className="pt-0">
-                      <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">
+                    <CardContent className="pt-0 min-w-0">
+                      <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 break-words">
                         {doc.extractedText}
                       </p>
                     </CardContent>
