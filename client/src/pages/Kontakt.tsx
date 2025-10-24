@@ -5,18 +5,23 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { z } from "zod";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { Link } from "wouter";
 
 const contactSchema = z.object({
   name: z.string().min(2, "Name muss mindestens 2 Zeichen lang sein"),
   email: z.string().email("Ungültige E-Mail-Adresse"),
   subject: z.string().min(3, "Betreff muss mindestens 3 Zeichen lang sein"),
   message: z.string().min(10, "Nachricht muss mindestens 10 Zeichen lang sein"),
+  privacy: z.boolean().refine((val) => val === true, {
+    message: "Sie müssen die Datenschutzerklärung akzeptieren",
+  }),
 });
 
 type ContactFormData = z.infer<typeof contactSchema>;
@@ -32,6 +37,7 @@ export default function Kontakt() {
       email: "",
       subject: "",
       message: "",
+      privacy: false,
     },
   });
 
@@ -176,6 +182,33 @@ export default function Kontakt() {
                               />
                             </FormControl>
                             <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="privacy"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-lg border p-4 bg-muted/50">
+                            <FormControl>
+                              <Checkbox
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                                data-testid="checkbox-privacy"
+                              />
+                            </FormControl>
+                            <div className="space-y-1 leading-none">
+                              <FormLabel className="text-sm font-normal cursor-pointer">
+                                Ich habe die{" "}
+                                <Link href="/datenschutz" className="text-primary hover:underline font-medium">
+                                  Datenschutzerklärung
+                                </Link>{" "}
+                                zur Kenntnis genommen. Ich stimme zu, dass meine Angaben zur Kontaktaufnahme 
+                                und Zuordnung für eventuelle Rückfragen gespeichert werden.
+                              </FormLabel>
+                              <FormMessage />
+                            </div>
                           </FormItem>
                         )}
                       />
