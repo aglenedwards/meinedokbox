@@ -89,6 +89,7 @@ export interface IStorage {
   
   // Upload counter management (monthly limit tracking)
   incrementUploadCounter(userId: string, incrementBy?: number): Promise<User | undefined>;
+  decrementUploadCounter(userId: string, decrementBy?: number): Promise<User | undefined>;
   resetUploadCounter(userId: string): Promise<User | undefined>;
   checkAndResetUploadCounter(userId: string): Promise<User | undefined>;
   
@@ -486,6 +487,10 @@ export class DbStorage implements IStorage {
     const success = result.rowCount !== null && result.rowCount > 0;
     if (success) {
       console.log(`✓ Document ${id} permanently deleted from database and S3`);
+      
+      // Decrement upload counter since document no longer exists
+      await this.decrementUploadCounter(userId, 1);
+      console.log(`✓ Upload counter decremented for user ${userId}`);
     }
     
     return success;
@@ -1051,6 +1056,22 @@ export class DbStorage implements IStorage {
       .update(users)
       .set({
         uploadedThisMonth: sql`${users.uploadedThisMonth} + ${incrementBy}`,
+      })
+      .where(eq(users.id, userId))
+      .returning();
+
+    return updated;
+  }
+
+  /**
+   * Decrement upload counter for user (after permanent deletion)
+   */
+  async decrementUploadCounter(userId: string, decrementBy: number = 1): Promise<User | undefined> {
+    // Make sure counter doesn't go below 0
+    const [updated] = await db
+      .update(users)
+      .set({
+        uploadedThisMonth: sql`GREATEST(0, ${users.uploadedThisMonth} - ${decrementBy})`,
       })
       .where(eq(users.id, userId))
       .returning();
