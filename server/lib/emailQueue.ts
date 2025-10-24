@@ -1,49 +1,35 @@
-import fs from 'fs/promises';
-import path from 'path';
+import { storage } from '../storage';
 import { sendSharedAccessInvitation, sendVerificationEmail } from './sendEmail';
-
-interface EmailJob {
-  id: string;
-  type: 'verification' | 'invitation';
-  data: {
-    email: string;
-    name?: string;
-    token: string;
-  };
-  attempts: number;
-  maxAttempts: number;
-  createdAt: Date;
-  lastAttemptAt?: Date;
-  error?: string;
-}
+import type { EmailJob } from '@shared/schema';
 
 class EmailQueue {
-  private queue: EmailJob[] = [];
   private processing: boolean = false;
-  private failedJobsPath: string;
   private processingInterval: NodeJS.Timeout | null = null;
 
   constructor() {
-    this.failedJobsPath = path.join(process.cwd(), 'email-failed-jobs.json');
     this.startProcessing();
-    this.loadFailedJobs();
+    // Start processing any pending jobs immediately
+    this.processQueue();
   }
 
   /**
    * Add verification email to queue
    */
   async enqueueVerificationEmail(email: string, name: string, token: string): Promise<void> {
-    const job: EmailJob = {
-      id: `verify_${Date.now()}_${Math.random().toString(36).substring(7)}`,
+    const jobId = `verify_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+    
+    await storage.createEmailJob({
+      id: jobId,
       type: 'verification',
-      data: { email, name, token },
+      email,
+      name,
+      token,
       attempts: 0,
       maxAttempts: 3,
-      createdAt: new Date(),
-    };
+      status: 'pending',
+    });
 
-    this.queue.push(job);
-    console.log(`[EmailQueue] ✉️ Enqueued verification email for ${email}`);
+    console.log(`[EmailQueue] ✉️ Enqueued verification email for ${email} (Job ID: ${jobId})`);
     
     // Start processing if not already running
     if (!this.processing) {
@@ -55,17 +41,20 @@ class EmailQueue {
    * Add invitation email to queue
    */
   async enqueueInvitationEmail(email: string, ownerName: string, token: string): Promise<void> {
-    const job: EmailJob = {
-      id: `invite_${Date.now()}_${Math.random().toString(36).substring(7)}`,
+    const jobId = `invite_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+    
+    await storage.createEmailJob({
+      id: jobId,
       type: 'invitation',
-      data: { email, name: ownerName, token },
+      email,
+      name: ownerName,
+      token,
       attempts: 0,
       maxAttempts: 3,
-      createdAt: new Date(),
-    };
+      status: 'pending',
+    });
 
-    this.queue.push(job);
-    console.log(`[EmailQueue] ✉️ Enqueued invitation email for ${email}`);
+    console.log(`[EmailQueue] ✉️ Enqueued invitation email for ${email} (Job ID: ${jobId})`);
     
     // Start processing if not already running
     if (!this.processing) {
@@ -74,20 +63,32 @@ class EmailQueue {
   }
 
   /**
-   * Process all jobs in queue
+   * Process all pending jobs in queue
    */
   private async processQueue(): Promise<void> {
-    if (this.processing || this.queue.length === 0) {
+    if (this.processing) {
       return;
     }
 
     this.processing = true;
 
-    while (this.queue.length > 0) {
-      const job = this.queue.shift();
-      if (!job) break;
+    try {
+      // Get pending jobs from database
+      const pendingJobs = await storage.getPendingEmailJobs(10);
 
-      await this.processJob(job);
+      if (pendingJobs.length === 0) {
+        this.processing = false;
+        return;
+      }
+
+      console.log(`[EmailQueue] 📬 Processing ${pendingJobs.length} pending email jobs`);
+
+      // Process all jobs sequentially
+      for (const job of pendingJobs) {
+        await this.processJob(job);
+      }
+    } catch (error) {
+      console.error('[EmailQueue] Error processing queue:', error);
     }
 
     this.processing = false;
@@ -97,113 +98,71 @@ class EmailQueue {
    * Process a single email job
    */
   private async processJob(job: EmailJob): Promise<void> {
-    job.attempts++;
-    job.lastAttemptAt = new Date();
+    const attempts = (job.attempts || 0) + 1;
 
-    console.log(`[EmailQueue] 📨 Processing ${job.type} email for ${job.data.email} (attempt ${job.attempts}/${job.maxAttempts})`);
+    // Update job to processing status
+    await storage.updateEmailJob(job.id, {
+      status: 'processing',
+      attempts,
+      lastAttemptAt: new Date(),
+    });
+
+    console.log(`[EmailQueue] 📨 Processing ${job.type} email for ${job.email} (attempt ${attempts}/${job.maxAttempts})`);
 
     try {
       let success = false;
 
       if (job.type === 'verification') {
-        success = await sendVerificationEmail(job.data.email, job.data.name || 'User', job.data.token);
+        success = await sendVerificationEmail(job.email, job.name || 'User', job.token);
       } else if (job.type === 'invitation') {
-        success = await sendSharedAccessInvitation(job.data.email, job.data.name || 'Ein Nutzer', job.data.token);
+        success = await sendSharedAccessInvitation(job.email, job.name || 'Ein Nutzer', job.token);
       }
 
       if (success) {
-        console.log(`[EmailQueue] ✅ Successfully sent ${job.type} email to ${job.data.email}`);
+        console.log(`[EmailQueue] ✅ Successfully sent ${job.type} email to ${job.email}`);
+        
+        // Mark as success and delete from queue
+        await storage.deleteEmailJob(job.id);
       } else {
         throw new Error('Email sending returned false');
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      console.error(`[EmailQueue] ❌ Failed to send ${job.type} email to ${job.data.email}: ${errorMessage}`);
-
-      job.error = errorMessage;
+      console.error(`[EmailQueue] ❌ Failed to send ${job.type} email to ${job.email}: ${errorMessage}`);
 
       // Retry if under max attempts
-      if (job.attempts < job.maxAttempts) {
-        console.log(`[EmailQueue] 🔄 Retrying ${job.type} email for ${job.data.email} (${job.maxAttempts - job.attempts} retries left)`);
+      if (attempts < job.maxAttempts) {
+        console.log(`[EmailQueue] 🔄 Will retry ${job.type} email for ${job.email} (${job.maxAttempts - attempts} retries left)`);
         
-        // Exponential backoff: wait before re-adding to queue
-        const delayMs = Math.min(1000 * Math.pow(2, job.attempts), 30000); // Max 30 seconds
-        await new Promise(resolve => setTimeout(resolve, delayMs));
-        
-        this.queue.push(job); // Re-add to queue
-      } else {
-        console.error(`[EmailQueue] 💀 Max attempts reached for ${job.type} email to ${job.data.email}. Moving to failed jobs.`);
-        await this.saveFailedJob(job);
-      }
-    }
-  }
-
-  /**
-   * Save failed job to persistent storage
-   */
-  private async saveFailedJob(job: EmailJob): Promise<void> {
-    try {
-      let failedJobs: EmailJob[] = [];
-
-      try {
-        const fileContent = await fs.readFile(this.failedJobsPath, 'utf-8');
-        failedJobs = JSON.parse(fileContent);
-      } catch (error) {
-        // File doesn't exist yet, start with empty array
-        failedJobs = [];
-      }
-
-      failedJobs.push(job);
-      await fs.writeFile(this.failedJobsPath, JSON.stringify(failedJobs, null, 2));
-      
-      console.log(`[EmailQueue] 💾 Saved failed job ${job.id} to disk`);
-    } catch (error) {
-      console.error('[EmailQueue] Failed to save failed job to disk:', error);
-    }
-  }
-
-  /**
-   * Load failed jobs from disk and retry them
-   */
-  private async loadFailedJobs(): Promise<void> {
-    try {
-      const fileContent = await fs.readFile(this.failedJobsPath, 'utf-8');
-      const failedJobs: EmailJob[] = JSON.parse(fileContent);
-
-      if (failedJobs.length > 0) {
-        console.log(`[EmailQueue] 🔄 Found ${failedJobs.length} failed jobs. Retrying...`);
-        
-        // Reset attempts for retry
-        failedJobs.forEach(job => {
-          job.attempts = 0;
-          job.error = undefined;
+        // Update job back to pending with error and attempt count
+        await storage.updateEmailJob(job.id, {
+          status: 'pending',
+          attempts,
+          error: errorMessage,
         });
-
-        this.queue.push(...failedJobs);
-
-        // Clear failed jobs file after loading
-        await fs.writeFile(this.failedJobsPath, JSON.stringify([], null, 2));
+      } else {
+        console.error(`[EmailQueue] 💀 Max attempts reached for ${job.type} email to ${job.email}. Marking as failed.`);
         
-        this.processQueue();
-      }
-    } catch (error) {
-      // File doesn't exist or can't be read - that's okay
-      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
-        console.error('[EmailQueue] Error loading failed jobs:', error);
+        // Mark as failed (keep in DB for debugging)
+        await storage.updateEmailJob(job.id, {
+          status: 'failed',
+          attempts,
+          error: errorMessage,
+        });
       }
     }
   }
 
   /**
-   * Start background processing every 30 seconds for failed jobs
+   * Start background processing every 30 seconds for pending jobs
    */
   private startProcessing(): void {
-    // Check for failed jobs every 30 seconds
+    // Check for pending jobs every 30 seconds
     this.processingInterval = setInterval(() => {
-      this.loadFailedJobs();
+      this.processQueue();
     }, 30000);
 
-    console.log('[EmailQueue] 🚀 Email queue started with 30s retry interval');
+    console.log('[EmailQueue] 🚀 Email queue started with 30s check interval (PostgreSQL-backed)');
   }
 
   /**
@@ -220,9 +179,10 @@ class EmailQueue {
   /**
    * Get current queue status
    */
-  getStatus(): { pending: number; processing: boolean } {
+  async getStatus(): Promise<{ pending: number; processing: boolean }> {
+    const pendingJobs = await storage.getPendingEmailJobs(1000);
     return {
-      pending: this.queue.length,
+      pending: pendingJobs.length,
       processing: this.processing,
     };
   }

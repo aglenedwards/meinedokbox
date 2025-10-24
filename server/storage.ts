@@ -1,6 +1,6 @@
-import { type User, type UpsertUser, type Document, type InsertDocument, type Tag, type InsertTag, type DocumentTag, type InsertDocumentTag, type SharedAccess, type InsertSharedAccess, type Folder, type InsertFolder, type TrialNotification, type InsertTrialNotification, type EmailWhitelist } from "@shared/schema";
+import { type User, type UpsertUser, type Document, type InsertDocument, type Tag, type InsertTag, type DocumentTag, type InsertDocumentTag, type SharedAccess, type InsertSharedAccess, type Folder, type InsertFolder, type TrialNotification, type InsertTrialNotification, type EmailWhitelist, type EmailJob, type InsertEmailJob } from "@shared/schema";
 import { db } from "./db";
-import { users, documents, tags, documentTags, sharedAccess, folders, trialNotifications, emailWhitelist } from "@shared/schema";
+import { users, documents, tags, documentTags, sharedAccess, folders, trialNotifications, emailWhitelist, emailJobs } from "@shared/schema";
 import { eq, and, or, like, desc, asc, isNull, isNotNull, inArray, sql } from "drizzle-orm";
 import { generateInboundEmail } from "./lib/emailInbound";
 import crypto from "crypto";
@@ -83,6 +83,12 @@ export interface IStorage {
   addEmailToWhitelist(userId: string, email: string): Promise<EmailWhitelist>;
   removeEmailFromWhitelist(id: string, userId: string): Promise<boolean>;
   isEmailWhitelisted(userId: string, email: string): Promise<boolean>;
+  
+  // Email queue management (PostgreSQL-backed reliable email delivery)
+  createEmailJob(job: InsertEmailJob): Promise<EmailJob>;
+  getPendingEmailJobs(limit?: number): Promise<EmailJob[]>;
+  updateEmailJob(id: string, data: Partial<InsertEmailJob>): Promise<EmailJob | undefined>;
+  deleteEmailJob(id: string): Promise<boolean>;
   
   // Partner access helper (for Master-Slave document sharing)
   getPartnerUserIds(userId: string): Promise<string[]>;
@@ -1034,6 +1040,41 @@ export class DbStorage implements IStorage {
   async isEmailWhitelisted(userId: string, email: string): Promise<boolean> {
     const entry = await this.getEmailWhitelistEntry(userId, email);
     return !!entry;
+  }
+
+  // Email queue implementations (PostgreSQL-backed)
+  async createEmailJob(job: InsertEmailJob): Promise<EmailJob> {
+    const [newJob] = await db
+      .insert(emailJobs)
+      .values(job)
+      .returning();
+    return newJob;
+  }
+
+  async getPendingEmailJobs(limit: number = 50): Promise<EmailJob[]> {
+    const jobs = await db
+      .select()
+      .from(emailJobs)
+      .where(eq(emailJobs.status, 'pending'))
+      .orderBy(asc(emailJobs.createdAt))
+      .limit(limit);
+    return jobs;
+  }
+
+  async updateEmailJob(id: string, data: Partial<InsertEmailJob>): Promise<EmailJob | undefined> {
+    const [updated] = await db
+      .update(emailJobs)
+      .set(data)
+      .where(eq(emailJobs.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteEmailJob(id: string): Promise<boolean> {
+    const result = await db
+      .delete(emailJobs)
+      .where(eq(emailJobs.id, id));
+    return result.rowCount !== null && result.rowCount > 0;
   }
 
   // Admin functions
