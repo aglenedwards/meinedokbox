@@ -17,7 +17,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { z } from "zod";
 import { login, register, getCurrentUser, type LoginData, type RegisterData } from "@/lib/api";
 import { queryClient } from "@/lib/queryClient";
-import { FileText, Zap, Users, Shield, Sparkles, Check, ArrowRight, Camera, Scan, FolderOpen, X, TrendingUp, Clock, Brain, Search, Mail, Home, Briefcase, Heart, Eye, EyeOff } from "lucide-react";
+import { FileText, Zap, Users, Shield, Sparkles, Check, ArrowRight, Camera, Scan, FolderOpen, X, TrendingUp, Clock, Brain, Search, Mail, Home, Briefcase, Heart, Eye, EyeOff, MapPin } from "lucide-react";
 import logoImage from "@assets/meinedokbox_1760966015056.png";
 import { Footer } from "@/components/Footer";
 
@@ -246,10 +246,37 @@ export default function Landing() {
               Einfach fotografieren, per E-Mail weiterleiten oder hochladen. Automatisch kategorisiert und sicher archiviert.
             </p>
             
-            {/* Social Proof */}
-            <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-              <Users className="h-4 w-4" />
-              <span>Über 500 zufriedene Nutzer</span>
+            {/* Trust Badges */}
+            <div className="flex flex-wrap items-center justify-center gap-6 text-sm" data-testid="trust-badges">
+              <div className="flex items-center gap-2">
+                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10">
+                  <MapPin className="h-4 w-4 text-primary" />
+                </div>
+                <div className="text-left">
+                  <div className="font-semibold text-foreground">100% Deutschland</div>
+                  <div className="text-xs text-muted-foreground">Daten auf deutschen Servern</div>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10">
+                  <Shield className="h-4 w-4 text-primary" />
+                </div>
+                <div className="text-left">
+                  <div className="font-semibold text-foreground">DSGVO-konform</div>
+                  <div className="text-xs text-muted-foreground">Ohne Umwege über Drittstaaten</div>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10">
+                  <Brain className="h-4 w-4 text-primary" />
+                </div>
+                <div className="text-left">
+                  <div className="font-semibold text-foreground">KI-Kategorisierung</div>
+                  <div className="text-xs text-muted-foreground">Automatisch sortiert in Sekunden</div>
+                </div>
+              </div>
             </div>
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
               <Button
@@ -852,7 +879,7 @@ export default function Landing() {
               Das sagen unsere Nutzer
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              Über 500 zufriedene Nutzer vertrauen bereits auf MeineDokBox
+              Vertrauen Sie auf sichere, DSGVO-konforme Dokumentenverwaltung
             </p>
           </div>
 
