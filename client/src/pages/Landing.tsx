@@ -151,7 +151,7 @@ export default function Landing() {
         const email = loginForm.getValues("email");
         toast({
           title: "E-Mail-Adresse nicht bestätigt",
-          description: error.message,
+          description: "Bitte bestätigen Sie zuerst Ihre E-Mail-Adresse.",
           variant: "destructive",
           action: (
             <ToastAction
@@ -167,12 +167,12 @@ export default function Landing() {
                   const data = await res.json();
                   toast({
                     title: "E-Mail gesendet",
-                    description: data.message,
+                    description: "Bitte überprüfen Sie Ihr Postfach.",
                   });
                 } catch (err) {
                   toast({
                     title: "Fehler",
-                    description: "E-Mail konnte nicht gesendet werden",
+                    description: "E-Mail konnte nicht gesendet werden. Bitte versuchen Sie es später erneut.",
                     variant: "destructive",
                   });
                 }
@@ -184,8 +184,8 @@ export default function Landing() {
         });
       } else {
         toast({
-          title: "Login fehlgeschlagen",
-          description: error.message,
+          title: "Anmeldung fehlgeschlagen",
+          description: "E-Mail-Adresse oder Passwort ist falsch. Bitte überprüfen Sie Ihre Eingaben.",
           variant: "destructive",
         });
       }
@@ -205,9 +205,16 @@ export default function Landing() {
       setAuthTab("login");
     },
     onError: (error: Error) => {
+      // Extract user-friendly message
+      let userMessage = "Die Registrierung konnte nicht abgeschlossen werden. Bitte versuchen Sie es erneut.";
+      
+      if (error.message?.includes("existiert bereits")) {
+        userMessage = "Diese E-Mail-Adresse wird bereits verwendet. Bitte melden Sie sich an oder verwenden Sie eine andere E-Mail-Adresse.";
+      }
+      
       toast({
         title: "Registrierung fehlgeschlagen",
-        description: error.message,
+        description: userMessage,
         variant: "destructive",
       });
     },
