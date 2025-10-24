@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Download, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, X, Trash2 } from "lucide-react";
+import { Download, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, X } from "lucide-react";
 import { Document, Page, pdfjs } from 'react-pdf';
 import type { Document as DocumentType } from "@shared/schema";
 import 'react-pdf/dist/Page/AnnotationLayer.css';
@@ -17,10 +17,9 @@ interface DocumentViewerProps {
   document: DocumentType | null;
   open: boolean;
   onClose: () => void;
-  onDelete?: () => void;
 }
 
-export function DocumentViewer({ document, open, onClose, onDelete }: DocumentViewerProps) {
+export function DocumentViewer({ document, open, onClose }: DocumentViewerProps) {
   const [currentPage, setCurrentPage] = useState(0);
   const [pdfNumPages, setPdfNumPages] = useState<number | null>(null);
   const [pdfScale, setPdfScale] = useState(1.0);
@@ -117,7 +116,7 @@ export function DocumentViewer({ document, open, onClose, onDelete }: DocumentVi
       <DialogContent className="max-w-4xl w-full h-[90vh] flex flex-col p-0 gap-0">
         {/* Header */}
         <div className="px-4 sm:px-6 py-4 border-b relative">
-          {/* Close, Download and Delete buttons - top right corner */}
+          {/* Close and Download buttons - top right corner */}
           <div className="absolute top-2 right-2 flex flex-col gap-1 z-10">
             <Button
               variant="ghost"
@@ -139,18 +138,6 @@ export function DocumentViewer({ document, open, onClose, onDelete }: DocumentVi
             >
               <Download className="h-4 w-4" />
             </Button>
-            {onDelete && (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={onDelete}
-                data-testid="button-delete-viewer"
-                className="h-8 w-8 rounded-full hover:bg-destructive hover:text-destructive-foreground"
-                aria-label="Löschen"
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            )}
           </div>
 
           {/* Title and info - with padding to avoid button overlap */}

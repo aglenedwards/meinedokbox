@@ -574,6 +574,13 @@ export default function Dashboard() {
             <div className="flex items-center justify-between md:justify-start gap-3 min-w-0">
               <img src={logoImage} alt="MeineDokBox" className="h-12 md:h-16 shrink-0" data-testid="img-logo" />
               <div className="flex items-center gap-2 md:hidden">
+                {!isReadOnly && (
+                  <Link href="/trash">
+                    <Button variant="ghost" size="sm" data-testid="button-trash-mobile">
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </Link>
+                )}
                 <Link href="/settings">
                   <Button variant="ghost" size="sm" data-testid="button-settings-mobile">
                     <Settings className="h-4 w-4" />
@@ -1036,10 +1043,6 @@ export default function Dashboard() {
         document={viewerDocument}
         open={viewerOpen}
         onClose={handleCloseViewer}
-        onDelete={viewerDocument && !isReadOnly ? () => {
-          handleDelete(viewerDocument.id);
-          handleCloseViewer();
-        } : undefined}
       />
 
       <UpgradeModal
