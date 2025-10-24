@@ -75,6 +75,18 @@ export const uploadLimiter = rateLimit({
 });
 
 /**
+ * Rate limiter for contact form submissions
+ * 3 submissions per hour per IP
+ */
+export const contactFormLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 3,
+  message: 'Zu viele Kontaktanfragen. Bitte versuchen Sie es in einer Stunde erneut.',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+/**
  * General API rate limiter
  * 100 requests per 15 minutes per IP
  */

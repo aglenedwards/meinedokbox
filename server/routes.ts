@@ -19,7 +19,7 @@ import { ObjectPermission } from "./objectAcl";
 import { insertDocumentSchema, DOCUMENT_CATEGORIES, PLAN_LIMITS } from "@shared/schema";
 import { combineImagesToPDF, type PageBuffer } from "./lib/pdfGenerator";
 import { parseMailgunWebhook, isSupportedAttachment, isEmailWhitelisted, verifyMailgunWebhook, extractEmailAddress } from "./lib/emailInbound";
-import { sendSharedAccessInvitation, sendVerificationEmail, sendPasswordResetEmail } from "./lib/sendEmail";
+import { sendSharedAccessInvitation, sendVerificationEmail, sendPasswordResetEmail, sendContactFormEmail } from "./lib/sendEmail";
 import { emailQueue } from "./lib/emailQueue";
 import bcrypt from 'bcrypt';
 import { checkDocumentLimit, checkEmailFeature, checkAndDowngradeTrial, getEffectiveUserId, isSharedUser } from "./middleware/subscriptionLimits";
@@ -29,7 +29,8 @@ import {
   emailVerificationLimiter, 
   resendEmailLimiter, 
   inviteLimiter, 
-  uploadLimiter 
+  uploadLimiter,
+  contactFormLimiter
 } from "./middleware/rateLimiters";
 import { db } from "./db";
 import { users, emailLogs, sharedAccess } from "@shared/schema";
@@ -1227,6 +1228,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error registering with invitation:", error);
       res.status(500).json({ message: "Fehler bei der Registrierung" });
+    }
+  });
+
+  // Contact Form API route
+  app.post('/api/contact', contactFormLimiter, async (req, res) => {
+    try {
+      const contactSchema = z.object({
+        name: z.string().min(2, "Name zu kurz"),
+        email: z.string().email("Ungültige E-Mail-Adresse"),
+        subject: z.string().min(3, "Betreff zu kurz"),
+        message: z.string().min(10, "Nachricht zu kurz"),
+        privacy: z.boolean().refine(val => val === true, {
+          message: "Datenschutzerklärung muss akzeptiert werden"
+        }),
+      });
+
+      const { name, email, subject, message } = contactSchema.parse(req.body);
+
+      console.log(`[Contact Form] Received message from ${name} (${email})`);
+      
+      // Send email to service address
+      const emailSent = await sendContactFormEmail(name, email, subject, message);
+
+      if (!emailSent) {
+        console.error("[Contact Form] Failed to send email");
+        return res.status(500).json({ 
+          message: "Die Nachricht konnte nicht versendet werden. Bitte versuchen Sie es später erneut." 
+        });
+      }
+
+      console.log(`[Contact Form] ✅ Email sent successfully from ${name}`);
+      res.json({ 
+        message: "Nachricht erfolgreich gesendet!",
+        success: true
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: error.errors[0].message });
+      }
+      console.error("Error processing contact form:", error);
+      res.status(500).json({ message: "Fehler beim Senden der Nachricht" });
     }
   });
 
