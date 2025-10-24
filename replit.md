@@ -2,85 +2,7 @@
 
 ## Overview
 
-PaperEase is a web and mobile application that digitizes paper documents using smartphone cameras or file uploads. It leverages AI-powered OCR and semantic analysis to automatically categorize documents and organize them into appropriate digital folders. The application provides a modern, productivity-focused interface for efficient document capture, storage, and retrieval.
-
-**Core Purpose:** Minimize friction in document capture and retrieval; maximize clarity in organization through AI-assisted categorization.
-
-**Recent Updates (Oct 2025):**
-- **Hybrid Limit System: Monthly Uploads + Total Storage (Oct 23, 2025):**
-  - ✅ Database: Added `uploadedThisMonth` counter and `uploadCounterResetAt` timestamp to users table
-  - ✅ Schema: PLAN_LIMITS extended with `maxUploadsPerMonth` and `maxStorageGB`
-  - ✅ Plan Limits: Solo (50 uploads/month + 2GB), Family (200/month + 10GB), Family Plus (500/month + 25GB)
-  - ✅ Storage: `incrementUploadCounter()`, `resetUploadCounter()`, `checkAndResetUploadCounter()` methods
-  - ✅ Middleware: `checkDocumentLimit` enforces both upload counter (monthly) and storage (total) limits
-  - ✅ Middleware: Limits shared across Master + all Slaves (combined quota)
-  - ✅ Routes: Upload counter incremented after successful manual upload
-  - ✅ Routes: Upload counter incremented after successful email-inbound upload
-  - ✅ API: `/api/subscription/status` returns `uploadsThisMonth`, `maxUploadsPerMonth`, `storageUsedGB`, `maxStorageGB`
-  - ✅ Auto-Reset: Upload counter auto-resets monthly via timestamp comparison
-  - ✅ **ANTI-ABUSE**: Monthly upload quota prevents spam, storage quota ensures fairness for long-term users
-  - ✅ **FAMILY QUOTA**: Both limits shared across all family members (Master + Slaves)
-- **Dynamic Slave Plan Synchronization (Oct 23, 2025):**
-  - ✅ Backend: `getEffectiveUser()` helper function - returns Master's user data if current user is a Slave
-  - ✅ Backend: `getEffectiveSubscriptionPlan()` helper - returns Master's plan/trial dates for Slaves
-  - ✅ Backend: All subscription checks now use effective plan (upload limits, trial status, feature access)
-  - ✅ Backend: Slave registration simplified - gets 'free' plan in DB, inherits Master's plan dynamically
-  - ✅ Backend: `/api/subscription/status` returns Master's plan for Slaves in real-time
-  - ✅ Backend: `/api/shared-access/invite` checks Master's plan limits for Slaves
-  - ✅ Backend: `checkDocumentLimit` middleware uses Master's trial dates for Slaves
-  - ✅ Backend: `checkEmailFeature` middleware uses Master's plan for Slaves
-  - ✅ **CRITICAL FIX**: Slaves now always have same rights as Master - no manual sync needed!
-  - ✅ **BENEFIT**: When Master upgrades/downgrades, Slaves inherit changes instantly
-- **Token-Based Invitation System (Oct 23, 2025):**
-  - ✅ Backend: Extended shared_access schema with invitationToken, tokenExpiresAt, invitedAt fields
-  - ✅ Backend: Secure token generation (crypto.randomBytes) with 7-day expiry
-  - ✅ Backend: POST /api/shared-access/invite generates token and sends invitation email with signup link
-  - ✅ Backend: GET /api/shared-access/all returns all invitations with status (pending/active/expired/revoked)
-  - ✅ Backend: POST /api/shared-access/resend/:id generates new token and resends invitation
-  - ✅ Backend: GET /api/invite/validate validates token and checks expiry (public endpoint)
-  - ✅ Backend: POST /api/invite/register creates new user with invited email and links to master account
-  - ✅ Backend: Auto-registration includes email verification flow for invited users
-  - ✅ Frontend: /invite page validates token and shows registration form with pre-filled email
-  - ✅ Frontend: Settings page shows all invitations with status badges and action buttons
-  - ✅ Frontend: "Erneut senden" button for pending/expired invitations generates new token
-  - ✅ Email: Beautiful HTML invitation emails with direct signup link containing token
-  - ✅ Security: One-time use tokens, automatic expiry after 7 days, strong password validation
-  - ✅ **INVITATION SYSTEM FULLY FUNCTIONAL** - Invited users can register via token link and get automatic access
-- **DSGVO-Compliant Email/Password Authentication with Double Opt-in (Oct 23, 2025):**
-  - ✅ Backend: Strong password validation (min 8 chars, uppercase, lowercase, number, special char)
-  - ✅ Backend: Register endpoint requires firstName, lastName, password confirmation, privacy checkbox
-  - ✅ Backend: Email verification system with 24-hour token expiry
-  - ✅ Backend: sendVerificationEmail() function sends beautiful HTML verification emails
-  - ✅ Backend: GET /api/auth/verify-email endpoint verifies tokens and activates accounts
-  - ✅ Backend: Login blocked for non-verified users with helpful error message
-  - ✅ Backend: **CRITICAL FIX** - isAuthenticated middleware now properly supports both OIDC and Local Auth users
-  - ✅ Backend: **CRITICAL FIX** - Session persistence enforced with req.session.save() in login flow
-  - ✅ Backend: Cookie settings optimized (secure/sameSite) for development and production environments
-  - ✅ Frontend: Enhanced registration form with password confirmation, privacy checkbox, required name fields
-  - ✅ Frontend: Password strength requirements displayed in placeholder
-  - ✅ Frontend: Email verification page (/verify-email) with success/error states
-  - ✅ Frontend: Post-registration flow shows email verification message instead of auto-login
-  - ✅ Frontend: Login with refetchQueries ensures proper authentication state before redirect
-  - ✅ Database: users.isVerified, users.verificationToken, users.verificationTokenExpiry fields added
-  - ✅ **EMAIL/PASSWORD LOGIN FULLY FUNCTIONAL** - All authentication flows working in development and production
-- **Folder-Based Privacy System (Oct 21, 2025):**
-  - ✅ Backend: Folders table with `isShared` flag for granular privacy control
-  - ✅ Backend: Shared users only see documents from folders marked as shared
-  - ✅ Backend: Auto-migration creates default folders ("Alle Dokumente" shared, "Privat" private)
-  - ✅ Frontend: Folder navigation UI in Dashboard with Lock/Share icons
-  - ✅ Frontend: Documents filtered by selected folder
-  - ✅ Frontend: Upload documents into selected folder
-  - ⏳ Pending: Folder management UI in Settings (create, rename, delete, toggle sharing)
-- **Phase 3 Mobile Excellence Completed:**
-  - ✅ Kamera-Multi-Shot-Modus: Kontinuierliche Dokumentenaufnahme mit der Handykamera
-  - ✅ Auto-Bildoptimierung: Automatische Schärfung, Helligkeit- und Kontrast-Anpassung
-  - ✅ PWA-Support: Vollständig installierbare Progressive Web App
-  - ✅ Offline-Fähigkeit: Service Worker mit intelligenten Caching-Strategien
-  - ✅ Installations- und Update-Prompts: Benutzerfreundliche PWA-Verwaltung
-- Added document viewer with full-screen display for images and PDFs
-- Improved AI categorization to correctly classify Abrechnungen/Endabrechnungen as "Rechnung"
-- Enhanced document cards with clickable preview functionality
-- Download capability for all documents
+PaperEase is a web and mobile application designed to digitize paper documents using smartphone cameras or file uploads. It utilizes AI-powered OCR and semantic analysis for automatic document categorization and organization into digital folders. The application aims to provide a modern, productivity-focused interface for efficient document capture, storage, and retrieval, minimizing friction and maximizing clarity through AI assistance. The project ambitions include GDPR compliance with data stored in Germany and robust anti-abuse and family quota systems.
 
 ## User Preferences
 
@@ -90,120 +12,81 @@ Preferred communication style: Simple, everyday language.
 
 ### Frontend Architecture
 
-**Framework:** React with TypeScript, built using Vite as the build tool.
+**Frameworks & Libraries:** React with TypeScript, Vite, shadcn/ui (Radix UI + Tailwind CSS), Wouter for routing, TanStack Query for state management.
 
-**UI Component System:** shadcn/ui components based on Radix UI primitives, styled with Tailwind CSS following the "New York" design variant.
+**Design System:** Material Design principles combined with modern productivity app patterns, focusing on clean information hierarchy, efficient workflows, and mobile-first interactions. Features include a mobile-first responsive design, HSL-based color system with CSS custom properties, consistent spacing, and the Inter font family.
 
-**Design System:** Material Design principles combined with modern productivity app patterns (inspired by Google Drive, Notion, Dropbox). Focus on clean information hierarchy, efficient workflows, and mobile-first interaction patterns. Detailed color palette and typography specifications defined in `design_guidelines.md`.
-
-**State Management:** TanStack Query (React Query) for server state management with optimistic updates and caching strategies.
-
-**Routing:** Wouter for lightweight client-side routing.
-
-**Theme Support:** Custom ThemeProvider component with light/dark mode toggle, persisted to localStorage.
-
-**Key Design Decisions:**
-- Mobile-first responsive design with breakpoint at 768px
-- HSL-based color system with CSS custom properties for easy theming
-- Consistent spacing using Tailwind's spacing scale (2, 4, 6, 8, 12, 16)
-- Inter font family for readability, JetBrains Mono for metadata/IDs
+**Key Features:**
+- Full PWA support with offline capabilities and intelligent caching.
+- Dynamic theme support with light/dark mode.
+- Document viewer with full-screen display for images and PDFs.
+- Enhanced document cards with clickable previews and download functionality.
+- Kamera-Multi-Shot-Modus for continuous document capture.
+- Auto-Bildoptimierung for image enhancement.
 
 ### Backend Architecture
 
-**Framework:** Express.js (Node.js) with TypeScript, using ES modules.
+**Frameworks & Libraries:** Express.js (Node.js) with TypeScript, ES modules.
 
-**API Structure:** RESTful API with modular route registration pattern. Main routes defined in `server/routes.ts`.
+**API Structure:** RESTful API with modular route registration.
 
-**File Upload Processing:**
-- Multer middleware for handling multipart/form-data uploads
-- Memory storage for immediate processing
-- File type validation (JPEG, PNG, WEBP, PDF)
-- 10MB file size limit
-
-**Authentication:** Dual authentication system supporting both Replit Auth (OIDC) and Email/Password.
-- **Replit Auth:** OpenID Connect (OIDC) integration using Passport.js Strategy
-- **Email/Password:** Passport Local Strategy with bcrypt password hashing (SALT_ROUNDS=10)
-- Session-based authentication with PostgreSQL session storage (express-session)
-- 7-day session TTL
-- User profile data stored in database upon first login or registration
-- Users identified by `userId` format: Replit users have numeric IDs, local users have `local_` prefix
+**Authentication:** Dual system supporting Replit Auth (OIDC via Passport.js) and Email/Password (Passport Local Strategy with bcrypt, double opt-in email verification). Session-based authentication uses PostgreSQL for storage with a 7-day TTL.
 
 **Document Processing Pipeline:**
-1. File upload received via Multer
-2. OpenAI GPT-5 Vision API analyzes document image
-3. AI extracts text (OCR), determines category, generates title, provides confidence score
-   - Categories: Rechnung (includes bills, invoices, Abrechnungen), Vertrag, Versicherung, Brief, Sonstiges
-   - Improved prompt ensures Endabrechnungen and Nebenkostenabrechnungen are classified as "Rechnung"
-4. File and optional thumbnail stored in object storage
-5. Document metadata saved to PostgreSQL database
+1. File upload via Multer (multipart/form-data, memory storage, type validation: JPEG, PNG, WEBP, PDF, 10MB limit).
+2. OpenAI GPT-5 Vision API for OCR, category determination (Rechnung, Vertrag, Versicherung, Brief, Sonstiges), title generation, and confidence scoring. Improved AI classification for specific document types.
+3. File and optional thumbnail stored in IONOS S3 Object Storage.
+4. Document metadata saved to PostgreSQL.
 
-**Document Viewing:**
-- Documents accessible via `/objects/:objectPath` route with ACL-based access control
-- Full-screen viewer modal for images and PDFs
-- Download functionality for all document types
-- Thumbnail previews in document cards
+**Data Management:**
+- **Hybrid Limit System:** Monthly upload quotas and total storage limits per user, shared across family members.
+- **Dynamic Slave Plan Synchronization:** Slave accounts dynamically inherit the Master's subscription plan and limits.
+- **Token-Based Invitation System:** Secure token generation for inviting new users, facilitating automatic linking to master accounts upon registration.
+- **Folder-Based Privacy System:** Granular control over document visibility with shared/private folder options.
 
-**Error Handling:** Centralized error middleware with status code and message extraction.
+**Error Handling:** Centralized middleware for robust error management.
 
 ### Data Storage Solutions
 
-**Primary Database:** PostgreSQL (via Neon serverless driver with WebSocket support).
+**Primary Database:** PostgreSQL (Neon serverless driver) managed with Drizzle ORM for type-safe queries.
 
-**ORM:** Drizzle ORM for type-safe database queries and schema management.
+**Database Schema:** Includes `sessions`, `users`, `folders`, `documents`, and `sharedAccess` tables.
 
-**Database Schema:**
-- `sessions` table: Express session storage with expiry indexing
-- `users` table: User profiles from Replit Auth (email, name, profile image)
-- `folders` table: Folder organization with privacy control (userId, name, isShared boolean)
-- `documents` table: Document metadata (title, category, extracted text, file URLs, confidence score, upload timestamp, folderId for organization)
-- `sharedAccess` table: Tracks which users have shared access to other users' documents
+**Object Storage:** IONOS S3 Object Storage (Frankfurt, Germany) for files and thumbnails. Features include presigned URL generation, path normalization, Sharp for thumbnail generation (400x300 JPEG), and an ACL system using S3 metadata.
 
-**Object Storage:** Google Cloud Storage integration via Replit Object Storage service.
-- Presigned URL generation for secure file uploads
-- Automatic path normalization
-- Thumbnail generation for images using Sharp library (400x300, JPEG at 80% quality)
-- ACL (Access Control List) system for granular permissions (read/write)
+### System Design Choices
 
-**Key Architectural Decisions:**
-- Neon serverless PostgreSQL chosen for scalability and WebSocket support
-- Drizzle ORM provides type safety without heavy abstraction
-- Object storage separation keeps database lightweight and enables CDN optimization
-- Session storage in PostgreSQL ensures consistency across server instances
+- IONOS S3 for GDPR compliance and cost optimization.
+- Neon serverless PostgreSQL for scalability.
+- Drizzle ORM for type safety and lightweight abstraction.
+- Separation of object storage from the database for efficiency and CDN optimization.
+- Robust security measures including strong password policies, token-based invitations, and email verification.
 
-### External Dependencies
+## External Dependencies
 
 **AI/ML Services:**
-- **OpenAI API:** GPT-5 model for document analysis, OCR, and categorization
-- Vision API endpoint for image-based document processing
-- JSON-formatted responses for structured data extraction
+- **OpenAI API:** GPT-5 for document analysis, OCR, and categorization.
 
 **Cloud Infrastructure:**
-- **Google Cloud Storage:** File and thumbnail storage via Replit Object Storage abstraction
-- **Neon Database:** Serverless PostgreSQL hosting
+- **IONOS S3 Object Storage:** Primary storage for documents and thumbnails.
+- **Neon Database:** Serverless PostgreSQL hosting.
 
 **Authentication:**
-- **Replit Auth:** OAuth/OIDC provider for user authentication
-- Issuer URL: `https://replit.com/oidc`
-- Token exchange via Replit sidecar endpoint (localhost:1106)
+- **Replit Auth:** OIDC provider for user authentication.
 
 **Third-Party Libraries:**
-- **Sharp:** Image processing and thumbnail generation
-- **Multer:** File upload handling
-- **Passport.js:** Authentication middleware
-- **date-fns:** Date formatting and manipulation
-- **Radix UI:** Headless UI component primitives
-- **TanStack Query:** Server state management
-- **Tailwind CSS:** Utility-first styling
+- **@aws-sdk/client-s3 & @aws-sdk/s3-request-presigner:** IONOS S3 integration.
+- **Sharp:** Image processing and thumbnail generation.
+- **Multer:** File upload handling.
+- **Passport.js:** Authentication middleware.
+- **date-fns:** Date manipulation.
+- **Radix UI:** Headless UI components.
+- **TanStack Query:** Server state management.
+- **Tailwind CSS:** Utility-first styling.
+- **bcrypt:** Password hashing.
 
 **Development Tools:**
-- **Vite:** Build tool with HMR and development server
-- **TypeScript:** Type safety across client and server
-- **Drizzle Kit:** Database migrations and schema management
-- **ESBuild:** Server bundling for production
-
-**Environment Requirements:**
-- `DATABASE_URL`: PostgreSQL connection string
-- `OPENAI_API_KEY`: OpenAI API authentication
-- `SESSION_SECRET`: Session encryption key
-- `REPL_ID`: Replit environment identifier
-- `ISSUER_URL`: OIDC issuer endpoint (optional, defaults to Replit)
+- **Vite:** Build tool.
+- **TypeScript:** Language.
+- **Drizzle Kit:** Database migrations.
+- **ESBuild:** Server bundling.
