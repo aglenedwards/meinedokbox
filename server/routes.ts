@@ -1400,9 +1400,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
             const extractedText = await extractTextFromPdf(file.buffer);
             console.log(`    Extracted ${extractedText.length} characters from PDF`);
             
-            // If PDF text extraction yielded too little text (< 50 chars), 
-            // it's likely a scanned document - convert to images and use Vision API
-            if (extractedText.length < 50) {
+            // If PDF text extraction yielded too little text (< 250 chars), 
+            // it's likely a scanned/image-based document - convert to images and use Vision API
+            // Vision API is much better at OCR than simple text extraction
+            if (extractedText.length < 250) {
               console.log('    PDF has insufficient text, converting to images for Vision API OCR');
               const pdfImages = await convertPdfToImages(file.buffer);
               const imagesForAnalysis = pdfImages.map(img => ({
