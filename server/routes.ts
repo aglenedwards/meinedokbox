@@ -1377,76 +1377,162 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "No files provided" });
       }
 
-      const firstFile = files[0];
-      const isPdf = firstFile.mimetype === 'application/pdf';
+      console.log(`Processing ${files.length} file(s) as separate documents${folderId ? ` into folder ${folderId}` : ''}`);
 
-      console.log(`Processing ${files.length} file(s) as ${isPdf ? 'PDF' : 'image'} document${folderId ? ` into folder ${folderId}` : ''}`);
+      // Process each file as a separate document
+      const uploadedDocuments = [];
+      const errors = [];
 
-      let analysisResult;
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        try {
+          console.log(`  [${i + 1}/${files.length}] Processing: ${file.originalname}`);
+          
+          const isPdf = file.mimetype === 'application/pdf';
+          let analysisResult;
 
-      if (isPdf) {
-        // Handle PDF: Extract text and analyze
-        if (files.length > 1) {
-          return res.status(400).json({ 
-            message: "Bitte laden Sie nur eine PDF-Datei gleichzeitig hoch."
-          });
-        }
-
-        const extractedText = await extractTextFromPdf(firstFile.buffer);
-        console.log(`Extracted ${extractedText.length} characters from PDF`);
-        
-        // If PDF text extraction yielded too little text (< 50 chars), 
-        // it's likely a scanned document - convert to images and use Vision API
-        if (extractedText.length < 50) {
-          console.log('PDF has insufficient text, converting to images for Vision API OCR');
-          const pdfImages = await convertPdfToImages(firstFile.buffer);
-          const imagesForAnalysis = pdfImages.map(img => ({
-            base64: img.base64,
-            mimeType: img.mimeType,
-          }));
-          analysisResult = await analyzeDocument(imagesForAnalysis);
-        } else {
-          analysisResult = await analyzeDocumentFromText(extractedText);
-        }
-      } else {
-        // Handle images: Use Vision API
-        const imagesForAnalysis = files.map(file => ({
-          base64: file.buffer.toString('base64'),
-          mimeType: file.mimetype,
-        }));
-        analysisResult = await analyzeDocument(imagesForAnalysis);
-      }
-      
-      // Auto-rotate images if AI detected upside down orientation
-      if (analysisResult.needsRotation && !isPdf) {
-        console.log('⟳ AI detected upside down document - auto-rotating 180°');
-        for (let i = 0; i < files.length; i++) {
-          const file = files[i];
-          // Only rotate image files, not PDFs
-          if (file.mimetype.startsWith('image/')) {
+          if (isPdf) {
+            // Handle PDF: Extract text and analyze
+            const extractedText = await extractTextFromPdf(file.buffer);
+            console.log(`    Extracted ${extractedText.length} characters from PDF`);
+            
+            // If PDF text extraction yielded too little text (< 50 chars), 
+            // it's likely a scanned document - convert to images and use Vision API
+            if (extractedText.length < 50) {
+              console.log('    PDF has insufficient text, converting to images for Vision API OCR');
+              const pdfImages = await convertPdfToImages(file.buffer);
+              const imagesForAnalysis = pdfImages.map(img => ({
+                base64: img.base64,
+                mimeType: img.mimeType,
+              }));
+              analysisResult = await analyzeDocument(imagesForAnalysis);
+            } else {
+              analysisResult = await analyzeDocumentFromText(extractedText);
+            }
+          } else {
+            // Handle single image: Use Vision API
+            const imageForAnalysis = [{
+              base64: file.buffer.toString('base64'),
+              mimeType: file.mimetype,
+            }];
+            analysisResult = await analyzeDocument(imageForAnalysis);
+          }
+          
+          // Auto-rotate image if AI detected upside down orientation
+          if (analysisResult.needsRotation && !isPdf && file.mimetype.startsWith('image/')) {
+            console.log('    ⟳ AI detected upside down document - auto-rotating 180°');
             try {
               const rotatedBuffer = await sharp(file.buffer)
                 .rotate(180)
                 .toBuffer();
               file.buffer = rotatedBuffer;
-              console.log(`  ✓ Rotated page ${i + 1}/${files.length}`);
+              console.log('    ✓ Rotated successfully');
             } catch (error) {
-              console.error(`  ✗ Failed to rotate page ${i + 1}:`, error);
+              console.error('    ✗ Failed to rotate:', error);
             }
           }
+          
+          // Upload file and create document
+          const document = await processSingleFileUpload(userId, file, analysisResult, folderId);
+          uploadedDocuments.push(document);
+          
+          console.log(`    ✓ Successfully uploaded: ${analysisResult.title}`);
+        } catch (error) {
+          console.error(`    ✗ Failed to process ${file.originalname}:`, error);
+          errors.push({
+            filename: file.originalname,
+            error: error instanceof Error ? error.message : 'Unknown error'
+          });
         }
       }
       
-      // Upload files (images as pages, PDF as single file)
-      await processMultiPageUpload(userId, files, analysisResult, folderId, res);
+      // Increment upload counter by number of successful uploads
+      if (uploadedDocuments.length > 0) {
+        await storage.incrementUploadCounter(userId, uploadedDocuments.length);
+      }
+      
+      // Return results
+      if (uploadedDocuments.length === 0) {
+        return res.status(400).json({ 
+          message: "Alle Uploads sind fehlgeschlagen",
+          errors 
+        });
+      }
+      
+      if (errors.length > 0) {
+        return res.status(207).json({ // 207 Multi-Status
+          message: `${uploadedDocuments.length} von ${files.length} Dokumenten erfolgreich hochgeladen`,
+          documents: uploadedDocuments,
+          errors
+        });
+      }
+      
+      res.json({ 
+        message: `${uploadedDocuments.length} Dokument(e) erfolgreich hochgeladen`,
+        documents: uploadedDocuments 
+      });
     } catch (error) {
-      console.error("Error uploading document:", error);
+      console.error("Error uploading documents:", error);
       res.status(500).json({ 
-        message: "Failed to upload document",
+        message: "Failed to upload documents",
         error: error instanceof Error ? error.message : "Unknown error"
       });
     }
   });
+
+  async function processSingleFileUpload(
+    userId: string,
+    file: Express.Multer.File,
+    analysisResult: any,
+    folderId: string | null
+  ) {
+    const objectStorageService = new ObjectStorageService();
+
+    // Upload file and thumbnail
+    const { filePath, thumbnailPath } = await uploadFile(
+      file.buffer,
+      file.originalname,
+      userId
+    );
+
+    // Set ACL policy on uploaded file (private, owner = userId)
+    await objectStorageService.trySetObjectEntityAclPolicy(filePath, {
+      owner: userId,
+      visibility: "private",
+    });
+
+    // Set ACL policy on thumbnail if exists
+    if (thumbnailPath) {
+      await objectStorageService.trySetObjectEntityAclPolicy(thumbnailPath, {
+        owner: userId,
+        visibility: "private",
+      });
+    }
+
+    // Create document record in database
+    const documentData = {
+      userId,
+      folderId,
+      title: analysisResult.title,
+      category: analysisResult.category,
+      extractedText: analysisResult.extractedText,
+      pageUrls: [filePath], // Single file = single page
+      thumbnailUrl: thumbnailPath,
+      mimeType: file.mimetype,
+      confidence: analysisResult.confidence,
+      isShared: false, // Default: private documents
+      // Phase 2: Smart metadata
+      extractedDate: analysisResult.extractedDate ? new Date(analysisResult.extractedDate) : null,
+      amount: analysisResult.amount ?? null,
+      sender: analysisResult.sender ?? null,
+    };
+
+    // Validate with Zod schema
+    const validatedData = insertDocumentSchema.parse(documentData);
+    const document = await storage.createDocument(validatedData);
+
+    return document;
+  }
 
   async function processMultiPageUpload(
     userId: string,
