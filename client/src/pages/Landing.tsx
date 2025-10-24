@@ -1158,7 +1158,7 @@ export default function Landing() {
           <h2 className="text-4xl md:text-5xl font-bold text-center mb-6" data-testid="text-pricing-title">
             Einfache, transparente Preise
           </h2>
-          <p className="text-xl text-center text-muted-foreground mb-12 leading-relaxed">
+          <p className="text-xl text-center text-muted-foreground mb-8 leading-relaxed">
             14 Tage kostenlos testen. Keine Kreditkarte erforderlich.
           </p>
 
@@ -1224,15 +1224,7 @@ export default function Landing() {
                   </li>
                   <li className="flex items-start gap-3">
                     <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                    <span>KI-Kategorisierung</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                    <span>Smartphone-App & PWA</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                    <span>E-Mail-Eingang</span>
+                    <span>KI-Kategorisierung & mehr</span>
                   </li>
                 </ul>
                 <Button
@@ -1287,19 +1279,7 @@ export default function Landing() {
                   </li>
                   <li className="flex items-start gap-3">
                     <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                    <span>KI-Kategorisierung</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                    <span>Smartphone-App & PWA</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
                     <span>Private & geteilte Ordner</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                    <span>E-Mail-Eingang</span>
                   </li>
                 </ul>
                 <Button
@@ -1348,23 +1328,7 @@ export default function Landing() {
                   </li>
                   <li className="flex items-start gap-3">
                     <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                    <span>KI-Kategorisierung</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                    <span>Smartphone-App & PWA</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                    <span>Private & geteilte Ordner</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                    <span>E-Mail-Eingang</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                    <span>Prioritäts-Support</span>
+                    <span>Prioritäts-Support & mehr</span>
                   </li>
                 </ul>
                 <Button
@@ -1381,6 +1345,16 @@ export default function Landing() {
                 </Button>
               </CardContent>
             </Card>
+          </div>
+
+          {/* Link to detailed pricing page */}
+          <div className="text-center mt-12">
+            <Link href="/preise">
+              <Button variant="ghost" size="lg" className="text-base" data-testid="link-pricing-details">
+                Alle Preisdetails & Features ansehen
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
