@@ -395,7 +395,7 @@ export default function Landing() {
                 </div>
                 <div className="text-left">
                   <div className="font-semibold text-foreground">DSGVO-konform</div>
-                  <div className="text-xs text-muted-foreground">Ohne Umwege über Drittstaaten</div>
+                  <div className="text-xs text-muted-foreground">EU-Speicherung mit DPF-Absicherung</div>
                 </div>
               </div>
               
