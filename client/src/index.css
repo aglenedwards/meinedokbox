@@ -342,9 +342,9 @@ html, body, #root {
     position: absolute;
     inset: 0;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-    opacity: 0.04;
+    opacity: 0.08;
     pointer-events: none;
-    z-index: 1;
+    z-index: 10;
   }
 
   /* Grid Pattern Overlay */
@@ -353,43 +353,43 @@ html, body, #root {
     position: absolute;
     inset: 0;
     background-image: 
-      linear-gradient(to right, hsl(var(--primary) / 0.03) 1px, transparent 1px),
-      linear-gradient(to bottom, hsl(var(--primary) / 0.03) 1px, transparent 1px);
-    background-size: 40px 40px;
+      linear-gradient(to right, hsl(var(--primary) / 0.08) 1px, transparent 1px),
+      linear-gradient(to bottom, hsl(var(--primary) / 0.08) 1px, transparent 1px);
+    background-size: 60px 60px;
     pointer-events: none;
-    z-index: 1;
-    mask-image: radial-gradient(ellipse at center, black 0%, transparent 75%);
-    -webkit-mask-image: radial-gradient(ellipse at center, black 0%, transparent 75%);
+    z-index: 10;
+    mask-image: radial-gradient(ellipse at center, black 20%, transparent 70%);
+    -webkit-mask-image: radial-gradient(ellipse at center, black 20%, transparent 70%);
   }
 
   .dark .hero-premium-bg::before {
-    opacity: 0.06;
+    opacity: 0.12;
   }
 
   .dark .hero-premium-bg::after {
     background-image: 
-      linear-gradient(to right, hsl(var(--primary) / 0.04) 1px, transparent 1px),
-      linear-gradient(to bottom, hsl(var(--primary) / 0.04) 1px, transparent 1px);
+      linear-gradient(to right, hsl(var(--primary) / 0.10) 1px, transparent 1px),
+      linear-gradient(to bottom, hsl(var(--primary) / 0.10) 1px, transparent 1px);
   }
 
   /* Mesh Gradient - Multiple layered gradients for depth */
   .hero-mesh-gradient {
     background: 
-      radial-gradient(at 20% 30%, hsl(var(--primary) / 0.08) 0px, transparent 50%),
-      radial-gradient(at 80% 70%, hsl(var(--primary) / 0.06) 0px, transparent 50%),
-      radial-gradient(at 50% 50%, hsl(var(--primary) / 0.04) 0px, transparent 60%),
-      radial-gradient(at 10% 80%, hsl(var(--primary) / 0.05) 0px, transparent 45%),
-      radial-gradient(at 90% 20%, hsl(var(--primary) / 0.07) 0px, transparent 55%),
+      radial-gradient(at 20% 30%, hsl(211.61deg 55.69% 32.75% / 0.15) 0px, transparent 50%),
+      radial-gradient(at 80% 70%, hsl(211.61deg 55.69% 32.75% / 0.12) 0px, transparent 50%),
+      radial-gradient(at 50% 50%, hsl(211.61deg 55.69% 32.75% / 0.08) 0px, transparent 60%),
+      radial-gradient(at 10% 80%, hsl(211.61deg 55.69% 32.75% / 0.10) 0px, transparent 45%),
+      radial-gradient(at 90% 20%, hsl(211.61deg 55.69% 32.75% / 0.14) 0px, transparent 55%),
       hsl(var(--background));
   }
 
   .dark .hero-mesh-gradient {
     background: 
-      radial-gradient(at 20% 30%, hsl(var(--primary) / 0.12) 0px, transparent 50%),
-      radial-gradient(at 80% 70%, hsl(var(--primary) / 0.09) 0px, transparent 50%),
-      radial-gradient(at 50% 50%, hsl(var(--primary) / 0.06) 0px, transparent 60%),
-      radial-gradient(at 10% 80%, hsl(var(--primary) / 0.08) 0px, transparent 45%),
-      radial-gradient(at 90% 20%, hsl(var(--primary) / 0.10) 0px, transparent 55%),
+      radial-gradient(at 20% 30%, hsl(210deg 40% 98.04% / 0.08) 0px, transparent 50%),
+      radial-gradient(at 80% 70%, hsl(210deg 40% 98.04% / 0.06) 0px, transparent 50%),
+      radial-gradient(at 50% 50%, hsl(210deg 40% 98.04% / 0.04) 0px, transparent 60%),
+      radial-gradient(at 10% 80%, hsl(210deg 40% 98.04% / 0.05) 0px, transparent 45%),
+      radial-gradient(at 90% 20%, hsl(210deg 40% 98.04% / 0.07) 0px, transparent 55%),
       hsl(var(--background));
   }
 }
