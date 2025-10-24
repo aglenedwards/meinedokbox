@@ -409,6 +409,71 @@ export class DbStorage implements IStorage {
   }
 
   async permanentlyDeleteDocument(id: string, userId: string): Promise<boolean> {
+    // Get document first to retrieve file paths
+    const [doc] = await db
+      .select()
+      .from(documents)
+      .where(
+        and(
+          eq(documents.id, id),
+          eq(documents.userId, userId),
+          isNotNull(documents.deletedAt)
+        )
+      )
+      .limit(1);
+
+    if (!doc) {
+      return false;
+    }
+
+    // Delete files from S3 storage
+    const { s3Client } = await import("./objectStorage");
+    const { DeleteObjectCommand } = await import("@aws-sdk/client-s3");
+    
+    // Helper to parse S3 paths
+    const parseS3Path = (path: string) => {
+      if (!path.startsWith("/")) {
+        path = `/${path}`;
+      }
+      const pathParts = path.split("/");
+      const bucketName = pathParts[1];
+      const objectName = pathParts.slice(2).join("/");
+      return { bucketName, objectName };
+    };
+
+    // Collect all file paths to delete
+    const filesToDelete: string[] = [];
+    
+    // Add all page files
+    if (doc.pageUrls && doc.pageUrls.length > 0) {
+      filesToDelete.push(...doc.pageUrls);
+    } else if (doc.fileUrl) {
+      filesToDelete.push(doc.fileUrl);
+    }
+    
+    // Add thumbnail
+    if (doc.thumbnailUrl) {
+      filesToDelete.push(doc.thumbnailUrl);
+    }
+
+    // Delete all files from S3
+    console.log(`🗑️  Permanently deleting ${filesToDelete.length} file(s) from S3 for document ${id}`);
+    
+    for (const filePath of filesToDelete) {
+      try {
+        const { bucketName, objectName } = parseS3Path(filePath);
+        const deleteCommand = new DeleteObjectCommand({
+          Bucket: bucketName,
+          Key: objectName,
+        });
+        await s3Client.send(deleteCommand);
+        console.log(`  ✓ Deleted from S3: ${objectName}`);
+      } catch (error) {
+        console.error(`  ✗ Failed to delete ${filePath} from S3:`, error);
+        // Continue with other files even if one fails
+      }
+    }
+
     // Hard delete: actually remove from database
     const result = await db.delete(documents).where(
       and(
@@ -417,7 +482,13 @@ export class DbStorage implements IStorage {
         isNotNull(documents.deletedAt)
       )
     );
-    return result.rowCount !== null && result.rowCount > 0;
+    
+    const success = result.rowCount !== null && result.rowCount > 0;
+    if (success) {
+      console.log(`✓ Document ${id} permanently deleted from database and S3`);
+    }
+    
+    return success;
   }
 
   async getUserStorageStats(userId: string): Promise<StorageStats> {
