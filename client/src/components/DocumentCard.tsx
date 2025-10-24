@@ -1,7 +1,8 @@
+import { useState, useEffect } from "react";
 import { 
   FileText, Calendar, MoreVertical, Euro, FileSignature, Shield, Mail, FileQuestion,
   Landmark, Receipt, Briefcase, FileCheck, Building2, Stethoscope, Home, Car, 
-  GraduationCap, Baby, PiggyBank, ShoppingBag, Plane, User, Sparkles, Lock, Users
+  GraduationCap, Baby, PiggyBank, ShoppingBag, Plane, User, Sparkles, Lock, Users, Check
 } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +16,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
 
 interface DocumentCardProps {
   id: string;
@@ -172,6 +174,20 @@ export function DocumentCard({
   const config = categoryConfig[category] || categoryConfig['Sonstiges / Privat'];
   const CategoryIcon = config.icon;
   
+  // Mobile detection (under 768px)
+  const [isMobile, setIsMobile] = useState(false);
+  const [categoryDrawerOpen, setCategoryDrawerOpen] = useState(false);
+  
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+  
   // Helper function to format confidence
   const getConfidenceColor = (conf?: number) => {
     if (!conf) return 'bg-muted text-muted-foreground';
@@ -189,6 +205,7 @@ export function DocumentCard({
   };
   
   return (
+    <>
     <Card 
       className="relative hover-elevate cursor-pointer transition-all" 
       onClick={onView}
@@ -221,29 +238,44 @@ export function DocumentCard({
                   <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onView?.(); }}>
                     Ansehen
                   </DropdownMenuItem>
-                  <DropdownMenuSub>
-                    <DropdownMenuSubTrigger onClick={(e) => e.stopPropagation()}>
+                  
+                  {/* Mobile: Show drawer trigger instead of submenu */}
+                  {isMobile ? (
+                    <DropdownMenuItem 
+                      onClick={(e) => { 
+                        e.stopPropagation(); 
+                        setCategoryDrawerOpen(true);
+                      }}
+                    >
                       Kategorie ändern
-                    </DropdownMenuSubTrigger>
-                    <DropdownMenuSubContent>
-                      {allCategories.map((cat) => (
-                        <DropdownMenuItem
-                          key={cat}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (cat !== category) {
-                              onCategoryChange?.(cat);
-                            }
-                          }}
-                          disabled={cat === category}
-                          data-testid={`menuitem-category-${cat}`}
-                        >
-                          {cat}
-                          {cat === category && " ✓"}
-                        </DropdownMenuItem>
-                      ))}
-                    </DropdownMenuSubContent>
-                  </DropdownMenuSub>
+                    </DropdownMenuItem>
+                  ) : (
+                    /* Desktop: Dropdown with scrolling */
+                    <DropdownMenuSub>
+                      <DropdownMenuSubTrigger onClick={(e) => e.stopPropagation()}>
+                        Kategorie ändern
+                      </DropdownMenuSubTrigger>
+                      <DropdownMenuSubContent className="max-h-[400px] overflow-y-auto">
+                        {allCategories.map((cat) => (
+                          <DropdownMenuItem
+                            key={cat}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (cat !== category) {
+                                onCategoryChange?.(cat);
+                              }
+                            }}
+                            disabled={cat === category}
+                            data-testid={`menuitem-category-${cat}`}
+                          >
+                            {cat}
+                            {cat === category && " ✓"}
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuSubContent>
+                    </DropdownMenuSub>
+                  )}
+                  
                   <DropdownMenuItem 
                     className="text-destructive" 
                     onClick={(e) => { e.stopPropagation(); onDelete?.(); }}
@@ -338,5 +370,47 @@ export function DocumentCard({
         </Button>
       </div>
     </Card>
+    
+    {/* Mobile Category Drawer */}
+    {isMobile && (
+      <Drawer open={categoryDrawerOpen} onOpenChange={setCategoryDrawerOpen}>
+        <DrawerContent>
+          <DrawerHeader>
+            <DrawerTitle>Kategorie ändern</DrawerTitle>
+          </DrawerHeader>
+          <div className="px-4 pb-8 max-h-[60vh] overflow-y-auto">
+            <div className="grid gap-2">
+              {allCategories.map((cat) => {
+                const catConfig = categoryConfig[cat] || categoryConfig['Sonstiges / Privat'];
+                const CatIcon = catConfig.icon;
+                const isSelected = cat === category;
+                
+                return (
+                  <Button
+                    key={cat}
+                    variant={isSelected ? "default" : "outline"}
+                    className="h-auto py-4 px-4 justify-start gap-3 text-left"
+                    onClick={() => {
+                      if (cat !== category) {
+                        onCategoryChange?.(cat);
+                      }
+                      setCategoryDrawerOpen(false);
+                    }}
+                    data-testid={`drawer-category-${cat}`}
+                  >
+                    <div className={`${catConfig.bgColor} rounded-lg p-2 flex-shrink-0`}>
+                      <CatIcon className={`h-5 w-5 ${catConfig.color}`} />
+                    </div>
+                    <span className="flex-1 font-medium">{cat}</span>
+                    {isSelected && <Check className="h-5 w-5 flex-shrink-0" />}
+                  </Button>
+                );
+              })}
+            </div>
+          </div>
+        </DrawerContent>
+      </Drawer>
+    )}
+  </>
   );
 }
