@@ -446,7 +446,7 @@ export default function Landing() {
           <div className="text-center mt-12">
             <div className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-primary/5 border border-primary/20">
               <Clock className="h-5 w-5 text-primary" />
-              <span className="font-semibold">Spart durchschnittlich 10+ Stunden pro Monat</span>
+              <span className="font-semibold">Spart durchschnittlich 5 Stunden pro Monat</span>
             </div>
           </div>
         </div>
