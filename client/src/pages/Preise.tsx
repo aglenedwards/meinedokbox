@@ -16,7 +16,7 @@ export default function Preise() {
       <Header />
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden py-32 md:py-40 hero-premium-bg">
+      <section className="relative overflow-hidden py-20 md:py-28 hero-premium-bg">
         {/* Premium Mesh Gradient Background */}
         <div className="absolute inset-0 hero-mesh-gradient" />
 

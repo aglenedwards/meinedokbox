@@ -13,7 +13,7 @@ export default function Funktionen() {
       <Header />
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden py-32 md:py-40 hero-premium-bg">
+      <section className="relative overflow-hidden py-20 md:py-28 hero-premium-bg">
         {/* Premium Mesh Gradient Background */}
         <div className="absolute inset-0 hero-mesh-gradient" />
 
@@ -78,13 +78,13 @@ export default function Funktionen() {
               
               <div className="flex flex-col items-center gap-2 p-4 rounded-lg bg-background/50 backdrop-blur-sm border">
                 <Zap className="h-8 w-8 text-primary mb-1" />
-                <div className="text-2xl font-bold">&lt;3s</div>
-                <div className="text-sm text-muted-foreground text-center">Verarbeitung</div>
+                <div className="text-2xl font-bold">KI</div>
+                <div className="text-sm text-muted-foreground text-center">Automatisch</div>
               </div>
               
               <div className="flex flex-col items-center gap-2 p-4 rounded-lg bg-background/50 backdrop-blur-sm border">
                 <FolderOpen className="h-8 w-8 text-primary mb-1" />
-                <div className="text-2xl font-bold">5</div>
+                <div className="text-2xl font-bold">15</div>
                 <div className="text-sm text-muted-foreground text-center">KI-Kategorien</div>
               </div>
             </div>
