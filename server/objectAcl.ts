@@ -1,9 +1,10 @@
-// ACL (Access Control List) implementation for object storage
-// Reference: javascript_object_storage blueprint
+// ACL (Access Control List) implementation for S3 object storage
+// Migrated from Google Cloud Storage to IONOS S3
 
-import { File } from "@google-cloud/storage";
+import { s3Client, S3Object } from "./objectStorage";
+import { HeadObjectCommand, PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
 
-const ACL_POLICY_METADATA_KEY = "custom:aclPolicy";
+const ACL_POLICY_METADATA_KEY = "x-amz-meta-aclpolicy";
 
 export enum ObjectAccessGroupType {}
 
@@ -54,30 +55,67 @@ function createObjectAccessGroup(
 }
 
 export async function setObjectAclPolicy(
-  objectFile: File,
+  s3Object: S3Object,
   aclPolicy: ObjectAclPolicy,
 ): Promise<void> {
-  const [exists] = await objectFile.exists();
-  if (!exists) {
-    throw new Error(`Object not found: ${objectFile.name}`);
+  // Check if object exists
+  try {
+    const headCommand = new HeadObjectCommand({
+      Bucket: s3Object.bucket,
+      Key: s3Object.key,
+    });
+    await s3Client.send(headCommand);
+  } catch (error: any) {
+    if (error.name === 'NotFound' || error.$metadata?.httpStatusCode === 404) {
+      throw new Error(`Object not found: ${s3Object.key}`);
+    }
+    throw error;
   }
 
-  await objectFile.setMetadata({
-    metadata: {
-      [ACL_POLICY_METADATA_KEY]: JSON.stringify(aclPolicy),
+  // Get current object data to preserve it during metadata update
+  const getCommand = new GetObjectCommand({
+    Bucket: s3Object.bucket,
+    Key: s3Object.key,
+  });
+  const currentObject = await s3Client.send(getCommand);
+
+  // Update metadata using PutObject with existing body
+  const putCommand = new PutObjectCommand({
+    Bucket: s3Object.bucket,
+    Key: s3Object.key,
+    Body: currentObject.Body,
+    ContentType: currentObject.ContentType,
+    Metadata: {
+      aclpolicy: JSON.stringify(aclPolicy),
     },
   });
+
+  await s3Client.send(putCommand);
 }
 
 export async function getObjectAclPolicy(
-  objectFile: File,
+  s3Object: S3Object,
 ): Promise<ObjectAclPolicy | null> {
-  const [metadata] = await objectFile.getMetadata();
-  const aclPolicy = metadata?.metadata?.[ACL_POLICY_METADATA_KEY];
-  if (!aclPolicy) {
-    return null;
+  try {
+    const command = new HeadObjectCommand({
+      Bucket: s3Object.bucket,
+      Key: s3Object.key,
+    });
+    
+    const response = await s3Client.send(command);
+    const aclPolicy = response.Metadata?.aclpolicy;
+    
+    if (!aclPolicy) {
+      return null;
+    }
+    
+    return JSON.parse(aclPolicy);
+  } catch (error: any) {
+    if (error.name === 'NotFound' || error.$metadata?.httpStatusCode === 404) {
+      return null;
+    }
+    throw error;
   }
-  return JSON.parse(aclPolicy as string);
 }
 
 export async function canAccessObject({
@@ -86,7 +124,7 @@ export async function canAccessObject({
   requestedPermission,
 }: {
   userId?: string;
-  objectFile: File;
+  objectFile: S3Object;
   requestedPermission: ObjectPermission;
 }): Promise<boolean> {
   const aclPolicy = await getObjectAclPolicy(objectFile);
