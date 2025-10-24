@@ -377,7 +377,8 @@ export default function Dashboard() {
     // Use setTimeout to ensure DOM has been updated after state changes
     setTimeout(() => {
       if (uploadSectionRef.current) {
-        uploadSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // Use 'center' to avoid sticky header blocking the view
+        uploadSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
     }, 100);
   };
