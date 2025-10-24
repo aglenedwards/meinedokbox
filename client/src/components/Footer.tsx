@@ -10,29 +10,20 @@ export function Footer() {
           </div>
           
           <div className="flex flex-wrap justify-center gap-4 md:gap-6 text-sm">
-            <Link href="/impressum">
-              <a 
-                className="text-muted-foreground hover:text-foreground transition-colors"
-                data-testid="link-impressum"
-              >
+            <Link href="/impressum" data-testid="link-impressum">
+              <span className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
                 Impressum
-              </a>
+              </span>
             </Link>
-            <Link href="/datenschutz">
-              <a 
-                className="text-muted-foreground hover:text-foreground transition-colors"
-                data-testid="link-datenschutz"
-              >
+            <Link href="/datenschutz" data-testid="link-datenschutz">
+              <span className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
                 Datenschutz
-              </a>
+              </span>
             </Link>
-            <Link href="/kontakt">
-              <a 
-                className="text-muted-foreground hover:text-foreground transition-colors"
-                data-testid="link-kontakt"
-              >
+            <Link href="/kontakt" data-testid="link-kontakt">
+              <span className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
                 Kontakt
-              </a>
+              </span>
             </Link>
           </div>
         </div>
