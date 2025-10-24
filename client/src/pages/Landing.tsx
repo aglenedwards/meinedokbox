@@ -359,63 +359,38 @@ export default function Landing() {
       </header>
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden">
-        {/* Background gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-primary/10 dark:from-primary/10 dark:via-background dark:to-primary/5" />
+      <section className="relative overflow-hidden py-20 md:py-28 hero-premium-bg">
+        {/* Premium Mesh Gradient Background */}
+        <div className="absolute inset-0 hero-mesh-gradient" />
         
-        {/* Decorative elements */}
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
-        
-        <div className="container relative mx-auto px-4 py-20 md:py-32">
-          <div className="max-w-4xl mx-auto text-center space-y-8">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border bg-background/50 backdrop-blur-sm mb-2">
+        <div className="container relative mx-auto px-4">
+          <div className="max-w-5xl mx-auto text-center">
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border bg-background/80 backdrop-blur-sm mb-8 shadow-lg">
               <Sparkles className="h-4 w-4 text-primary" />
-              <span className="text-sm font-medium">Jetzt 14 Tage kostenlos testen</span>
+              <span className="text-sm font-medium">Jetzt 14 Tage kostenlos testen – keine Kreditkarte nötig</span>
             </div>
             
-            <h1 className="text-5xl md:text-7xl font-bold tracking-tight" data-testid="text-hero-title">
-              Ihre Dokumente.<br />Intelligent organisiert.
+            {/* Main Headline */}
+            <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold mb-8 tracking-tight" data-testid="text-hero-title">
+              Ihre Dokumente.
+              <br />
+              <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                Intelligent organisiert.
+              </span>
             </h1>
-            <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto leading-relaxed" data-testid="text-hero-subtitle">
-              Einfach fotografieren, per E-Mail weiterleiten oder hochladen. Automatisch kategorisiert und sicher archiviert.
-            </p>
             
-            {/* Trust Badges */}
-            <div className="flex flex-wrap items-center justify-center gap-6 text-sm" data-testid="trust-badges">
-              <div className="flex items-center gap-2">
-                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10">
-                  <MapPin className="h-4 w-4 text-primary" />
-                </div>
-                <div className="text-left">
-                  <div className="font-semibold text-foreground">100% Deutschland</div>
-                  <div className="text-xs text-muted-foreground">Daten auf deutschen Servern</div>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-2">
-                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10">
-                  <Shield className="h-4 w-4 text-primary" />
-                </div>
-                <div className="text-left">
-                  <div className="font-semibold text-foreground">DSGVO-konform</div>
-                  <div className="text-xs text-muted-foreground">EU-Speicherung mit DPF-Absicherung</div>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-2">
-                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10">
-                  <Brain className="h-4 w-4 text-primary" />
-                </div>
-                <div className="text-left">
-                  <div className="font-semibold text-foreground">KI-Kategorisierung</div>
-                  <div className="text-xs text-muted-foreground">Automatisch sortiert in Sekunden</div>
-                </div>
-              </div>
-            </div>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
+            {/* Subtitle */}
+            <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto mb-12 leading-relaxed" data-testid="text-hero-subtitle">
+              Einfach fotografieren, per E-Mail weiterleiten oder hochladen. 
+              Automatisch kategorisiert und sicher archiviert.
+            </p>
+
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
               <Button
                 size="lg"
+                className="text-lg px-8 py-6"
                 onClick={() => {
                   setAuthTab("signup");
                   setAuthModalOpen(true);
@@ -429,6 +404,7 @@ export default function Landing() {
               <Button
                 size="lg"
                 variant="outline"
+                className="text-lg px-8 py-6 bg-background/50 backdrop-blur-sm"
                 onClick={() => {
                   setAuthTab("login");
                   setAuthModalOpen(true);
@@ -437,6 +413,39 @@ export default function Landing() {
               >
                 Anmelden
               </Button>
+            </div>
+
+            {/* Trust Badges */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+              <div className="flex flex-col items-center gap-3 p-6 rounded-lg bg-background/50 backdrop-blur-sm border">
+                <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary/10">
+                  <MapPin className="h-6 w-6 text-primary" />
+                </div>
+                <div className="text-center">
+                  <div className="font-semibold text-lg">100% Deutschland</div>
+                  <div className="text-sm text-muted-foreground">Daten auf deutschen Servern</div>
+                </div>
+              </div>
+              
+              <div className="flex flex-col items-center gap-3 p-6 rounded-lg bg-background/50 backdrop-blur-sm border">
+                <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary/10">
+                  <Shield className="h-6 w-6 text-primary" />
+                </div>
+                <div className="text-center">
+                  <div className="font-semibold text-lg">DSGVO-konform</div>
+                  <div className="text-sm text-muted-foreground">EU-Speicherung mit DPF-Absicherung</div>
+                </div>
+              </div>
+              
+              <div className="flex flex-col items-center gap-3 p-6 rounded-lg bg-background/50 backdrop-blur-sm border">
+                <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary/10">
+                  <Brain className="h-6 w-6 text-primary" />
+                </div>
+                <div className="text-center">
+                  <div className="font-semibold text-lg">KI-Kategorisierung</div>
+                  <div className="text-sm text-muted-foreground">Automatisch sortiert in Sekunden</div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
