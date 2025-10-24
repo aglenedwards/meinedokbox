@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query";
 import { FileText, HardDrive, TrendingUp, Plus, Trash2, ArrowUpDown, Download, Camera, ChevronDown, Settings, MoreVertical, LogOut, Shield } from "lucide-react";
 import { format } from "date-fns";
@@ -69,6 +69,7 @@ export default function Dashboard() {
   const [checkoutDialogOpen, setCheckoutDialogOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<"solo" | "family" | "family-plus">("family");
   const [selectedPeriod, setSelectedPeriod] = useState<"monthly" | "yearly">("yearly");
+  const uploadSectionRef = useRef<HTMLDivElement>(null);
 
   // Listen for checkout events from UpgradeModal
   useEffect(() => {
@@ -82,6 +83,13 @@ export default function Dashboard() {
     window.addEventListener('openCheckout' as any, handleOpenCheckout);
     return () => window.removeEventListener('openCheckout' as any, handleOpenCheckout);
   }, []);
+
+  // Auto-scroll to upload section when opened
+  useEffect(() => {
+    if ((showUpload || showCameraMultiShot) && uploadSectionRef.current) {
+      uploadSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [showUpload, showCameraMultiShot]);
 
   // Logout mutation
   const logoutMutation = useMutation({
@@ -622,27 +630,29 @@ export default function Dashboard() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 md:px-6 py-8">
-        {showUpload && (
-          <div className="mb-8">
-            <MultiPageUpload 
-              onComplete={handleFileSelect}
-              onCancel={() => setShowUpload(false)}
-            />
-          </div>
-        )}
+        <div ref={uploadSectionRef}>
+          {showUpload && (
+            <div className="mb-8">
+              <MultiPageUpload 
+                onComplete={handleFileSelect}
+                onCancel={() => setShowUpload(false)}
+              />
+            </div>
+          )}
 
-        {showCameraMultiShot && (
-          <div className="mb-8">
-            <Card>
-              <CardContent className="p-6">
-                <CameraMultiShot 
-                  onComplete={handleFileSelect}
-                  onCancel={() => setShowCameraMultiShot(false)}
-                />
-              </CardContent>
-            </Card>
-          </div>
-        )}
+          {showCameraMultiShot && (
+            <div className="mb-8">
+              <Card>
+                <CardContent className="p-6">
+                  <CameraMultiShot 
+                    onComplete={handleFileSelect}
+                    onCancel={() => setShowCameraMultiShot(false)}
+                  />
+                </CardContent>
+              </Card>
+            </div>
+          )}
+        </div>
 
         {/* Subscription Status Banners */}
         {subscriptionStatus?.plan === "trial" && subscriptionStatus.daysRemaining && subscriptionStatus.daysRemaining > 0 && (
