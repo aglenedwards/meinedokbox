@@ -501,12 +501,12 @@ export default function Dashboard() {
     .slice(0, 10); // Top 10 categories
 
   return (
-    <div className="min-h-screen w-full bg-background flex flex-col overflow-x-hidden">
+    <div className="min-h-screen w-full bg-background flex flex-col">
       <header className="sticky top-0 z-50 w-full bg-background border-b shrink-0">
         <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-3 md:py-4">
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-4">
-            <div className="flex items-center justify-between md:justify-start gap-3">
-              <img src={logoImage} alt="MeineDokBox" className="h-12 md:h-16" data-testid="img-logo" />
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-4 w-full">
+            <div className="flex items-center justify-between md:justify-start gap-3 min-w-0">
+              <img src={logoImage} alt="MeineDokBox" className="h-12 md:h-16 shrink-0" data-testid="img-logo" />
               <div className="flex items-center gap-2 md:hidden">
                 <Link href="/settings">
                   <Button variant="ghost" size="sm" data-testid="button-settings-mobile">
@@ -551,7 +551,7 @@ export default function Dashboard() {
               />
             </div>
             
-            <div className="hidden md:flex items-center gap-2">
+            <div className="hidden md:flex items-center gap-2 shrink-0">
               {documents.length > 0 && (
                 <Button 
                   variant="outline" 
