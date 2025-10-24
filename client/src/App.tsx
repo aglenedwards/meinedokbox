@@ -53,6 +53,13 @@ function ProtectedRoute({ component: Component }: { component: () => JSX.Element
 }
 
 function Router() {
+  const [location] = useLocation();
+
+  // Scroll to top on route change
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, [location]);
+
   return (
     <Switch>
       <Route path="/" component={Landing} />

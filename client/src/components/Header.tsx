@@ -8,9 +8,8 @@ export function Header() {
     <header className="border-b bg-background sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
         <Link href="/" data-testid="link-home">
-          <div className="flex items-center gap-3 hover-elevate px-3 py-2 rounded-md transition-colors cursor-pointer">
-            <img src={logoImage} alt="MeineDokBox Logo" className="h-8 w-8" />
-            <span className="text-xl font-bold">MeineDokBox</span>
+          <div className="hover-elevate px-3 py-2 rounded-md transition-colors cursor-pointer">
+            <img src={logoImage} alt="MeineDokBox Logo" className="h-10 w-10" />
           </div>
         </Link>
         <Link href="/">
