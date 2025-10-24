@@ -374,9 +374,12 @@ export default function Dashboard() {
   });
 
   const scrollToUpload = () => {
-    if (uploadSectionRef.current) {
-      uploadSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+    // Use setTimeout to ensure DOM has been updated after state changes
+    setTimeout(() => {
+      if (uploadSectionRef.current) {
+        uploadSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
   };
 
   const handleCategoryToggle = (category: string) => {
