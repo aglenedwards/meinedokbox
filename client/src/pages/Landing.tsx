@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import type { User } from "@shared/schema";
@@ -58,6 +58,48 @@ export default function Landing() {
   const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [progressBarWidth, setProgressBarWidth] = useState(0);
+  const progressBarRef = useRef<HTMLDivElement>(null);
+
+  // Scroll effect for progress bar
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!progressBarRef.current) return;
+
+      const element = progressBarRef.current;
+      const rect = element.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+      
+      // Start when element enters viewport (bottom of element visible)
+      // Complete at 50% of screen (middle)
+      const elementTop = rect.top;
+      const elementHeight = rect.height;
+      
+      // Calculate when element is visible
+      if (elementTop < viewportHeight && elementTop + elementHeight > 0) {
+        // Element is in viewport
+        // Progress from viewport bottom to 50% of screen
+        const start = viewportHeight; // Element just entered
+        const end = viewportHeight / 2; // Middle of screen
+        
+        // Calculate progress (0 to 1)
+        let progress = 0;
+        if (elementTop <= start) {
+          progress = Math.min(1, (start - elementTop) / (start - end));
+        }
+        
+        // Apply to width (0% to 98%)
+        const targetWidth = 98; // Target percentage
+        setProgressBarWidth(progress * targetWidth);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    // Initial check
+    handleScroll();
+
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // Check if user is already logged in
   const { data: user, isLoading } = useQuery<User | null>({
@@ -898,13 +940,16 @@ export default function Landing() {
               <p className="text-muted-foreground">
                 Die KI lernt kontinuierlich dazu und wird mit jedem verarbeiteten Dokument präziser und schneller.
               </p>
-              <div className="p-4 rounded-lg bg-primary/5 border border-primary/10">
+              <div className="p-4 rounded-lg bg-primary/5 border border-primary/10" ref={progressBarRef}>
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-medium">Genauigkeit</span>
-                  <span className="text-sm font-bold text-primary">98%</span>
+                  <span className="text-sm font-bold text-primary">{Math.round(progressBarWidth)}%</span>
                 </div>
                 <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-primary to-primary/60" style={{ width: '98%' }} />
+                  <div 
+                    className="h-full bg-gradient-to-r from-primary to-primary/60 transition-all duration-300 ease-out" 
+                    style={{ width: `${progressBarWidth}%` }} 
+                  />
                 </div>
               </div>
             </div>
