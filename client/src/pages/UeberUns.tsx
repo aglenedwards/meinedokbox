@@ -359,15 +359,7 @@ export default function UeberUns() {
                     </a>
                   </div>
                   
-                  <div className="pt-4 border-t">
-                    <h3 className="font-semibold mb-2">Anschrift</h3>
-                    <p className="text-muted-foreground">
-                      Alvin Edwards<br />
-                      Am Kümmerling 20<br />
-                      55294 Bodenheim<br />
-                      Deutschland
-                    </p>
-                  </div>
+                  
                 </div>
               </CardContent>
             </Card>
