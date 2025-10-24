@@ -29,6 +29,9 @@ export function DocumentViewer({ document, open, onClose }: DocumentViewerProps)
   
   // Check if the document is a PDF using mimeType
   const isPdf = document.mimeType === 'application/pdf';
+  
+  // For PDFs, use our proxy endpoint instead of direct S3 URL to avoid Chrome blocking
+  const viewUrl = isPdf ? `/api/documents/${document.id}/view` : currentPageUrl;
 
   // Get file extension from MIME type
   const getExtensionFromMimeType = (mimeType: string | null | undefined): string => {
@@ -109,14 +112,14 @@ export function DocumentViewer({ document, open, onClose }: DocumentViewerProps)
           <div className="flex items-center justify-center h-full p-4">
             {isPdf ? (
               <iframe
-                src={currentPageUrl}
+                src={viewUrl}
                 className="w-full h-full border-0"
                 title={document.title}
                 data-testid="pdf-viewer"
               />
             ) : (
               <img
-                src={currentPageUrl}
+                src={viewUrl}
                 alt={`${document.title} - Seite ${currentPage + 1}`}
                 className="max-w-full max-h-full object-contain"
                 data-testid={`img-page-${currentPage}`}

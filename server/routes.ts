@@ -1595,6 +1595,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // View document in browser (inline display for iframe)
+  app.get('/api/documents/:id/view', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { id } = req.params;
+
+      const document = await storage.getDocument(id);
+
+      if (!document) {
+        return res.status(404).json({ message: "Document not found" });
+      }
+
+      // Verify user owns the document OR has access as partner (if shared)
+      const partnerIds = await storage.getPartnerUserIds(userId);
+      const hasAccess = document.userId === userId || 
+                       (partnerIds.includes(document.userId) && document.isShared);
+
+      if (!hasAccess) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const objectStorageService = new ObjectStorageService();
+      
+      // For PDFs, stream directly with inline disposition
+      if (document.mimeType === 'application/pdf' && document.fileUrl) {
+        const objectFile = await objectStorageService.getObjectEntityFile(document.fileUrl);
+        const buffer = await objectStorageService.getObjectBuffer(objectFile);
+        
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', 'inline');
+        res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+        res.setHeader('Content-Security-Policy', "frame-ancestors 'self'");
+        res.send(buffer);
+        return;
+      }
+
+      // For images, return the image directly
+      if (document.fileUrl) {
+        const objectFile = await objectStorageService.getObjectEntityFile(document.fileUrl);
+        const buffer = await objectStorageService.getObjectBuffer(objectFile);
+        
+        const contentType = document.mimeType || 'image/jpeg';
+        res.setHeader('Content-Type', contentType);
+        res.setHeader('Content-Disposition', 'inline');
+        res.send(buffer);
+        return;
+      }
+
+      res.status(400).json({ message: "No file found" });
+    } catch (error) {
+      console.error("Error viewing document:", error);
+      res.status(500).json({ message: "Failed to view document" });
+    }
+  });
+
   // Download document as PDF (combines all pages)
   app.get('/api/documents/:id/download-pdf', isAuthenticated, async (req: any, res) => {
     try {
