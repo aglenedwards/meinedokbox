@@ -35,6 +35,7 @@ import {
 import { db } from "./db";
 import { users, emailLogs, sharedAccess } from "@shared/schema";
 import { eq } from "drizzle-orm";
+import sharp from "sharp";
 
 // Configure multer for file uploads (memory storage for processing)
 const upload = multer({
@@ -1416,6 +1417,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         analysisResult = await analyzeDocument(imagesForAnalysis);
       }
       
+      // Auto-rotate images if AI detected upside down orientation
+      if (analysisResult.needsRotation && !isPdf) {
+        console.log('⟳ AI detected upside down document - auto-rotating 180°');
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i];
+          // Only rotate image files, not PDFs
+          if (file.mimetype.startsWith('image/')) {
+            try {
+              const rotatedBuffer = await sharp(file.buffer)
+                .rotate(180)
+                .toBuffer();
+              file.buffer = rotatedBuffer;
+              console.log(`  ✓ Rotated page ${i + 1}/${files.length}`);
+            } catch (error) {
+              console.error(`  ✗ Failed to rotate page ${i + 1}:`, error);
+            }
+          }
+        }
+      }
+      
       // Upload files (images as pages, PDF as single file)
       await processMultiPageUpload(userId, files, analysisResult, folderId, res);
     } catch (error) {
@@ -2146,9 +2167,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }]);
           }
           
+          // Auto-rotate image if AI detected upside down orientation
+          let fileBuffer = attachment.content;
+          if (analysisResult.needsRotation && attachment.contentType.startsWith('image/')) {
+            console.log('⟳ AI detected upside down document - auto-rotating 180°');
+            try {
+              fileBuffer = await sharp(attachment.content)
+                .rotate(180)
+                .toBuffer();
+              console.log('  ✓ Rotated email attachment');
+            } catch (error) {
+              console.error('  ✗ Failed to rotate email attachment:', error);
+            }
+          }
+          
           // Store file in object storage
           const { filePath, thumbnailPath } = await uploadFile(
-            attachment.content,
+            fileBuffer,
             attachment.filename,
             user.id
           );
