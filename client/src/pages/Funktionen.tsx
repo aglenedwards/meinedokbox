@@ -13,14 +13,9 @@ export default function Funktionen() {
       <Header />
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden py-32 md:py-40">
-        {/* Animated Background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-primary/10 dark:from-primary/10 dark:via-background dark:to-primary/5" />
-        
-        {/* Decorative gradient blobs */}
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-primary/5 to-transparent rounded-full blur-3xl" />
+      <section className="relative overflow-hidden py-32 md:py-40 hero-premium-bg">
+        {/* Premium Mesh Gradient Background */}
+        <div className="absolute inset-0 hero-mesh-gradient" />
 
         <div className="container relative mx-auto px-4">
           <div className="max-w-5xl mx-auto text-center">
