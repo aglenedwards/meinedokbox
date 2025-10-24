@@ -10,6 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
+import { ToastAction } from "@/components/ui/toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -18,6 +19,7 @@ import { login, register, getCurrentUser, type LoginData, type RegisterData } fr
 import { queryClient } from "@/lib/queryClient";
 import { FileText, Zap, Users, Shield, Sparkles, Check, ArrowRight, Camera, Scan, FolderOpen, X, TrendingUp, Clock, Brain, Search, Mail, Home, Briefcase, Heart } from "lucide-react";
 import logoImage from "@assets/meinedokbox_1760966015056.png";
+import { Footer } from "@/components/Footer";
 
 const loginSchema = z.object({
   email: z.string().email("Ungültige E-Mail-Adresse"),
@@ -96,35 +98,39 @@ export default function Landing() {
     onError: (error: any) => {
       // Check if error is due to unverified email
       if (error.message?.includes("E-Mail-Adresse")) {
+        const email = loginForm.getValues("email");
         toast({
           title: "E-Mail-Adresse nicht bestätigt",
           description: error.message,
           variant: "destructive",
-          action: {
-            label: "E-Mail erneut senden",
-            onClick: async () => {
-              try {
-                const email = loginForm.getValues("email");
-                const res = await fetch("/api/auth/resend-verification", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ email }),
-                  credentials: "include",
-                });
-                const data = await res.json();
-                toast({
-                  title: "E-Mail gesendet",
-                  description: data.message,
-                });
-              } catch (err) {
-                toast({
-                  title: "Fehler",
-                  description: "E-Mail konnte nicht gesendet werden",
-                  variant: "destructive",
-                });
-              }
-            },
-          },
+          action: (
+            <ToastAction
+              altText="E-Mail erneut senden"
+              onClick={async () => {
+                try {
+                  const res = await fetch("/api/auth/resend-verification", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email }),
+                    credentials: "include",
+                  });
+                  const data = await res.json();
+                  toast({
+                    title: "E-Mail gesendet",
+                    description: data.message,
+                  });
+                } catch (err) {
+                  toast({
+                    title: "Fehler",
+                    description: "E-Mail konnte nicht gesendet werden",
+                    variant: "destructive",
+                  });
+                }
+              }}
+            >
+              Erneut senden
+            </ToastAction>
+          ),
         });
       } else {
         toast({
@@ -1151,12 +1157,7 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t py-8 mt-16">
-        <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
-          <p>© 2025 MeineDokBox. Alle Rechte vorbehalten.</p>
-        </div>
-      </footer>
+      <Footer />
 
       {/* Auth Modal */}
       <Dialog open={authModalOpen} onOpenChange={setAuthModalOpen}>
