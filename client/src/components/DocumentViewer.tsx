@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Download, ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from "lucide-react";
+import { Download, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, X } from "lucide-react";
 import { Document, Page, pdfjs } from 'react-pdf';
 import type { Document as DocumentType } from "@shared/schema";
 import 'react-pdf/dist/Page/AnnotationLayer.css';
@@ -116,37 +116,48 @@ export function DocumentViewer({ document, open, onClose }: DocumentViewerProps)
       <DialogContent className="max-w-4xl w-full h-[90vh] flex flex-col p-0 gap-0">
         {/* Header */}
         <div className="px-4 sm:px-6 py-4 border-b relative">
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex-1 min-w-0">
-              <h2 className="text-lg sm:text-xl font-semibold truncate">{document.title}</h2>
-              <div className="flex items-center gap-3 text-sm text-muted-foreground mt-1 flex-wrap">
-                <span>{document.category}</span>
-                {displayedPages > 1 && (
-                  <>
-                    <span>•</span>
-                    <span>Seite {currentPage + 1} von {displayedPages}</span>
-                  </>
-                )}
-                {isPdf && (
-                  <>
-                    <span>•</span>
-                    <span>{Math.round(pdfScale * 100)}%</span>
-                  </>
-                )}
-              </div>
-            </div>
-            
-            {/* Download button - mobile only, in header */}
+          {/* Close and Download buttons - top right corner */}
+          <div className="absolute top-2 right-2 flex flex-col gap-1 z-10">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onClose}
+              data-testid="button-close-viewer"
+              className="h-8 w-8 rounded-full hover:bg-accent"
+              aria-label="Schließen"
+            >
+              <X className="h-4 w-4" />
+            </Button>
             <Button
               variant="ghost"
               size="icon"
               onClick={isPdf ? handleDownloadPDF : () => handleDownloadPage(currentPage)}
-              data-testid="button-download-mobile"
-              className="sm:hidden h-9 w-9 flex-shrink-0"
+              data-testid="button-download-viewer"
+              className="h-8 w-8 rounded-full hover:bg-accent"
               aria-label={isPdf ? 'PDF herunterladen' : 'Bild herunterladen'}
             >
-              <Download className="h-5 w-5" />
+              <Download className="h-4 w-4" />
             </Button>
+          </div>
+
+          {/* Title and info - with padding to avoid button overlap */}
+          <div className="pr-12">
+            <h2 className="text-lg sm:text-xl font-semibold truncate">{document.title}</h2>
+            <div className="flex items-center gap-3 text-sm text-muted-foreground mt-1 flex-wrap">
+              <span>{document.category}</span>
+              {displayedPages > 1 && (
+                <>
+                  <span>•</span>
+                  <span>Seite {currentPage + 1} von {displayedPages}</span>
+                </>
+              )}
+              {isPdf && (
+                <>
+                  <span>•</span>
+                  <span>{Math.round(pdfScale * 100)}%</span>
+                </>
+              )}
+            </div>
           </div>
         </div>
 
@@ -253,20 +264,20 @@ export function DocumentViewer({ document, open, onClose }: DocumentViewerProps)
                 size="icon"
                 onClick={goToPreviousPage}
                 disabled={currentPage === 0}
-                className="absolute left-4 top-1/2 -translate-y-1/2 h-12 w-12 bg-background/90 hover:bg-background"
+                className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 h-10 w-10 sm:h-12 sm:w-12 bg-background/90 hover:bg-background shadow-lg z-10"
                 data-testid="button-previous-page"
               >
-                <ChevronLeft className="h-6 w-6" />
+                <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6" />
               </Button>
               <Button
                 variant="outline"
                 size="icon"
                 onClick={goToNextPage}
                 disabled={currentPage === displayedPages - 1}
-                className="absolute right-4 top-1/2 -translate-y-1/2 h-12 w-12 bg-background/90 hover:bg-background"
+                className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 h-10 w-10 sm:h-12 sm:w-12 bg-background/90 hover:bg-background shadow-lg z-10"
                 data-testid="button-next-page"
               >
-                <ChevronRight className="h-6 w-6" />
+                <ChevronRight className="h-5 w-5 sm:h-6 sm:w-6" />
               </Button>
             </>
           )}
