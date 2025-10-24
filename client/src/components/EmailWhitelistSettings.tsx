@@ -46,7 +46,7 @@ export function EmailWhitelistSettings() {
     onError: (error: Error) => {
       toast({
         title: "Fehler",
-        description: error.message,
+        description: "Die E-Mail-Adresse konnte nicht hinzugefügt werden. Bitte überprüfen Sie die Adresse und versuchen Sie es erneut.",
         variant: "destructive",
       });
     },
@@ -77,7 +77,7 @@ export function EmailWhitelistSettings() {
     onError: (error: Error) => {
       toast({
         title: "Fehler",
-        description: error.message,
+        description: "Die E-Mail-Adresse konnte nicht entfernt werden. Bitte versuchen Sie es erneut.",
         variant: "destructive",
       });
     },

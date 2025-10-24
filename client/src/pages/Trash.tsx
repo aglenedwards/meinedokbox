@@ -39,7 +39,7 @@ export default function Trash() {
     onError: (error: Error) => {
       toast({
         title: "Fehler beim Wiederherstellen",
-        description: error.message,
+        description: "Das Dokument konnte nicht wiederhergestellt werden. Bitte versuchen Sie es erneut.",
         variant: "destructive",
       });
     },
@@ -59,7 +59,7 @@ export default function Trash() {
     onError: (error: Error) => {
       toast({
         title: "Fehler beim Löschen",
-        description: error.message,
+        description: "Das Dokument konnte nicht endgültig gelöscht werden. Bitte versuchen Sie es erneut.",
         variant: "destructive",
       });
     },

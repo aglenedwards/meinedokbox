@@ -94,7 +94,7 @@ export default function Admin() {
     onError: (error: Error) => {
       toast({
         title: "Fehler",
-        description: error.message,
+        description: "Der Benutzer konnte nicht gelöscht werden. Bitte versuchen Sie es erneut.",
         variant: "destructive",
       });
     },

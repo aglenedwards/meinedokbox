@@ -104,7 +104,7 @@ export default function Settings() {
     onError: (error: Error) => {
       toast({
         title: "Fehler",
-        description: error.message,
+        description: "Die Einladung konnte nicht gesendet werden. Bitte überprüfen Sie die E-Mail-Adresse und versuchen Sie es erneut.",
         variant: "destructive",
       });
     },
@@ -136,7 +136,7 @@ export default function Settings() {
     onError: (error: Error) => {
       toast({
         title: "Fehler",
-        description: error.message,
+        description: "Der Zugriff konnte nicht widerrufen werden. Bitte versuchen Sie es erneut.",
         variant: "destructive",
       });
     },
@@ -167,7 +167,7 @@ export default function Settings() {
     onError: (error: Error) => {
       toast({
         title: "Fehler",
-        description: error.message,
+        description: "Die Einladung konnte nicht erneut gesendet werden. Bitte versuchen Sie es später erneut.",
         variant: "destructive",
       });
     },
@@ -199,7 +199,7 @@ export default function Settings() {
     onError: (error: Error) => {
       toast({
         title: "Fehler",
-        description: error.message,
+        description: "Die Einladung konnte nicht gelöscht werden. Bitte versuchen Sie es erneut.",
         variant: "destructive",
       });
     },
@@ -219,7 +219,7 @@ export default function Settings() {
     onError: (error: Error) => {
       toast({
         title: "Abmeldung fehlgeschlagen",
-        description: error.message,
+        description: "Die Abmeldung konnte nicht durchgeführt werden. Bitte versuchen Sie es erneut.",
         variant: "destructive",
       });
     },

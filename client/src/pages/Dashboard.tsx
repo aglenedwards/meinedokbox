@@ -97,7 +97,7 @@ export default function Dashboard() {
     onError: (error: Error) => {
       toast({
         title: "Abmeldung fehlgeschlagen",
-        description: error.message,
+        description: "Die Abmeldung konnte nicht durchgeführt werden. Bitte versuchen Sie es erneut.",
         variant: "destructive",
       });
     },
@@ -203,7 +203,7 @@ export default function Dashboard() {
       });
       toast({
         title: "Fehler beim Hochladen",
-        description: error.message,
+        description: "Das Dokument konnte nicht hochgeladen werden. Bitte überprüfen Sie die Datei und versuchen Sie es erneut.",
         variant: "destructive",
       });
     },
@@ -224,7 +224,7 @@ export default function Dashboard() {
     onError: (error: Error) => {
       toast({
         title: "Fehler beim Löschen",
-        description: error.message,
+        description: "Das Dokument konnte nicht in den Papierkorb verschoben werden. Bitte versuchen Sie es erneut.",
         variant: "destructive",
       });
     },
@@ -245,7 +245,7 @@ export default function Dashboard() {
     onError: (error: Error) => {
       toast({
         title: "Fehler beim Löschen",
-        description: error.message,
+        description: "Die ausgewählten Dokumente konnten nicht in den Papierkorb verschoben werden. Bitte versuchen Sie es erneut.",
         variant: "destructive",
       });
     },
@@ -291,7 +291,7 @@ export default function Dashboard() {
       }
       toast({
         title: "Fehler beim Aktualisieren",
-        description: error.message,
+        description: "Die Kategorie konnte nicht geändert werden. Bitte versuchen Sie es erneut.",
         variant: "destructive",
       });
     },
@@ -359,7 +359,7 @@ export default function Dashboard() {
       }
       toast({
         title: "Fehler",
-        description: error.message,
+        description: "Der Freigabe-Status konnte nicht geändert werden. Bitte versuchen Sie es erneut.",
         variant: "destructive",
       });
     },

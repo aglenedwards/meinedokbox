@@ -31,7 +31,7 @@ export function EmailInbound({ user }: EmailInboundProps) {
     onError: (error: Error) => {
       toast({
         title: "Fehler",
-        description: error.message || "Die E-Mail-Adresse konnte nicht aktualisiert werden.",
+        description: "Die E-Mail-Adresse konnte nicht aktualisiert werden. Bitte versuchen Sie es später erneut.",
         variant: "destructive",
       });
     },

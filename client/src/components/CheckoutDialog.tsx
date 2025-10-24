@@ -106,7 +106,7 @@ export function CheckoutDialog({ open, onClose, selectedPlan = "family", selecte
     onError: (error: Error) => {
       toast({
         title: "Upgrade fehlgeschlagen",
-        description: error.message,
+        description: "Das Upgrade konnte nicht durchgeführt werden. Bitte überprüfen Sie Ihre Eingaben und versuchen Sie es erneut.",
         variant: "destructive",
       });
     },
