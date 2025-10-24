@@ -46,18 +46,7 @@ export default function Kontakt() {
     setIsSubmitting(true);
     
     try {
-      const response = await apiRequest('/api/contact', {
-        method: 'POST',
-        body: JSON.stringify(data),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Fehler beim Senden der Nachricht');
-      }
+      await apiRequest('POST', '/api/contact', data);
 
       toast({
         title: "Nachricht gesendet!",
