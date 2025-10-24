@@ -12,7 +12,7 @@ export default function Impressum() {
 
         <div className="prose prose-slate dark:prose-invert max-w-none space-y-8">
           <section>
-            <h2 className="text-xl font-semibold mb-4">Angaben gemäß § 5 TMG</h2>
+            <h2 className="text-xl font-semibold mb-4">Angaben gemäß § 5 Digitale-Dienste-Gesetz (DDG)</h2>
             <p className="text-muted-foreground">
               Alvin Edwards<br />
               Am Kümmerling 20<br />
