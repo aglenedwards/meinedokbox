@@ -536,7 +536,7 @@ export default function Dashboard() {
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => { setShowCameraMultiShot(false); setShowUpload(true); }} data-testid="menu-item-multi-page">
                         <Plus className="h-4 w-4 mr-2" />
-                        Mehrere Seiten
+                        Datei hochladen
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -611,7 +611,7 @@ export default function Dashboard() {
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => { setShowCameraMultiShot(false); setShowUpload(true); }} data-testid="menu-item-multi-page-desktop">
                       <Plus className="h-4 w-4 mr-2" />
-                      Mehrere Seiten
+                      Datei hochladen
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>

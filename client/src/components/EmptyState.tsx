@@ -53,7 +53,7 @@ export function EmptyState({
             </DropdownMenuItem>
             <DropdownMenuItem onClick={onMultiPageClick} data-testid="menu-item-multi-page-empty">
               <Plus className="h-4 w-4 mr-2" />
-              Mehrere Seiten
+              Datei hochladen
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
