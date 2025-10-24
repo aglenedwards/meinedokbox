@@ -1,6 +1,6 @@
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { Check, Sparkles } from "lucide-react";
+import { Check, Sparkles, ArrowRight, Users, Zap } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -16,32 +16,70 @@ export default function Preise() {
       <Header />
 
       {/* Hero Section */}
-      <section className="py-24 bg-gradient-to-b from-primary/5 to-background">
-        <div className="container mx-auto px-4 text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border bg-background/50 backdrop-blur-sm mb-6">
-            <Sparkles className="h-4 w-4 text-primary" />
-            <span className="text-sm font-medium">14 Tage kostenlos testen</span>
-          </div>
-          
-          <h1 className="text-4xl md:text-6xl font-bold mb-6" data-testid="text-pricing-title">
-            Einfache, faire Preise
-          </h1>
-          
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8 leading-relaxed">
-            Wählen Sie den Plan, der zu Ihnen passt. Jederzeit kündbar, ohne versteckte Kosten.
-          </p>
+      <section className="relative overflow-hidden py-32 md:py-40">
+        {/* Animated Background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-primary/10 dark:from-primary/10 dark:via-background dark:to-primary/5" />
+        
+        {/* Decorative gradient blobs */}
+        <div className="absolute top-0 left-1/3 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-0 right-1/3 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-primary/5 to-transparent rounded-full blur-3xl" />
 
-          {/* Billing Toggle */}
-          <div className="flex justify-center mb-12">
-            <Tabs value={billingPeriod} onValueChange={(v) => setBillingPeriod(v as "monthly" | "yearly")}>
-              <TabsList className="grid w-full grid-cols-2 max-w-md">
-                <TabsTrigger value="monthly" data-testid="tab-monthly">Monatlich</TabsTrigger>
-                <TabsTrigger value="yearly" data-testid="tab-yearly">
-                  Jährlich 
-                  <span className="ml-2 text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full">-17%</span>
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
+        <div className="container relative mx-auto px-4">
+          <div className="max-w-5xl mx-auto text-center">
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border bg-background/80 backdrop-blur-sm mb-8 shadow-lg">
+              <Sparkles className="h-4 w-4 text-primary" />
+              <span className="text-sm font-medium">14 Tage kostenlos testen – keine Kreditkarte nötig</span>
+            </div>
+            
+            {/* Main Headline */}
+            <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold mb-8 tracking-tight" data-testid="text-pricing-title">
+              Einfache, 
+              <br />
+              <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                faire Preise
+              </span>
+            </h1>
+            
+            {/* Subtitle */}
+            <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto mb-12 leading-relaxed">
+              Wählen Sie den Plan, der zu Ihnen passt. Jederzeit kündbar, ohne versteckte Kosten.
+            </p>
+
+            {/* Billing Toggle */}
+            <div className="flex justify-center mb-16">
+              <Tabs value={billingPeriod} onValueChange={(v) => setBillingPeriod(v as "monthly" | "yearly")}>
+                <TabsList className="grid w-full grid-cols-2 max-w-md bg-background/50 backdrop-blur-sm">
+                  <TabsTrigger value="monthly" data-testid="tab-monthly">Monatlich</TabsTrigger>
+                  <TabsTrigger value="yearly" data-testid="tab-yearly">
+                    Jährlich 
+                    <span className="ml-2 text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full">-17%</span>
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
+
+            {/* Pricing Quick Stats */}
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-6 max-w-3xl mx-auto">
+              <div className="flex flex-col items-center gap-2 p-4 rounded-lg bg-background/50 backdrop-blur-sm border">
+                <Sparkles className="h-8 w-8 text-primary mb-1" />
+                <div className="text-2xl font-bold">14 Tage</div>
+                <div className="text-sm text-muted-foreground text-center">Kostenlos testen</div>
+              </div>
+              
+              <div className="flex flex-col items-center gap-2 p-4 rounded-lg bg-background/50 backdrop-blur-sm border">
+                <Users className="h-8 w-8 text-primary mb-1" />
+                <div className="text-2xl font-bold">Bis 5</div>
+                <div className="text-sm text-muted-foreground text-center">Familienmitglieder</div>
+              </div>
+              
+              <div className="flex flex-col items-center gap-2 p-4 rounded-lg bg-background/50 backdrop-blur-sm border col-span-2 md:col-span-1">
+                <Zap className="h-8 w-8 text-primary mb-1" />
+                <div className="text-2xl font-bold">Jederzeit</div>
+                <div className="text-sm text-muted-foreground text-center">Kündbar</div>
+              </div>
+            </div>
           </div>
         </div>
       </section>

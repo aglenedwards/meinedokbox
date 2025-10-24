@@ -1,6 +1,6 @@
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { Shield, Lock, Server, FileCheck, CheckCircle2, Award, Globe } from "lucide-react";
+import { Shield, Lock, Server, FileCheck, CheckCircle2, Award, Globe, ArrowRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
@@ -13,21 +13,87 @@ export default function Sicherheit() {
       <Header />
 
       {/* Hero Section */}
-      <section className="py-24 bg-gradient-to-b from-primary/5 to-background">
-        <div className="container mx-auto px-4 text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border bg-background/50 backdrop-blur-sm mb-6">
-            <Shield className="h-4 w-4 text-primary" />
-            <span className="text-sm font-medium">Höchste Sicherheitsstandards</span>
+      <section className="relative overflow-hidden py-32 md:py-40">
+        {/* Animated Background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-primary/10 dark:from-primary/10 dark:via-background dark:to-primary/5" />
+        
+        {/* Decorative gradient blobs */}
+        <div className="absolute top-0 right-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute top-1/3 right-1/3 w-[500px] h-[500px] bg-gradient-to-l from-primary/5 to-transparent rounded-full blur-3xl" />
+
+        <div className="container relative mx-auto px-4">
+          <div className="max-w-5xl mx-auto text-center">
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border bg-background/80 backdrop-blur-sm mb-8 shadow-lg">
+              <Shield className="h-4 w-4 text-primary" />
+              <span className="text-sm font-medium">C5-Testat & ISO 27001 zertifiziert</span>
+            </div>
+            
+            {/* Main Headline */}
+            <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold mb-8 tracking-tight" data-testid="text-security-title">
+              Ihre Daten.
+              <br />
+              <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                Sicher in Deutschland.
+              </span>
+            </h1>
+            
+            {/* Subtitle */}
+            <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto mb-12 leading-relaxed">
+              MeineDokBox setzt auf höchste Sicherheitsstandards. Alle Dokumente werden ausschließlich 
+              auf zertifizierten Servern in Deutschland gespeichert – DSGVO-konform.
+            </p>
+
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
+              <Button
+                size="lg"
+                className="text-lg px-8 py-6"
+                onClick={() => setLocation("/")}
+                data-testid="button-hero-start"
+              >
+                Jetzt kostenlos testen
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                className="text-lg px-8 py-6 bg-background/50 backdrop-blur-sm"
+                onClick={() => setLocation("/preise")}
+                data-testid="button-hero-pricing"
+              >
+                Preise ansehen
+              </Button>
+            </div>
+
+            {/* Security Quick Stats */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
+              <div className="flex flex-col items-center gap-2 p-4 rounded-lg bg-background/50 backdrop-blur-sm border">
+                <Server className="h-8 w-8 text-primary mb-1" />
+                <div className="text-2xl font-bold">100%</div>
+                <div className="text-sm text-muted-foreground text-center">Deutschland</div>
+              </div>
+              
+              <div className="flex flex-col items-center gap-2 p-4 rounded-lg bg-background/50 backdrop-blur-sm border">
+                <Lock className="h-8 w-8 text-primary mb-1" />
+                <div className="text-2xl font-bold">AES-256</div>
+                <div className="text-sm text-muted-foreground text-center">Verschlüsselung</div>
+              </div>
+              
+              <div className="flex flex-col items-center gap-2 p-4 rounded-lg bg-background/50 backdrop-blur-sm border">
+                <Award className="h-8 w-8 text-primary mb-1" />
+                <div className="text-2xl font-bold">C5</div>
+                <div className="text-sm text-muted-foreground text-center">BSI-Testat</div>
+              </div>
+              
+              <div className="flex flex-col items-center gap-2 p-4 rounded-lg bg-background/50 backdrop-blur-sm border">
+                <Globe className="h-8 w-8 text-primary mb-1" />
+                <div className="text-2xl font-bold">DSGVO</div>
+                <div className="text-sm text-muted-foreground text-center">Konform</div>
+              </div>
+            </div>
           </div>
-          
-          <h1 className="text-4xl md:text-6xl font-bold mb-6" data-testid="text-security-title">
-            Ihre Daten.<br />Sicher in Deutschland.
-          </h1>
-          
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8 leading-relaxed">
-            MeineDokBox setzt auf höchste Sicherheitsstandards. Alle Dokumente werden ausschließlich 
-            auf zertifizierten Servern in Deutschland gespeichert – DSGVO-konform und ohne Umwege über Drittstaaten.
-          </p>
         </div>
       </section>
 
