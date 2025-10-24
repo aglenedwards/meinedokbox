@@ -219,6 +219,21 @@ export const trialNotifications = pgTable("trial_notifications", {
   emailStatus: varchar("email_status", { length: 20 }).notNull().default("sent"), // sent, failed, bounced
 });
 
+// Email queue jobs for reliable email delivery with PostgreSQL persistence
+export const emailJobs = pgTable("email_jobs", {
+  id: varchar("id").primaryKey(),
+  type: varchar("type", { length: 20 }).notNull(), // verification, invitation
+  email: varchar("email").notNull(),
+  name: varchar("name"),
+  token: varchar("token").notNull(),
+  attempts: real("attempts").notNull().default(0),
+  maxAttempts: real("max_attempts").notNull().default(3),
+  status: varchar("status", { length: 20 }).notNull().default("pending"), // pending, processing, success, failed
+  error: text("error"),
+  createdAt: timestamp("created_at").notNull().default(sql`now()`),
+  lastAttemptAt: timestamp("last_attempt_at"),
+});
+
 export const insertFolderSchema = createInsertSchema(folders).omit({
   id: true,
   createdAt: true,
@@ -258,6 +273,10 @@ export const insertEmailWhitelistSchema = createInsertSchema(emailWhitelist).omi
   createdAt: true,
 });
 
+export const insertEmailJobSchema = createInsertSchema(emailJobs).omit({
+  createdAt: true,
+});
+
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
 export type InsertFolder = z.infer<typeof insertFolderSchema>;
@@ -276,3 +295,5 @@ export type InsertTrialNotification = z.infer<typeof insertTrialNotificationSche
 export type TrialNotification = typeof trialNotifications.$inferSelect;
 export type InsertEmailWhitelist = z.infer<typeof insertEmailWhitelistSchema>;
 export type EmailWhitelist = typeof emailWhitelist.$inferSelect;
+export type InsertEmailJob = z.infer<typeof insertEmailJobSchema>;
+export type EmailJob = typeof emailJobs.$inferSelect;
