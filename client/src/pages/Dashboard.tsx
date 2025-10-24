@@ -377,10 +377,16 @@ export default function Dashboard() {
     // Use setTimeout to ensure DOM has been updated after state changes
     setTimeout(() => {
       if (uploadSectionRef.current) {
-        // Use 'center' to avoid sticky header blocking the view
-        uploadSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // Get the element's position
+        const elementPosition = uploadSectionRef.current.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.pageYOffset - 100; // 100px offset from top
+        
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: 'smooth'
+        });
       }
-    }, 100);
+    }, 150);
   };
 
   const handleCategoryToggle = (category: string) => {
