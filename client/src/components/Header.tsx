@@ -19,7 +19,7 @@ export function Header() {
   const isActive = (path: string) => location === path;
 
   return (
-    <header className="border-b bg-red-500 sticky top-0 z-50 shadow-sm">
+    <header className="border-b bg-background/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
       <div className="container mx-auto px-4 lg:px-6 py-4 md:py-5 flex items-center justify-between gap-6">
         {/* Logo */}
         <Link href="/" data-testid="link-home">

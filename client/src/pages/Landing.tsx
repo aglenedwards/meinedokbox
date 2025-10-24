@@ -182,51 +182,54 @@ export default function Landing() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b bg-background sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-3 flex items-center justify-between gap-4">
-          <div className="flex items-center flex-shrink-0">
-            <img src={logoImage} alt="MeineDokBox" className="h-10 md:h-12 w-auto" data-testid="img-logo" />
+      <header className="border-b bg-background/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
+        <div className="container mx-auto px-4 lg:px-6 py-4 md:py-5 flex items-center justify-between gap-6">
+          <div className="flex items-center flex-shrink-0 hover-elevate active-elevate-2 px-3 py-2 rounded-lg transition-all">
+            <img src={logoImage} alt="MeineDokBox" className="h-12 md:h-14 lg:h-16 w-auto" data-testid="img-logo" />
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-1">
+          <nav className="hidden md:flex items-center gap-2">
             <Link href="/funktionen">
-              <Button variant="ghost" size="sm" className="font-medium" data-testid="nav-funktionen">
+              <Button variant="ghost" size="default" className="text-base font-medium px-5" data-testid="nav-funktionen">
                 Funktionen
               </Button>
             </Link>
             <Link href="/sicherheit">
-              <Button variant="ghost" size="sm" className="font-medium" data-testid="nav-sicherheit">
+              <Button variant="ghost" size="default" className="text-base font-medium px-5" data-testid="nav-sicherheit">
                 Sicherheit
               </Button>
             </Link>
             <Link href="/preise">
-              <Button variant="ghost" size="sm" className="font-medium" data-testid="nav-preise">
+              <Button variant="ghost" size="default" className="text-base font-medium px-5" data-testid="nav-preise">
                 Preise
               </Button>
             </Link>
             <Link href="/ueber-uns">
-              <Button variant="ghost" size="sm" className="font-medium" data-testid="nav-ueber-uns">
+              <Button variant="ghost" size="default" className="text-base font-medium px-5" data-testid="nav-ueber-uns">
                 Über uns
               </Button>
             </Link>
           </nav>
 
           {/* Desktop CTA Buttons */}
-          <div className="hidden md:flex items-center gap-2 flex-shrink-0">
+          <div className="hidden md:flex items-center gap-3 flex-shrink-0">
             {user ? (
               <Button
-                size="sm"
+                size="default"
+                className="text-base font-semibold px-6 shadow-lg hover:shadow-xl transition-shadow"
                 onClick={() => setLocation("/dashboard")}
                 data-testid="button-header-dashboard"
               >
                 Zum Dashboard
+                <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             ) : (
               <>
                 <Button
                   variant="ghost"
-                  size="sm"
+                  size="default"
+                  className="text-base font-medium px-5"
                   onClick={() => {
                     setAuthTab("login");
                     setAuthModalOpen(true);
@@ -236,7 +239,8 @@ export default function Landing() {
                   Anmelden
                 </Button>
                 <Button
-                  size="sm"
+                  size="default"
+                  className="text-base font-semibold px-6 shadow-lg hover:shadow-xl transition-shadow"
                   onClick={() => {
                     setAuthTab("signup");
                     setAuthModalOpen(true);
@@ -244,6 +248,7 @@ export default function Landing() {
                   data-testid="button-header-signup"
                 >
                   Kostenlos testen
+                  <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </>
             )}
@@ -253,20 +258,20 @@ export default function Landing() {
           <div className="md:hidden">
             <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" data-testid="button-mobile-menu">
+                <Button variant="ghost" size="icon" className="h-11 w-11" data-testid="button-mobile-menu">
                   <Menu className="h-6 w-6" />
                   <span className="sr-only">Menü öffnen</span>
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-[300px]">
-                <SheetHeader>
-                  <SheetTitle>Navigation</SheetTitle>
+              <SheetContent side="right" className="w-[320px]">
+                <SheetHeader className="mb-6">
+                  <SheetTitle className="text-xl">Navigation</SheetTitle>
                 </SheetHeader>
-                <nav className="flex flex-col gap-4 mt-8">
+                <nav className="flex flex-col gap-3">
                   <Link href="/funktionen">
                     <Button
                       variant="ghost"
-                      className="w-full justify-start text-lg"
+                      className="w-full justify-start text-base font-medium h-12"
                       onClick={() => setMobileMenuOpen(false)}
                       data-testid="nav-mobile-funktionen"
                     >
@@ -276,7 +281,7 @@ export default function Landing() {
                   <Link href="/sicherheit">
                     <Button
                       variant="ghost"
-                      className="w-full justify-start text-lg"
+                      className="w-full justify-start text-base font-medium h-12"
                       onClick={() => setMobileMenuOpen(false)}
                       data-testid="nav-mobile-sicherheit"
                     >
@@ -286,7 +291,7 @@ export default function Landing() {
                   <Link href="/preise">
                     <Button
                       variant="ghost"
-                      className="w-full justify-start text-lg"
+                      className="w-full justify-start text-base font-medium h-12"
                       onClick={() => setMobileMenuOpen(false)}
                       data-testid="nav-mobile-preise"
                     >
@@ -296,7 +301,7 @@ export default function Landing() {
                   <Link href="/ueber-uns">
                     <Button
                       variant="ghost"
-                      className="w-full justify-start text-lg"
+                      className="w-full justify-start text-base font-medium h-12"
                       onClick={() => setMobileMenuOpen(false)}
                       data-testid="nav-mobile-ueber-uns"
                     >
@@ -304,11 +309,10 @@ export default function Landing() {
                     </Button>
                   </Link>
                   
-                  <div className="pt-4 border-t">
+                  <div className="pt-6 border-t mt-4 space-y-3">
                     {user ? (
                       <Button
-                        className="w-full"
-                        size="lg"
+                        className="w-full text-base font-semibold h-12"
                         onClick={() => {
                           setMobileMenuOpen(false);
                           setLocation("/dashboard");
@@ -316,13 +320,13 @@ export default function Landing() {
                         data-testid="button-mobile-dashboard"
                       >
                         Zum Dashboard
+                        <ArrowRight className="ml-2 h-5 w-5" />
                       </Button>
                     ) : (
-                      <div className="space-y-3">
+                      <>
                         <Button
                           variant="outline"
-                          className="w-full"
-                          size="lg"
+                          className="w-full text-base font-medium h-12"
                           onClick={() => {
                             setMobileMenuOpen(false);
                             setAuthTab("login");
@@ -333,8 +337,7 @@ export default function Landing() {
                           Anmelden
                         </Button>
                         <Button
-                          className="w-full"
-                          size="lg"
+                          className="w-full text-base font-semibold h-12"
                           onClick={() => {
                             setMobileMenuOpen(false);
                             setAuthTab("signup");
@@ -343,8 +346,9 @@ export default function Landing() {
                           data-testid="button-mobile-signup"
                         >
                           Kostenlos testen
+                          <ArrowRight className="ml-2 h-5 w-5" />
                         </Button>
-                      </div>
+                      </>
                     )}
                   </div>
                 </nav>
