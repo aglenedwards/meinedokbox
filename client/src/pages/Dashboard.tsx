@@ -786,11 +786,18 @@ export default function Dashboard() {
                       border: '1px solid hsl(var(--border))',
                       borderRadius: '6px',
                     }}
-                    labelFormatter={(value, payload) => {
-                      const item = payload[0]?.payload;
-                      return item?.fullName || value;
+                    content={({ active, payload }) => {
+                      if (active && payload && payload.length) {
+                        const data = payload[0].payload;
+                        return (
+                          <div className="bg-background border border-border rounded-md p-3 shadow-lg">
+                            <p className="font-medium mb-1">{data.fullName}</p>
+                            <p className="text-sm text-muted-foreground">Anzahl: {data.count}</p>
+                          </div>
+                        );
+                      }
+                      return null;
                     }}
-                    formatter={(value: number) => [value, 'Anzahl:']}
                   />
                   <Bar 
                     dataKey="count" 
