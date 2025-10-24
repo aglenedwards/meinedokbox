@@ -93,7 +93,7 @@ export default function Funktionen() {
       </section>
 
       {/* KI Technology Deep Dive */}
-      <section className="py-24 bg-background">
+      <section className="py-24 section-premium-subtle">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto mb-16">
             <h2 className="text-3xl md:text-5xl font-bold mb-8 text-center">
@@ -110,7 +110,7 @@ export default function Funktionen() {
               <h3 className="text-2xl font-bold mb-6">Der Ablauf in 3 Schritten</h3>
               <div className="space-y-6">
                 <div className="flex gap-4">
-                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary text-primary-foreground font-bold flex-shrink-0">
+                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary text-primary-foreground font-bold flex-shrink-0 step-number-glow">
                     1
                   </div>
                   <div>
@@ -122,7 +122,7 @@ export default function Funktionen() {
                 </div>
 
                 <div className="flex gap-4">
-                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary text-primary-foreground font-bold flex-shrink-0">
+                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary text-primary-foreground font-bold flex-shrink-0 step-number-glow">
                     2
                   </div>
                   <div>
@@ -135,7 +135,7 @@ export default function Funktionen() {
                 </div>
 
                 <div className="flex gap-4">
-                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary text-primary-foreground font-bold flex-shrink-0">
+                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary text-primary-foreground font-bold flex-shrink-0 step-number-glow">
                     3
                   </div>
                   <div>
@@ -149,7 +149,7 @@ export default function Funktionen() {
               </div>
             </div>
 
-            <Card className="border-2 border-primary/20">
+            <Card className="border-2 border-primary/20 card-premium hover-elevate">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Brain className="h-6 w-6 text-primary" />
@@ -187,7 +187,7 @@ export default function Funktionen() {
           </div>
 
           {/* Confidence Score */}
-          <Card className="max-w-4xl mx-auto bg-muted/30">
+          <Card className="max-w-4xl mx-auto bg-muted/30 card-premium hover-elevate">
             <CardHeader>
               <CardTitle className="text-2xl">Confidence Score – Wie sicher ist sich die KI?</CardTitle>
             </CardHeader>
@@ -216,7 +216,7 @@ export default function Funktionen() {
       </section>
 
       {/* Upload Methods */}
-      <section className="py-24 bg-muted/30">
+      <section className="py-24 bg-muted/30 section-premium-subtle">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-5xl font-bold mb-6">
@@ -229,7 +229,7 @@ export default function Funktionen() {
 
           <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {/* Camera */}
-            <Card>
+            <Card className="card-premium hover-elevate">
               <CardHeader>
                 <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 mb-4">
                   <Camera className="h-6 w-6 text-primary" />
@@ -258,7 +258,7 @@ export default function Funktionen() {
             </Card>
 
             {/* Email */}
-            <Card className="border-2 border-primary/30">
+            <Card className="border-2 border-primary/30 card-premium hover-elevate">
               <CardHeader>
                 <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 mb-4">
                   <Mail className="h-6 w-6 text-primary" />
@@ -287,7 +287,7 @@ export default function Funktionen() {
             </Card>
 
             {/* Upload */}
-            <Card>
+            <Card className="card-premium hover-elevate">
               <CardHeader>
                 <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 mb-4">
                   <Scan className="h-6 w-6 text-primary" />
@@ -319,7 +319,7 @@ export default function Funktionen() {
       </section>
 
       {/* Organization Features */}
-      <section className="py-24 bg-background">
+      <section className="py-24 section-premium-subtle">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-5xl font-bold mb-6">
@@ -332,7 +332,7 @@ export default function Funktionen() {
 
           <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
             {/* Folder System */}
-            <Card>
+            <Card className="card-premium hover-elevate">
               <CardHeader>
                 <div className="flex items-center gap-3">
                   <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10">
@@ -364,7 +364,7 @@ export default function Funktionen() {
             </Card>
 
             {/* Search */}
-            <Card>
+            <Card className="card-premium hover-elevate">
               <CardHeader>
                 <div className="flex items-center gap-3">
                   <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10">
@@ -396,7 +396,7 @@ export default function Funktionen() {
             </Card>
 
             {/* Sharing */}
-            <Card>
+            <Card className="card-premium hover-elevate">
               <CardHeader>
                 <div className="flex items-center gap-3">
                   <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10">
@@ -427,7 +427,7 @@ export default function Funktionen() {
             </Card>
 
             {/* Document Viewer */}
-            <Card>
+            <Card className="card-premium hover-elevate">
               <CardHeader>
                 <div className="flex items-center gap-3">
                   <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10">
@@ -461,7 +461,7 @@ export default function Funktionen() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-24 bg-primary/5">
+      <section className="py-24 bg-primary/5 section-premium-subtle">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-6">
             Erleben Sie die KI-Power selbst
