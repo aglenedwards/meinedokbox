@@ -1,29 +1,10 @@
-import { Link } from "wouter";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import logoImage from "@assets/meinedokbox_1760966015056.png";
 
 export default function Datenschutz() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      {/* Header */}
-      <header className="border-b bg-background sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/">
-            <a className="flex items-center gap-3 hover-elevate px-3 py-2 rounded-md transition-colors" data-testid="link-home">
-              <img src={logoImage} alt="MeineDokBox Logo" className="h-8 w-8" />
-              <span className="text-xl font-bold">MeineDokBox</span>
-            </a>
-          </Link>
-          <Link href="/">
-            <Button variant="ghost" size="sm" data-testid="button-back">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Zurück
-            </Button>
-          </Link>
-        </div>
-      </header>
+      <Header />
 
       {/* Content */}
       <main className="flex-1 container mx-auto px-4 py-12 max-w-4xl">
