@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Trash2, RotateCcw, X } from "lucide-react";
+import { Trash2, RotateCcw, ArrowLeft } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { Link } from "wouter";
@@ -77,36 +77,29 @@ export default function Trash() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-10 bg-background border-b">
-        <div className="max-w-7xl mx-auto px-4 md:px-6 py-3 md:py-4">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <Link href="/">
-                <img 
-                  src={logoImage} 
-                  alt="MeineDokBox" 
-                  className="h-12 md:h-16 cursor-pointer" 
-                  data-testid="img-logo" 
-                />
-              </Link>
-              <div>
-                <h1 className="text-xl md:text-2xl font-bold">Papierkorb</h1>
-                <p className="text-sm text-muted-foreground">Gelöschte Dokumente</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <Link href="/">
-                <Button variant="outline" size="sm" data-testid="button-back-to-dashboard">
-                  <X className="h-4 w-4 mr-2" />
-                  Zurück
+      <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-3 md:py-4">
+          <div className="flex items-center justify-between gap-2 sm:gap-4">
+            <div className="flex items-center gap-2 sm:gap-4 min-w-0">
+              <Link href="/dashboard">
+                <Button variant="ghost" size="sm" className="shrink-0" data-testid="button-back-to-dashboard">
+                  <ArrowLeft className="h-4 w-4" />
+                  <span className="hidden sm:inline ml-2">Zurück</span>
                 </Button>
               </Link>
+              <div className="min-w-0">
+                <h1 className="text-lg sm:text-xl md:text-2xl font-bold flex items-center gap-2">
+                  <Trash2 className="h-4 w-4 sm:h-5 sm:w-5 shrink-0" />
+                  <span className="truncate">Papierkorb</span>
+                </h1>
+                <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">Gelöschte Dokumente</p>
+              </div>
             </div>
           </div>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 md:px-6 py-8">
+      <main className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8">
         {isLoading ? (
           <div className="text-center py-12">
             <p className="text-muted-foreground">Papierkorb wird geladen...</p>
@@ -118,40 +111,49 @@ export default function Trash() {
           />
         ) : (
           <div className="space-y-4">
-            <div className="mb-6">
-              <p className="text-sm text-muted-foreground">
+            <div className="mb-4 sm:mb-6">
+              <p className="text-xs sm:text-sm text-muted-foreground" data-testid="text-trash-count">
                 {documents.length} Dokument{documents.length !== 1 ? "e" : ""} im Papierkorb
               </p>
             </div>
             
-            <div className="grid gap-4">
+            <div className="grid gap-3 sm:gap-4">
               {documents.map((doc) => (
                 <Card key={doc.id} className="hover-elevate active-elevate-2">
-                  <CardHeader>
-                    <div className="flex items-start justify-between gap-4">
+                  <CardHeader className="pb-3">
+                    <div className="flex flex-col gap-3">
                       <div className="flex-1 min-w-0">
-                        <CardTitle className="text-lg truncate">{doc.title}</CardTitle>
-                        <div className="flex flex-wrap gap-2 mt-2 text-sm text-muted-foreground">
-                          <span className="px-2 py-1 bg-muted rounded">
+                        <CardTitle className="text-base sm:text-lg truncate">{doc.title}</CardTitle>
+                        <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-2 text-xs sm:text-sm text-muted-foreground">
+                          <span className="px-2 py-0.5 sm:py-1 bg-muted rounded text-xs">
                             {doc.category}
                           </span>
-                          <span>
+                          <span className="hidden sm:inline">
                             Hochgeladen: {format(new Date(doc.uploadedAt), "d. MMM yyyy", { locale: de })}
                           </span>
+                          <span className="sm:hidden">
+                            {format(new Date(doc.uploadedAt), "d. MMM yy", { locale: de })}
+                          </span>
                           {doc.deletedAt && (
-                            <span>
-                              Gelöscht: {format(new Date(doc.deletedAt), "d. MMM yyyy", { locale: de })}
-                            </span>
+                            <>
+                              <span className="hidden sm:inline">
+                                Gelöscht: {format(new Date(doc.deletedAt), "d. MMM yyyy", { locale: de })}
+                              </span>
+                              <span className="sm:hidden">
+                                Gelöscht: {format(new Date(doc.deletedAt), "d. MMM yy", { locale: de })}
+                              </span>
+                            </>
                           )}
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full">
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => handleRestore(doc.id)}
                           disabled={restoreMutation.isPending}
                           data-testid={`button-restore-${doc.id}`}
+                          className="w-full sm:w-auto"
                         >
                           <RotateCcw className="h-4 w-4 mr-2" />
                           Wiederherstellen
@@ -162,6 +164,7 @@ export default function Trash() {
                           onClick={() => handlePermanentDelete(doc.id)}
                           disabled={deleteMutation.isPending}
                           data-testid={`button-permanent-delete-${doc.id}`}
+                          className="w-full sm:w-auto"
                         >
                           <Trash2 className="h-4 w-4 mr-2" />
                           Endgültig löschen
@@ -170,8 +173,8 @@ export default function Trash() {
                     </div>
                   </CardHeader>
                   {doc.extractedText && (
-                    <CardContent>
-                      <p className="text-sm text-muted-foreground line-clamp-2">
+                    <CardContent className="pt-0">
+                      <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">
                         {doc.extractedText}
                       </p>
                     </CardContent>
