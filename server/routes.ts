@@ -1366,15 +1366,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Document upload endpoint - supports single or multiple files
-  app.post('/api/documents/upload', isAuthenticated, uploadLimiter, checkDocumentLimit, upload.array('files', 20), async (req: any, res) => {
+  // Document upload endpoint - supports single or multiple files (max 5)
+  app.post('/api/documents/upload', isAuthenticated, uploadLimiter, checkDocumentLimit, upload.array('files', 5), async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const files = req.files as Express.Multer.File[];
       const folderId = req.body.folderId || null; // Optional folder assignment
 
       if (!files || files.length === 0) {
-        return res.status(400).json({ message: "No files provided" });
+        return res.status(400).json({ message: "Keine Dateien ausgewählt" });
+      }
+
+      if (files.length > 5) {
+        return res.status(400).json({ message: "Maximal 5 Dateien gleichzeitig möglich" });
       }
 
       console.log(`Processing ${files.length} file(s) as separate documents${folderId ? ` into folder ${folderId}` : ''}`);
