@@ -264,20 +264,20 @@ export function DocumentViewer({ document, open, onClose }: DocumentViewerProps)
                 size="icon"
                 onClick={goToPreviousPage}
                 disabled={currentPage === 0}
-                className="absolute left-4 sm:left-6 top-1/2 -translate-y-1/2 h-12 w-12 bg-background/90 hover:bg-background shadow-lg z-10"
+                className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 h-11 w-11 sm:h-12 sm:w-12 bg-background/90 hover:bg-background shadow-lg z-10"
                 data-testid="button-previous-page"
               >
-                <ChevronLeft className="h-6 w-6" />
+                <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6" />
               </Button>
               <Button
                 variant="outline"
                 size="icon"
                 onClick={goToNextPage}
                 disabled={currentPage === displayedPages - 1}
-                className="absolute right-4 sm:right-6 top-1/2 -translate-y-1/2 h-12 w-12 bg-background/90 hover:bg-background shadow-lg z-10"
+                className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 h-11 w-11 sm:h-12 sm:w-12 bg-background/90 hover:bg-background shadow-lg z-10"
                 data-testid="button-next-page"
               >
-                <ChevronRight className="h-6 w-6" />
+                <ChevronRight className="h-5 w-5 sm:h-6 sm:w-6" />
               </Button>
             </>
           )}
