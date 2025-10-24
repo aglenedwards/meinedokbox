@@ -147,8 +147,9 @@ export default function Sicherheit() {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  Alle Ihre Dokumente werden ausschließlich in IONOS-Rechenzentren in Frankfurt am Main gespeichert. 
-                  Keine Datenübertragung in Drittstaaten außerhalb der EU.
+                  Alle Ihre Dokumente werden ausschließlich in IONOS-Rechenzentren in Frankfurt am Main gespeichert 
+                  (EU-Region). Personenbezogene Daten verbleiben in der EU – Übermittlung in Drittländer nur bei 
+                  technischer Notwendigkeit und mit rechtlicher Absicherung durch das EU-U.S. Data Privacy Framework.
                 </p>
               </CardContent>
             </Card>
@@ -251,9 +252,11 @@ export default function Sicherheit() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-muted-foreground">
-                    Alle Dokumente werden auf IONOS Object Storage Servern im Rechenzentrum Frankfurt (eu-central-4) 
-                    gespeichert. Die Datenbank läuft auf Neon PostgreSQL (ebenfalls EU-Region). 
-                    Keinerlei Datenübertragung außerhalb Deutschlands bzw. der EU.
+                    Alle Dokumente werden ausschließlich auf IONOS Object Storage Servern im Rechenzentrum Frankfurt 
+                    (eu-central-4) gespeichert. Die Datenbank läuft auf Neon PostgreSQL (EU-Region). 
+                    Sämtliche personenbezogenen Daten verbleiben in der Europäischen Union – eine Übermittlung in 
+                    Drittländer findet nur statt, wenn dies technisch erforderlich und durch das EU-U.S. Data Privacy 
+                    Framework rechtlich abgesichert ist.
                   </p>
                 </CardContent>
               </Card>
