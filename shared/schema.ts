@@ -87,6 +87,9 @@ export const users = pgTable("users", {
   isVerified: boolean("is_verified").notNull().default(false),
   verificationToken: varchar("verification_token"),
   verificationTokenExpiry: timestamp("verification_token_expiry"),
+  // Password reset
+  passwordResetToken: varchar("password_reset_token"),
+  passwordResetTokenExpiry: timestamp("password_reset_token_expiry"),
   // E-Mail Inbound feature
   inboundEmail: varchar("inbound_email").unique(),
   emailWhitelist: text("email_whitelist").array(),
