@@ -33,7 +33,7 @@ export function Header() {
         </Link>
 
         {/* Desktop Navigation */}
-        <nav className="hidden lg:flex items-center gap-2">
+        <nav className="hidden md:flex items-center gap-2">
           {navItems.map((item) => (
             <Link key={item.href} href={item.href}>
               <Button
@@ -49,7 +49,7 @@ export function Header() {
         </nav>
 
         {/* Desktop Action Buttons */}
-        <div className="hidden lg:flex items-center gap-3">
+        <div className="hidden md:flex items-center gap-3">
           <Link href="/login">
             <Button 
               variant="ghost" 
@@ -73,7 +73,7 @@ export function Header() {
         </div>
 
         {/* Mobile Menu */}
-        <div className="lg:hidden">
+        <div className="md:hidden">
           <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="h-11 w-11" data-testid="button-mobile-menu">
