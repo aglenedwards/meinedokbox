@@ -19,7 +19,7 @@ import { ObjectPermission } from "./objectAcl";
 import { insertDocumentSchema, DOCUMENT_CATEGORIES, PLAN_LIMITS } from "@shared/schema";
 import { combineImagesToPDF, type PageBuffer } from "./lib/pdfGenerator";
 import { parseMailgunWebhook, isSupportedAttachment, isEmailWhitelisted, verifyMailgunWebhook, extractEmailAddress } from "./lib/emailInbound";
-import { sendSharedAccessInvitation, sendVerificationEmail } from "./lib/sendEmail";
+import { sendSharedAccessInvitation, sendVerificationEmail, sendPasswordResetEmail } from "./lib/sendEmail";
 import { emailQueue } from "./lib/emailQueue";
 import bcrypt from 'bcrypt';
 import { checkDocumentLimit, checkEmailFeature, checkAndDowngradeTrial, getEffectiveUserId, isSharedUser } from "./middleware/subscriptionLimits";
@@ -364,6 +364,148 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('[ResendVerification] Error:', error);
       res.status(500).json({ message: "Fehler beim Senden der Bestätigungs-E-Mail" });
+    }
+  });
+
+  // Password Reset Routes
+  
+  // Request password reset (send email with reset link)
+  app.post('/api/auth/forgot-password', loginLimiter, async (req, res) => {
+    try {
+      const { email } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ message: "E-Mail-Adresse erforderlich" });
+      }
+
+      const normalizedEmail = email.toLowerCase().trim();
+      
+      // Find user
+      const [user] = await db.select()
+        .from(users)
+        .where(eq(users.email, normalizedEmail))
+        .limit(1);
+
+      // Don't reveal if email exists (security best practice)
+      if (!user) {
+        return res.json({ message: "Falls ein Account mit dieser E-Mail existiert, wurde eine Passwort-Reset-E-Mail gesendet." });
+      }
+
+      // Generate reset token (1 hour expiry)
+      const resetToken = crypto.randomBytes(32).toString('hex');
+      const resetTokenExpiry = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+      // Update user with reset token
+      await db.update(users)
+        .set({
+          passwordResetToken: resetToken,
+          passwordResetTokenExpiry: resetTokenExpiry,
+        })
+        .where(eq(users.id, user.id));
+
+      // Send password reset email
+      const emailSent = await sendPasswordResetEmail(normalizedEmail, user.firstName, resetToken);
+      
+      if (!emailSent) {
+        console.error(`[ForgotPassword] Failed to send email to ${normalizedEmail}`);
+        // Still return success to not reveal if user exists
+      } else {
+        console.log(`[ForgotPassword] Password reset email sent to ${normalizedEmail}`);
+      }
+      
+      res.json({ message: "Falls ein Account mit dieser E-Mail existiert, wurde eine Passwort-Reset-E-Mail gesendet." });
+    } catch (error) {
+      console.error('[ForgotPassword] Error:', error);
+      res.status(500).json({ message: "Fehler beim Senden der Passwort-Reset-E-Mail" });
+    }
+  });
+
+  // Validate password reset token
+  app.get('/api/auth/validate-reset-token', async (req, res) => {
+    try {
+      const { token } = req.query;
+
+      if (!token || typeof token !== 'string') {
+        return res.status(400).json({ message: "Ungültiger Reset-Link", valid: false });
+      }
+
+      // Find user with this reset token
+      const [user] = await db.select()
+        .from(users)
+        .where(eq(users.passwordResetToken, token))
+        .limit(1);
+
+      if (!user) {
+        return res.status(400).json({ message: "Ungültiger oder abgelaufener Reset-Link", valid: false });
+      }
+
+      // Check if token is expired
+      if (user.passwordResetTokenExpiry && user.passwordResetTokenExpiry < new Date()) {
+        return res.status(400).json({ message: "Reset-Link ist abgelaufen. Bitte fordern Sie einen neuen an.", valid: false });
+      }
+
+      res.json({ message: "Token ist gültig", valid: true, email: user.email });
+    } catch (error) {
+      console.error('[ValidateResetToken] Error:', error);
+      res.status(500).json({ message: "Fehler bei der Token-Validierung", valid: false });
+    }
+  });
+
+  // Reset password with token
+  app.post('/api/auth/reset-password', loginLimiter, async (req, res) => {
+    try {
+      // Strong password validation
+      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/;
+      
+      const resetSchema = z.object({
+        token: z.string().min(1, "Token ist erforderlich"),
+        password: z.string()
+          .min(8, "Passwort muss mindestens 8 Zeichen lang sein")
+          .regex(passwordRegex, "Passwort muss mindestens einen Kleinbuchstaben, einen Großbuchstaben, eine Zahl und ein Sonderzeichen enthalten"),
+        passwordConfirm: z.string(),
+      }).refine(data => data.password === data.passwordConfirm, {
+        message: "Passwörter stimmen nicht überein",
+        path: ["passwordConfirm"],
+      });
+
+      const { token, password } = resetSchema.parse(req.body);
+
+      // Find user with this reset token
+      const [user] = await db.select()
+        .from(users)
+        .where(eq(users.passwordResetToken, token))
+        .limit(1);
+
+      if (!user) {
+        return res.status(400).json({ message: "Ungültiger oder abgelaufener Reset-Link" });
+      }
+
+      // Check if token is expired
+      if (user.passwordResetTokenExpiry && user.passwordResetTokenExpiry < new Date()) {
+        return res.status(400).json({ message: "Reset-Link ist abgelaufen. Bitte fordern Sie einen neuen an." });
+      }
+
+      // Hash new password
+      const passwordHash = await hashPassword(password);
+
+      // Update user with new password and clear reset token
+      await db.update(users)
+        .set({
+          passwordHash,
+          passwordResetToken: null,
+          passwordResetTokenExpiry: null,
+        })
+        .where(eq(users.id, user.id));
+
+      console.log(`[ResetPassword] ✅ Password reset successful for ${user.email}`);
+
+      res.json({ message: "Passwort erfolgreich zurückgesetzt. Sie können sich jetzt mit Ihrem neuen Passwort anmelden." });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: error.errors[0].message });
+      }
+      console.error('[ResetPassword] Error:', error);
+      res.status(500).json({ message: "Fehler beim Zurücksetzen des Passworts" });
     }
   });
 
