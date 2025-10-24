@@ -12,6 +12,8 @@ export interface DocumentAnalysisResult {
   extractedDate?: string; // ISO date string
   amount?: number;
   sender?: string;
+  // Auto-rotation detection
+  needsRotation?: boolean; // true if document is upside down (180°)
 }
 
 export interface ImageWithMimeType {
@@ -81,6 +83,8 @@ export async function analyzeDocument(
    - extractedDate: The document date (invoice date, statement date, etc.) in ISO format (YYYY-MM-DD). Extract the most relevant date from the document.
    - amount: The main monetary amount (e.g., invoice total, salary amount, balance). Extract as a number, use negative for debits/expenses.
    - sender: The sender/issuer of the document (e.g., company name, authority, institution)
+6. Document orientation:
+   - needsRotation: Detect if the document is upside down (rotated 180 degrees). Set to true if text appears inverted/upside down, false otherwise.
 
 Important: 
 - Choose the MOST SPECIFIC category based on keywords and document content
@@ -88,6 +92,7 @@ Important:
 - If multiple pages are provided, combine all text from all pages
 - Use high confidence (>0.8) when clear keywords match
 - For metadata: Only extract if clearly visible in the document. Use null if not found.
+- Check text orientation carefully - if text appears upside down, set needsRotation to true
 
 Respond with JSON in this format:
 {
@@ -97,7 +102,8 @@ Respond with JSON in this format:
   "confidence": 0.95,
   "extractedDate": "2024-01-15" or null,
   "amount": 123.45 or null,
-  "sender": "Company/Institution Name" or null
+  "sender": "Company/Institution Name" or null,
+  "needsRotation": false
 }`
         },
         {
@@ -126,7 +132,8 @@ Respond with JSON in this format:
       textLength: result.extractedText?.length || 0,
       extractedDate: result.extractedDate,
       amount: result.amount,
-      sender: result.sender
+      sender: result.sender,
+      needsRotation: result.needsRotation
     });
     
     return {
@@ -137,6 +144,7 @@ Respond with JSON in this format:
       extractedDate: result.extractedDate || undefined,
       amount: result.amount || undefined,
       sender: result.sender || undefined,
+      needsRotation: result.needsRotation || false,
     };
   } catch (error) {
     console.error("Failed to analyze document:", error);
