@@ -16,15 +16,25 @@ interface ProcessingModalProps {
   detectedCategory?: string;
   onClose: () => void;
   onAddAnother?: () => void;
+  totalFiles?: number;
+  currentFile?: number;
 }
 
-function getProcessingStep(progress: number): string {
-  if (progress < 30) {
-    return "Datei wird hochgeladen...";
-  } else if (progress < 70) {
-    return "KI analysiert Dokument...";
+function getProcessingStep(progress: number, totalFiles?: number, currentFile?: number): string {
+  const fileInfo = totalFiles && totalFiles > 1 && currentFile 
+    ? ` (${currentFile} von ${totalFiles})` 
+    : '';
+  
+  if (progress < 20) {
+    return `Datei${totalFiles && totalFiles > 1 ? 'en' : ''} wird hochgeladen...`;
+  } else if (progress < 40) {
+    return `KI analysiert Dokument${fileInfo}...`;
+  } else if (progress < 85) {
+    return totalFiles && totalFiles > 1 
+      ? `KI-Analyse läuft${fileInfo}... Dies kann bei mehreren Dokumenten bis zu ${totalFiles * 30} Sekunden dauern.`
+      : "KI-Analyse läuft... Dies kann bei komplexen Dokumenten bis zu 30 Sekunden dauern.";
   } else {
-    return "Dokument wird gespeichert...";
+    return `Dokument${totalFiles && totalFiles > 1 ? 'e' : ''} wird gespeichert...`;
   }
 }
 
@@ -35,21 +45,26 @@ export function ProcessingModal({
   detectedCategory,
   onClose,
   onAddAnother,
+  totalFiles,
+  currentFile,
 }: ProcessingModalProps) {
-  const currentStep = getProcessingStep(progress);
+  const currentStep = getProcessingStep(progress, totalFiles, currentFile);
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent data-testid="modal-processing">
         <DialogHeader>
           <DialogTitle>
-            {status === 'processing' && 'Dokument wird verarbeitet'}
-            {status === 'success' && 'Erfolgreich hochgeladen'}
+            {status === 'processing' && (totalFiles && totalFiles > 1 ? 'Dokumente werden verarbeitet' : 'Dokument wird verarbeitet')}
+            {status === 'success' && (totalFiles && totalFiles > 1 ? `${totalFiles} Dokumente erfolgreich hochgeladen` : 'Erfolgreich hochgeladen')}
             {status === 'error' && 'Upload fehlgeschlagen'}
           </DialogTitle>
           <DialogDescription>
             {status === 'processing' && currentStep}
-            {status === 'success' && detectedCategory && `Dokument wurde als "${detectedCategory}" klassifiziert`}
+            {status === 'success' && detectedCategory && (totalFiles && totalFiles > 1 
+              ? `${totalFiles} Dokumente wurden erfolgreich verarbeitet`
+              : `Dokument wurde als "${detectedCategory}" klassifiziert`
+            )}
             {status === 'error' && 'Bitte versuchen Sie es erneut'}
           </DialogDescription>
         </DialogHeader>

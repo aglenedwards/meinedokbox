@@ -108,6 +108,8 @@ export default function Dashboard() {
     progress: number;
     detectedCategory?: string;
     uploadedDocumentId?: string;
+    totalFiles?: number;
+    currentFile?: number;
   }>({
     open: false,
     status: 'processing',
@@ -414,22 +416,59 @@ export default function Dashboard() {
   const handleFileSelect = async (files: File | File[]) => {
     setShowUpload(false);
     setShowCameraMultiShot(false);
-    setProcessingModal({ open: true, status: 'processing', progress: 0 });
+    
+    const fileArray = Array.isArray(files) ? files : [files];
+    const totalFiles = fileArray.length;
+    
+    setProcessingModal({ 
+      open: true, 
+      status: 'processing', 
+      progress: 0,
+      totalFiles,
+      currentFile: 1,
+    });
 
-    // Simulate progress stages while upload is happening
+    // Realistic progress simulation
+    // Estimate: ~30-45 seconds per file for Vision API, ~10 seconds for text-only PDFs
+    const estimatedSecondsPerFile = 30;
+    const estimatedTotalSeconds = totalFiles * estimatedSecondsPerFile;
+    const startTime = Date.now();
+    
     const progressInterval = setInterval(() => {
       setProcessingModal(prev => {
-        if (prev.progress >= 90) {
-          clearInterval(progressInterval);
-          return prev;
+        const elapsedSeconds = (Date.now() - startTime) / 1000;
+        let newProgress = prev.progress;
+        
+        // Phase 1: Upload (0-20%) - fast, ~2-3 seconds
+        if (elapsedSeconds < 3) {
+          newProgress = Math.min(20, (elapsedSeconds / 3) * 20);
         }
-        return { ...prev, progress: prev.progress + 10 };
+        // Phase 2: AI Analysis (20-85%) - slow, based on estimated time
+        else if (elapsedSeconds < estimatedTotalSeconds - 2) {
+          const analysisProgress = (elapsedSeconds - 3) / (estimatedTotalSeconds - 5);
+          newProgress = 20 + (analysisProgress * 65);
+        }
+        // Phase 3: Saving (85-95%) - keep some buffer
+        else {
+          newProgress = Math.min(95, 85 + ((elapsedSeconds - (estimatedTotalSeconds - 2)) / 2) * 10);
+        }
+        
+        // Calculate current file based on progress
+        const currentFile = Math.min(totalFiles, Math.ceil((newProgress / 100) * totalFiles) || 1);
+        
+        return { 
+          ...prev, 
+          progress: Math.round(newProgress),
+          currentFile,
+        };
       });
-    }, 300);
+    }, 500); // Update every 500ms for smoother animation
 
     try {
       await uploadMutation.mutateAsync(files);
       clearInterval(progressInterval);
+      // Jump to 100% on success
+      setProcessingModal(prev => ({ ...prev, progress: 100 }));
     } catch (error) {
       clearInterval(progressInterval);
     }
@@ -978,6 +1017,8 @@ export default function Dashboard() {
         status={processingModal.status}
         progress={processingModal.progress}
         detectedCategory={processingModal.detectedCategory}
+        totalFiles={processingModal.totalFiles}
+        currentFile={processingModal.currentFile}
         onClose={() => {
           setProcessingModal(prev => ({ ...prev, open: false }));
           // Open the uploaded document in viewer
