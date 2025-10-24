@@ -22,14 +22,9 @@ export function EmptyState({
       </div>
       
       <h3 className="text-lg font-semibold mb-2">{title}</h3>
-      <p className="text-sm text-muted-foreground mb-4 max-w-sm">
+      <p className="text-sm text-muted-foreground max-w-sm">
         {description}
       </p>
-      
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <ArrowUp className="h-4 w-4" />
-        <span>Nutzen Sie den grünen Upload-Button oben</span>
-      </div>
     </div>
   );
 }
