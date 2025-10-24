@@ -80,24 +80,23 @@ export default function Preise() {
       </section>
 
       {/* Pricing Cards */}
-      <section className="py-12 bg-background">
+      <section className="py-24 section-premium-subtle">
         <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             
-            {/* Starter Plan */}
-            <Card className="relative overflow-hidden">
-              <CardHeader>
-                <CardTitle className="text-2xl">Starter</CardTitle>
-                <CardDescription>Perfekt für Einzelpersonen</CardDescription>
-                <div className="flex items-baseline gap-2 mt-6">
-                  <span className="text-5xl font-bold">
-                    {billingPeriod === "monthly" ? "€6" : "€5"}
+            {/* Solo Plan */}
+            <Card className="card-premium hover-elevate" data-testid="card-pricing-solo">
+              <CardHeader className="text-center pb-6">
+                <CardTitle className="text-xl">Solo</CardTitle>
+                <div className="mt-4">
+                  <span className="text-4xl font-bold">
+                    €{billingPeriod === "monthly" ? "4,99" : "3,99"}
                   </span>
                   <span className="text-muted-foreground ml-2">/Monat</span>
                 </div>
                 {billingPeriod === "yearly" && (
                   <p className="text-sm text-muted-foreground mt-2">
-                    Jährlich abgerechnet (€59,88/Jahr)
+                    Jährlich abgerechnet (€47,88/Jahr)
                   </p>
                 )}
               </CardHeader>
@@ -109,11 +108,11 @@ export default function Preise() {
                   </li>
                   <li className="flex items-start gap-3">
                     <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                    <span>100 Uploads/Monat</span>
+                    <span>50 Uploads/Monat</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                    <span>5 GB Speicherplatz</span>
+                    <span>2 GB Speicherplatz</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
@@ -127,34 +126,89 @@ export default function Preise() {
                     <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
                     <span>E-Mail-Eingang</span>
                   </li>
-                  <li className="flex items-start gap-3">
-                    <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                    <span>Standard-Support</span>
-                  </li>
                 </ul>
                 <Button
                   className="w-full mt-6"
                   size="lg"
                   variant="outline"
                   onClick={() => setLocation("/")}
-                  data-testid="button-pricing-starter"
+                  data-testid="button-pricing-solo"
                 >
                   Kostenlos testen
                 </Button>
               </CardContent>
             </Card>
 
-            {/* Family Plus Plan */}
-            <Card className="relative overflow-hidden border-2 border-primary">
-              <div className="absolute top-0 right-0 bg-primary text-primary-foreground px-4 py-1 text-sm font-semibold">
-                Beliebt
+            {/* Family Plan - Hervorgehoben */}
+            <Card className="border-2 border-primary shadow-2xl relative md:scale-105 card-premium hover-elevate" data-testid="card-pricing-family">
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                <span className="bg-primary text-primary-foreground px-4 py-1 rounded-full text-sm font-medium">
+                  Empfohlen
+                </span>
               </div>
-              <CardHeader>
-                <CardTitle className="text-2xl">Family Plus</CardTitle>
-                <CardDescription>Ideal für Familien & kleine Teams</CardDescription>
-                <div className="flex items-baseline gap-2 mt-6">
+              <CardHeader className="text-center pb-6 pt-8">
+                <CardTitle className="text-2xl">Family</CardTitle>
+                <div className="mt-4">
                   <span className="text-5xl font-bold">
-                    {billingPeriod === "monthly" ? "€12" : "€10"}
+                    €{billingPeriod === "monthly" ? "7,99" : "6,99"}
+                  </span>
+                  <span className="text-muted-foreground ml-2">/Monat</span>
+                </div>
+                {billingPeriod === "yearly" && (
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Jährlich abgerechnet (€83,88/Jahr)
+                  </p>
+                )}
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <ul className="space-y-3">
+                  <li className="flex items-start gap-3">
+                    <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                    <span>2 Benutzer</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                    <span>200 Uploads/Monat</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                    <span>10 GB Speicherplatz</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                    <span>KI-Kategorisierung</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                    <span>Smartphone-App & PWA</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                    <span>Private & geteilte Ordner</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                    <span>E-Mail-Eingang</span>
+                  </li>
+                </ul>
+                <Button
+                  className="w-full mt-6"
+                  size="lg"
+                  onClick={() => setLocation("/")}
+                  data-testid="button-pricing-family"
+                >
+                  Jetzt 14 Tage kostenlos testen
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Family Plus Plan */}
+            <Card className="card-premium hover-elevate" data-testid="card-pricing-family-plus">
+              <CardHeader className="text-center pb-6">
+                <CardTitle className="text-xl">Family Plus</CardTitle>
+                <div className="mt-4">
+                  <span className="text-4xl font-bold">
+                    €{billingPeriod === "monthly" ? "11,99" : "9,99"}
                   </span>
                   <span className="text-muted-foreground ml-2">/Monat</span>
                 </div>
@@ -202,6 +256,7 @@ export default function Preise() {
                 <Button
                   className="w-full mt-6"
                   size="lg"
+                  variant="outline"
                   onClick={() => setLocation("/")}
                   data-testid="button-pricing-family-plus"
                 >
@@ -215,7 +270,7 @@ export default function Preise() {
       </section>
 
       {/* FAQ */}
-      <section className="py-24 bg-muted/30">
+      <section className="py-24 bg-muted/30 section-premium-subtle">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-3xl md:text-4xl font-bold mb-12 text-center">
@@ -223,7 +278,7 @@ export default function Preise() {
             </h2>
             
             <div className="space-y-6">
-              <Card>
+              <Card className="card-premium hover-elevate">
                 <CardHeader>
                   <CardTitle>Wie funktioniert die 14-tägige Testphase?</CardTitle>
                 </CardHeader>
@@ -236,7 +291,7 @@ export default function Preise() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="card-premium hover-elevate">
                 <CardHeader>
                   <CardTitle>Kann ich jederzeit kündigen?</CardTitle>
                 </CardHeader>
@@ -249,7 +304,7 @@ export default function Preise() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="card-premium hover-elevate">
                 <CardHeader>
                   <CardTitle>Was passiert, wenn ich mein Limit überschreite?</CardTitle>
                 </CardHeader>
@@ -262,7 +317,7 @@ export default function Preise() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="card-premium hover-elevate">
                 <CardHeader>
                   <CardTitle>Wie funktionieren Familien-Accounts?</CardTitle>
                 </CardHeader>
@@ -275,7 +330,7 @@ export default function Preise() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="card-premium hover-elevate">
                 <CardHeader>
                   <CardTitle>Welche Zahlungsmethoden akzeptieren Sie?</CardTitle>
                 </CardHeader>
@@ -287,7 +342,7 @@ export default function Preise() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="card-premium hover-elevate">
                 <CardHeader>
                   <CardTitle>Was passiert mit meinen Daten, wenn ich kündige?</CardTitle>
                 </CardHeader>
@@ -300,7 +355,7 @@ export default function Preise() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="card-premium hover-elevate">
                 <CardHeader>
                   <CardTitle>Gibt es Rabatte für gemeinnützige Organisationen?</CardTitle>
                 </CardHeader>
@@ -317,7 +372,7 @@ export default function Preise() {
       </section>
 
       {/* CTA */}
-      <section className="py-24 bg-background">
+      <section className="py-24 section-premium-subtle">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-6">
             Noch Fragen?
