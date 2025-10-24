@@ -211,26 +211,24 @@ export default function ResetPassword() {
                       <FormItem>
                         <FormLabel>Neues Passwort</FormLabel>
                         <FormControl>
-                          <div className="relative">
+                          <div className="flex gap-2">
                             <Input
                               {...field}
                               type={showPassword ? "text" : "password"}
                               placeholder="Min. 8 Zeichen, Groß-/Kleinbuchstaben, Zahlen, Sonderzeichen"
                               data-testid="input-new-password"
-                              className="pr-10"
                             />
                             <Button
                               type="button"
-                              variant="ghost"
+                              variant="outline"
                               size="icon"
-                              className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
                               onClick={() => setShowPassword(!showPassword)}
                               data-testid="button-toggle-password"
                             >
                               {showPassword ? (
-                                <EyeOff className="h-4 w-4 text-muted-foreground" />
+                                <EyeOff className="h-4 w-4" />
                               ) : (
-                                <Eye className="h-4 w-4 text-muted-foreground" />
+                                <Eye className="h-4 w-4" />
                               )}
                             </Button>
                           </div>
@@ -247,26 +245,24 @@ export default function ResetPassword() {
                       <FormItem>
                         <FormLabel>Passwort bestätigen</FormLabel>
                         <FormControl>
-                          <div className="relative">
+                          <div className="flex gap-2">
                             <Input
                               {...field}
                               type={showPasswordConfirm ? "text" : "password"}
                               placeholder="Passwort wiederholen"
                               data-testid="input-confirm-password"
-                              className="pr-10"
                             />
                             <Button
                               type="button"
-                              variant="ghost"
+                              variant="outline"
                               size="icon"
-                              className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
                               onClick={() => setShowPasswordConfirm(!showPasswordConfirm)}
                               data-testid="button-toggle-confirm-password"
                             >
                               {showPasswordConfirm ? (
-                                <EyeOff className="h-4 w-4 text-muted-foreground" />
+                                <EyeOff className="h-4 w-4" />
                               ) : (
-                                <Eye className="h-4 w-4 text-muted-foreground" />
+                                <Eye className="h-4 w-4" />
                               )}
                             </Button>
                           </div>

@@ -284,26 +284,24 @@ export default function Invite() {
                   <FormItem>
                     <FormLabel>Passwort</FormLabel>
                     <FormControl>
-                      <div className="relative">
+                      <div className="flex gap-2">
                         <Input
                           {...field}
                           type={showPassword ? "text" : "password"}
                           placeholder="Min. 8 Zeichen, Groß-/Kleinbuchstaben, Zahlen, Sonderzeichen"
                           data-testid="input-password"
-                          className="pr-10"
                         />
                         <Button
                           type="button"
-                          variant="ghost"
+                          variant="outline"
                           size="icon"
-                          className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
                           onClick={() => setShowPassword(!showPassword)}
                           data-testid="button-toggle-password"
                         >
                           {showPassword ? (
-                            <EyeOff className="h-4 w-4 text-muted-foreground" />
+                            <EyeOff className="h-4 w-4" />
                           ) : (
-                            <Eye className="h-4 w-4 text-muted-foreground" />
+                            <Eye className="h-4 w-4" />
                           )}
                         </Button>
                       </div>
@@ -320,26 +318,24 @@ export default function Invite() {
                   <FormItem>
                     <FormLabel>Passwort bestätigen</FormLabel>
                     <FormControl>
-                      <div className="relative">
+                      <div className="flex gap-2">
                         <Input
                           {...field}
                           type={showConfirmPassword ? "text" : "password"}
                           placeholder="Passwort wiederholen"
                           data-testid="input-confirmPassword"
-                          className="pr-10"
                         />
                         <Button
                           type="button"
-                          variant="ghost"
+                          variant="outline"
                           size="icon"
-                          className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
                           onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                           data-testid="button-toggle-confirm-password"
                         >
                           {showConfirmPassword ? (
-                            <EyeOff className="h-4 w-4 text-muted-foreground" />
+                            <EyeOff className="h-4 w-4" />
                           ) : (
-                            <Eye className="h-4 w-4 text-muted-foreground" />
+                            <Eye className="h-4 w-4" />
                           )}
                         </Button>
                       </div>

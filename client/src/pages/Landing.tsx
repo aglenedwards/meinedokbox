@@ -1213,26 +1213,24 @@ export default function Landing() {
                       <FormItem>
                         <FormLabel>Passwort</FormLabel>
                         <FormControl>
-                          <div className="relative">
+                          <div className="flex gap-2">
                             <Input
                               type={showLoginPassword ? "text" : "password"}
                               placeholder="••••••••"
                               {...field}
                               data-testid="input-login-password"
-                              className="pr-10"
                             />
                             <Button
                               type="button"
-                              variant="ghost"
+                              variant="outline"
                               size="icon"
-                              className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
                               onClick={() => setShowLoginPassword(!showLoginPassword)}
                               data-testid="button-toggle-login-password"
                             >
                               {showLoginPassword ? (
-                                <EyeOff className="h-4 w-4 text-muted-foreground" />
+                                <EyeOff className="h-4 w-4" />
                               ) : (
-                                <Eye className="h-4 w-4 text-muted-foreground" />
+                                <Eye className="h-4 w-4" />
                               )}
                             </Button>
                           </div>
@@ -1335,26 +1333,24 @@ export default function Landing() {
                       <FormItem>
                         <FormLabel>Passwort *</FormLabel>
                         <FormControl>
-                          <div className="relative">
+                          <div className="flex gap-2">
                             <Input
                               type={showSignupPassword ? "text" : "password"}
                               placeholder="Min. 8 Zeichen, Großbuchstabe, Zahl, Sonderzeichen"
                               {...field}
                               data-testid="input-signup-password"
-                              className="pr-10"
                             />
                             <Button
                               type="button"
-                              variant="ghost"
+                              variant="outline"
                               size="icon"
-                              className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
                               onClick={() => setShowSignupPassword(!showSignupPassword)}
                               data-testid="button-toggle-signup-password"
                             >
                               {showSignupPassword ? (
-                                <EyeOff className="h-4 w-4 text-muted-foreground" />
+                                <EyeOff className="h-4 w-4" />
                               ) : (
-                                <Eye className="h-4 w-4 text-muted-foreground" />
+                                <Eye className="h-4 w-4" />
                               )}
                             </Button>
                           </div>
@@ -1371,26 +1367,24 @@ export default function Landing() {
                       <FormItem>
                         <FormLabel>Passwort wiederholen *</FormLabel>
                         <FormControl>
-                          <div className="relative">
+                          <div className="flex gap-2">
                             <Input
                               type={showSignupPasswordConfirm ? "text" : "password"}
                               placeholder="Passwort erneut eingeben"
                               {...field}
                               data-testid="input-signup-password-confirm"
-                              className="pr-10"
                             />
                             <Button
                               type="button"
-                              variant="ghost"
+                              variant="outline"
                               size="icon"
-                              className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
                               onClick={() => setShowSignupPasswordConfirm(!showSignupPasswordConfirm)}
                               data-testid="button-toggle-signup-password-confirm"
                             >
                               {showSignupPasswordConfirm ? (
-                                <EyeOff className="h-4 w-4 text-muted-foreground" />
+                                <EyeOff className="h-4 w-4" />
                               ) : (
-                                <Eye className="h-4 w-4 text-muted-foreground" />
+                                <Eye className="h-4 w-4" />
                               )}
                             </Button>
                           </div>
