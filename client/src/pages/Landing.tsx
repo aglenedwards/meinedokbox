@@ -17,7 +17,9 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { z } from "zod";
 import { login, register, getCurrentUser, type LoginData, type RegisterData } from "@/lib/api";
 import { queryClient } from "@/lib/queryClient";
-import { FileText, Zap, Users, Shield, Sparkles, Check, ArrowRight, Camera, Scan, FolderOpen, X, TrendingUp, Clock, Brain, Search, Mail, Home, Briefcase, Heart, Eye, EyeOff, MapPin } from "lucide-react";
+import { FileText, Zap, Users, Shield, Sparkles, Check, ArrowRight, Camera, Scan, FolderOpen, X, TrendingUp, Clock, Brain, Search, Mail, Home, Briefcase, Heart, Eye, EyeOff, MapPin, Menu } from "lucide-react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Link } from "wouter";
 import logoImage from "@assets/meinedokbox_1760966015056.png";
 import { Footer } from "@/components/Footer";
 
@@ -55,6 +57,7 @@ export default function Landing() {
   const [showSignupPasswordConfirm, setShowSignupPasswordConfirm] = useState(false);
   const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Check if user is already logged in
   const { data: user, isLoading } = useQuery<User | null>({
@@ -179,12 +182,38 @@ export default function Landing() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b">
+      <header className="border-b bg-background sticky top-0 z-50">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between gap-4">
           <div className="flex items-center flex-shrink-0">
-            <img src={logoImage} alt="MeineDokBox" className="h-12 md:h-16 w-auto" data-testid="img-logo" />
+            <img src={logoImage} alt="MeineDokBox" className="h-10 md:h-12 w-auto" data-testid="img-logo" />
           </div>
-          <div className="flex items-center gap-2 flex-shrink-0">
+
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center gap-1">
+            <Link href="/funktionen">
+              <Button variant="ghost" size="sm" className="font-medium" data-testid="nav-funktionen">
+                Funktionen
+              </Button>
+            </Link>
+            <Link href="/sicherheit">
+              <Button variant="ghost" size="sm" className="font-medium" data-testid="nav-sicherheit">
+                Sicherheit
+              </Button>
+            </Link>
+            <Link href="/preise">
+              <Button variant="ghost" size="sm" className="font-medium" data-testid="nav-preise">
+                Preise
+              </Button>
+            </Link>
+            <Link href="/ueber-uns">
+              <Button variant="ghost" size="sm" className="font-medium" data-testid="nav-ueber-uns">
+                Über uns
+              </Button>
+            </Link>
+          </nav>
+
+          {/* Desktop CTA Buttons */}
+          <div className="hidden md:flex items-center gap-2 flex-shrink-0">
             {user ? (
               <Button
                 size="sm"
@@ -198,7 +227,6 @@ export default function Landing() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="hidden sm:inline-flex"
                   onClick={() => {
                     setAuthTab("login");
                     setAuthModalOpen(true);
@@ -219,6 +247,109 @@ export default function Landing() {
                 </Button>
               </>
             )}
+          </div>
+
+          {/* Mobile Menu */}
+          <div className="md:hidden">
+            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" data-testid="button-mobile-menu">
+                  <Menu className="h-6 w-6" />
+                  <span className="sr-only">Menü öffnen</span>
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-[300px]">
+                <SheetHeader>
+                  <SheetTitle>Navigation</SheetTitle>
+                </SheetHeader>
+                <nav className="flex flex-col gap-4 mt-8">
+                  <Link href="/funktionen">
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start text-lg"
+                      onClick={() => setMobileMenuOpen(false)}
+                      data-testid="nav-mobile-funktionen"
+                    >
+                      Funktionen
+                    </Button>
+                  </Link>
+                  <Link href="/sicherheit">
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start text-lg"
+                      onClick={() => setMobileMenuOpen(false)}
+                      data-testid="nav-mobile-sicherheit"
+                    >
+                      Sicherheit
+                    </Button>
+                  </Link>
+                  <Link href="/preise">
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start text-lg"
+                      onClick={() => setMobileMenuOpen(false)}
+                      data-testid="nav-mobile-preise"
+                    >
+                      Preise
+                    </Button>
+                  </Link>
+                  <Link href="/ueber-uns">
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start text-lg"
+                      onClick={() => setMobileMenuOpen(false)}
+                      data-testid="nav-mobile-ueber-uns"
+                    >
+                      Über uns
+                    </Button>
+                  </Link>
+                  
+                  <div className="pt-4 border-t">
+                    {user ? (
+                      <Button
+                        className="w-full"
+                        size="lg"
+                        onClick={() => {
+                          setMobileMenuOpen(false);
+                          setLocation("/dashboard");
+                        }}
+                        data-testid="button-mobile-dashboard"
+                      >
+                        Zum Dashboard
+                      </Button>
+                    ) : (
+                      <div className="space-y-3">
+                        <Button
+                          variant="outline"
+                          className="w-full"
+                          size="lg"
+                          onClick={() => {
+                            setMobileMenuOpen(false);
+                            setAuthTab("login");
+                            setAuthModalOpen(true);
+                          }}
+                          data-testid="button-mobile-login"
+                        >
+                          Anmelden
+                        </Button>
+                        <Button
+                          className="w-full"
+                          size="lg"
+                          onClick={() => {
+                            setMobileMenuOpen(false);
+                            setAuthTab("signup");
+                            setAuthModalOpen(true);
+                          }}
+                          data-testid="button-mobile-signup"
+                        >
+                          Kostenlos testen
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </nav>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
       </header>
