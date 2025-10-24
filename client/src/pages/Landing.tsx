@@ -17,7 +17,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { z } from "zod";
 import { login, register, getCurrentUser, type LoginData, type RegisterData } from "@/lib/api";
 import { queryClient } from "@/lib/queryClient";
-import { FileText, Zap, Users, Shield, Sparkles, Check, ArrowRight, Camera, Scan, FolderOpen, X, TrendingUp, Clock, Brain, Search, Mail, Home, Briefcase, Heart } from "lucide-react";
+import { FileText, Zap, Users, Shield, Sparkles, Check, ArrowRight, Camera, Scan, FolderOpen, X, TrendingUp, Clock, Brain, Search, Mail, Home, Briefcase, Heart, Eye, EyeOff } from "lucide-react";
 import logoImage from "@assets/meinedokbox_1760966015056.png";
 import { Footer } from "@/components/Footer";
 
@@ -50,6 +50,11 @@ export default function Landing() {
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authTab, setAuthTab] = useState<"login" | "signup">("login");
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">("yearly");
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [showSignupPassword, setShowSignupPassword] = useState(false);
+  const [showSignupPasswordConfirm, setShowSignupPasswordConfirm] = useState(false);
+  const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
+  const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
 
   // Check if user is already logged in
   const { data: user, isLoading } = useQuery<User | null>({
@@ -1208,17 +1213,48 @@ export default function Landing() {
                       <FormItem>
                         <FormLabel>Passwort</FormLabel>
                         <FormControl>
-                          <Input
-                            type="password"
-                            placeholder="••••••••"
-                            {...field}
-                            data-testid="input-login-password"
-                          />
+                          <div className="relative">
+                            <Input
+                              type={showLoginPassword ? "text" : "password"}
+                              placeholder="••••••••"
+                              {...field}
+                              data-testid="input-login-password"
+                              className="pr-10"
+                            />
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                              onClick={() => setShowLoginPassword(!showLoginPassword)}
+                              data-testid="button-toggle-login-password"
+                            >
+                              {showLoginPassword ? (
+                                <EyeOff className="h-4 w-4 text-muted-foreground" />
+                              ) : (
+                                <Eye className="h-4 w-4 text-muted-foreground" />
+                              )}
+                            </Button>
+                          </div>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
+
+                  <div className="text-right">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAuthModalOpen(false);
+                        setForgotPasswordOpen(true);
+                      }}
+                      className="text-sm text-primary hover:underline"
+                      data-testid="link-forgot-password"
+                    >
+                      Passwort vergessen?
+                    </button>
+                  </div>
 
                   <Button
                     type="submit"
@@ -1299,12 +1335,29 @@ export default function Landing() {
                       <FormItem>
                         <FormLabel>Passwort *</FormLabel>
                         <FormControl>
-                          <Input
-                            type="password"
-                            placeholder="Min. 8 Zeichen, Großbuchstabe, Zahl, Sonderzeichen"
-                            {...field}
-                            data-testid="input-signup-password"
-                          />
+                          <div className="relative">
+                            <Input
+                              type={showSignupPassword ? "text" : "password"}
+                              placeholder="Min. 8 Zeichen, Großbuchstabe, Zahl, Sonderzeichen"
+                              {...field}
+                              data-testid="input-signup-password"
+                              className="pr-10"
+                            />
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                              onClick={() => setShowSignupPassword(!showSignupPassword)}
+                              data-testid="button-toggle-signup-password"
+                            >
+                              {showSignupPassword ? (
+                                <EyeOff className="h-4 w-4 text-muted-foreground" />
+                              ) : (
+                                <Eye className="h-4 w-4 text-muted-foreground" />
+                              )}
+                            </Button>
+                          </div>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -1318,12 +1371,29 @@ export default function Landing() {
                       <FormItem>
                         <FormLabel>Passwort wiederholen *</FormLabel>
                         <FormControl>
-                          <Input
-                            type="password"
-                            placeholder="Passwort erneut eingeben"
-                            {...field}
-                            data-testid="input-signup-password-confirm"
-                          />
+                          <div className="relative">
+                            <Input
+                              type={showSignupPasswordConfirm ? "text" : "password"}
+                              placeholder="Passwort erneut eingeben"
+                              {...field}
+                              data-testid="input-signup-password-confirm"
+                              className="pr-10"
+                            />
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                              onClick={() => setShowSignupPasswordConfirm(!showSignupPasswordConfirm)}
+                              data-testid="button-toggle-signup-password-confirm"
+                            >
+                              {showSignupPasswordConfirm ? (
+                                <EyeOff className="h-4 w-4 text-muted-foreground" />
+                              ) : (
+                                <Eye className="h-4 w-4 text-muted-foreground" />
+                              )}
+                            </Button>
+                          </div>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -1373,6 +1443,60 @@ export default function Landing() {
               </Form>
             </TabsContent>
           </Tabs>
+        </DialogContent>
+      </Dialog>
+
+      {/* Forgot Password Dialog */}
+      <Dialog open={forgotPasswordOpen} onOpenChange={setForgotPasswordOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Passwort zurücksetzen</DialogTitle>
+            <DialogDescription>
+              Geben Sie Ihre E-Mail-Adresse ein. Wir senden Ihnen einen Link zum Zurücksetzen Ihres Passworts.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="forgot-email">E-Mail-Adresse</Label>
+              <Input
+                id="forgot-email"
+                type="email"
+                placeholder="ihre@email.de"
+                value={forgotPasswordEmail}
+                onChange={(e) => setForgotPasswordEmail(e.target.value)}
+                data-testid="input-forgot-password-email"
+              />
+            </div>
+            <Button
+              className="w-full"
+              onClick={async () => {
+                try {
+                  const res = await fetch("/api/auth/forgot-password", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email: forgotPasswordEmail }),
+                    credentials: "include",
+                  });
+                  const data = await res.json();
+                  toast({
+                    title: "E-Mail gesendet",
+                    description: data.message,
+                  });
+                  setForgotPasswordOpen(false);
+                  setForgotPasswordEmail("");
+                } catch (err) {
+                  toast({
+                    title: "Fehler",
+                    description: "E-Mail konnte nicht gesendet werden",
+                    variant: "destructive",
+                  });
+                }
+              }}
+              data-testid="button-forgot-password-submit"
+            >
+              Zurücksetzen-Link senden
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
