@@ -1,3 +1,5 @@
+import { Link } from "wouter";
+
 export function Footer() {
   return (
     <footer className="border-t bg-background mt-12">
@@ -8,27 +10,30 @@ export function Footer() {
           </div>
           
           <div className="flex flex-wrap justify-center gap-4 md:gap-6 text-sm">
-            <a 
-              href="#" 
-              className="text-muted-foreground hover:text-foreground transition-colors"
-              data-testid="link-impressum"
-            >
-              Impressum
-            </a>
-            <a 
-              href="#" 
-              className="text-muted-foreground hover:text-foreground transition-colors"
-              data-testid="link-datenschutz"
-            >
-              Datenschutz
-            </a>
-            <a 
-              href="#" 
-              className="text-muted-foreground hover:text-foreground transition-colors"
-              data-testid="link-kontakt"
-            >
-              Kontakt
-            </a>
+            <Link href="/impressum">
+              <a 
+                className="text-muted-foreground hover:text-foreground transition-colors"
+                data-testid="link-impressum"
+              >
+                Impressum
+              </a>
+            </Link>
+            <Link href="/datenschutz">
+              <a 
+                className="text-muted-foreground hover:text-foreground transition-colors"
+                data-testid="link-datenschutz"
+              >
+                Datenschutz
+              </a>
+            </Link>
+            <Link href="/kontakt">
+              <a 
+                className="text-muted-foreground hover:text-foreground transition-colors"
+                data-testid="link-kontakt"
+              >
+                Kontakt
+              </a>
+            </Link>
           </div>
         </div>
       </div>
