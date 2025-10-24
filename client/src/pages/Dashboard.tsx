@@ -621,7 +621,7 @@ export default function Dashboard() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 md:px-6 py-8">
+      <main className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-6 md:py-8 overflow-x-hidden">
         <div>
           {showUpload && (
             <div className="mb-8">
@@ -671,7 +671,7 @@ export default function Dashboard() {
           <ReadOnlyBanner />
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6 mb-6 md:mb-8">
           {/* Monthly Upload Limit Card */}
           <Card data-testid="card-upload-limit">
             <CardHeader className="pb-2">
