@@ -421,8 +421,19 @@ export class DbStorage implements IStorage {
   }
 
   async getUserStorageStats(userId: string): Promise<StorageStats> {
-    const { ObjectStorageService } = await import("./objectStorage");
-    const objectStorage = new ObjectStorageService();
+    const { s3Client } = await import("./objectStorage");
+    const { HeadObjectCommand } = await import("@aws-sdk/client-s3");
+    
+    // Helper to parse S3 paths
+    const parseS3Path = (path: string) => {
+      if (!path.startsWith("/")) {
+        path = `/${path}`;
+      }
+      const pathParts = path.split("/");
+      const bucketName = pathParts[1];
+      const objectName = pathParts.slice(2).join("/");
+      return { bucketName, objectName };
+    };
     
     // Get all user's documents
     const userDocuments = await this.getDocumentsByUserId(userId);
@@ -439,9 +450,13 @@ export class DbStorage implements IStorage {
       
       for (const pageUrl of pageUrls) {
         try {
-          const objectFile = await objectStorage.getObjectEntityFile(pageUrl);
-          const [metadata] = await objectFile.getMetadata();
-          totalBytes += parseInt(metadata.size as string) || 0;
+          const { bucketName, objectName } = parseS3Path(pageUrl);
+          const headCommand = new HeadObjectCommand({
+            Bucket: bucketName,
+            Key: objectName,
+          });
+          const metadata = await s3Client.send(headCommand);
+          totalBytes += metadata.ContentLength || 0;
         } catch (error) {
           console.error(`Failed to get stats for ${pageUrl}:`, error);
           // Continue with other files if one fails
@@ -451,9 +466,13 @@ export class DbStorage implements IStorage {
       // Also count thumbnails if they exist
       if (doc.thumbnailUrl) {
         try {
-          const objectFile = await objectStorage.getObjectEntityFile(doc.thumbnailUrl);
-          const [metadata] = await objectFile.getMetadata();
-          totalBytes += parseInt(metadata.size as string) || 0;
+          const { bucketName, objectName } = parseS3Path(doc.thumbnailUrl);
+          const headCommand = new HeadObjectCommand({
+            Bucket: bucketName,
+            Key: objectName,
+          });
+          const metadata = await s3Client.send(headCommand);
+          totalBytes += metadata.ContentLength || 0;
         } catch (error) {
           console.error(`Failed to get stats for thumbnail ${doc.thumbnailUrl}:`, error);
         }
