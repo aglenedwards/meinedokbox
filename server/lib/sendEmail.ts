@@ -407,3 +407,119 @@ Ihr MeineDokBox Team
 
   return sendEmail({ to, subject, text, html });
 }
+
+/**
+ * Send contact form message to service email
+ */
+export async function sendContactFormEmail(
+  name: string,
+  email: string,
+  subject: string,
+  message: string
+): Promise<boolean> {
+  const serviceEmail = "service@meinedokbox.de";
+  const emailSubject = `[Kontaktformular] ${subject}`;
+  
+  const text = `
+Neue Nachricht über das Kontaktformular:
+
+Von: ${name} (${email})
+Betreff: ${subject}
+
+Nachricht:
+${message}
+
+---
+Diese Nachricht wurde über das Kontaktformular auf meinedokbox.de gesendet.
+  `.trim();
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white !important;
+      padding: 30px;
+      border-radius: 8px 8px 0 0;
+      text-align: center;
+    }
+    .content {
+      background: #f8f9fa;
+      padding: 30px;
+      border-radius: 0 0 8px 8px;
+    }
+    .info-box {
+      background: white;
+      padding: 20px;
+      border-radius: 6px;
+      margin: 20px 0;
+      border-left: 4px solid #667eea;
+    }
+    .info-row {
+      margin: 10px 0;
+      display: flex;
+      gap: 10px;
+    }
+    .info-label {
+      font-weight: 600;
+      color: #667eea;
+      min-width: 100px;
+    }
+    .message-box {
+      background: white;
+      padding: 20px;
+      border-radius: 6px;
+      margin: 20px 0;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <div style="background: #667eea; color: #ffffff; padding: 30px; border-radius: 8px 8px 0 0; text-align: center;">
+    <h1 style="color: #ffffff !important; margin: 0 0 10px 0; font-size: 28px;">Kontaktformular</h1>
+    <p style="color: #ffffff !important; margin: 0; font-size: 16px;">Neue Nachricht erhalten</p>
+  </div>
+  
+  <div class="content">
+    <div class="info-box">
+      <div class="info-row">
+        <span class="info-label">Von:</span>
+        <span>${name}</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">E-Mail:</span>
+        <span><a href="mailto:${email}">${email}</a></span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Betreff:</span>
+        <span>${subject}</span>
+      </div>
+    </div>
+    
+    <h3 style="margin-top: 20px;">Nachricht:</h3>
+    <div class="message-box">
+      ${message}
+    </div>
+    
+    <p style="margin-top: 30px; font-size: 14px; color: #999; text-align: center;">
+      Diese Nachricht wurde über das Kontaktformular auf meinedokbox.de gesendet.
+    </p>
+  </div>
+</body>
+</html>
+  `.trim();
+
+  return sendEmail({ to: serviceEmail, subject: emailSubject, text, html });
+}
+
