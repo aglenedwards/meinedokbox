@@ -16,6 +16,10 @@ import AdminLogin from "@/pages/AdminLogin";
 import VerifyEmail from "@/pages/VerifyEmail";
 import Invite from "@/pages/Invite";
 import ResetPassword from "@/pages/ResetPassword";
+import Funktionen from "@/pages/Funktionen";
+import Sicherheit from "@/pages/Sicherheit";
+import Preise from "@/pages/Preise";
+import UeberUns from "@/pages/UeberUns";
 import Impressum from "@/pages/Impressum";
 import Datenschutz from "@/pages/Datenschutz";
 import Kontakt from "@/pages/Kontakt";
@@ -64,6 +68,10 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Landing} />
+      <Route path="/funktionen" component={Funktionen} />
+      <Route path="/sicherheit" component={Sicherheit} />
+      <Route path="/preise" component={Preise} />
+      <Route path="/ueber-uns" component={UeberUns} />
       <Route path="/verify-email" component={VerifyEmail} />
       <Route path="/invite" component={Invite} />
       <Route path="/reset-password" component={ResetPassword} />
