@@ -790,6 +790,7 @@ export default function Dashboard() {
                       const item = payload[0]?.payload;
                       return item?.fullName || value;
                     }}
+                    formatter={(value: number) => [value, 'Anzahl:']}
                   />
                   <Bar 
                     dataKey="count" 
