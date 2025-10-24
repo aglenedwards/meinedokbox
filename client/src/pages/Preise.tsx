@@ -51,7 +51,7 @@ export default function Preise() {
               
               <div className="flex flex-col items-center gap-2 p-4 rounded-lg bg-background/50 backdrop-blur-sm border">
                 <Users className="h-8 w-8 text-primary mb-1" />
-                <div className="text-2xl font-bold">Bis 5</div>
+                <div className="text-2xl font-bold">Bis 4</div>
                 <div className="text-sm text-muted-foreground text-center">Familienmitglieder</div>
               </div>
               
