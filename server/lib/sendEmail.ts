@@ -301,3 +301,109 @@ Ihr MeineDokBox Team
 
   return sendEmail({ to, subject, text, html });
 }
+
+/**
+ * Send password reset email with token link
+ */
+export async function sendPasswordResetEmail(
+  to: string,
+  firstName: string,
+  resetToken: string
+): Promise<boolean> {
+  // Get the base URL - use production domain in production, dev domain in development
+  const baseUrl = process.env.NODE_ENV === 'production' 
+    ? 'https://meinedokbox.de' 
+    : `https://${process.env.REPLIT_DEV_DOMAIN || 'localhost:5000'}`;
+  
+  const resetLink = `${baseUrl}/reset-password?token=${resetToken}`;
+  
+  console.log(`[PasswordResetEmail] Sending to ${to} with link: ${resetLink}`);
+  
+  const subject = `Passwort zurücksetzen für MeineDokBox`;
+  
+  const text = `
+Hallo ${firstName}!
+
+Sie haben eine Anfrage zum Zurücksetzen Ihres Passworts bei MeineDokBox erhalten.
+
+Klicken Sie auf den folgenden Link, um Ihr Passwort zurückzusetzen:
+
+${resetLink}
+
+Dieser Link ist 1 Stunde gültig.
+
+Falls Sie diese Anfrage nicht gestellt haben, können Sie diese E-Mail ignorieren. Ihr Passwort bleibt unverändert.
+
+Viele Grüße,
+Ihr MeineDokBox Team
+  `.trim();
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .content {
+      background: #f8f9fa;
+      padding: 30px;
+      border-radius: 8px;
+    }
+    .button {
+      display: inline-block;
+      background: #667eea;
+      color: white !important;
+      padding: 14px 32px;
+      text-decoration: none;
+      border-radius: 6px;
+      margin: 20px 0;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div style="background: #667eea; color: #ffffff; padding: 30px; border-radius: 8px 8px 0 0; text-align: center;">
+    <h1 style="color: #ffffff !important; margin: 0 0 10px 0; font-size: 24px;">📂 MeineDokBox</h1>
+    <p style="color: #ffffff !important; margin: 0; font-size: 16px;">Passwort zurücksetzen</p>
+  </div>
+  
+  <div class="content">
+    <p>Hallo ${firstName}!</p>
+    
+    <p>Sie haben eine Anfrage zum Zurücksetzen Ihres Passworts bei MeineDokBox erhalten.</p>
+    
+    <p>Klicken Sie auf den folgenden Button, um Ihr Passwort zurückzusetzen:</p>
+    
+    <center>
+      <a href="${resetLink}" class="button" style="display: inline-block; background: #667eea; color: #ffffff !important; padding: 14px 32px; text-decoration: none; border-radius: 6px; margin: 20px 0; font-weight: 600;">
+        Passwort zurücksetzen
+      </a>
+    </center>
+    
+    <p style="font-size: 14px; color: #666;">
+      Dieser Link ist 1 Stunde gültig.
+    </p>
+    
+    <p style="margin-top: 30px; font-size: 14px; color: #666;">
+      Falls Sie diese Anfrage nicht gestellt haben, können Sie diese E-Mail ignorieren. Ihr Passwort bleibt unverändert.
+    </p>
+    
+    <p style="margin-top: 20px; font-size: 14px; color: #999;">
+      Viele Grüße,<br>
+      Ihr MeineDokBox Team
+    </p>
+  </div>
+</body>
+</html>
+  `.trim();
+
+  return sendEmail({ to, subject, text, html });
+}
