@@ -19,6 +19,10 @@ export interface DocumentAnalysisResult {
   sender?: string;
   // Auto-rotation detection
   needsRotation?: boolean; // true if document is upside down (180°)
+  // Phase 3: Smart folders & scenarios
+  year?: number; // Year the document relates to (for tax/time-based filtering)
+  documentDate?: string; // ISO date string - exact date from document
+  systemTags?: string[]; // Auto-assigned tags (e.g., "steuerrelevant", "geschäftlich")
 }
 
 export interface ImageWithMimeType {
@@ -90,6 +94,23 @@ export async function analyzeDocument(
    - sender: The sender/issuer of the document (e.g., company name, authority, institution)
 6. Document orientation:
    - needsRotation: Detect if the document is upside down (rotated 180 degrees). Set to true if text appears inverted/upside down, false otherwise.
+7. Year & Smart Tags (for intelligent document organization):
+   - year: Extract the year this document relates to (e.g., 2024 for "Rechnung 2024", 2023 for "Steuerbescheid 2023"). This is used for time-based filtering.
+   - documentDate: The exact date from the document in ISO format (YYYY-MM-DD) if available
+   - systemTags: Automatically assign relevant tags from this list based on document content:
+     * "steuerrelevant" - Tax-relevant documents (invoices, receipts, tax notices, salary statements, donations)
+     * "geschäftlich" - Business-related documents (if indicators like "Firma", "GmbH", "Rechnung an Firma" are present)
+     * "privat" - Private/personal documents (personal letters, private contracts)
+     * "versicherung" - Insurance documents (policies, claims, insurance correspondence)
+     * "miete" - Rent-related (rental contracts, utility bills, rent receipts)
+     * "gesundheit" - Health-related (medical documents, health insurance, prescriptions)
+     * "bank" - Banking documents (statements, transfers, bank correspondence)
+     * "vertrag" - Contracts (employment, service contracts, subscriptions)
+     * "rechnung" - Invoices and bills
+     * "lohnabrechnung" - Salary/payroll statements
+     * "spende" - Donation receipts
+   
+   Important for systemTags: Assign ALL tags that apply. A document can have multiple tags (e.g., ["steuerrelevant", "geschäftlich", "rechnung"]).
 
 Important: 
 - Choose the MOST SPECIFIC category based on keywords and document content
@@ -108,7 +129,10 @@ Respond with JSON in this format:
   "extractedDate": "2024-01-15" or null,
   "amount": 123.45 or null,
   "sender": "Company/Institution Name" or null,
-  "needsRotation": false
+  "needsRotation": false,
+  "year": 2024 or null,
+  "documentDate": "2024-01-15" or null,
+  "systemTags": ["steuerrelevant", "rechnung"] or []
 }`
         },
         {
@@ -138,7 +162,10 @@ Respond with JSON in this format:
       extractedDate: result.extractedDate,
       amount: result.amount,
       sender: result.sender,
-      needsRotation: result.needsRotation
+      needsRotation: result.needsRotation,
+      year: result.year,
+      documentDate: result.documentDate,
+      systemTags: result.systemTags
     });
     
     return {
@@ -150,6 +177,9 @@ Respond with JSON in this format:
       amount: result.amount || undefined,
       sender: result.sender || undefined,
       needsRotation: result.needsRotation || false,
+      year: result.year || undefined,
+      documentDate: result.documentDate || undefined,
+      systemTags: result.systemTags || [],
     };
   } catch (error) {
     console.error("Failed to analyze document:", error);
@@ -211,6 +241,23 @@ export async function analyzeDocumentFromText(
    - extractedDate: The document date (invoice date, statement date, etc.) in ISO format (YYYY-MM-DD)
    - amount: The main monetary amount (e.g., invoice total, salary amount, balance). Use negative for debits/expenses.
    - sender: The sender/issuer of the document (e.g., company name, authority, institution)
+5. Year & Smart Tags (for intelligent document organization):
+   - year: Extract the year this document relates to (e.g., 2024 for "Rechnung 2024", 2023 for "Steuerbescheid 2023")
+   - documentDate: The exact date from the document in ISO format (YYYY-MM-DD) if available
+   - systemTags: Automatically assign relevant tags from this list based on document content:
+     * "steuerrelevant" - Tax-relevant documents (invoices, receipts, tax notices, salary statements, donations)
+     * "geschäftlich" - Business-related documents (if indicators like "Firma", "GmbH", "Rechnung an Firma" are present)
+     * "privat" - Private/personal documents (personal letters, private contracts)
+     * "versicherung" - Insurance documents (policies, claims, insurance correspondence)
+     * "miete" - Rent-related (rental contracts, utility bills, rent receipts)
+     * "gesundheit" - Health-related (medical documents, health insurance, prescriptions)
+     * "bank" - Banking documents (statements, transfers, bank correspondence)
+     * "vertrag" - Contracts (employment, service contracts, subscriptions)
+     * "rechnung" - Invoices and bills
+     * "lohnabrechnung" - Salary/payroll statements
+     * "spende" - Donation receipts
+   
+   Important for systemTags: Assign ALL tags that apply. A document can have multiple tags (e.g., ["steuerrelevant", "geschäftlich", "rechnung"]).
 
 Important: 
 - Choose the MOST SPECIFIC category based on keywords and document content
@@ -225,7 +272,10 @@ Respond with JSON in this format:
   "confidence": 0.95,
   "extractedDate": "2024-01-15" or null,
   "amount": 123.45 or null,
-  "sender": "Company/Institution Name" or null
+  "sender": "Company/Institution Name" or null,
+  "year": 2024 or null,
+  "documentDate": "2024-01-15" or null,
+  "systemTags": ["steuerrelevant", "rechnung"] or []
 }`
         },
         {
@@ -245,7 +295,10 @@ Respond with JSON in this format:
       confidence: result.confidence,
       extractedDate: result.extractedDate,
       amount: result.amount,
-      sender: result.sender
+      sender: result.sender,
+      year: result.year,
+      documentDate: result.documentDate,
+      systemTags: result.systemTags
     });
     
     return {
@@ -256,6 +309,9 @@ Respond with JSON in this format:
       extractedDate: result.extractedDate || undefined,
       amount: result.amount || undefined,
       sender: result.sender || undefined,
+      year: result.year || undefined,
+      documentDate: result.documentDate || undefined,
+      systemTags: result.systemTags || [],
     };
   } catch (error) {
     console.error("Failed to analyze document from text:", error);
