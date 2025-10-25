@@ -30,7 +30,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
-import { queryClient, apiRequest } from "@/lib/queryClient";
+import { queryClient } from "@/lib/queryClient";
 import { Link } from "wouter";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
@@ -110,10 +110,21 @@ export default function Admin() {
   // Update user plan mutation
   const updatePlanMutation = useMutation({
     mutationFn: async ({ userId, plan }: { userId: string; plan: string }) => {
-      return apiRequest(`/api/admin/users/${userId}/plan`, {
+      const response = await fetch(`/api/admin/users/${userId}/plan`, {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({ plan }),
+        credentials: "include",
       });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message || "Fehler beim Ändern des Plans");
+      }
+
+      return response.json();
     },
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
