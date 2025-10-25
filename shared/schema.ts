@@ -139,6 +139,21 @@ export const folders = pgTable("folders", {
   createdAt: timestamp("created_at").notNull().default(sql`now()`),
 });
 
+// System tags that are automatically assigned by AI
+export const SYSTEM_TAGS = [
+  "steuerrelevant",
+  "geschäftlich",
+  "privat",
+  "versicherung",
+  "miete",
+  "gesundheit",
+  "bank",
+  "vertrag",
+  "rechnung",
+  "lohnabrechnung",
+  "spende",
+] as const;
+
 export const documents = pgTable("documents", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull(),
@@ -158,6 +173,10 @@ export const documents = pgTable("documents", {
   extractedDate: timestamp("extracted_date"),
   amount: real("amount"),
   sender: text("sender"),
+  // Phase 3: Smart folders & scenarios
+  year: real("year"), // Year extracted from document (for tax/time-based filtering)
+  documentDate: timestamp("document_date"), // Exact date from document if available
+  systemTags: text("system_tags").array(), // Auto-assigned tags by AI (e.g., "steuerrelevant", "geschäftlich")
 });
 
 // Tags system for document organization
@@ -234,6 +253,21 @@ export const emailJobs = pgTable("email_jobs", {
   lastAttemptAt: timestamp("last_attempt_at"),
 });
 
+// Smart Folders - Intelligent document views based on filters
+export const smartFolders = pgTable("smart_folders", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
+  name: text("name").notNull(),
+  icon: varchar("icon", { length: 50 }).default("🔍"), // Emoji icon
+  isSystem: boolean("is_system").notNull().default(false), // true = predefined by system, false = user-created
+  // Filter configuration (stored as JSON)
+  filters: jsonb("filters").notNull(), // { categories?: string[], systemTags?: string[], userTagIds?: string[], dateRange?: { from: string, to: string }, year?: number }
+  downloadEnabled: boolean("download_enabled").notNull().default(true), // Can be downloaded as ZIP
+  sortOrder: real("sort_order").notNull().default(0), // For custom ordering
+  createdAt: timestamp("created_at").notNull().default(sql`now()`),
+  updatedAt: timestamp("updated_at").notNull().default(sql`now()`),
+});
+
 export const insertFolderSchema = createInsertSchema(folders).omit({
   id: true,
   createdAt: true,
@@ -277,6 +311,12 @@ export const insertEmailJobSchema = createInsertSchema(emailJobs).omit({
   createdAt: true,
 });
 
+export const insertSmartFolderSchema = createInsertSchema(smartFolders).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
 export type InsertFolder = z.infer<typeof insertFolderSchema>;
@@ -297,3 +337,5 @@ export type InsertEmailWhitelist = z.infer<typeof insertEmailWhitelistSchema>;
 export type EmailWhitelist = typeof emailWhitelist.$inferSelect;
 export type InsertEmailJob = z.infer<typeof insertEmailJobSchema>;
 export type EmailJob = typeof emailJobs.$inferSelect;
+export type InsertSmartFolder = z.infer<typeof insertSmartFolderSchema>;
+export type SmartFolder = typeof smartFolders.$inferSelect;
