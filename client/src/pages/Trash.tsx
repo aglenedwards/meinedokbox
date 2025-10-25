@@ -5,13 +5,24 @@ import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { Link } from "wouter";
 import type { Document } from "@shared/schema";
-import { getTrashedDocuments, restoreDocument, permanentlyDeleteDocument } from "@/lib/api";
+import { getTrashedDocuments, restoreDocument, permanentlyDeleteDocument, permanentlyDeleteAllDocuments } from "@/lib/api";
 import { queryClient } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { EmptyState } from "@/components/EmptyState";
 import { Footer } from "@/components/Footer";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export default function Trash() {
   const { toast } = useToast();
@@ -64,6 +75,26 @@ export default function Trash() {
     },
   });
 
+  // Bulk delete all mutation
+  const deleteAllMutation = useMutation({
+    mutationFn: permanentlyDeleteAllDocuments,
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/trash"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/storage/stats"] });
+      toast({
+        title: "Alle Dokumente gelöscht",
+        description: `${data.count} Dokument${data.count !== 1 ? "e" : ""} wurde${data.count !== 1 ? "n" : ""} endgültig gelöscht.`,
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Fehler beim Löschen",
+        description: "Die Dokumente konnten nicht gelöscht werden. Bitte versuchen Sie es erneut.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleRestore = (id: string) => {
     restoreMutation.mutate(id);
   };
@@ -72,6 +103,10 @@ export default function Trash() {
     if (window.confirm("Möchten Sie dieses Dokument wirklich endgültig löschen? Diese Aktion kann nicht rückgängig gemacht werden.")) {
       deleteMutation.mutate(id);
     }
+  };
+
+  const handleDeleteAll = () => {
+    deleteAllMutation.mutate();
   };
 
   return (
@@ -110,10 +145,44 @@ export default function Trash() {
           />
         ) : (
           <div className="space-y-4">
-            <div className="mb-4 sm:mb-6">
+            <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <p className="text-xs sm:text-sm text-muted-foreground" data-testid="text-trash-count">
                 {documents.length} Dokument{documents.length !== 1 ? "e" : ""} im Papierkorb
               </p>
+              
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button 
+                    variant="destructive" 
+                    size="sm"
+                    disabled={deleteAllMutation.isPending}
+                    data-testid="button-delete-all"
+                    className="w-full sm:w-auto"
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Alle endgültig löschen
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Alle Dokumente endgültig löschen?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Sie sind dabei, <strong>{documents.length} Dokument{documents.length !== 1 ? "e" : ""}</strong> endgültig zu löschen. 
+                      Diese Aktion kann nicht rückgängig gemacht werden. Die Dokumente werden unwiderruflich aus dem System entfernt.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel data-testid="button-cancel-delete-all">Abbrechen</AlertDialogCancel>
+                    <AlertDialogAction 
+                      onClick={handleDeleteAll}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      data-testid="button-confirm-delete-all"
+                    >
+                      Alle löschen
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
             
             <div className="grid gap-3 sm:gap-4">

@@ -163,6 +163,14 @@ export async function permanentlyDeleteDocument(id: string): Promise<void> {
 }
 
 /**
+ * Permanently delete all documents from trash (bulk delete)
+ */
+export async function permanentlyDeleteAllDocuments(): Promise<{ count: number; message: string }> {
+  const response = await apiRequest("DELETE", "/api/trash/all");
+  return await response.json();
+}
+
+/**
  * Get storage statistics for the current user
  */
 export async function getStorageStats(): Promise<StorageStats> {
