@@ -40,6 +40,7 @@ export interface IStorage {
   getTrashedDocuments(userId: string): Promise<Document[]>;
   restoreDocument(id: string, userId: string): Promise<Document | undefined>;
   permanentlyDeleteDocument(id: string, userId: string): Promise<boolean>;
+  permanentlyDeleteAllTrashedDocuments(userId: string): Promise<number>;
   getUserStorageStats(userId: string): Promise<StorageStats>;
   
   // Phase 2: Tags management
@@ -500,6 +501,93 @@ export class DbStorage implements IStorage {
     }
     
     return success;
+  }
+
+  async permanentlyDeleteAllTrashedDocuments(userId: string): Promise<number> {
+    // Get all trashed documents for this user
+    const trashedDocs = await this.getTrashedDocuments(userId);
+    
+    if (trashedDocs.length === 0) {
+      console.log(`No trashed documents found for user ${userId}`);
+      return 0;
+    }
+
+    console.log(`🗑️  Bulk deleting ${trashedDocs.length} trashed documents for user ${userId}`);
+
+    // Delete files from S3 storage
+    const { s3Client } = await import("./objectStorage");
+    const { DeleteObjectCommand } = await import("@aws-sdk/client-s3");
+    
+    // Helper to parse S3 paths
+    const parseS3Path = (path: string) => {
+      if (!path.startsWith("/")) {
+        path = `/${path}`;
+      }
+      const pathParts = path.split("/");
+      const bucketName = pathParts[1];
+      const objectName = pathParts.slice(2).join("/");
+      return { bucketName, objectName };
+    };
+
+    // Collect all files to delete from all documents
+    const filesToDelete: string[] = [];
+    
+    for (const doc of trashedDocs) {
+      // Add all page files
+      if (doc.pageUrls && doc.pageUrls.length > 0) {
+        filesToDelete.push(...doc.pageUrls);
+      } else if (doc.fileUrl) {
+        filesToDelete.push(doc.fileUrl);
+      }
+      
+      // Add thumbnail
+      if (doc.thumbnailUrl) {
+        filesToDelete.push(doc.thumbnailUrl);
+      }
+    }
+
+    // Delete all files from S3
+    console.log(`  Deleting ${filesToDelete.length} file(s) from S3...`);
+    let deletedFiles = 0;
+    
+    for (const filePath of filesToDelete) {
+      try {
+        const { bucketName, objectName } = parseS3Path(filePath);
+        const deleteCommand = new DeleteObjectCommand({
+          Bucket: bucketName,
+          Key: objectName,
+        });
+        await s3Client.send(deleteCommand);
+        deletedFiles++;
+      } catch (error) {
+        console.error(`  ✗ Failed to delete ${filePath} from S3:`, error);
+        // Continue with other files even if one fails
+      }
+    }
+    
+    console.log(`  ✓ Deleted ${deletedFiles}/${filesToDelete.length} files from S3`);
+
+    // Hard delete: remove all from database
+    const documentIds = trashedDocs.map(doc => doc.id);
+    const result = await db.delete(documents).where(
+      and(
+        inArray(documents.id, documentIds),
+        eq(documents.userId, userId),
+        isNotNull(documents.deletedAt)
+      )
+    );
+    
+    const deletedCount = result.rowCount || 0;
+    
+    if (deletedCount > 0) {
+      console.log(`✓ ${deletedCount} documents permanently deleted from database and S3`);
+      
+      // Decrement upload counter
+      await this.decrementUploadCounter(userId, deletedCount);
+      console.log(`✓ Upload counter decremented by ${deletedCount} for user ${userId}`);
+    }
+    
+    return deletedCount;
   }
 
   async getUserStorageStats(userId: string): Promise<StorageStats> {
