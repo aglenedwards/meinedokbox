@@ -1367,6 +1367,17 @@ export class DbStorage implements IStorage {
       conditions.push(or(...tagConditions)!);
     }
     
+    // Filter by user tags if specified
+    if (filters.userTagIds && Array.isArray(filters.userTagIds) && filters.userTagIds.length > 0) {
+      // Documents must have at least one of the specified user tags
+      const userTagCondition = sql`EXISTS (
+        SELECT 1 FROM ${documentTags}
+        WHERE ${documentTags.documentId} = ${documents.id}
+        AND ${documentTags.tagId} IN (${sql.join(filters.userTagIds.map((tagId: string) => sql`${tagId}`), sql`, `)})
+      )`;
+      conditions.push(userTagCondition);
+    }
+    
     if (year) {
       conditions.push(eq(documents.year, year));
     } else if (filters.year) {

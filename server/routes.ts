@@ -2130,6 +2130,78 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Local Auth versions of Tag endpoints
+  app.get('/api/tags', isAuthenticatedLocal, async (req: any, res) => {
+    try {
+      const userId = await getEffectiveUserId(req.user.claims.sub);
+      const userTags = await storage.getTags(userId);
+      res.json(userTags);
+    } catch (error) {
+      console.error("Error fetching tags:", error);
+      res.status(500).json({ message: "Failed to fetch tags" });
+    }
+  });
+
+  app.post('/api/tags', isAuthenticatedLocal, async (req: any, res) => {
+    try {
+      const userId = await getEffectiveUserId(req.user.claims.sub);
+      const { name, color } = req.body;
+
+      if (!name) {
+        return res.status(400).json({ message: "Tag name is required" });
+      }
+
+      const tag = await storage.createTag({
+        userId,
+        name,
+        color: color || "#3b82f6",
+      });
+
+      res.json(tag);
+    } catch (error) {
+      console.error("Error creating tag:", error);
+      res.status(500).json({ message: "Failed to create tag" });
+    }
+  });
+
+  app.post('/api/documents/:documentId/tags/:tagId', isAuthenticatedLocal, async (req: any, res) => {
+    try {
+      const { documentId, tagId } = req.params;
+      const documentTag = await storage.addTagToDocument(documentId, tagId);
+      res.json(documentTag);
+    } catch (error) {
+      console.error("Error adding tag to document:", error);
+      res.status(500).json({ message: "Failed to add tag to document" });
+    }
+  });
+
+  app.delete('/api/documents/:documentId/tags/:tagId', isAuthenticatedLocal, async (req: any, res) => {
+    try {
+      const { documentId, tagId } = req.params;
+      const removed = await storage.removeTagFromDocument(documentId, tagId);
+      
+      if (!removed) {
+        return res.status(404).json({ message: "Tag association not found" });
+      }
+
+      res.json({ message: "Tag removed from document" });
+    } catch (error) {
+      console.error("Error removing tag from document:", error);
+      res.status(500).json({ message: "Failed to remove tag from document" });
+    }
+  });
+
+  app.get('/api/documents/:documentId/tags', isAuthenticatedLocal, async (req: any, res) => {
+    try {
+      const { documentId } = req.params;
+      const documentTags = await storage.getDocumentTags(documentId);
+      res.json(documentTags);
+    } catch (error) {
+      console.error("Error fetching document tags:", error);
+      res.status(500).json({ message: "Failed to fetch document tags" });
+    }
+  });
+
   // Phase 2: Export functionality - download all documents as ZIP
   app.get('/api/documents/export/zip', isAuthenticated, async (req: any, res) => {
     try {
