@@ -17,6 +17,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
+import { TagButton } from "./TagManager";
 
 interface DocumentCardProps {
   id: string;
@@ -306,6 +307,10 @@ export function DocumentCard({
                     {Math.round(confidence * 100)}% KI
                   </Badge>
                 )}
+                
+                <div onClick={(e) => e.stopPropagation()}>
+                  <TagButton documentId={id} />
+                </div>
               </div>
               
               <div className="flex flex-col gap-1.5">
