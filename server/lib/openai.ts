@@ -1,7 +1,12 @@
-import OpenAI from "openai";
+import { AzureOpenAI } from "openai";
 
-// the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+// Azure OpenAI EU deployment for GDPR compliance - all data stays in EU
+const azureOpenAI = new AzureOpenAI({
+  apiKey: process.env.AZURE_OPENAI_KEY,
+  endpoint: process.env.AZURE_OPENAI_ENDPOINT,
+  apiVersion: "2024-12-01-preview",
+  deployment: process.env.AZURE_OPENAI_DEPLOYMENT_NAME
+});
 
 export interface DocumentAnalysisResult {
   extractedText: string;
@@ -38,8 +43,8 @@ export async function analyzeDocument(
       };
     });
 
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o",
+    const response = await azureOpenAI.chat.completions.create({
+      model: process.env.AZURE_OPENAI_DEPLOYMENT_NAME || "gpt-4o",
       messages: [
         {
           role: "system",
@@ -162,8 +167,8 @@ export async function analyzeDocumentFromText(
   try {
     console.log(`Analyzing PDF document from extracted text (${extractedText.length} characters)`);
     
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o",
+    const response = await azureOpenAI.chat.completions.create({
+      model: process.env.AZURE_OPENAI_DEPLOYMENT_NAME || "gpt-4o",
       messages: [
         {
           role: "system",
@@ -264,8 +269,8 @@ export async function searchDocuments(query: string, documents: Array<{ id: stri
   }
 
   try {
-    const response = await openai.chat.completions.create({
-      model: "gpt-5",
+    const response = await azureOpenAI.chat.completions.create({
+      model: process.env.AZURE_OPENAI_DEPLOYMENT_NAME || "gpt-4o",
       messages: [
         {
           role: "system",
