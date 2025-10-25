@@ -2580,6 +2580,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update user subscription plan (Admin only)
+  app.post('/api/admin/users/:id/plan', isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const { plan } = req.body;
+      
+      // Validate plan
+      const validPlans = ['trial', 'free', 'solo', 'family', 'family-plus'];
+      if (!plan || !validPlans.includes(plan)) {
+        return res.status(400).json({ 
+          message: 'Ungültiger Plan. Gültige Werte: trial, free, solo, family, family-plus' 
+        });
+      }
+      
+      // Calculate expiry dates based on plan
+      let updateData: any = {
+        subscriptionPlan: plan,
+        uploadedThisMonth: 0, // Reset monthly upload counter
+        uploadCounterResetAt: new Date(),
+      };
+      
+      if (plan === 'trial') {
+        // Trial lasts 14 days
+        updateData.trialEndsAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
+        updateData.subscriptionEndsAt = null;
+      } else if (plan === 'free') {
+        // Free plan has no expiry
+        updateData.trialEndsAt = null;
+        updateData.subscriptionEndsAt = null;
+      } else {
+        // Paid plans (solo, family, family-plus) - set to 1 year from now
+        updateData.trialEndsAt = null;
+        updateData.subscriptionEndsAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+      }
+      
+      const updatedUser = await storage.updateUserSubscription(id, updateData);
+      
+      if (!updatedUser) {
+        return res.status(404).json({ message: 'User nicht gefunden' });
+      }
+      
+      console.log(`[Admin] User ${id} plan changed to ${plan} by admin`);
+      res.json({ 
+        message: `Plan erfolgreich geändert zu ${plan}`,
+        user: updatedUser 
+      });
+    } catch (error) {
+      console.error('[Admin] Update user plan error:', error);
+      res.status(500).json({ message: 'Fehler beim Ändern des Plans' });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;

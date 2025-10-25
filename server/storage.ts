@@ -27,7 +27,7 @@ export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
-  updateUserSubscription(id: string, data: Partial<Pick<User, 'subscriptionPlan' | 'trialEndsAt' | 'subscriptionEndsAt'>>): Promise<User | undefined>;
+  updateUserSubscription(id: string, data: Partial<Pick<User, 'subscriptionPlan' | 'trialEndsAt' | 'subscriptionEndsAt' | 'uploadedThisMonth' | 'uploadCounterResetAt'>>): Promise<User | undefined>;
   
   createDocument(document: InsertDocument): Promise<Document>;
   getDocument(id: string): Promise<Document | undefined>;
@@ -176,7 +176,7 @@ export class DbStorage implements IStorage {
 
   async updateUserSubscription(
     id: string,
-    data: Partial<Pick<User, 'subscriptionPlan' | 'trialEndsAt' | 'subscriptionEndsAt'>>
+    data: Partial<Pick<User, 'subscriptionPlan' | 'trialEndsAt' | 'subscriptionEndsAt' | 'uploadedThisMonth' | 'uploadCounterResetAt'>>
   ): Promise<User | undefined> {
     const [user] = await db
       .update(users)
