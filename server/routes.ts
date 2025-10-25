@@ -1997,9 +1997,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Permanently delete ALL documents from trash (bulk delete)
-  app.delete('/api/trash/all', isAuthenticated, async (req: any, res) => {
+  app.delete('/api/trash/all', isAuthenticatedLocal, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = await getEffectiveUserId(req.user.id);
 
       const deletedCount = await storage.permanentlyDeleteAllTrashedDocuments(userId);
 
