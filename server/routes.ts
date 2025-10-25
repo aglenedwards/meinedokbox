@@ -2667,7 +2667,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/smart-folders", isAuthenticatedLocal, async (req: any, res) => {
     try {
       const userId = await getEffectiveUserId(req);
-      const folders = await storage.getUserSmartFolders(userId);
+      let folders = await storage.getUserSmartFolders(userId);
+      
+      // Auto-migration: Create default smart folders for existing users if they have none
+      if (folders.length === 0) {
+        console.log(`[Auto-Migration] Creating default smart folders for user ${userId}`);
+        await storage.createDefaultSmartFolders(userId);
+        folders = await storage.getUserSmartFolders(userId);
+      }
+      
       res.json(folders);
     } catch (error) {
       console.error('[GetSmartFolders] Error:', error);

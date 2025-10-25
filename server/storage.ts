@@ -175,10 +175,11 @@ export class DbStorage implements IStorage {
       })
       .returning();
     
-    // Create default folders for new users
+    // Create default folders and smart folders for new users
     if (isNewUser) {
       await this.createDefaultFolders(user.id);
-      console.log(`[UpsertUser] Created default folders for new user ${user.id}`);
+      await this.createDefaultSmartFolders(user.id);
+      console.log(`[UpsertUser] Created default folders and smart folders for new user ${user.id}`);
     }
     
     return user;
