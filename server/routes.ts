@@ -1999,7 +1999,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Permanently delete ALL documents from trash (bulk delete)
   app.delete('/api/trash/all', isAuthenticatedLocal, async (req: any, res) => {
     try {
-      const userId = await getEffectiveUserId(req.user.id);
+      const userId = await getEffectiveUserId(req.user.claims.sub);
 
       const deletedCount = await storage.permanentlyDeleteAllTrashedDocuments(userId);
 
@@ -2666,7 +2666,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get all smart folders for user
   app.get("/api/smart-folders", isAuthenticatedLocal, async (req: any, res) => {
     try {
-      const userId = await getEffectiveUserId(req.user.id);
+      const userId = await getEffectiveUserId(req.user.claims.sub);
       let folders = await storage.getUserSmartFolders(userId);
       
       // Auto-migration: Create default smart folders for existing users if they have none
@@ -2688,7 +2688,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       const year = req.query.year ? parseInt(req.query.year as string) : undefined;
-      const userId = await getEffectiveUserId(req.user.id);
+      const userId = await getEffectiveUserId(req.user.claims.sub);
       
       const documents = await storage.getDocumentsBySmartFolder(userId, id, year);
       res.json(documents);
@@ -2701,7 +2701,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create custom smart folder
   app.post("/api/smart-folders", isAuthenticatedLocal, async (req: any, res) => {
     try {
-      const userId = await getEffectiveUserId(req.user.id);
+      const userId = await getEffectiveUserId(req.user.claims.sub);
       const { name, icon, filters, downloadEnabled, sortOrder } = req.body;
       
       const folder = await storage.createSmartFolder({
@@ -2725,7 +2725,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/smart-folders/:id", isAuthenticatedLocal, async (req: any, res) => {
     try {
       const { id } = req.params;
-      const userId = await getEffectiveUserId(req.user.id);
+      const userId = await getEffectiveUserId(req.user.claims.sub);
       const { name, icon, filters, downloadEnabled, sortOrder } = req.body;
       
       const updated = await storage.updateSmartFolder(id, userId, {
@@ -2751,7 +2751,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/smart-folders/:id", isAuthenticatedLocal, async (req: any, res) => {
     try {
       const { id } = req.params;
-      const userId = await getEffectiveUserId(req.user.id);
+      const userId = await getEffectiveUserId(req.user.claims.sub);
       
       const folder = await storage.getSmartFolder(id);
       if (folder?.isSystem) {
