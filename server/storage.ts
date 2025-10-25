@@ -1,6 +1,6 @@
-import { type User, type UpsertUser, type Document, type InsertDocument, type Tag, type InsertTag, type DocumentTag, type InsertDocumentTag, type SharedAccess, type InsertSharedAccess, type Folder, type InsertFolder, type TrialNotification, type InsertTrialNotification, type EmailWhitelist, type EmailJob, type InsertEmailJob } from "@shared/schema";
+import { type User, type UpsertUser, type Document, type InsertDocument, type Tag, type InsertTag, type DocumentTag, type InsertDocumentTag, type SharedAccess, type InsertSharedAccess, type Folder, type InsertFolder, type TrialNotification, type InsertTrialNotification, type EmailWhitelist, type EmailJob, type InsertEmailJob, type SmartFolder, type InsertSmartFolder } from "@shared/schema";
 import { db } from "./db";
-import { users, documents, tags, documentTags, sharedAccess, folders, trialNotifications, emailWhitelist, emailJobs } from "@shared/schema";
+import { users, documents, tags, documentTags, sharedAccess, folders, trialNotifications, emailWhitelist, emailJobs, smartFolders } from "@shared/schema";
 import { eq, and, or, like, desc, asc, isNull, isNotNull, inArray, sql } from "drizzle-orm";
 import { generateInboundEmail } from "./lib/emailInbound";
 import crypto from "crypto";
@@ -103,6 +103,15 @@ export interface IStorage {
   // Admin functions
   getAllUsers(): Promise<User[]>;
   deleteUserCompletely(userId: string): Promise<boolean>;
+  
+  // Smart Folders management (Phase 3: Intelligent document organization)
+  createSmartFolder(folder: InsertSmartFolder): Promise<SmartFolder>;
+  getUserSmartFolders(userId: string): Promise<SmartFolder[]>;
+  getSmartFolder(id: string): Promise<SmartFolder | undefined>;
+  updateSmartFolder(id: string, userId: string, data: Partial<InsertSmartFolder>): Promise<SmartFolder | undefined>;
+  deleteSmartFolder(id: string, userId: string): Promise<boolean>;
+  getDocumentsBySmartFolder(userId: string, folderId: string, year?: number): Promise<Document[]>;
+  createDefaultSmartFolders(userId: string): Promise<void>;
 }
 
 export class DbStorage implements IStorage {
@@ -762,6 +771,9 @@ export class DbStorage implements IStorage {
         extractedDate: documents.extractedDate,
         amount: documents.amount,
         sender: documents.sender,
+        year: documents.year,
+        documentDate: documents.documentDate,
+        systemTags: documents.systemTags,
       })
       .from(documentTags)
       .innerJoin(documents, eq(documentTags.documentId, documents.id))
@@ -1261,13 +1273,16 @@ export class DbStorage implements IStorage {
       // 3. Delete folders
       await db.delete(folders).where(eq(folders.userId, userId));
       
-      // 4. Delete tags
+      // 4. Delete smart folders
+      await db.delete(smartFolders).where(eq(smartFolders.userId, userId));
+      
+      // 5. Delete tags
       await db.delete(tags).where(eq(tags.userId, userId));
       
-      // 5. Delete trial notifications
+      // 6. Delete trial notifications
       await db.delete(trialNotifications).where(eq(trialNotifications.userId, userId));
       
-      // 6. Delete shared access (both as owner and as shared user)
+      // 7. Delete shared access (both as owner and as shared user)
       await db.delete(sharedAccess).where(
         or(
           eq(sharedAccess.ownerId, userId),
@@ -1275,13 +1290,155 @@ export class DbStorage implements IStorage {
         )
       );
       
-      // 7. Finally delete the user
+      // 8. Finally delete the user
       const result = await db.delete(users).where(eq(users.id, userId));
       
       return result.rowCount !== null && result.rowCount > 0;
     } catch (error) {
       console.error('[DeleteUserCompletely] Error:', error);
       return false;
+    }
+  }
+  
+  // ===== Smart Folders Management =====
+  
+  async createSmartFolder(folder: InsertSmartFolder): Promise<SmartFolder> {
+    const [smartFolder] = await db.insert(smartFolders).values(folder).returning();
+    return smartFolder;
+  }
+  
+  async getUserSmartFolders(userId: string): Promise<SmartFolder[]> {
+    return await db.select()
+      .from(smartFolders)
+      .where(eq(smartFolders.userId, userId))
+      .orderBy(asc(smartFolders.sortOrder), asc(smartFolders.createdAt));
+  }
+  
+  async getSmartFolder(id: string): Promise<SmartFolder | undefined> {
+    const [folder] = await db.select()
+      .from(smartFolders)
+      .where(eq(smartFolders.id, id));
+    return folder;
+  }
+  
+  async updateSmartFolder(id: string, userId: string, data: Partial<InsertSmartFolder>): Promise<SmartFolder | undefined> {
+    const [updated] = await db.update(smartFolders)
+      .set({ ...data, updatedAt: new Date() })
+      .where(and(
+        eq(smartFolders.id, id),
+        eq(smartFolders.userId, userId)
+      ))
+      .returning();
+    return updated;
+  }
+  
+  async deleteSmartFolder(id: string, userId: string): Promise<boolean> {
+    const result = await db.delete(smartFolders)
+      .where(and(
+        eq(smartFolders.id, id),
+        eq(smartFolders.userId, userId)
+      ));
+    return result.rowCount !== null && result.rowCount > 0;
+  }
+  
+  async getDocumentsBySmartFolder(userId: string, folderId: string, year?: number): Promise<Document[]> {
+    const folder = await this.getSmartFolder(folderId);
+    if (!folder || folder.userId !== userId) {
+      return [];
+    }
+    
+    const filters = folder.filters as any;
+    const conditions = [
+      eq(documents.userId, userId),
+      isNull(documents.deletedAt)
+    ];
+    
+    // Apply filters based on smart folder configuration
+    if (filters.categories && Array.isArray(filters.categories) && filters.categories.length > 0) {
+      conditions.push(inArray(documents.category, filters.categories));
+    }
+    
+    if (filters.systemTags && Array.isArray(filters.systemTags) && filters.systemTags.length > 0) {
+      // Check if document has ANY of the system tags
+      const tagConditions = filters.systemTags.map((tag: string) =>
+        sql`${documents.systemTags} @> ARRAY[${tag}]::text[]`
+      );
+      conditions.push(or(...tagConditions)!);
+    }
+    
+    if (year) {
+      conditions.push(eq(documents.year, year));
+    } else if (filters.year) {
+      conditions.push(eq(documents.year, filters.year));
+    }
+    
+    if (filters.dateRange?.from && filters.dateRange?.to) {
+      conditions.push(
+        and(
+          sql`${documents.documentDate} >= ${new Date(filters.dateRange.from)}`,
+          sql`${documents.documentDate} <= ${new Date(filters.dateRange.to)}`
+        )!
+      );
+    }
+    
+    return await db.select()
+      .from(documents)
+      .where(and(...conditions))
+      .orderBy(desc(documents.uploadedAt));
+  }
+  
+  async createDefaultSmartFolders(userId: string): Promise<void> {
+    const defaultFolders: InsertSmartFolder[] = [
+      {
+        userId,
+        name: "Steuererklärung",
+        icon: "📊",
+        isSystem: true,
+        filters: {
+          systemTags: ["steuerrelevant"]
+        },
+        downloadEnabled: true,
+        sortOrder: 1
+      },
+      {
+        userId,
+        name: "Geschäftlich",
+        icon: "💼",
+        isSystem: true,
+        filters: {
+          systemTags: ["geschäftlich"]
+        },
+        downloadEnabled: true,
+        sortOrder: 2
+      },
+      {
+        userId,
+        name: "Versicherungen",
+        icon: "🛡️",
+        isSystem: true,
+        filters: {
+          categories: ["Versicherungen"],
+          systemTags: ["versicherung"]
+        },
+        downloadEnabled: true,
+        sortOrder: 3
+      },
+      {
+        userId,
+        name: "Wohnen",
+        icon: "🏠",
+        isSystem: true,
+        filters: {
+          categories: ["Wohnen & Immobilien"],
+          systemTags: ["miete"]
+        },
+        downloadEnabled: true,
+        sortOrder: 4
+      }
+    ];
+    
+    for (const folder of defaultFolders) {
+      await this.createSmartFolder(folder);
     }
   }
 }
