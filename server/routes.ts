@@ -1530,6 +1530,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       extractedDate: analysisResult.extractedDate ? new Date(analysisResult.extractedDate) : null,
       amount: analysisResult.amount ?? null,
       sender: analysisResult.sender ?? null,
+      // Phase 3: Smart folders & scenarios
+      year: analysisResult.year ?? null,
+      documentDate: analysisResult.documentDate ? new Date(analysisResult.documentDate) : null,
+      systemTags: analysisResult.systemTags ?? [],
     };
 
     // Validate with Zod schema
@@ -1593,6 +1597,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       extractedDate: analysisResult.extractedDate ? new Date(analysisResult.extractedDate) : null,
       amount: analysisResult.amount ?? null,
       sender: analysisResult.sender ?? null,
+      // Phase 3: Smart folders & scenarios
+      year: analysisResult.year ?? null,
+      documentDate: analysisResult.documentDate ? new Date(analysisResult.documentDate) : null,
+      systemTags: analysisResult.systemTags ?? [],
     };
 
     // Validate with Zod schema
@@ -2360,6 +2368,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
             extractedDate: analysisResult.extractedDate ? new Date(analysisResult.extractedDate) : null,
             amount: analysisResult.amount,
             sender: analysisResult.sender,
+            // Phase 3: Smart folders & scenarios
+            year: analysisResult.year ?? null,
+            documentDate: analysisResult.documentDate ? new Date(analysisResult.documentDate) : null,
+            systemTags: analysisResult.systemTags ?? [],
           });
 
           // Increment upload counter (monthly limit tracking)
