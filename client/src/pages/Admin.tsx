@@ -7,6 +7,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -23,7 +30,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
-import { queryClient } from "@/lib/queryClient";
+import { queryClient, apiRequest } from "@/lib/queryClient";
 import { Link } from "wouter";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
@@ -100,6 +107,30 @@ export default function Admin() {
     },
   });
 
+  // Update user plan mutation
+  const updatePlanMutation = useMutation({
+    mutationFn: async ({ userId, plan }: { userId: string; plan: string }) => {
+      return apiRequest(`/api/admin/users/${userId}/plan`, {
+        method: "POST",
+        body: JSON.stringify({ plan }),
+      });
+    },
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+      toast({
+        title: "Plan geändert",
+        description: `Der Plan wurde erfolgreich auf ${getPlanDisplayName(variables.plan)} geändert.`,
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Fehler",
+        description: error.message || "Der Plan konnte nicht geändert werden.",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Filter users based on search
   const filteredUsers = users.filter((user) => {
     const query = searchQuery.toLowerCase();
@@ -111,10 +142,19 @@ export default function Admin() {
     );
   });
 
-  const getPlanBadgeVariant = (plan: string) => {
-    if (plan === "premium") return "default";
-    if (plan === "trial") return "secondary";
-    return "outline";
+  const getPlanDisplayName = (plan: string) => {
+    const planNames: Record<string, string> = {
+      trial: "Trial",
+      free: "Free",
+      solo: "Solo",
+      family: "Family",
+      "family-plus": "Family Plus",
+    };
+    return planNames[plan] || plan;
+  };
+
+  const handlePlanChange = (userId: string, newPlan: string) => {
+    updatePlanMutation.mutate({ userId, plan: newPlan });
   };
 
   const handleDeleteClick = (user: UserWithStats) => {
@@ -228,13 +268,22 @@ export default function Admin() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge variant={getPlanBadgeVariant(user.subscriptionPlan || "free")}>
-                            {user.subscriptionPlan === "premium"
-                              ? "Premium"
-                              : user.subscriptionPlan === "trial"
-                              ? "Trial"
-                              : "Free"}
-                          </Badge>
+                          <Select
+                            value={user.subscriptionPlan || "free"}
+                            onValueChange={(value) => handlePlanChange(user.id, value)}
+                            disabled={updatePlanMutation.isPending}
+                          >
+                            <SelectTrigger className="w-36" data-testid={`select-plan-${user.id}`}>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="trial">Trial</SelectItem>
+                              <SelectItem value="free">Free</SelectItem>
+                              <SelectItem value="solo">Solo</SelectItem>
+                              <SelectItem value="family">Family</SelectItem>
+                              <SelectItem value="family-plus">Family Plus</SelectItem>
+                            </SelectContent>
+                          </Select>
                         </TableCell>
                         <TableCell className="text-right">{user.documentCount}</TableCell>
                         <TableCell className="text-right">{user.storageUsed.toFixed(2)} MB</TableCell>
