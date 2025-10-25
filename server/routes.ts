@@ -2661,6 +2661,108 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ===== Smart Folders API Routes (Phase 3: Intelligent document organization) =====
+  
+  // Get all smart folders for user
+  app.get("/api/smart-folders", isAuthenticatedLocal, async (req: any, res) => {
+    try {
+      const userId = await getEffectiveUserId(req);
+      const folders = await storage.getUserSmartFolders(userId);
+      res.json(folders);
+    } catch (error) {
+      console.error('[GetSmartFolders] Error:', error);
+      res.status(500).json({ message: "Fehler beim Laden der Smart-Ordner" });
+    }
+  });
+  
+  // Get documents by smart folder (with optional year filter)
+  app.get("/api/smart-folders/:id/documents", isAuthenticatedLocal, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const year = req.query.year ? parseInt(req.query.year as string) : undefined;
+      const userId = await getEffectiveUserId(req);
+      
+      const documents = await storage.getDocumentsBySmartFolder(userId, id, year);
+      res.json(documents);
+    } catch (error) {
+      console.error('[GetSmartFolderDocuments] Error:', error);
+      res.status(500).json({ message: "Fehler beim Laden der Dokumente" });
+    }
+  });
+  
+  // Create custom smart folder
+  app.post("/api/smart-folders", isAuthenticatedLocal, async (req: any, res) => {
+    try {
+      const userId = await getEffectiveUserId(req);
+      const { name, icon, filters, downloadEnabled, sortOrder } = req.body;
+      
+      const folder = await storage.createSmartFolder({
+        userId,
+        name,
+        icon: icon || "📁",
+        isSystem: false,
+        filters: filters || {},
+        downloadEnabled: downloadEnabled ?? true,
+        sortOrder: sortOrder ?? 999,
+      });
+      
+      res.json(folder);
+    } catch (error) {
+      console.error('[CreateSmartFolder] Error:', error);
+      res.status(500).json({ message: "Fehler beim Erstellen des Smart-Ordners" });
+    }
+  });
+  
+  // Update smart folder
+  app.patch("/api/smart-folders/:id", isAuthenticatedLocal, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const userId = await getEffectiveUserId(req);
+      const { name, icon, filters, downloadEnabled, sortOrder } = req.body;
+      
+      const updated = await storage.updateSmartFolder(id, userId, {
+        name,
+        icon,
+        filters,
+        downloadEnabled,
+        sortOrder,
+      });
+      
+      if (!updated) {
+        return res.status(404).json({ message: "Smart-Ordner nicht gefunden" });
+      }
+      
+      res.json(updated);
+    } catch (error) {
+      console.error('[UpdateSmartFolder] Error:', error);
+      res.status(500).json({ message: "Fehler beim Aktualisieren des Smart-Ordners" });
+    }
+  });
+  
+  // Delete smart folder
+  app.delete("/api/smart-folders/:id", isAuthenticatedLocal, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const userId = await getEffectiveUserId(req);
+      
+      const folder = await storage.getSmartFolder(id);
+      if (folder?.isSystem) {
+        return res.status(400).json({ message: "System-Ordner können nicht gelöscht werden" });
+      }
+      
+      const deleted = await storage.deleteSmartFolder(id, userId);
+      
+      if (!deleted) {
+        return res.status(404).json({ message: "Smart-Ordner nicht gefunden" });
+      }
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error('[DeleteSmartFolder] Error:', error);
+      res.status(500).json({ message: "Fehler beim Löschen des Smart-Ordners" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
