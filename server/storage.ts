@@ -319,7 +319,7 @@ export class DbStorage implements IStorage {
 
     // Fetch documents with limit + 1 to check if there are more
     // Include folder information via LEFT JOIN
-    const results = await db
+    const rawResults = await db
       .select({
         ...getTableColumns(documents),
         folderName: folders.name,
@@ -330,6 +330,13 @@ export class DbStorage implements IStorage {
       .where(whereClause)
       .orderBy(this.getSortOrder(sortBy), desc(documents.id)) // Secondary sort by id for stable ordering
       .limit(limit + 1);
+
+    // Map results to ensure folderName and folderIcon are included
+    const results = rawResults.map(doc => ({
+      ...doc,
+      folderName: doc.folderName ?? null,
+      folderIcon: doc.folderIcon ?? null,
+    }));
 
     const hasMore = results.length > limit;
     const documentsPage = hasMore ? results.slice(0, limit) : results;
