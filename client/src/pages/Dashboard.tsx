@@ -25,7 +25,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
-import { queryClient } from "@/lib/queryClient";
+import { queryClient, apiRequest } from "@/lib/queryClient";
 import { uploadDocument, getDocuments, deleteDocument, updateDocumentCategory, updateDocumentSharing, getStorageStats, bulkDeleteDocuments, exportDocumentsAsZip, getCurrentUser, getSubscriptionStatus, logout, type StorageStats, type SortOption, type SubscriptionStatus, type PaginatedDocuments } from "@/lib/api";
 import { DocumentViewer } from "@/components/DocumentViewer";
 import { MultiPageUpload } from "@/components/MultiPageUpload";
