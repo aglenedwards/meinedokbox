@@ -238,7 +238,16 @@ export function DocumentCard({
     if (!dateStr) return null;
     
     // Try to create a Date object
-    const date = new Date(dateStr);
+    let date = new Date(dateStr);
+    
+    // If that fails, try parsing German format DD.MM.YYYY
+    if (isNaN(date.getTime()) && dateStr.includes('.')) {
+      const parts = dateStr.split('.');
+      if (parts.length === 3) {
+        const [day, month, year] = parts;
+        date = new Date(`${year}-${month}-${day}`);
+      }
+    }
     
     // Check if the date is valid
     if (isNaN(date.getTime())) {

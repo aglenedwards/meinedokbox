@@ -61,7 +61,27 @@ export function EditDocumentDialog({ document, trigger, open: controlledOpen, on
   // Format documentDate for input (YYYY-MM-DD)
   const formatDateForInput = (date?: Date | string | null) => {
     if (!date) return "";
-    const d = new Date(date);
+    
+    // Try to parse the date
+    let d: Date;
+    
+    // Check if it's already a Date object
+    if (date instanceof Date) {
+      d = date;
+    } else {
+      // Try parsing as ISO string first
+      d = new Date(date);
+      
+      // If that fails, try parsing German format DD.MM.YYYY
+      if (isNaN(d.getTime()) && typeof date === 'string' && date.includes('.')) {
+        const parts = date.split('.');
+        if (parts.length === 3) {
+          const [day, month, year] = parts;
+          d = new Date(`${year}-${month}-${day}`);
+        }
+      }
+    }
+    
     if (isNaN(d.getTime())) return "";
     return d.toISOString().split('T')[0];
   };
