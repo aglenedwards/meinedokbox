@@ -1,4 +1,4 @@
-import type { Document, User, Tag } from "@shared/schema";
+import type { Document, DocumentWithFolder, PaginatedDocuments as PaginatedDocsType, User, Tag } from "@shared/schema";
 import { apiRequest } from "./queryClient";
 
 export interface StorageStats {
@@ -45,12 +45,8 @@ export async function uploadDocument(files: File | File[]): Promise<UploadResult
 
 export type SortOption = "date-desc" | "date-asc" | "title-asc" | "title-desc" | "category-asc";
 
-export interface PaginatedDocuments {
-  documents: Document[];
-  nextCursor: string | null;
-  hasMore: boolean;
-  total: number;
-}
+// Use the PaginatedDocuments type from shared/schema (includes folderName and folderIcon)
+export type PaginatedDocuments = PaginatedDocsType;
 
 /**
  * Get paginated documents for the current user with optional search, category filters, and sorting

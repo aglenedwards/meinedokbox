@@ -1718,18 +1718,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
       res.set('Pragma', 'no-cache');
       res.set('Expires', '0');
-      
-      // Debug: Log first document to check folder fields
-      if (result.documents.length > 0) {
-        const firstDoc = result.documents[0];
-        console.log('📋 First document in response:', {
-          id: firstDoc.id.substring(0, 8),
-          folderId: firstDoc.folderId,
-          folderName: firstDoc.folderName,
-          folderIcon: firstDoc.folderIcon
-        });
-      }
-      
       res.json(result);
     } catch (error) {
       console.error("Error fetching documents:", error);
@@ -1981,7 +1969,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Document not found or access denied" });
       }
 
-      console.log('✅ PATCH folder response:', JSON.stringify(updated, null, 2));
       res.json(updated);
     } catch (error) {
       console.error("Error updating document folder:", error);

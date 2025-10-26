@@ -178,8 +178,6 @@ export function DocumentCard({
   folderName,
   folderIcon,
 }: DocumentCardProps) {
-  console.log('📄 DocumentCard:', { id: id.substring(0, 8), folderId, folderName, folderIcon });
-  
   // Handle null/undefined isShared values - default to false (private, not shared)
   const sharedStatus = isShared ?? false;
   

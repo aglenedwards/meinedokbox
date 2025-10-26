@@ -323,6 +323,21 @@ export type InsertFolder = z.infer<typeof insertFolderSchema>;
 export type Folder = typeof folders.$inferSelect;
 export type InsertDocument = z.infer<typeof insertDocumentSchema>;
 export type Document = typeof documents.$inferSelect;
+
+// Extended document type with folder information (from LEFT JOIN)
+export type DocumentWithFolder = Document & {
+  folderName: string | null;
+  folderIcon: string | null;
+};
+
+// Paginated documents response
+export type PaginatedDocuments = {
+  documents: DocumentWithFolder[];
+  nextCursor: string | null;
+  hasMore: boolean;
+  total: number;
+};
+
 export type InsertTag = z.infer<typeof insertTagSchema>;
 export type Tag = typeof tags.$inferSelect;
 export type InsertDocumentTag = z.infer<typeof insertDocumentTagSchema>;

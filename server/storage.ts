@@ -242,7 +242,7 @@ export class DbStorage implements IStorage {
     includeOnlySharedFolders?: boolean,
     limit: number = 50,
     cursor?: string
-  ): Promise<PaginatedDocuments> {
+  ): Promise<import('@shared/schema').PaginatedDocuments> {
     // Get partner IDs for document sharing (Master <-> Slave)
     const partnerIds = await this.getPartnerUserIds(userId);
 
