@@ -467,12 +467,12 @@ export default function Dashboard() {
     }
   };
 
-  const handleFileSelect = async (files: File | File[]) => {
+  const handleFileSelect = async (files: File | File[], mergeIntoOne: boolean = false) => {
     setShowUpload(false);
     setShowCameraMultiShot(false);
     
     const fileArray = Array.isArray(files) ? files : [files];
-    const totalFiles = fileArray.length;
+    const totalFiles = mergeIntoOne ? 1 : fileArray.length; // If merging, it's 1 document
     
     setProcessingModal({ 
       open: true, 
@@ -519,7 +519,13 @@ export default function Dashboard() {
     }, 500); // Update every 500ms for smoother animation
 
     try {
-      await uploadMutation.mutateAsync(files);
+      // Pass mergeIntoOne flag to upload mutation if provided
+      if (mergeIntoOne && Array.isArray(files)) {
+        // TODO: Implement merge upload
+        await uploadMutation.mutateAsync(files);
+      } else {
+        await uploadMutation.mutateAsync(files);
+      }
       clearInterval(progressInterval);
       // Jump to 100% on success
       setProcessingModal(prev => ({ ...prev, progress: 100 }));

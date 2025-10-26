@@ -1,10 +1,13 @@
 import { useState } from "react";
-import { X, Plus, FileText, Image as ImageIcon } from "lucide-react";
+import { X, Plus, FileText, Image as ImageIcon, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface MultiPageUploadProps {
-  onComplete: (files: File[]) => void;
+  onComplete: (files: File[], mergeIntoOne: boolean) => void;
   onCancel: () => void;
 }
 
@@ -13,15 +16,21 @@ interface PagePreview {
   previewUrl: string;
 }
 
+const MAX_FILES = 10;
+
 export function MultiPageUpload({ onComplete, onCancel }: MultiPageUploadProps) {
   const [pages, setPages] = useState<PagePreview[]>([]);
   const [isDragging, setIsDragging] = useState(false);
+  const [mergeIntoOne, setMergeIntoOne] = useState(false);
 
   const handleFileSelect = (files: FileList | null) => {
     if (!files) return;
 
     const newPages: PagePreview[] = [];
-    Array.from(files).forEach(file => {
+    const remainingSlots = MAX_FILES - pages.length;
+    const filesToAdd = Array.from(files).slice(0, remainingSlots);
+
+    filesToAdd.forEach(file => {
       if (file.type.startsWith('image/') || file.type === 'application/pdf') {
         const previewUrl = URL.createObjectURL(file);
         newPages.push({ file, previewUrl });
@@ -57,7 +66,7 @@ export function MultiPageUpload({ onComplete, onCancel }: MultiPageUploadProps) 
 
   const handleComplete = () => {
     if (pages.length > 0) {
-      onComplete(pages.map(p => p.file));
+      onComplete(pages.map(p => p.file), mergeIntoOne && pages.length > 1);
     }
   };
 
@@ -69,9 +78,37 @@ export function MultiPageUpload({ onComplete, onCancel }: MultiPageUploadProps) 
 
       {pages.length > 0 && (
         <div className="space-y-3">
-          <p className="text-sm text-muted-foreground">
-            {pages.length} Seite{pages.length !== 1 ? 'n' : ''} hinzugefügt
-          </p>
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-muted-foreground">
+              {pages.length}/{MAX_FILES} Datei{pages.length !== 1 ? 'en' : ''} ausgewählt
+            </p>
+            
+            {pages.length > 1 && (
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="merge-checkbox"
+                  checked={mergeIntoOne}
+                  onCheckedChange={(checked) => setMergeIntoOne(checked as boolean)}
+                  data-testid="checkbox-merge-documents"
+                />
+                <Label 
+                  htmlFor="merge-checkbox" 
+                  className="text-sm font-normal cursor-pointer"
+                >
+                  Zu einem Dokument zusammenführen
+                </Label>
+              </div>
+            )}
+          </div>
+
+          {pages.length >= MAX_FILES && (
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                Maximale Anzahl von {MAX_FILES} Dateien erreicht. Entfernen Sie Dateien, um weitere hinzuzufügen.
+              </AlertDescription>
+            </Alert>
+          )}
           
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {pages.map((page, index) => (
@@ -154,10 +191,11 @@ export function MultiPageUpload({ onComplete, onCancel }: MultiPageUploadProps) 
           <Button
             variant="outline"
             onClick={() => document.getElementById('page-upload')?.click()}
+            disabled={pages.length >= MAX_FILES}
             data-testid="button-add-page"
           >
             <Plus className="h-4 w-4 mr-2" />
-            Seite auswählen
+            {pages.length >= MAX_FILES ? 'Limit erreicht' : 'Seite auswählen'}
           </Button>
         </div>
       </div>
