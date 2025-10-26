@@ -1,7 +1,7 @@
 import { type User, type UpsertUser, type Document, type InsertDocument, type Tag, type InsertTag, type DocumentTag, type InsertDocumentTag, type SharedAccess, type InsertSharedAccess, type Folder, type InsertFolder, type TrialNotification, type InsertTrialNotification, type EmailWhitelist, type EmailJob, type InsertEmailJob, type SmartFolder, type InsertSmartFolder } from "@shared/schema";
 import { db } from "./db";
 import { users, documents, tags, documentTags, sharedAccess, folders, trialNotifications, emailWhitelist, emailJobs, smartFolders } from "@shared/schema";
-import { eq, and, or, like, desc, asc, isNull, isNotNull, inArray, sql } from "drizzle-orm";
+import { eq, and, or, like, desc, asc, isNull, isNotNull, inArray, sql, getTableColumns } from "drizzle-orm";
 import { generateInboundEmail } from "./lib/emailInbound";
 import crypto from "crypto";
 
@@ -318,9 +318,15 @@ export class DbStorage implements IStorage {
     const total = countResult?.count || 0;
 
     // Fetch documents with limit + 1 to check if there are more
+    // Include folder information via LEFT JOIN
     const results = await db
-      .select()
+      .select({
+        ...getTableColumns(documents),
+        folderName: folders.name,
+        folderIcon: folders.icon,
+      })
       .from(documents)
+      .leftJoin(folders, eq(documents.folderId, folders.id))
       .where(whereClause)
       .orderBy(this.getSortOrder(sortBy), desc(documents.id)) // Secondary sort by id for stable ordering
       .limit(limit + 1);
