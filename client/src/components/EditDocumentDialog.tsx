@@ -40,11 +40,17 @@ type EditDocumentFormData = z.infer<typeof editDocumentSchema>;
 interface EditDocumentDialogProps {
   document: Document;
   trigger?: React.ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-export function EditDocumentDialog({ document, trigger }: EditDocumentDialogProps) {
-  const [open, setOpen] = useState(false);
+export function EditDocumentDialog({ document, trigger, open: controlledOpen, onOpenChange }: EditDocumentDialogProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
   const { toast } = useToast();
+  
+  // Use controlled state if provided, otherwise use internal state
+  const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
+  const setOpen = onOpenChange || setInternalOpen;
 
   // Format documentDate for input (YYYY-MM-DD)
   const formatDateForInput = (date?: Date | string | null) => {
