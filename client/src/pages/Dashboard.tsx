@@ -15,6 +15,7 @@ import { ProcessingModal } from "@/components/ProcessingModal";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SmartFolders } from "@/components/SmartFolders";
+import { Folders } from "@/components/Folders";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
@@ -758,6 +759,8 @@ export default function Dashboard() {
 
         {activeTab === "smart" ? (
           <SmartFolders />
+        ) : activeTab === "folders" ? (
+          <Folders />
         ) : (
           <>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6 mb-6 md:mb-8">

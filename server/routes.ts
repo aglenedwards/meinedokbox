@@ -1366,6 +1366,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Local Auth versions of Folder endpoints
+  app.get('/api/folders', isAuthenticatedLocal, async (req: any, res) => {
+    try {
+      const userId = await getEffectiveUserId(req.user.claims.sub);
+      let folders = await storage.getUserFolders(userId);
+      
+      if (folders.length === 0) {
+        console.log(`[Auto-Migration] Creating default folders for user ${userId}`);
+        await storage.createDefaultFolders(userId);
+        folders = await storage.getUserFolders(userId);
+      }
+      
+      res.json(folders);
+    } catch (error) {
+      console.error("Error fetching folders:", error);
+      res.status(500).json({ message: "Fehler beim Laden der Ordner" });
+    }
+  });
+
+  app.post('/api/folders', isAuthenticatedLocal, async (req: any, res) => {
+    try {
+      const userId = await getEffectiveUserId(req.user.claims.sub);
+      const { name, isShared, icon } = req.body;
+
+      if (!name || typeof name !== 'string') {
+        return res.status(400).json({ message: "Ordnername erforderlich" });
+      }
+
+      const folder = await storage.createFolder({
+        userId,
+        name,
+        isShared: isShared !== undefined ? isShared : true,
+        icon: icon || "📂",
+      });
+
+      res.json(folder);
+    } catch (error) {
+      console.error("Error creating folder:", error);
+      res.status(500).json({ message: "Fehler beim Erstellen des Ordners" });
+    }
+  });
+
+  app.delete('/api/folders/:id', isAuthenticatedLocal, async (req: any, res) => {
+    try {
+      const userId = await getEffectiveUserId(req.user.claims.sub);
+      const { id } = req.params;
+
+      const deleted = await storage.deleteFolder(id, userId);
+
+      if (!deleted) {
+        return res.status(404).json({ message: "Ordner nicht gefunden" });
+      }
+
+      res.json({ message: "Ordner gelöscht" });
+    } catch (error) {
+      console.error("Error deleting folder:", error);
+      res.status(500).json({ message: "Fehler beim Löschen des Ordners" });
+    }
+  });
+
   // Document upload endpoint - supports single or multiple files (max 5)
   app.post('/api/documents/upload', isAuthenticated, uploadLimiter, checkDocumentLimit, upload.array('files', 5), async (req: any, res) => {
     try {
