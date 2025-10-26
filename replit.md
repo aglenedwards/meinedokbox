@@ -4,6 +4,30 @@
 
 PaperEase is a web and mobile application designed to digitize paper documents using smartphone cameras or file uploads. It utilizes AI-powered OCR and semantic analysis for automatic document categorization and organization into digital folders. The application aims to provide a modern, productivity-focused interface for efficient document capture, storage, and retrieval, minimizing friction and maximizing clarity through AI assistance. The project ambitions include GDPR compliance with data stored in Germany and robust anti-abuse and family quota systems.
 
+## Recent Changes
+
+### October 26, 2025 - AI Classification Improvements & Multi-Upload Enhancement
+
+**AI Document Categorization Overhaul:**
+- Completely revised all 15 category descriptions with comprehensive keywords and examples
+- Added explicit medical invoice recognition: "Gesundheit & Arzt" now includes Arztrechnungen, Krankenhausrechnung, Zahnarztrechnung, Apothekenrechnung, Dermatologie, Physiotherapie
+- Implemented priority-based categorization rules to prevent misclassification:
+  1. Medical invoices (with terms like Behandlung, Diagnose, Arzt, Therapie) → "Gesundheit & Arzt"
+  2. Government invoices → "Behörden & Amtliches"
+  3. Tax-related invoices → "Steuern & Buchhaltung"
+  4. Utility bills → "Wohnen & Immobilien"
+  5. Retail purchases → "Einkäufe & Online-Bestellungen"
+- Enhanced all categories with German and English keywords for improved recognition
+- Added specific document types: insurance renewal letters, parking tickets, student certificates, daycare invoices, etc.
+
+**Multi-Upload Enhancements:**
+- Increased upload limit from 5 to 10 files per batch
+- Added file counter display (x/10 files selected)
+- Implemented "merge into one document" checkbox for combining multiple PDFs/images
+- Added automatic PDF merging capability using pdf-lib
+- Enhanced progress indicator showing current file being processed
+- Improved user feedback with specific merge confirmation messages
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
@@ -33,10 +57,13 @@ Preferred communication style: Simple, everyday language.
 **Authentication:** Dual system supporting Replit Auth (OIDC via Passport.js) and Email/Password (Passport Local Strategy with bcrypt, double opt-in email verification). Session-based authentication uses PostgreSQL for storage with a 7-day TTL.
 
 **Document Processing Pipeline:**
-1. File upload via Multer (multipart/form-data, memory storage, type validation: JPEG, PNG, WEBP, PDF, 10MB limit).
-2. OpenAI GPT-5 Vision API for OCR, category determination (Rechnung, Vertrag, Versicherung, Brief, Sonstiges), title generation, and confidence scoring. Improved AI classification for specific document types.
-3. File and optional thumbnail stored in IONOS S3 Object Storage.
-4. Document metadata saved to PostgreSQL.
+1. File upload via Multer (multipart/form-data, memory storage, type validation: JPEG, PNG, WEBP, PDF, 10MB limit, max 10 files per upload).
+2. OpenAI GPT-5 Vision API for OCR and intelligent categorization across 15 categories with priority-based rules:
+   - Categories: Finanzen & Banken, Versicherungen, Steuern & Buchhaltung, Arbeit & Gehalt, Verträge & Abos, Behörden & Amtliches, Gesundheit & Arzt, Wohnen & Immobilien, Auto & Mobilität, Schule & Ausbildung, Familie & Kinder, Rente & Vorsorge, Einkäufe & Online-Bestellungen, Reisen & Freizeit, Sonstiges / Privat
+   - Enhanced with comprehensive German/English keywords and priority rules for medical invoices, government documents, utility bills
+3. Optional: Multiple files can be merged into a single PDF document using pdf-lib before processing
+4. File and optional thumbnail stored in IONOS S3 Object Storage.
+5. Document metadata saved to PostgreSQL with extracted data (title, date, amount, sender, tags).
 
 **Data Management:**
 - **Hybrid Limit System:** Monthly upload quotas and total storage limits per user, shared across family members.
