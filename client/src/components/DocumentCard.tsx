@@ -18,6 +18,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
+import { EditDocumentDialog } from "@/components/EditDocumentDialog";
 
 interface DocumentCardProps {
   id: string;
@@ -280,6 +281,36 @@ export function DocumentCard({
                   <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onView?.(); }}>
                     Ansehen
                   </DropdownMenuItem>
+                  
+                  <EditDocumentDialog 
+                    document={{
+                      id,
+                      title,
+                      category,
+                      documentDate,
+                      amount,
+                      sender,
+                      userId: '',
+                      folderId,
+                      extractedText: '',
+                      fileUrl: null,
+                      pageUrls: null,
+                      thumbnailUrl: null,
+                      mimeType: null,
+                      confidence: confidence || 0,
+                      isShared: isShared || false,
+                      uploadedAt: new Date(date),
+                      deletedAt: null,
+                      extractedDate: extractedDate ? new Date(extractedDate) : null,
+                      year: null,
+                      systemTags: null,
+                    }}
+                    trigger={
+                      <DropdownMenuItem onSelect={(e) => e.preventDefault()} data-testid="menuitem-edit">
+                        Bearbeiten
+                      </DropdownMenuItem>
+                    }
+                  />
                   
                   {/* Mobile: Show drawer trigger instead of submenu */}
                   {isMobile ? (
