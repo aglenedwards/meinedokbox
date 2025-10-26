@@ -205,3 +205,27 @@ export function isSupportedAttachment(contentType: string, filename: string): bo
   const ext = filename.toLowerCase().match(/\.[^.]+$/)?.[0];
   return ext ? supportedExtensions.includes(ext) : false;
 }
+
+/**
+ * Checks if attachment is a valid document (filters out email signatures)
+ * - PDFs are always accepted (real documents)
+ * - Images are only accepted if >= 100KB (scanned documents vs. signature images)
+ */
+export function isValidDocumentAttachment(contentType: string, filename: string, size: number): boolean {
+  // First check if it's a supported type
+  if (!isSupportedAttachment(contentType, filename)) {
+    return false;
+  }
+  
+  // PDFs are always valid documents
+  if (contentType.toLowerCase() === 'application/pdf') {
+    return true;
+  }
+  
+  // Images must be at least 100KB to be considered documents (not signatures)
+  // Most email signatures are tiny (5-50KB), while scanned documents are 200KB+
+  const MIN_IMAGE_SIZE_KB = 100;
+  const MIN_IMAGE_SIZE_BYTES = MIN_IMAGE_SIZE_KB * 1024;
+  
+  return size >= MIN_IMAGE_SIZE_BYTES;
+}

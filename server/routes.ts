@@ -18,7 +18,7 @@ import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { ObjectPermission } from "./objectAcl";
 import { insertDocumentSchema, DOCUMENT_CATEGORIES, PLAN_LIMITS } from "@shared/schema";
 import { combineImagesToPDF, type PageBuffer } from "./lib/pdfGenerator";
-import { parseMailgunWebhook, isSupportedAttachment, isEmailWhitelisted, verifyMailgunWebhook, extractEmailAddress } from "./lib/emailInbound";
+import { parseMailgunWebhook, isSupportedAttachment, isValidDocumentAttachment, isEmailWhitelisted, verifyMailgunWebhook, extractEmailAddress } from "./lib/emailInbound";
 import { sendSharedAccessInvitation, sendVerificationEmail, sendPasswordResetEmail, sendContactFormEmail } from "./lib/sendEmail";
 import { emailQueue } from "./lib/emailQueue";
 import bcrypt from 'bcrypt';
@@ -2267,12 +2267,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         status: 'pending'
       }).returning();
       
-      // Filter supported attachments
+      // Filter supported attachments (excluding email signatures)
       const supportedAttachments = attachments.filter(att => 
-        isSupportedAttachment(att.contentType, att.filename)
+        isValidDocumentAttachment(att.contentType, att.filename, att.size)
       );
       
-      console.log('[Email Webhook] Processing', supportedAttachments.length, 'supported attachments');
+      console.log('[Email Webhook] Filtered attachments:', supportedAttachments.length, 'of', attachments.length, '(excluded signatures)');
       
       let processedCount = 0;
       const errors: string[] = [];
