@@ -1516,41 +1516,6 @@ export class DbStorage implements IStorage {
         },
         downloadEnabled: true,
         sortOrder: 1
-      },
-      {
-        userId,
-        name: "Geschäftlich",
-        icon: "💼",
-        isSystem: true,
-        filters: {
-          systemTags: ["geschäftlich"]
-        },
-        downloadEnabled: true,
-        sortOrder: 2
-      },
-      {
-        userId,
-        name: "Versicherungen",
-        icon: "🛡️",
-        isSystem: true,
-        filters: {
-          categories: ["Versicherungen"],
-          systemTags: ["versicherung"]
-        },
-        downloadEnabled: true,
-        sortOrder: 3
-      },
-      {
-        userId,
-        name: "Wohnen",
-        icon: "🏠",
-        isSystem: true,
-        filters: {
-          categories: ["Wohnen & Immobilien"],
-          systemTags: ["miete"]
-        },
-        downloadEnabled: true,
-        sortOrder: 4
       }
     ];
     

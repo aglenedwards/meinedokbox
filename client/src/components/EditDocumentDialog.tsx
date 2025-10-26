@@ -138,14 +138,17 @@ export function EditDocumentDialog({ document, trigger, open: controlledOpen, on
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {trigger || (
-          <Button variant="ghost" size="sm" data-testid="button-edit-document">
-            <Edit className="h-4 w-4 mr-2" />
-            Bearbeiten
-          </Button>
-        )}
-      </DialogTrigger>
+      {/* Only render trigger in uncontrolled mode */}
+      {controlledOpen === undefined && (
+        <DialogTrigger asChild>
+          {trigger || (
+            <Button variant="ghost" size="sm" data-testid="button-edit-document">
+              <Edit className="h-4 w-4 mr-2" />
+              Bearbeiten
+            </Button>
+          )}
+        </DialogTrigger>
+      )}
       <DialogContent className="sm:max-w-[500px]" data-testid="dialog-edit-document">
         <DialogHeader>
           <DialogTitle>Dokument bearbeiten</DialogTitle>
