@@ -35,6 +35,7 @@ interface DocumentCardProps {
   // Phase 2: Smart metadata
   confidence?: number;
   extractedDate?: string;
+  documentDate?: string;
   amount?: number;
   sender?: string;
   // Folder assignment
@@ -223,6 +224,26 @@ export function DocumentCard({
       currency: 'EUR' 
     }).format(amt);
   };
+
+  // Helper function to validate and format date
+  const formatDocumentDate = (dateStr?: string) => {
+    if (!dateStr) return null;
+    
+    // Try to create a Date object
+    const date = new Date(dateStr);
+    
+    // Check if the date is valid
+    if (isNaN(date.getTime())) {
+      return null;
+    }
+    
+    return date.toLocaleDateString('de-DE');
+  };
+
+  // Get the best available document date (prefer documentDate, fallback to extractedDate)
+  const getDocumentDate = () => {
+    return formatDocumentDate(documentDate) || formatDocumentDate(extractedDate);
+  };
   
   return (
     <>
@@ -399,11 +420,11 @@ export function DocumentCard({
                   <span data-testid={`text-date-${id}`}>{date}</span>
                 </div>
                 
-                {extractedDate && (
+                {getDocumentDate() && (
                   <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                     <FileText className="h-4 w-4 flex-shrink-0" />
-                    <span data-testid={`text-extracted-date-${id}`}>
-                      Dok: {new Date(extractedDate).toLocaleDateString('de-DE')}
+                    <span data-testid={`text-document-date-${id}`}>
+                      Dok: {getDocumentDate()}
                     </span>
                   </div>
                 )}
