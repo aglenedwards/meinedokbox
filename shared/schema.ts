@@ -278,6 +278,13 @@ export const insertDocumentSchema = createInsertSchema(documents).omit({
   uploadedAt: true,
 });
 
+export const updateDocumentSchema = z.object({
+  title: z.string().min(1).max(500).optional(),
+  documentDate: z.string().datetime().nullable().optional(),
+  amount: z.number().nullable().optional(),
+  sender: z.string().max(200).nullable().optional(),
+});
+
 export const insertTagSchema = createInsertSchema(tags).omit({
   id: true,
   createdAt: true,
@@ -322,6 +329,7 @@ export type User = typeof users.$inferSelect;
 export type InsertFolder = z.infer<typeof insertFolderSchema>;
 export type Folder = typeof folders.$inferSelect;
 export type InsertDocument = z.infer<typeof insertDocumentSchema>;
+export type UpdateDocument = z.infer<typeof updateDocumentSchema>;
 export type Document = typeof documents.$inferSelect;
 
 // Extended document type with folder information (from LEFT JOIN)

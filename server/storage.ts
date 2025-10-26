@@ -1,4 +1,4 @@
-import { type User, type UpsertUser, type Document, type InsertDocument, type Tag, type InsertTag, type DocumentTag, type InsertDocumentTag, type SharedAccess, type InsertSharedAccess, type Folder, type InsertFolder, type TrialNotification, type InsertTrialNotification, type EmailWhitelist, type EmailJob, type InsertEmailJob, type SmartFolder, type InsertSmartFolder } from "@shared/schema";
+import { type User, type UpsertUser, type Document, type InsertDocument, type UpdateDocument, type Tag, type InsertTag, type DocumentTag, type InsertDocumentTag, type SharedAccess, type InsertSharedAccess, type Folder, type InsertFolder, type TrialNotification, type InsertTrialNotification, type EmailWhitelist, type EmailJob, type InsertEmailJob, type SmartFolder, type InsertSmartFolder } from "@shared/schema";
 import { db } from "./db";
 import { users, documents, tags, documentTags, sharedAccess, folders, trialNotifications, emailWhitelist, emailJobs, smartFolders } from "@shared/schema";
 import { eq, and, or, like, desc, asc, isNull, isNotNull, inArray, sql, getTableColumns } from "drizzle-orm";
@@ -36,6 +36,7 @@ export interface IStorage {
   updateDocumentCategory(id: string, userId: string, category: string): Promise<Document | undefined>;
   updateDocumentSharing(id: string, userId: string, isShared: boolean): Promise<Document | undefined>;
   updateDocumentFolder(id: string, userId: string, folderId: string | null): Promise<Document | undefined>;
+  updateDocument(id: string, userId: string, data: UpdateDocument): Promise<Document | undefined>;
   deleteDocument(id: string, userId: string): Promise<boolean>;
   bulkDeleteDocuments(ids: string[], userId: string): Promise<number>;
   getTrashedDocuments(userId: string): Promise<Document[]>;
@@ -409,6 +410,36 @@ export class DbStorage implements IStorage {
       .where(eq(documents.id, id));
     
     return docWithFolder;
+  }
+
+  async updateDocument(id: string, userId: string, data: UpdateDocument): Promise<Document | undefined> {
+    // Build update object with only provided fields
+    const updateData: Partial<typeof documents.$inferInsert> = {};
+    
+    if (data.title !== undefined) updateData.title = data.title;
+    if (data.documentDate !== undefined) {
+      updateData.documentDate = data.documentDate ? new Date(data.documentDate) : null;
+    }
+    if (data.amount !== undefined) updateData.amount = data.amount;
+    if (data.sender !== undefined) updateData.sender = data.sender;
+    
+    // Only update if there's at least one field to update
+    if (Object.keys(updateData).length === 0) {
+      return this.getDocument(id);
+    }
+    
+    const [updated] = await db
+      .update(documents)
+      .set(updateData)
+      .where(
+        and(
+          eq(documents.id, id),
+          eq(documents.userId, userId)
+        )
+      )
+      .returning();
+    
+    return updated;
   }
 
   async deleteDocument(id: string, userId: string): Promise<boolean> {

@@ -16,7 +16,7 @@ import { uploadFile } from "./lib/storage";
 import { convertPdfToImages } from "./lib/pdfToImage";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { ObjectPermission } from "./objectAcl";
-import { insertDocumentSchema, DOCUMENT_CATEGORIES, PLAN_LIMITS } from "@shared/schema";
+import { insertDocumentSchema, updateDocumentSchema, DOCUMENT_CATEGORIES, PLAN_LIMITS } from "@shared/schema";
 import { combineImagesToPDF, type PageBuffer } from "./lib/pdfGenerator";
 import { parseMailgunWebhook, isSupportedAttachment, isValidDocumentAttachment, isEmailWhitelisted, verifyMailgunWebhook, extractEmailAddress } from "./lib/emailInbound";
 import { sendSharedAccessInvitation, sendVerificationEmail, sendPasswordResetEmail, sendContactFormEmail } from "./lib/sendEmail";
@@ -1880,23 +1880,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Update document category
+  // Update document (category or metadata fields)
   app.patch('/api/documents/:id', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const { id } = req.params;
-      const { category } = req.body;
+      const { category, title, documentDate, amount, sender } = req.body;
 
-      // Validate category
-      const validCategories = [...DOCUMENT_CATEGORIES];
-      if (!category || !validCategories.includes(category)) {
+      // If category is being updated (backwards compatibility)
+      if (category !== undefined) {
+        const validCategories = [...DOCUMENT_CATEGORIES];
+        if (!validCategories.includes(category)) {
+          return res.status(400).json({ 
+            message: `Invalid category. Must be one of: ${validCategories.join(', ')}` 
+          });
+        }
+        const updated = await storage.updateDocumentCategory(id, userId, category);
+        if (!updated) {
+          return res.status(404).json({ message: "Document not found or access denied" });
+        }
+        return res.json(updated);
+      }
+
+      // Otherwise, update metadata fields (title, documentDate, amount, sender)
+      const updateData = { title, documentDate, amount, sender };
+      
+      // Validate with Zod schema
+      const result = updateDocumentSchema.safeParse(updateData);
+      if (!result.success) {
         return res.status(400).json({ 
-          message: `Invalid category. Must be one of: ${validCategories.join(', ')}` 
+          message: "Invalid update data", 
+          errors: result.error.errors 
         });
       }
 
-      // Update category
-      const updated = await storage.updateDocumentCategory(id, userId, category);
+      const updated = await storage.updateDocument(id, userId, result.data);
 
       if (!updated) {
         return res.status(404).json({ message: "Document not found or access denied" });
