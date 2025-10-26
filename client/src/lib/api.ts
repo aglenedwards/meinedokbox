@@ -93,7 +93,9 @@ export async function getDocuments(
     throw new Error(`${response.status}: ${text}`);
   }
 
-  return await response.json();
+  const data = await response.json();
+  console.log('🔍 API Response from /api/documents:', JSON.stringify(data.documents[0], null, 2));
+  return data;
 }
 
 /**
