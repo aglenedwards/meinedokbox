@@ -699,7 +699,7 @@ export default function Dashboard() {
         <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "all" | "smart" | "folders")} className="mb-6">
           <TabsList className="grid w-full max-w-md grid-cols-3">
             <TabsTrigger value="all" data-testid="tab-all">Alle Dokumente</TabsTrigger>
-            <TabsTrigger value="smart" data-testid="tab-smart">Smart-Ordner</TabsTrigger>
+            <TabsTrigger value="smart" data-testid="tab-smart">Steuererklärung</TabsTrigger>
             <TabsTrigger value="folders" data-testid="tab-folders">Meine Ordner</TabsTrigger>
           </TabsList>
         </Tabs>

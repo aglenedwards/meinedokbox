@@ -7,12 +7,9 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import type { Document } from "@shared/schema";
 
-// Die 4 Smart Tags die wir verwenden
+// Der Smart Tag den wir verwenden
 const SYSTEM_TAGS = [
   { value: "steuerrelevant", label: "Steuerrelevant", icon: "💰" },
-  { value: "geschäftlich", label: "Geschäftlich", icon: "💼" },
-  { value: "versicherung", label: "Versicherung", icon: "🛡️" },
-  { value: "miete", label: "Miete / Wohnen", icon: "🏠" },
 ] as const;
 
 interface SmartTagsDialogProps {
