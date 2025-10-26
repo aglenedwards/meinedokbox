@@ -94,7 +94,10 @@ export async function getDocuments(
   }
 
   const data = await response.json();
-  console.log('🔍 API Response from /api/documents:', JSON.stringify(data.documents[0], null, 2));
+  console.log('🔍 Full API Response:', data);
+  console.log('🔍 First document keys:', data.documents[0] ? Object.keys(data.documents[0]) : 'no documents');
+  console.log('🔍 First document folderName:', data.documents[0]?.folderName);
+  console.log('🔍 First document folderIcon:', data.documents[0]?.folderIcon);
   return data;
 }
 
