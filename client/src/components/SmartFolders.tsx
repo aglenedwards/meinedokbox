@@ -184,7 +184,7 @@ export function SmartFolders() {
               title={selectedYear ? `Keine Dokumente für ${selectedYear}` : "Keine steuerrelevanten Dokumente"}
               description={selectedYear 
                 ? `Für das Jahr ${selectedYear} wurden keine steuerrelevanten Dokumente gefunden.`
-                : "Markieren Sie Dokumente als 'Steuerrelevant' über die 3 Punkte bei jedem Dokument."
+                : "Unsere KI erkennt steuerrelevante Dokumente automatisch beim Upload. Sie können die Markierung bei Bedarf über die 3 Punkte bei jedem Dokument anpassen."
               }
             />
           ) : (
