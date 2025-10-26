@@ -32,21 +32,28 @@ import type { Document } from "@shared/schema";
 const parseDateString = (dateStr: string): Date | null => {
   if (!dateStr || dateStr.trim() === "") return null;
   
-  // Try German format DD.MM.YYYY
-  if (dateStr.includes('.')) {
-    const parts = dateStr.split('.');
-    if (parts.length === 3) {
-      const day = parseInt(parts[0], 10);
-      const month = parseInt(parts[1], 10) - 1; // months are 0-indexed
-      const year = parseInt(parts[2], 10);
-      const date = new Date(year, month, day);
-      if (!isNaN(date.getTime())) return date;
+  try {
+    // Try German format DD.MM.YYYY
+    if (dateStr.includes('.')) {
+      const parts = dateStr.split('.');
+      if (parts.length === 3) {
+        const day = parseInt(parts[0], 10);
+        const month = parseInt(parts[1], 10) - 1; // months are 0-indexed
+        const year = parseInt(parts[2], 10);
+        if (!isNaN(day) && !isNaN(month) && !isNaN(year)) {
+          const date = new Date(year, month, day);
+          if (!isNaN(date.getTime())) return date;
+        }
+      }
     }
+    
+    // Try ISO format or other standard formats
+    const date = new Date(dateStr);
+    return !isNaN(date.getTime()) ? date : null;
+  } catch (error) {
+    console.error("Error parsing date:", dateStr, error);
+    return null;
   }
-  
-  // Try ISO format or other standard formats
-  const date = new Date(dateStr);
-  return !isNaN(date.getTime()) ? date : null;
 };
 
 const editDocumentSchema = z.object({
