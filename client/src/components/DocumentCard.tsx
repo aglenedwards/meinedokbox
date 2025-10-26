@@ -283,39 +283,15 @@ export function DocumentCard({
                     Ansehen
                   </DropdownMenuItem>
                   
-                  <EditDocumentDialog 
-                    document={{
-                      id,
-                      title,
-                      category,
-                      documentDate: documentDate ?? null,
-                      amount: amount ?? null,
-                      sender: sender ?? null,
-                      userId: '',
-                      folderId: folderId ?? null,
-                      extractedText: '',
-                      fileUrl: null,
-                      pageUrls: null,
-                      thumbnailUrl: null,
-                      mimeType: null,
-                      confidence: confidence || 0,
-                      isShared: isShared || false,
-                      uploadedAt: new Date(date),
-                      deletedAt: null,
-                      extractedDate: extractedDate ? new Date(extractedDate) : null,
-                      year: null,
-                      systemTags: null,
+                  <DropdownMenuItem 
+                    onClick={(e) => { 
+                      e.stopPropagation(); 
+                      setEditDialogOpen(true);
                     }}
-                    trigger={
-                      <DropdownMenuItem 
-                        onSelect={(e) => e.preventDefault()}
-                        onClick={(e) => e.stopPropagation()}
-                        data-testid="menuitem-edit"
-                      >
-                        Bearbeiten
-                      </DropdownMenuItem>
-                    }
-                  />
+                    data-testid="menuitem-edit"
+                  >
+                    Bearbeiten
+                  </DropdownMenuItem>
                   
                   {/* Mobile: Show drawer trigger instead of submenu */}
                   {isMobile ? (
@@ -611,6 +587,34 @@ export function DocumentCard({
         </DrawerContent>
       </Drawer>
     )}
+    
+    {/* Edit Document Dialog */}
+    <EditDocumentDialog 
+      document={{
+        id,
+        title,
+        category,
+        documentDate: documentDate ?? null,
+        amount: amount ?? null,
+        sender: sender ?? null,
+        userId: '',
+        folderId: folderId ?? null,
+        extractedText: '',
+        fileUrl: null,
+        pageUrls: null,
+        thumbnailUrl: null,
+        mimeType: null,
+        confidence: confidence || 0,
+        isShared: isShared || false,
+        uploadedAt: new Date(date),
+        deletedAt: null,
+        extractedDate: extractedDate ? new Date(extractedDate) : null,
+        year: null,
+        systemTags: null,
+      }}
+      open={editDialogOpen}
+      onOpenChange={setEditDialogOpen}
+    />
   </>
   );
 }
