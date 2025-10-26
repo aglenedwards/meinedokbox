@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Download, FolderSearch } from "lucide-react";
+import { Download, FolderSearch, Check } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { DocumentCard } from "@/components/DocumentCard";
 import { EmptyState } from "@/components/EmptyState";
 import { useToast } from "@/hooks/use-toast";
@@ -15,6 +16,19 @@ export function SmartFolders() {
   const [selectedYear, setSelectedYear] = useState<number | undefined>(undefined);
   const [viewerDocument, setViewerDocument] = useState<Document | null>(null);
   const [viewerOpen, setViewerOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [yearDrawerOpen, setYearDrawerOpen] = useState(false);
+
+  // Mobile detection (under 768px)
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const { data: smartFolders = [], isLoading: foldersLoading } = useQuery<SmartFolder[]>({
     queryKey: ["/api/smart-folders"],
@@ -135,44 +149,59 @@ export function SmartFolders() {
       {/* Documents View */}
       {selectedFolder && (
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between gap-4">
-            <CardTitle className="flex items-center gap-2">
-              <span className="text-2xl">{selectedFolder.icon}</span>
-              {selectedFolder.name}
-              <span className="text-sm font-normal text-muted-foreground">
-                ({documents.length} {documents.length === 1 ? 'Dokument' : 'Dokumente'})
-              </span>
-            </CardTitle>
-            <div className="flex items-center gap-2">
-              {availableYears.length > 0 && (
-                <Select
-                  value={selectedYear?.toString() || "all"}
-                  onValueChange={(value) => setSelectedYear(value === "all" ? undefined : parseInt(value))}
-                >
-                  <SelectTrigger className="w-[140px]" data-testid="select-year-filter">
-                    <SelectValue placeholder="Alle Jahre" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Alle Jahre</SelectItem>
-                    {availableYears.map((year) => (
-                      <SelectItem key={year} value={year.toString()}>
-                        {year}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-              {selectedFolder.downloadEnabled && documents.length > 0 && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleDownloadAll}
-                  data-testid="button-download-all"
-                >
-                  <Download className="w-4 h-4 mr-2" />
-                  Alle herunterladen
-                </Button>
-              )}
+          <CardHeader className="space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <CardTitle className="flex items-center gap-2 flex-wrap">
+                <span className="text-2xl">{selectedFolder.icon}</span>
+                <span>{selectedFolder.name}</span>
+                <span className="text-sm font-normal text-muted-foreground">
+                  ({documents.length} {documents.length === 1 ? 'Dokument' : 'Dokumente'})
+                </span>
+              </CardTitle>
+              <div className="flex items-center gap-2 flex-wrap">
+                {availableYears.length > 0 && (
+                  isMobile ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setYearDrawerOpen(true)}
+                      className="w-full sm:w-auto"
+                      data-testid="button-year-filter-mobile"
+                    >
+                      {selectedYear ? selectedYear : "Alle Jahre"}
+                    </Button>
+                  ) : (
+                    <Select
+                      value={selectedYear?.toString() || "all"}
+                      onValueChange={(value) => setSelectedYear(value === "all" ? undefined : parseInt(value))}
+                    >
+                      <SelectTrigger className="w-[140px]" data-testid="select-year-filter">
+                        <SelectValue placeholder="Alle Jahre" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Alle Jahre</SelectItem>
+                        {availableYears.map((year) => (
+                          <SelectItem key={year} value={year.toString()}>
+                            {year}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )
+                )}
+                {selectedFolder.downloadEnabled && documents.length > 0 && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleDownloadAll}
+                    className="w-full sm:w-auto"
+                    data-testid="button-download-all"
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    Alle herunterladen
+                  </Button>
+                )}
+              </div>
             </div>
           </CardHeader>
           <CardContent>
@@ -213,6 +242,48 @@ export function SmartFolders() {
             )}
           </CardContent>
         </Card>
+      )}
+
+      {/* Mobile Year Selection Drawer */}
+      {isMobile && availableYears.length > 0 && (
+        <Drawer open={yearDrawerOpen} onOpenChange={setYearDrawerOpen}>
+          <DrawerContent>
+            <DrawerHeader>
+              <DrawerTitle>Jahr auswählen</DrawerTitle>
+            </DrawerHeader>
+            <div className="px-4 pb-8 max-h-[60vh] overflow-y-auto">
+              <div className="grid gap-2">
+                <Button
+                  variant={!selectedYear ? "default" : "outline"}
+                  className="h-auto py-4 px-4 justify-between text-left"
+                  onClick={() => {
+                    setSelectedYear(undefined);
+                    setYearDrawerOpen(false);
+                  }}
+                  data-testid="drawer-year-all"
+                >
+                  <span className="font-medium">Alle Jahre</span>
+                  {!selectedYear && <Check className="h-5 w-5 flex-shrink-0" />}
+                </Button>
+                {availableYears.map((year) => (
+                  <Button
+                    key={year}
+                    variant={selectedYear === year ? "default" : "outline"}
+                    className="h-auto py-4 px-4 justify-between text-left"
+                    onClick={() => {
+                      setSelectedYear(year);
+                      setYearDrawerOpen(false);
+                    }}
+                    data-testid={`drawer-year-${year}`}
+                  >
+                    <span className="font-medium">{year}</span>
+                    {selectedYear === year && <Check className="h-5 w-5 flex-shrink-0" />}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          </DrawerContent>
+        </Drawer>
       )}
     </div>
   );
