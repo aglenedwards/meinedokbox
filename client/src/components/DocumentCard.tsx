@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { 
   FileText, Calendar, MoreVertical, Euro, FileSignature, Shield, Mail, FileQuestion,
   Landmark, Receipt, Briefcase, FileCheck, Building2, Stethoscope, Home, Car, 
-  GraduationCap, Baby, PiggyBank, ShoppingBag, Plane, User, Sparkles, Lock, Users, Check, Folder
+  GraduationCap, Baby, PiggyBank, ShoppingBag, Plane, User, Sparkles, Lock, Users, Check, Folder, X
 } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -378,9 +378,20 @@ export function DocumentCard({
                 )}
                 
                 {folderId && folderName && (
-                  <Badge variant="outline" className="gap-1" data-testid={`badge-folder-${id}`}>
+                  <Badge variant="outline" className="gap-1 pr-1 group" data-testid={`badge-folder-${id}`}>
                     <span>{folderIcon || '📁'}</span>
                     <span className="text-xs">{folderName}</span>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onFolderChange?.(null);
+                      }}
+                      className="ml-1 hover:bg-accent rounded-sm p-0.5 transition-colors"
+                      data-testid={`button-remove-folder-${id}`}
+                      aria-label="Aus Ordner entfernen"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
                   </Badge>
                 )}
               </div>
