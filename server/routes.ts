@@ -1718,6 +1718,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
       res.set('Pragma', 'no-cache');
       res.set('Expires', '0');
+      
+      // Debug: Log what we're actually sending
+      console.log('📤 Sending to frontend:', JSON.stringify(result.documents[0], null, 2));
       res.json(result);
     } catch (error) {
       console.error("Error fetching documents:", error);
