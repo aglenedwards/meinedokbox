@@ -2082,6 +2082,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Permanently delete ALL documents from trash (bulk delete)
+  // IMPORTANT: This must come BEFORE /api/trash/:id to avoid matching "all" as an ID
+  app.delete('/api/trash/all', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+
+      const deletedCount = await storage.permanentlyDeleteAllTrashedDocuments(userId);
+
+      res.json({ 
+        message: `${deletedCount} document(s) permanently deleted`,
+        count: deletedCount 
+      });
+    } catch (error) {
+      console.error("Error permanently deleting all trashed documents:", error);
+      res.status(500).json({ message: "Failed to permanently delete documents" });
+    }
+  });
+
   // Permanently delete document from trash
   app.delete('/api/trash/:id', isAuthenticated, async (req: any, res) => {
     try {
@@ -2098,23 +2116,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error permanently deleting document:", error);
       res.status(500).json({ message: "Failed to permanently delete document" });
-    }
-  });
-
-  // Permanently delete ALL documents from trash (bulk delete)
-  app.delete('/api/trash/all', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-
-      const deletedCount = await storage.permanentlyDeleteAllTrashedDocuments(userId);
-
-      res.json({ 
-        message: `${deletedCount} document(s) permanently deleted`,
-        count: deletedCount 
-      });
-    } catch (error) {
-      console.error("Error permanently deleting all trashed documents:", error);
-      res.status(500).json({ message: "Failed to permanently delete documents" });
     }
   });
 
