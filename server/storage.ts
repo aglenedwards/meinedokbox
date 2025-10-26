@@ -72,6 +72,7 @@ export interface IStorage {
   updateFolder(id: string, userId: string, data: Partial<InsertFolder>): Promise<Folder | undefined>;
   deleteFolder(id: string, userId: string): Promise<boolean>;
   createDefaultFolders(userId: string): Promise<void>;
+  getDocumentsByFolder(folderId: string, userId: string): Promise<Document[]>;
   
   // Trial notifications tracking
   createTrialNotification(data: InsertTrialNotification): Promise<TrialNotification>;
@@ -1053,6 +1054,22 @@ export class DbStorage implements IStorage {
         isShared: false,
       }
     ]);
+  }
+
+  async getDocumentsByFolder(folderId: string, userId: string): Promise<Document[]> {
+    // Get documents that belong to a specific folder
+    const docs = await db
+      .select()
+      .from(documents)
+      .where(
+        and(
+          eq(documents.folderId, folderId),
+          eq(documents.userId, userId),
+          isNull(documents.deletedAt)
+        )
+      )
+      .orderBy(desc(documents.uploadedAt));
+    return docs;
   }
 
   // Trial notifications implementations

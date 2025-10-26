@@ -1426,6 +1426,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get documents in a specific folder
+  app.get('/api/folders/:folderId/documents', isAuthenticatedLocal, async (req: any, res) => {
+    try {
+      const userId = await getEffectiveUserId(req.user.claims.sub);
+      const { folderId } = req.params;
+
+      const documents = await storage.getDocumentsByFolder(folderId, userId);
+      res.json(documents);
+    } catch (error) {
+      console.error("Error fetching folder documents:", error);
+      res.status(500).json({ message: "Fehler beim Laden der Dokumente" });
+    }
+  });
+
   // Document upload endpoint - supports single or multiple files (max 5)
   app.post('/api/documents/upload', isAuthenticated, uploadLimiter, checkDocumentLimit, upload.array('files', 5), async (req: any, res) => {
     try {
