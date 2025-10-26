@@ -17,7 +17,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
-import { TagButton } from "./TagManager";
 
 interface DocumentCardProps {
   id: string;
@@ -315,12 +314,8 @@ export function DocumentCard({
                   </Badge>
                 )}
                 
-                <div onClick={(e) => e.stopPropagation()}>
-                  <TagButton documentId={id} currentFolderId={folderId} />
-                </div>
-                
                 {folderId && folderName && (
-                  <Badge variant="outline" className="gap-1">
+                  <Badge variant="outline" className="gap-1" data-testid={`badge-folder-${id}`}>
                     <span>{folderIcon || '📁'}</span>
                     <span className="text-xs">{folderName}</span>
                   </Badge>

@@ -31,6 +31,7 @@ interface Folder {
   isShared: boolean;
   userId: string;
   createdAt: string;
+  documentCount: number;
 }
 
 export function Folders() {
@@ -50,13 +51,6 @@ export function Folders() {
     queryKey: ['/api/folders', selectedFolder, 'documents'],
     enabled: !!selectedFolder,
   });
-
-  // Fetch all documents (for folder count)
-  const { data: allDocumentsData } = useQuery<any>({
-    queryKey: ['/api/documents'],
-  });
-  
-  const allDocuments = allDocumentsData?.pages?.[0]?.documents || [];
 
   // Create folder mutation
   const createFolderMutation = useMutation({
@@ -116,10 +110,6 @@ export function Folders() {
     }
   };
 
-  const getFolderDocumentCount = (folderId: string) => {
-    if (!Array.isArray(allDocuments)) return 0;
-    return allDocuments.filter((doc: Document) => doc.folderId === folderId).length;
-  };
 
   if (isLoadingFolders) {
     return (
@@ -164,7 +154,6 @@ export function Folders() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {folders.map((folder) => {
-              const docCount = getFolderDocumentCount(folder.id);
               return (
                 <Card
                   key={folder.id}
@@ -179,7 +168,7 @@ export function Folders() {
                         <div>
                           <CardTitle className="text-lg">{folder.name}</CardTitle>
                           <Badge variant="outline" className="mt-1">
-                            {docCount} {docCount === 1 ? 'Dokument' : 'Dokumente'}
+                            {folder.documentCount} {folder.documentCount === 1 ? 'Dokument' : 'Dokumente'}
                           </Badge>
                         </div>
                       </div>
