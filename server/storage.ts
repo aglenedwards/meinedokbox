@@ -35,6 +35,7 @@ export interface IStorage {
   searchDocuments(userId: string, query?: string, categories?: string[], sortBy?: SortOption, includeOnlySharedFolders?: boolean, limit?: number, cursor?: string): Promise<PaginatedDocuments>;
   updateDocumentCategory(id: string, userId: string, category: string): Promise<Document | undefined>;
   updateDocumentSharing(id: string, userId: string, isShared: boolean): Promise<Document | undefined>;
+  updateDocumentFolder(id: string, userId: string, folderId: string | null): Promise<Document | undefined>;
   deleteDocument(id: string, userId: string): Promise<boolean>;
   bulkDeleteDocuments(ids: string[], userId: string): Promise<number>;
   getTrashedDocuments(userId: string): Promise<Document[]>;
@@ -358,6 +359,20 @@ export class DbStorage implements IStorage {
     const [updated] = await db
       .update(documents)
       .set({ isShared })
+      .where(
+        and(
+          eq(documents.id, id),
+          eq(documents.userId, userId)
+        )
+      )
+      .returning();
+    return updated;
+  }
+
+  async updateDocumentFolder(id: string, userId: string, folderId: string | null): Promise<Document | undefined> {
+    const [updated] = await db
+      .update(documents)
+      .set({ folderId })
       .where(
         and(
           eq(documents.id, id),

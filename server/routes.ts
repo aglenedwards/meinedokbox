@@ -1951,6 +1951,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Assign document to folder
+  app.patch('/api/documents/:id/folder', isAuthenticatedLocal, async (req: any, res) => {
+    try {
+      const userId = await getEffectiveUserId(req.user.claims.sub);
+      const { id } = req.params;
+      const { folderId } = req.body;
+
+      // folderId can be null to remove from folder
+      if (folderId !== null && typeof folderId !== 'string') {
+        return res.status(400).json({ message: "folderId must be a string or null" });
+      }
+
+      const updated = await storage.updateDocumentFolder(id, userId, folderId);
+
+      if (!updated) {
+        return res.status(404).json({ message: "Document not found or access denied" });
+      }
+
+      res.json(updated);
+    } catch (error) {
+      console.error("Error updating document folder:", error);
+      res.status(500).json({ message: "Failed to update folder" });
+    }
+  });
+
   // Delete document (soft delete - moves to trash)
   app.delete('/api/documents/:id', isAuthenticated, async (req: any, res) => {
     try {
