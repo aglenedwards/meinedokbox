@@ -1,9 +1,8 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Trash2, RotateCcw, ArrowLeft } from "lucide-react";
+import { Trash2, RotateCcw } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
-import { Link } from "wouter";
 import type { Document } from "@shared/schema";
 import { getTrashedDocuments, restoreDocument, permanentlyDeleteDocument, permanentlyDeleteAllDocuments } from "@/lib/api";
 import { queryClient } from "@/lib/queryClient";
@@ -11,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { EmptyState } from "@/components/EmptyState";
-import { Footer } from "@/components/Footer";
+import { DashboardLayout } from "@/components/DashboardLayout";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -110,31 +109,16 @@ export default function Trash() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
-        <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-3 md:py-4">
-          <div className="flex items-center justify-between gap-2 sm:gap-4">
-            <div className="flex items-center gap-2 sm:gap-4 min-w-0">
-              <Link href="/dashboard">
-                <Button variant="ghost" size="sm" className="shrink-0" data-testid="button-back-to-dashboard">
-                  <ArrowLeft className="h-4 w-4" />
-                  <span className="hidden sm:inline ml-2">Zurück</span>
-                </Button>
-              </Link>
-              <div className="min-w-0">
-                <h1 className="text-lg sm:text-xl md:text-2xl font-bold flex items-center gap-2">
-                  <Trash2 className="h-4 w-4 sm:h-5 sm:w-5 shrink-0" />
-                  <span className="truncate">Papierkorb</span>
-                </h1>
-                <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">Gelöschte Dokumente</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
+    <DashboardLayout>
+      <div className="mb-6">
+        <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-2">
+          <Trash2 className="h-6 w-6" />
+          Papierkorb
+        </h1>
+        <p className="text-sm text-muted-foreground mt-1">Gelöschte Dokumente</p>
+      </div>
 
-      <main className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8">
-        {isLoading ? (
+      {isLoading ? (
           <div className="text-center py-12">
             <p className="text-muted-foreground">Papierkorb wird geladen...</p>
           </div>
@@ -251,10 +235,7 @@ export default function Trash() {
               ))}
             </div>
           </div>
-        )}
-      </main>
-
-      <Footer />
-    </div>
+      )}
+    </DashboardLayout>
   );
 }

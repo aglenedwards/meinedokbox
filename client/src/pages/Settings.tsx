@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { User, Mail, UserPlus, X, Crown, Calendar, FileText, LogOut, Home, Trash2, Shield, TrendingUp, HardDrive } from "lucide-react";
+import { User, Mail, UserPlus, X, Crown, Calendar, FileText, Settings as SettingsIcon, TrendingUp, HardDrive } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,14 +11,12 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
-import { getCurrentUser, getSubscriptionStatus, logout, type SubscriptionStatus } from "@/lib/api";
+import { getCurrentUser, getSubscriptionStatus, type SubscriptionStatus } from "@/lib/api";
 import type { User as UserType, SharedAccess } from "@shared/schema";
 import { UpgradeModal } from "@/components/UpgradeModal";
 import { CheckoutDialog } from "@/components/CheckoutDialog";
-import { Footer } from "@/components/Footer";
+import { DashboardLayout } from "@/components/DashboardLayout";
 import { EmailWhitelistSettings } from "@/components/EmailWhitelistSettings";
-import logoImage from "@assets/meinedokbox_1760966015056.png";
-import { Link } from "wouter";
 
 export default function Settings() {
   const { toast } = useToast();
@@ -205,26 +203,6 @@ export default function Settings() {
     },
   });
 
-  // Logout mutation
-  const logoutMutation = useMutation({
-    mutationFn: logout,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-      window.location.href = "/";
-      toast({
-        title: "Abgemeldet",
-        description: "Sie wurden erfolgreich abgemeldet.",
-      });
-    },
-    onError: (error: Error) => {
-      toast({
-        title: "Abmeldung fehlgeschlagen",
-        description: "Die Abmeldung konnte nicht durchgeführt werden. Bitte versuchen Sie es erneut.",
-        variant: "destructive",
-      });
-    },
-  });
-
   const handleInvite = (e: React.FormEvent) => {
     e.preventDefault();
     if (!inviteEmail.trim()) return;
@@ -261,80 +239,18 @@ export default function Settings() {
   const canInviteMore = activeInvitations.length < (maxUsers - 1);
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-10 bg-background border-b">
-        <div className="max-w-7xl mx-auto px-4 md:px-6 py-3 md:py-4">
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-4">
-            <div className="flex items-center justify-between md:justify-start gap-3">
-              <img src={logoImage} alt="MeineDokBox" className="h-12 md:h-16" data-testid="img-logo" />
-              <div className="flex items-center gap-2 md:hidden">
-                <Link href="/">
-                  <Button variant="ghost" size="sm" data-testid="button-dashboard-mobile">
-                    <Home className="h-4 w-4" />
-                  </Button>
-                </Link>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={() => logoutMutation.mutate()}
-                  disabled={logoutMutation.isPending}
-                  data-testid="button-logout-mobile"
-                >
-                  <LogOut className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-            
-            <div className="flex-1 min-w-0">
-            </div>
-            
-            <div className="hidden md:flex items-center gap-2">
-              <Link href="/trash">
-                <Button variant="outline" size="sm" data-testid="button-trash">
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Papierkorb
-                </Button>
-              </Link>
-              <Link href="/">
-                <Button variant="outline" size="sm" data-testid="button-dashboard">
-                  <Home className="h-4 w-4 mr-2" />
-                  Dashboard
-                </Button>
-              </Link>
-              {user?.email === "service@meinedokbox.de" && (
-                <Link href="/admin">
-                  <Button variant="outline" size="sm" data-testid="button-admin">
-                    <Shield className="h-4 w-4 mr-2" />
-                    Admin
-                  </Button>
-                </Link>
-              )}
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => logoutMutation.mutate()}
-                disabled={logoutMutation.isPending}
-                data-testid="button-logout"
-              >
-                <LogOut className="h-4 w-4 mr-2" />
-                Abmelden
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
+    <DashboardLayout>
+      <div className="mb-6">
+        <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-2">
+          <SettingsIcon className="h-6 w-6" />
+          Einstellungen
+        </h1>
+        <p className="text-sm text-muted-foreground mt-1">
+          Verwalten Sie Ihr Abonnement und Ihre Kontoeinstellungen
+        </p>
+      </div>
 
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-4 md:py-8 max-w-4xl">
-        <div className="mb-4 md:mb-8">
-          <h2 className="text-2xl md:text-3xl font-bold mb-2">Einstellungen</h2>
-          <p className="text-sm md:text-base text-muted-foreground">
-            Verwalten Sie Ihr Abonnement und Ihre Kontoeinstellungen
-          </p>
-        </div>
-
-        <div className="space-y-6">
+      <div className="space-y-6 max-w-4xl">
           {/* Profile Card */}
           <Card data-testid="card-profile">
             <CardHeader>
@@ -709,8 +625,7 @@ export default function Settings() {
             </CardContent>
           </Card>
 
-        </div>
-      </main>
+      </div>
 
       <UpgradeModal
         open={upgradeModalOpen}
@@ -723,8 +638,6 @@ export default function Settings() {
         selectedPlan={selectedPlan}
         selectedPeriod={selectedPeriod}
       />
-
-      <Footer />
-    </div>
+    </DashboardLayout>
   );
 }
