@@ -54,10 +54,8 @@ export function SmartTagsDialog({ document, trigger, open: controlledOpen, onOpe
   const handleSave = async () => {
     setIsUpdating(true);
     try {
-      await apiRequest(`/api/documents/${document.id}`, {
-        method: 'PATCH',
-        body: JSON.stringify({ systemTags: selectedTags.length > 0 ? selectedTags : null }),
-        headers: { 'Content-Type': 'application/json' },
+      await apiRequest('PATCH', `/api/documents/${document.id}`, {
+        systemTags: selectedTags.length > 0 ? selectedTags : null,
       });
 
       // Invalidate queries

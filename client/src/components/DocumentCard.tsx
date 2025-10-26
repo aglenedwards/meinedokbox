@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
 import { EditDocumentDialog } from "@/components/EditDocumentDialog";
+import { SmartTagsDialog } from "@/components/SmartTagsDialog";
 
 interface DocumentCardProps {
   id: string;
@@ -39,6 +40,8 @@ interface DocumentCardProps {
   documentDate?: string;
   amount?: number;
   sender?: string;
+  // Phase 3: Smart tags
+  systemTags?: string[] | null;
   // Folder assignment
   folderId?: string | null;
   folderName?: string;
@@ -177,6 +180,7 @@ export function DocumentCard({
   documentDate,
   amount,
   sender,
+  systemTags,
   folderId,
   folderName,
   folderIcon,
@@ -192,6 +196,7 @@ export function DocumentCard({
   const [categoryDrawerOpen, setCategoryDrawerOpen] = useState(false);
   const [folderDrawerOpen, setFolderDrawerOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [smartTagsDialogOpen, setSmartTagsDialogOpen] = useState(false);
   
   // Fetch folders for folder assignment
   const { data: folders = [] } = useQuery<Array<{
@@ -291,6 +296,17 @@ export function DocumentCard({
                     data-testid="menuitem-edit"
                   >
                     Bearbeiten
+                  </DropdownMenuItem>
+                  
+                  <DropdownMenuItem 
+                    onClick={(e) => { 
+                      e.stopPropagation(); 
+                      setSmartTagsDialogOpen(true);
+                    }}
+                    data-testid="menuitem-smart-tags"
+                  >
+                    <Sparkles className="h-4 w-4 mr-2" />
+                    Smart-Tags
                   </DropdownMenuItem>
                   
                   {/* Mobile: Show drawer trigger instead of submenu */}
@@ -594,7 +610,7 @@ export function DocumentCard({
         id,
         title,
         category,
-        documentDate: documentDate ?? null,
+        documentDate: documentDate ? new Date(documentDate) : null,
         amount: amount ?? null,
         sender: sender ?? null,
         userId: '',
@@ -610,10 +626,38 @@ export function DocumentCard({
         deletedAt: null,
         extractedDate: extractedDate ? new Date(extractedDate) : null,
         year: null,
-        systemTags: null,
+        systemTags: systemTags ?? null,
       }}
       open={editDialogOpen}
       onOpenChange={setEditDialogOpen}
+    />
+    
+    {/* Smart Tags Dialog */}
+    <SmartTagsDialog 
+      document={{
+        id,
+        title,
+        category,
+        documentDate: documentDate ? new Date(documentDate) : null,
+        amount: amount ?? null,
+        sender: sender ?? null,
+        userId: '',
+        folderId: folderId ?? null,
+        extractedText: '',
+        fileUrl: null,
+        pageUrls: null,
+        thumbnailUrl: null,
+        mimeType: null,
+        confidence: confidence || 0,
+        isShared: isShared || false,
+        uploadedAt: new Date(date),
+        deletedAt: null,
+        extractedDate: extractedDate ? new Date(extractedDate) : null,
+        year: null,
+        systemTags: systemTags ?? null,
+      }}
+      open={smartTagsDialogOpen}
+      onOpenChange={setSmartTagsDialogOpen}
     />
   </>
   );
