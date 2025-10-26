@@ -19,14 +19,21 @@ export interface UploadResult {
 /**
  * Upload one or more document files and process them with AI
  * Each file is processed as a separate document with individual AI analysis
+ * @param files - Single file or array of files to upload
+ * @param mergeIntoOne - If true, merge multiple files into a single document (default: false)
  */
-export async function uploadDocument(files: File | File[]): Promise<UploadResult> {
+export async function uploadDocument(files: File | File[], mergeIntoOne: boolean = false): Promise<UploadResult> {
   const formData = new FormData();
   const fileArray = Array.isArray(files) ? files : [files];
   
   fileArray.forEach(file => {
     formData.append("files", file);
   });
+  
+  // Add merge flag if provided
+  if (mergeIntoOne && fileArray.length > 1) {
+    formData.append("mergeIntoOne", "true");
+  }
 
   const response = await fetch("/api/documents/upload", {
     method: "POST",

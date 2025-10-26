@@ -36,6 +36,7 @@ import { db } from "./db";
 import { users, emailLogs, sharedAccess } from "@shared/schema";
 import { eq } from "drizzle-orm";
 import sharp from "sharp";
+import { PDFDocument } from "pdf-lib";
 
 // Configure multer for file uploads (memory storage for processing)
 const upload = multer({
@@ -59,6 +60,38 @@ const upload = multer({
     }
   },
 });
+
+/**
+ * Merges multiple files (PDFs and/or images) into a single PDF
+ * @param files - Array of files to merge
+ * @returns Buffer containing the merged PDF
+ */
+async function mergeFilesToPdf(files: Express.Multer.File[]): Promise<Buffer> {
+  const mergedPdf = await PDFDocument.create();
+  
+  for (const file of files) {
+    if (file.mimetype === 'application/pdf') {
+      // Merge PDF pages
+      const pdfDoc = await PDFDocument.load(file.buffer);
+      const pages = await mergedPdf.copyPages(pdfDoc, pdfDoc.getPageIndices());
+      pages.forEach(page => mergedPdf.addPage(page));
+    } else if (file.mimetype.startsWith('image/')) {
+      // Convert image to PDF page
+      const pageBuffer: PageBuffer = {
+        buffer: file.buffer,
+        mimeType: file.mimetype as 'image/jpeg' | 'image/png' | 'image/webp',
+      };
+      
+      // Use combineImagesToPDF to convert this single image to a PDF
+      const singleImagePdf = await combineImagesToPDF([pageBuffer]);
+      const imagePdfDoc = await PDFDocument.load(singleImagePdf);
+      const pages = await mergedPdf.copyPages(imagePdfDoc, imagePdfDoc.getPageIndices());
+      pages.forEach(page => mergedPdf.addPage(page));
+    }
+  }
+  
+  return Buffer.from(await mergedPdf.save());
+}
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
@@ -1431,6 +1464,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const files = req.files as Express.Multer.File[];
       const folderId = req.body.folderId || null; // Optional folder assignment
+      const mergeIntoOne = req.body.mergeIntoOne === 'true'; // Parse boolean from form data
 
       if (!files || files.length === 0) {
         return res.status(400).json({ message: "Keine Dateien ausgewählt" });
@@ -1440,9 +1474,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Maximal 10 Dateien gleichzeitig möglich" });
       }
 
+      // Handle merge into one document
+      if (mergeIntoOne && files.length > 1) {
+        console.log(`Merging ${files.length} file(s) into one document${folderId ? ` into folder ${folderId}` : ''}`);
+        
+        try {
+          // Merge all files into a single PDF
+          const mergedPdfBuffer = await mergeFilesToPdf(files);
+          
+          // Create a merged file object
+          const mergedFilename = `merged_${Date.now()}.pdf`;
+          const mergedFile: Express.Multer.File = {
+            ...files[0], // Copy metadata from first file
+            buffer: mergedPdfBuffer,
+            originalname: mergedFilename,
+            mimetype: 'application/pdf',
+            size: mergedPdfBuffer.length,
+          };
+          
+          // Analyze the merged PDF
+          const extractedText = await extractTextFromPdf(mergedPdfBuffer);
+          console.log(`  Extracted ${extractedText.length} characters from merged PDF`);
+          
+          let analysisResult;
+          if (extractedText.length < 250) {
+            console.log('  Merged PDF has insufficient text, converting to images for Vision API OCR');
+            const pdfImages = await convertPdfToImages(mergedPdfBuffer);
+            const imagesForAnalysis = pdfImages.map(img => ({
+              base64: img.base64,
+              mimeType: img.mimeType,
+            }));
+            analysisResult = await analyzeDocument(imagesForAnalysis);
+          } else {
+            analysisResult = await analyzeDocumentFromText(extractedText);
+          }
+          
+          // Upload merged document
+          const document = await processSingleFileUpload(userId, mergedFile, analysisResult, folderId);
+          
+          // Increment upload counter by 1 (merged document counts as 1)
+          await storage.incrementUploadCounter(userId, 1);
+          
+          console.log(`  ✓ Successfully uploaded merged document: ${analysisResult.title}`);
+          
+          return res.json({
+            message: "Dokument erfolgreich zusammengeführt und hochgeladen",
+            documents: [document]
+          });
+        } catch (error) {
+          console.error("Error merging documents:", error);
+          return res.status(500).json({
+            message: "Fehler beim Zusammenführen der Dokumente",
+            error: error instanceof Error ? error.message : "Unknown error"
+          });
+        }
+      }
+
+      // Process each file as a separate document (original behavior)
       console.log(`Processing ${files.length} file(s) as separate documents${folderId ? ` into folder ${folderId}` : ''}`);
 
-      // Process each file as a separate document
       const uploadedDocuments = [];
       const errors = [];
 

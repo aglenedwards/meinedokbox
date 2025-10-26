@@ -519,18 +519,67 @@ export default function Dashboard() {
     }, 500); // Update every 500ms for smoother animation
 
     try {
-      // Pass mergeIntoOne flag to upload mutation if provided
-      if (mergeIntoOne && Array.isArray(files)) {
-        // TODO: Implement merge upload
-        await uploadMutation.mutateAsync(files);
-      } else {
-        await uploadMutation.mutateAsync(files);
-      }
+      // Upload with mergeIntoOne flag if provided
+      const result = await uploadDocument(files, mergeIntoOne);
+      
+      // Manually trigger mutation callbacks for cache invalidation
+      queryClient.invalidateQueries({ queryKey: ["/api/documents"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/storage/stats"] });
+      
       clearInterval(progressInterval);
-      // Jump to 100% on success
-      setProcessingModal(prev => ({ ...prev, progress: 100 }));
+      
+      // Show success for uploaded documents
+      const { documents, errors, message } = result;
+      
+      if (documents.length > 0) {
+        const firstDocument = documents[0];
+        setProcessingModal({
+          open: true,
+          status: 'success',
+          progress: 100,
+          detectedCategory: firstDocument.category,
+          uploadedDocumentId: firstDocument.id,
+        });
+        
+        // Show appropriate success message
+        if (mergeIntoOne && fileArray.length > 1) {
+          toast({
+            title: "Dokumente zusammengeführt",
+            description: `${fileArray.length} Dateien wurden zu einem Dokument zusammengeführt: "${firstDocument.title}"`,
+          });
+        } else if (documents.length === 1) {
+          toast({
+            title: "Dokument erfolgreich hochgeladen",
+            description: `"${firstDocument.title}" wurde als ${firstDocument.category} klassifiziert.`,
+          });
+        } else {
+          toast({
+            title: message || `${documents.length} Dokumente erfolgreich hochgeladen`,
+            description: `Alle Dokumente wurden automatisch kategorisiert.`,
+          });
+        }
+        
+        // Show partial errors if any
+        if (errors && errors.length > 0) {
+          toast({
+            title: "Einige Uploads sind fehlgeschlagen",
+            description: `${errors.length} von ${fileArray.length} Dateien konnten nicht hochgeladen werden.`,
+            variant: "destructive",
+          });
+        }
+      }
     } catch (error) {
       clearInterval(progressInterval);
+      setProcessingModal({
+        open: true,
+        status: 'error',
+        progress: 0,
+      });
+      toast({
+        title: "Upload fehlgeschlagen",
+        description: error instanceof Error ? error.message : "Ein Fehler ist aufgetreten",
+        variant: "destructive",
+      });
     }
   };
 
