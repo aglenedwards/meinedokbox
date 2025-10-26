@@ -82,15 +82,21 @@ export function EditDocumentDialog({ document, trigger, open: controlledOpen, on
   const formatDateForInput = (date?: Date | string | null) => {
     if (!date) return "";
     
-    const parsedDate = parseDateString(typeof date === 'string' ? date : date.toISOString());
-    if (!parsedDate) return "";
-    
-    // Return in German format DD.MM.YYYY
-    const day = String(parsedDate.getDate()).padStart(2, '0');
-    const month = String(parsedDate.getMonth() + 1).padStart(2, '0');
-    const year = parsedDate.getFullYear();
-    
-    return `${day}.${month}.${year}`;
+    try {
+      const dateStr = typeof date === 'string' ? date : (date instanceof Date ? date.toISOString() : String(date));
+      const parsedDate = parseDateString(dateStr);
+      if (!parsedDate) return "";
+      
+      // Return in German format DD.MM.YYYY
+      const day = String(parsedDate.getDate()).padStart(2, '0');
+      const month = String(parsedDate.getMonth() + 1).padStart(2, '0');
+      const year = parsedDate.getFullYear();
+      
+      return `${day}.${month}.${year}`;
+    } catch (error) {
+      console.error("Error formatting date:", error);
+      return "";
+    }
   };
 
   const form = useForm<EditDocumentFormData>({
