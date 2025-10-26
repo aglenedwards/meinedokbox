@@ -280,7 +280,10 @@ export const insertDocumentSchema = createInsertSchema(documents).omit({
 
 export const updateDocumentSchema = z.object({
   title: z.string().min(1).max(500).optional(),
-  documentDate: z.string().datetime().nullable().optional(),
+  documentDate: z.union([
+    z.string().datetime(), // ISO datetime format
+    z.string().regex(/^\d{4}-\d{2}-\d{2}$/), // Simple date format YYYY-MM-DD
+  ]).nullable().optional(),
   amount: z.number().nullable().optional(),
   sender: z.string().max(200).nullable().optional(),
   systemTags: z.array(z.enum(SYSTEM_TAGS)).nullable().optional(),
