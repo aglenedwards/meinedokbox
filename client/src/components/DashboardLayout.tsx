@@ -130,14 +130,14 @@ export function DashboardLayout({
               </div>
             </div>
             
-            {showSearch && (
-              <div className="flex-1 min-w-0">
+            <div className="flex-1 min-w-0">
+              {showSearch && (
                 <SearchBar 
                   value={searchQuery} 
                   onChange={onSearchChange || (() => {})}
                 />
-              </div>
-            )}
+              )}
+            </div>
             
             <div className="hidden md:flex items-center gap-2 shrink-0">
               {showExport && (
