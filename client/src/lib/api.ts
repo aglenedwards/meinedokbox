@@ -118,6 +118,22 @@ export async function updateDocumentSharing(id: string, isShared: boolean): Prom
 }
 
 /**
+ * Update document metadata (title, documentDate, amount, sender)
+ */
+export async function updateDocument(
+  id: string, 
+  data: {
+    title?: string;
+    documentDate?: string | null;
+    amount?: number | null;
+    sender?: string | null;
+  }
+): Promise<Document> {
+  const response = await apiRequest("PATCH", `/api/documents/${id}`, data);
+  return await response.json();
+}
+
+/**
  * Delete a document by ID (soft delete - moves to trash)
  */
 export async function deleteDocument(id: string): Promise<void> {

@@ -1,0 +1,249 @@
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { useMutation } from "@tanstack/react-query";
+import { Edit } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { updateDocument } from "@/lib/api";
+import { queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import type { Document } from "@shared/schema";
+
+const editDocumentSchema = z.object({
+  title: z.string().min(1, "Titel muss mindestens 1 Zeichen lang sein").max(500),
+  documentDate: z.string().optional(),
+  amount: z.string().optional(),
+  sender: z.string().max(200).optional(),
+});
+
+type EditDocumentFormData = z.infer<typeof editDocumentSchema>;
+
+interface EditDocumentDialogProps {
+  document: Document;
+  trigger?: React.ReactNode;
+}
+
+export function EditDocumentDialog({ document, trigger }: EditDocumentDialogProps) {
+  const [open, setOpen] = useState(false);
+  const { toast } = useToast();
+
+  // Format documentDate for input (YYYY-MM-DD)
+  const formatDateForInput = (date?: Date | string | null) => {
+    if (!date) return "";
+    const d = new Date(date);
+    if (isNaN(d.getTime())) return "";
+    return d.toISOString().split('T')[0];
+  };
+
+  const form = useForm<EditDocumentFormData>({
+    resolver: zodResolver(editDocumentSchema),
+    defaultValues: {
+      title: document.title || "",
+      documentDate: formatDateForInput(document.documentDate),
+      amount: document.amount?.toString() || "",
+      sender: document.sender || "",
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: async (data: EditDocumentFormData) => {
+      // Convert form data to API format
+      const updateData: {
+        title?: string;
+        documentDate?: string | null;
+        amount?: number | null;
+        sender?: string | null;
+      } = {};
+
+      if (data.title !== document.title) {
+        updateData.title = data.title;
+      }
+
+      // Handle documentDate
+      if (data.documentDate) {
+        const dateValue = new Date(data.documentDate).toISOString();
+        const currentDateStr = document.documentDate ? new Date(document.documentDate).toISOString() : null;
+        if (dateValue !== currentDateStr) {
+          updateData.documentDate = dateValue;
+        }
+      } else if (document.documentDate) {
+        // User cleared the date
+        updateData.documentDate = null;
+      }
+
+      // Handle amount
+      if (data.amount) {
+        const amountValue = parseFloat(data.amount);
+        if (!isNaN(amountValue) && amountValue !== document.amount) {
+          updateData.amount = amountValue;
+        }
+      } else if (document.amount) {
+        // User cleared the amount
+        updateData.amount = null;
+      }
+
+      // Handle sender
+      if (data.sender !== document.sender) {
+        updateData.sender = data.sender || null;
+      }
+
+      return updateDocument(document.id, updateData);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/documents"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/documents", document.id] });
+      setOpen(false);
+      toast({
+        title: "Dokument aktualisiert",
+        description: "Die Änderungen wurden erfolgreich gespeichert.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Fehler beim Aktualisieren",
+        description: error.message || "Das Dokument konnte nicht aktualisiert werden.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const onSubmit = (data: EditDocumentFormData) => {
+    updateMutation.mutate(data);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        {trigger || (
+          <Button variant="ghost" size="sm" data-testid="button-edit-document">
+            <Edit className="h-4 w-4 mr-2" />
+            Bearbeiten
+          </Button>
+        )}
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[500px]" data-testid="dialog-edit-document">
+        <DialogHeader>
+          <DialogTitle>Dokument bearbeiten</DialogTitle>
+          <DialogDescription>
+            Ändern Sie die Metadaten des Dokuments.
+          </DialogDescription>
+        </DialogHeader>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="title"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Titel</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      placeholder="Dokumententitel"
+                      data-testid="input-title"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="documentDate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Dokumentdatum</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      type="date"
+                      placeholder="Datum des Dokuments"
+                      data-testid="input-document-date"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="amount"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Betrag (€)</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      type="number"
+                      step="0.01"
+                      placeholder="0.00"
+                      data-testid="input-amount"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="sender"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Absender</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      placeholder="Name des Absenders"
+                      data-testid="input-sender"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setOpen(false)}
+                data-testid="button-cancel"
+              >
+                Abbrechen
+              </Button>
+              <Button
+                type="submit"
+                disabled={updateMutation.isPending}
+                data-testid="button-save"
+              >
+                {updateMutation.isPending ? "Wird gespeichert..." : "Speichern"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
+  );
+}
