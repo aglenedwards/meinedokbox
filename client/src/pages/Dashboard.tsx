@@ -395,10 +395,12 @@ export default function Dashboard() {
         variant: "destructive",
       });
     },
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
       toast({
         title: "Ordner aktualisiert",
-        description: "Das Dokument wurde erfolgreich einem Ordner zugewiesen.",
+        description: variables.folderId 
+          ? "Das Dokument wurde erfolgreich einem Ordner zugewiesen."
+          : "Das Dokument wurde erfolgreich aus dem Ordner entfernt.",
       });
     },
     onSettled: () => {
