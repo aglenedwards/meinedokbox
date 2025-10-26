@@ -173,6 +173,7 @@ export function DocumentCard({
   onFolderChange,
   confidence,
   extractedDate,
+  documentDate,
   amount,
   sender,
   folderId,
