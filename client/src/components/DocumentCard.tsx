@@ -178,9 +178,6 @@ export function DocumentCard({
   folderName,
   folderIcon,
 }: DocumentCardProps) {
-  // Debug: Log ALL props
-  console.log('🔎 DocumentCard props:', { id: id.substring(0, 8), folderId, folderName, folderIcon, hasFolder: !!folderName });
-  
   // Handle null/undefined isShared values - default to false (private, not shared)
   const sharedStatus = isShared ?? false;
   
