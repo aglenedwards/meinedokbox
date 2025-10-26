@@ -340,6 +340,65 @@ export default function Dashboard() {
     },
   });
 
+  // Update folder mutation with optimistic updates
+  const updateFolderMutation = useMutation({
+    mutationFn: async ({ id, folderId }: { id: string; folderId: string | null }) => {
+      const res = await apiRequest('PATCH', `/api/documents/${id}/folder`, { folderId });
+      return await res.json();
+    },
+    onMutate: async ({ id, folderId }) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ["/api/documents"] });
+
+      // Snapshot previous value
+      const previousData = queryClient.getQueryData(["/api/documents", searchQuery, selectedCategories, sortBy]);
+
+      // Optimistically update to the new value for infinite query
+      queryClient.setQueryData(
+        ["/api/documents", searchQuery, selectedCategories, sortBy],
+        (old: any) => {
+          if (!old) return old;
+          return {
+            ...old,
+            pages: old.pages.map((page: PaginatedDocuments) => ({
+              ...page,
+              documents: page.documents.map((doc: Document) =>
+                doc.id === id ? { ...doc, folderId } : doc
+              ),
+            })),
+          };
+        }
+      );
+
+      return { previousData };
+    },
+    onError: (error: Error, variables, context) => {
+      // Rollback to previous value on error
+      if (context?.previousData) {
+        queryClient.setQueryData(
+          ["/api/documents", searchQuery, selectedCategories, sortBy],
+          context.previousData
+        );
+      }
+      toast({
+        title: "Fehler beim Aktualisieren",
+        description: "Der Ordner konnte nicht geändert werden. Bitte versuchen Sie es erneut.",
+        variant: "destructive",
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Ordner aktualisiert",
+        description: "Das Dokument wurde erfolgreich einem Ordner zugewiesen.",
+      });
+    },
+    onSettled: () => {
+      // Always refetch after error or success to ensure sync
+      queryClient.invalidateQueries({ queryKey: ["/api/documents"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/folders"] });
+    },
+  });
+
   // Update sharing mutation
   const updateSharingMutation = useMutation({
     mutationFn: async ({ id, isShared }: { id: string; isShared: boolean }) => {
@@ -484,6 +543,10 @@ export default function Dashboard() {
 
   const handleCategoryChange = (id: string, category: string) => {
     updateCategoryMutation.mutate({ id, category });
+  };
+
+  const handleFolderChange = (id: string, folderId: string | null) => {
+    updateFolderMutation.mutate({ id, folderId });
   };
 
   const handleView = (id: string) => {
@@ -1006,6 +1069,7 @@ export default function Dashboard() {
                     onView={() => handleView(doc.id)}
                     onDelete={!isReadOnly ? () => handleDelete(doc.id) : undefined}
                     onCategoryChange={(category) => handleCategoryChange(doc.id, category)}
+                    onFolderChange={(folderId) => handleFolderChange(doc.id, folderId)}
                     onSharingToggle={(isShared) => {
                       if (updatingSharing === null) {
                         updateSharingMutation.mutate({ id: doc.id, isShared });

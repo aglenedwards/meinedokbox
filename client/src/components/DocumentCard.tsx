@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { 
   FileText, Calendar, MoreVertical, Euro, FileSignature, Shield, Mail, FileQuestion,
   Landmark, Receipt, Briefcase, FileCheck, Building2, Stethoscope, Home, Car, 
-  GraduationCap, Baby, PiggyBank, ShoppingBag, Plane, User, Sparkles, Lock, Users, Check
+  GraduationCap, Baby, PiggyBank, ShoppingBag, Plane, User, Sparkles, Lock, Users, Check, Folder
 } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -30,6 +31,7 @@ interface DocumentCardProps {
   onDelete?: () => void;
   onCategoryChange?: (category: string) => void;
   onSharingToggle?: (isShared: boolean) => void;
+  onFolderChange?: (folderId: string | null) => void;
   // Phase 2: Smart metadata
   confidence?: number;
   extractedDate?: string;
@@ -167,6 +169,7 @@ export function DocumentCard({
   onDelete,
   onCategoryChange,
   onSharingToggle,
+  onFolderChange,
   confidence,
   extractedDate,
   amount,
@@ -184,6 +187,16 @@ export function DocumentCard({
   // Mobile detection (under 768px)
   const [isMobile, setIsMobile] = useState(false);
   const [categoryDrawerOpen, setCategoryDrawerOpen] = useState(false);
+  const [folderDrawerOpen, setFolderDrawerOpen] = useState(false);
+  
+  // Fetch folders for folder assignment
+  const { data: folders = [] } = useQuery<Array<{
+    id: string;
+    name: string;
+    icon: string;
+  }>>({
+    queryKey: ['/api/folders'],
+  });
   
   useEffect(() => {
     const checkMobile = () => {
@@ -277,6 +290,53 @@ export function DocumentCard({
                           >
                             {cat}
                             {cat === category && " ✓"}
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuSubContent>
+                    </DropdownMenuSub>
+                  )}
+                  
+                  {/* Folder Assignment */}
+                  {isMobile ? (
+                    <DropdownMenuItem 
+                      onClick={(e) => { 
+                        e.stopPropagation(); 
+                        setFolderDrawerOpen(true);
+                      }}
+                    >
+                      Ordner zuweisen
+                    </DropdownMenuItem>
+                  ) : (
+                    <DropdownMenuSub>
+                      <DropdownMenuSubTrigger onClick={(e) => e.stopPropagation()}>
+                        Ordner zuweisen
+                      </DropdownMenuSubTrigger>
+                      <DropdownMenuSubContent className="max-h-[400px] overflow-y-auto">
+                        <DropdownMenuItem
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onFolderChange?.(null);
+                          }}
+                          disabled={!folderId}
+                          data-testid="menuitem-folder-none"
+                        >
+                          Kein Ordner
+                          {!folderId && " ✓"}
+                        </DropdownMenuItem>
+                        {folders.map((folder) => (
+                          <DropdownMenuItem
+                            key={folder.id}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (folder.id !== folderId) {
+                                onFolderChange?.(folder.id);
+                              }
+                            }}
+                            disabled={folder.id === folderId}
+                            data-testid={`menuitem-folder-${folder.id}`}
+                          >
+                            {folder.icon} {folder.name}
+                            {folder.id === folderId && " ✓"}
                           </DropdownMenuItem>
                         ))}
                       </DropdownMenuSubContent>
@@ -416,6 +476,63 @@ export function DocumentCard({
                       <CatIcon className={`h-5 w-5 ${catConfig.color}`} />
                     </div>
                     <span className="flex-1 font-medium">{cat}</span>
+                    {isSelected && <Check className="h-5 w-5 flex-shrink-0" />}
+                  </Button>
+                );
+              })}
+            </div>
+          </div>
+        </DrawerContent>
+      </Drawer>
+    )}
+    
+    {/* Mobile Folder Drawer */}
+    {isMobile && (
+      <Drawer open={folderDrawerOpen} onOpenChange={setFolderDrawerOpen}>
+        <DrawerContent>
+          <DrawerHeader>
+            <DrawerTitle>Ordner zuweisen</DrawerTitle>
+          </DrawerHeader>
+          <div className="px-4 pb-8 max-h-[60vh] overflow-y-auto">
+            <div className="grid gap-2">
+              {/* No Folder Option */}
+              <Button
+                variant={!folderId ? "default" : "outline"}
+                className="h-auto py-4 px-4 justify-start gap-3 text-left"
+                onClick={() => {
+                  onFolderChange?.(null);
+                  setFolderDrawerOpen(false);
+                }}
+                data-testid="drawer-folder-none"
+              >
+                <div className="bg-muted rounded-lg p-2 flex-shrink-0">
+                  <Folder className="h-5 w-5 text-muted-foreground" />
+                </div>
+                <span className="flex-1 font-medium">Kein Ordner</span>
+                {!folderId && <Check className="h-5 w-5 flex-shrink-0" />}
+              </Button>
+              
+              {/* Folder Options */}
+              {folders.map((folder) => {
+                const isSelected = folder.id === folderId;
+                
+                return (
+                  <Button
+                    key={folder.id}
+                    variant={isSelected ? "default" : "outline"}
+                    className="h-auto py-4 px-4 justify-start gap-3 text-left"
+                    onClick={() => {
+                      if (folder.id !== folderId) {
+                        onFolderChange?.(folder.id);
+                      }
+                      setFolderDrawerOpen(false);
+                    }}
+                    data-testid={`drawer-folder-${folder.id}`}
+                  >
+                    <div className="text-3xl flex-shrink-0">
+                      {folder.icon}
+                    </div>
+                    <span className="flex-1 font-medium">{folder.name}</span>
                     {isSelected && <Check className="h-5 w-5 flex-shrink-0" />}
                   </Button>
                 );
