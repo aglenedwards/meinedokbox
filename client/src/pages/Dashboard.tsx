@@ -353,6 +353,10 @@ export default function Dashboard() {
       // Snapshot previous value
       const previousData = queryClient.getQueryData(["/api/documents", searchQuery, selectedCategories, sortBy]);
 
+      // Get folder data from cache to show immediately
+      const foldersData = queryClient.getQueryData<Array<{ id: string; name: string; icon: string }>>(['/api/folders']);
+      const folder = foldersData?.find(f => f.id === folderId);
+
       // Optimistically update to the new value for infinite query
       queryClient.setQueryData(
         ["/api/documents", searchQuery, selectedCategories, sortBy],
@@ -363,7 +367,12 @@ export default function Dashboard() {
             pages: old.pages.map((page: PaginatedDocuments) => ({
               ...page,
               documents: page.documents.map((doc: Document) =>
-                doc.id === id ? { ...doc, folderId } : doc
+                doc.id === id ? { 
+                  ...doc, 
+                  folderId,
+                  folderName: folder?.name || null,
+                  folderIcon: folder?.icon || null,
+                } : doc
               ),
             })),
           };

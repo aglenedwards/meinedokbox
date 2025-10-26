@@ -375,7 +375,8 @@ export class DbStorage implements IStorage {
     return updated;
   }
 
-  async updateDocumentFolder(id: string, userId: string, folderId: string | null): Promise<Document | undefined> {
+  async updateDocumentFolder(id: string, userId: string, folderId: string | null): Promise<any | undefined> {
+    // First update the document
     const [updated] = await db
       .update(documents)
       .set({ folderId })
@@ -386,7 +387,21 @@ export class DbStorage implements IStorage {
         )
       )
       .returning();
-    return updated;
+    
+    if (!updated) return undefined;
+    
+    // Then fetch with folder information via LEFT JOIN
+    const [docWithFolder] = await db
+      .select({
+        ...getTableColumns(documents),
+        folderName: folders.name,
+        folderIcon: folders.icon,
+      })
+      .from(documents)
+      .leftJoin(folders, eq(documents.folderId, folders.id))
+      .where(eq(documents.id, id));
+    
+    return docWithFolder;
   }
 
   async deleteDocument(id: string, userId: string): Promise<boolean> {
