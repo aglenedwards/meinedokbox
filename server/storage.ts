@@ -1011,11 +1011,24 @@ export class DbStorage implements IStorage {
     return newFolder;
   }
 
-  async getUserFolders(userId: string): Promise<Folder[]> {
+  async getUserFolders(userId: string): Promise<(Folder & { documentCount: number })[]> {
     const userFolders = await db
-      .select()
+      .select({
+        id: folders.id,
+        userId: folders.userId,
+        name: folders.name,
+        icon: folders.icon,
+        isShared: folders.isShared,
+        createdAt: folders.createdAt,
+        documentCount: sql<number>`count(${documents.id})::int`,
+      })
       .from(folders)
+      .leftJoin(documents, and(
+        eq(documents.folderId, folders.id),
+        isNull(documents.deletedAt)
+      ))
       .where(eq(folders.userId, userId))
+      .groupBy(folders.id)
       .orderBy(asc(folders.createdAt));
     return userFolders;
   }
