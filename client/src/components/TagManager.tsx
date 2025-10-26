@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Plus, X, Tag as TagIcon } from "lucide-react";
+import { Plus, X, Tag as TagIcon, Folder } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/popover";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { Separator } from "@/components/ui/separator";
 
 interface Tag {
   id: string;
@@ -20,12 +21,22 @@ interface Tag {
   createdAt: string;
 }
 
+interface FolderType {
+  id: string;
+  name: string;
+  icon: string;
+  isShared: boolean;
+  userId: string;
+  createdAt: string;
+}
+
 interface TagManagerProps {
   documentId: string;
+  currentFolderId?: string | null;
   onClose?: () => void;
 }
 
-export function TagManager({ documentId, onClose }: TagManagerProps) {
+export function TagManager({ documentId, currentFolderId, onClose }: TagManagerProps) {
   const [newTagName, setNewTagName] = useState("");
   const { toast } = useToast();
 
@@ -37,6 +48,11 @@ export function TagManager({ documentId, onClose }: TagManagerProps) {
   // Fetch tags assigned to this document
   const { data: documentTags = [], isLoading: isLoadingDocTags } = useQuery<Tag[]>({
     queryKey: ['/api/documents', documentId, 'tags'],
+  });
+
+  // Fetch all folders
+  const { data: folders = [], isLoading: isLoadingFolders } = useQuery<FolderType[]>({
+    queryKey: ['/api/folders'],
   });
 
   // Create new tag
@@ -106,6 +122,29 @@ export function TagManager({ documentId, onClose }: TagManagerProps) {
     },
   });
 
+  // Assign document to folder
+  const assignFolderMutation = useMutation({
+    mutationFn: async (folderId: string | null) => {
+      const res = await apiRequest('PATCH', `/api/documents/${documentId}/folder`, { folderId });
+      return await res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/documents'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/folders'] });
+      toast({
+        title: "Erfolg",
+        description: "Ordner zugewiesen",
+      });
+    },
+    onError: () => {
+      toast({
+        variant: "destructive",
+        title: "Fehler",
+        description: "Ordner konnte nicht zugewiesen werden",
+      });
+    },
+  });
+
   const handleCreateTag = () => {
     if (newTagName.trim()) {
       createTagMutation.mutate(newTagName.trim());
@@ -121,10 +160,58 @@ export function TagManager({ documentId, onClose }: TagManagerProps) {
     }
   };
 
+  const handleSelectFolder = (folderId: string) => {
+    // Toggle folder assignment
+    if (currentFolderId === folderId) {
+      // Remove from folder
+      assignFolderMutation.mutate(null);
+    } else {
+      // Assign to folder
+      assignFolderMutation.mutate(folderId);
+    }
+  };
+
   const documentTagIds = new Set(documentTags.map(t => t.id));
 
   return (
-    <div className="p-4 space-y-4 max-h-[400px] overflow-y-auto" data-testid="tag-manager">
+    <div className="p-4 space-y-4 max-h-[500px] overflow-y-auto" data-testid="tag-manager">
+      {/* Folders Section */}
+      <div>
+        <h4 className="font-semibold text-sm mb-3 flex items-center gap-2">
+          <Folder className="h-4 w-4" />
+          In Ordner ablegen
+        </h4>
+        {isLoadingFolders ? (
+          <div className="text-sm text-muted-foreground">Laden...</div>
+        ) : folders.length === 0 ? (
+          <div className="text-sm text-muted-foreground">
+            Noch keine Ordner vorhanden. Erstellen Sie Ordner im Tab "Meine Ordner"
+          </div>
+        ) : (
+          <div className="flex flex-wrap gap-2">
+            {folders.map((folder) => {
+              const isAssigned = currentFolderId === folder.id;
+              return (
+                <Badge
+                  key={folder.id}
+                  variant={isAssigned ? "default" : "outline"}
+                  className="cursor-pointer hover-elevate gap-1"
+                  onClick={() => handleSelectFolder(folder.id)}
+                  data-testid={`badge-folder-${folder.id}`}
+                >
+                  <span>{folder.icon}</span>
+                  {folder.name}
+                  {isAssigned && <X className="h-3 w-3 ml-1" />}
+                </Badge>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      <Separator />
+
+      {/* Tags Section */}
       <div>
         <h4 className="font-semibold text-sm mb-3">Neues Tag erstellen</h4>
         <div className="flex gap-2">
@@ -181,9 +268,10 @@ export function TagManager({ documentId, onClose }: TagManagerProps) {
 
 interface TagButtonProps {
   documentId: string;
+  currentFolderId?: string | null;
 }
 
-export function TagButton({ documentId }: TagButtonProps) {
+export function TagButton({ documentId, currentFolderId }: TagButtonProps) {
   const [open, setOpen] = useState(false);
 
   // Fetch tags assigned to this document
@@ -208,7 +296,11 @@ export function TagButton({ documentId }: TagButtonProps) {
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-96 p-0" onClick={(e) => e.stopPropagation()}>
-        <TagManager documentId={documentId} onClose={() => setOpen(false)} />
+        <TagManager 
+          documentId={documentId} 
+          currentFolderId={currentFolderId}
+          onClose={() => setOpen(false)} 
+        />
       </PopoverContent>
     </Popover>
   );

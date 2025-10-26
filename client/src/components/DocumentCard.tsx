@@ -36,6 +36,10 @@ interface DocumentCardProps {
   extractedDate?: string;
   amount?: number;
   sender?: string;
+  // Folder assignment
+  folderId?: string | null;
+  folderName?: string;
+  folderIcon?: string;
 }
 
 const categoryConfig: Record<string, { icon: typeof Euro; color: string; bgColor: string }> = {
@@ -168,6 +172,9 @@ export function DocumentCard({
   extractedDate,
   amount,
   sender,
+  folderId,
+  folderName,
+  folderIcon,
 }: DocumentCardProps) {
   // Handle null/undefined isShared values - default to false (private, not shared)
   const sharedStatus = isShared ?? false;
@@ -309,8 +316,15 @@ export function DocumentCard({
                 )}
                 
                 <div onClick={(e) => e.stopPropagation()}>
-                  <TagButton documentId={id} />
+                  <TagButton documentId={id} currentFolderId={folderId} />
                 </div>
+                
+                {folderId && folderName && (
+                  <Badge variant="outline" className="gap-1">
+                    <span>{folderIcon || '📁'}</span>
+                    <span className="text-xs">{folderName}</span>
+                  </Badge>
+                )}
               </div>
               
               <div className="flex flex-col gap-1.5">
