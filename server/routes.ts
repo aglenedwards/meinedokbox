@@ -1969,6 +1969,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Document not found or access denied" });
       }
 
+      console.log('✅ PATCH folder response:', JSON.stringify(updated, null, 2));
       res.json(updated);
     } catch (error) {
       console.error("Error updating document folder:", error);
