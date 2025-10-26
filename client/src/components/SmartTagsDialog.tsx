@@ -1,26 +1,18 @@
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Sparkles } from "lucide-react";
+import { Tag } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest, queryClient as qc } from "@/lib/queryClient";
+import { apiRequest } from "@/lib/queryClient";
 import type { Document } from "@shared/schema";
 
+// Die 4 Smart Tags die wir verwenden
 const SYSTEM_TAGS = [
-  { value: "steuerrelevant", label: "Steuerrelevant", description: "Für Steuererklärung wichtig" },
-  { value: "geschäftlich", label: "Geschäftlich", description: "Geschäftliche Dokumente" },
-  { value: "privat", label: "Privat", description: "Private Dokumente" },
-  { value: "versicherung", label: "Versicherung", description: "Versicherungsdokumente" },
-  { value: "miete", label: "Miete", description: "Miet- und Nebenkostenabrechnungen" },
-  { value: "gesundheit", label: "Gesundheit", description: "Gesundheits- und Arztdokumente" },
-  { value: "bank", label: "Bank", description: "Bankunterlagen" },
-  { value: "vertrag", label: "Vertrag", description: "Verträge und Vereinbarungen" },
-  { value: "rechnung", label: "Rechnung", description: "Rechnungen und Belege" },
-  { value: "lohnabrechnung", label: "Lohnabrechnung", description: "Gehaltsabrechnungen" },
-  { value: "spende", label: "Spende", description: "Spendenquittungen" },
+  { value: "steuerrelevant", label: "Steuerrelevant", icon: "💰" },
+  { value: "geschäftlich", label: "Geschäftlich", icon: "💼" },
+  { value: "versicherung", label: "Versicherung", icon: "🛡️" },
+  { value: "miete", label: "Miete / Wohnen", icon: "🏠" },
 ] as const;
 
 interface SmartTagsDialogProps {
@@ -61,6 +53,7 @@ export function SmartTagsDialog({ document, trigger, open: controlledOpen, onOpe
       // Invalidate queries
       queryClient.invalidateQueries({ queryKey: ["/api/documents"] });
       queryClient.invalidateQueries({ queryKey: ["/api/documents", document.id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/smart-folders"] });
       
       setOpen(false);
       toast({
@@ -81,46 +74,39 @@ export function SmartTagsDialog({ document, trigger, open: controlledOpen, onOpe
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
-      <DialogContent className="sm:max-w-[500px]" data-testid="dialog-smart-tags">
+      <DialogContent className="sm:max-w-md" data-testid="dialog-smart-tags">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-primary" />
+            <Tag className="h-5 w-5" />
             Smart-Tags bearbeiten
           </DialogTitle>
           <DialogDescription>
-            Weisen Sie diesem Dokument Smart-Tags zu, um es in den entsprechenden Smart-Ordnern zu finden.
+            {document.title}
           </DialogDescription>
         </DialogHeader>
         
-        <div className="py-4">
-          <div className="space-y-3">
-            {SYSTEM_TAGS.map((tag) => {
-              const isChecked = selectedTags.includes(tag.value);
-              
-              return (
-                <div key={tag.value} className="flex items-start space-x-3 p-3 rounded-lg hover-elevate active-elevate-2 cursor-pointer" onClick={() => handleToggleTag(tag.value)}>
-                  <Checkbox
-                    id={`tag-${tag.value}`}
-                    checked={isChecked}
-                    onCheckedChange={() => handleToggleTag(tag.value)}
-                    data-testid={`checkbox-tag-${tag.value}`}
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                  <div className="flex-1 space-y-0.5">
-                    <Label
-                      htmlFor={`tag-${tag.value}`}
-                      className="text-sm font-medium leading-none cursor-pointer"
-                    >
-                      {tag.label}
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      {tag.description}
-                    </p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+        <div className="space-y-2 py-4">
+          {SYSTEM_TAGS.map((tag) => {
+            const isSelected = selectedTags.includes(tag.value);
+            return (
+              <button
+                key={tag.value}
+                onClick={() => handleToggleTag(tag.value)}
+                className={`w-full flex items-center justify-between p-3 rounded-md border transition-colors ${
+                  isSelected
+                    ? 'bg-primary/10 border-primary'
+                    : 'bg-background border-border hover-elevate'
+                }`}
+                data-testid={`button-tag-${tag.value}`}
+              >
+                <span className="flex items-center gap-2.5">
+                  <span className="text-lg">{tag.icon}</span>
+                  <span className="font-medium">{tag.label}</span>
+                </span>
+                {isSelected && <span className="text-primary font-bold">✓</span>}
+              </button>
+            );
+          })}
         </div>
 
         <DialogFooter>
