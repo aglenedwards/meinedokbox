@@ -1718,6 +1718,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
       res.set('Pragma', 'no-cache');
       res.set('Expires', '0');
+      
+      // Debug: Log first document to check folder fields
+      if (result.documents.length > 0) {
+        const firstDoc = result.documents[0];
+        console.log('📋 First document in response:', {
+          id: firstDoc.id.substring(0, 8),
+          folderId: firstDoc.folderId,
+          folderName: firstDoc.folderName,
+          folderIcon: firstDoc.folderIcon
+        });
+      }
+      
       res.json(result);
     } catch (error) {
       console.error("Error fetching documents:", error);
