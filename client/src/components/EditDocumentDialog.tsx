@@ -30,7 +30,13 @@ import type { Document } from "@shared/schema";
 
 const editDocumentSchema = z.object({
   title: z.string().min(1, "Titel muss mindestens 1 Zeichen lang sein").max(500),
-  documentDate: z.string().optional(),
+  documentDate: z.string().optional().refine((val) => {
+    if (!val || val === "") return true; // Empty is OK
+    const date = new Date(val);
+    return !isNaN(date.getTime()); // Check if valid date
+  }, {
+    message: "Ungültiges Datumsformat. Bitte verwenden Sie das Format TT.MM.JJJJ oder wählen Sie ein Datum aus dem Kalender."
+  }),
   amount: z.string().optional(),
   sender: z.string().max(200).optional(),
 });
@@ -86,10 +92,13 @@ export function EditDocumentDialog({ document, trigger, open: controlledOpen, on
 
       // Handle documentDate
       if (data.documentDate) {
-        const dateValue = new Date(data.documentDate).toISOString();
-        const currentDateStr = document.documentDate ? new Date(document.documentDate).toISOString() : null;
-        if (dateValue !== currentDateStr) {
-          updateData.documentDate = dateValue;
+        const date = new Date(data.documentDate);
+        if (!isNaN(date.getTime())) {
+          const dateValue = date.toISOString();
+          const currentDateStr = document.documentDate ? new Date(document.documentDate).toISOString() : null;
+          if (dateValue !== currentDateStr) {
+            updateData.documentDate = dateValue;
+          }
         }
       } else if (document.documentDate) {
         // User cleared the date
