@@ -191,6 +191,7 @@ export function DocumentCard({
   const [isMobile, setIsMobile] = useState(false);
   const [categoryDrawerOpen, setCategoryDrawerOpen] = useState(false);
   const [folderDrawerOpen, setFolderDrawerOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
   
   // Fetch folders for folder assignment
   const { data: folders = [] } = useQuery<Array<{
