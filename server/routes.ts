@@ -1280,15 +1280,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       const effectiveUserId = await getEffectiveUserId(userId);
-      let folders = await storage.getUserFolders(effectiveUserId);
-      
-      // Auto-migration: Create default folders for existing users if they have none
-      if (folders.length === 0) {
-        console.log(`[Auto-Migration] Creating default folders for user ${effectiveUserId}`);
-        await storage.createDefaultFolders(effectiveUserId);
-        folders = await storage.getUserFolders(effectiveUserId);
-      }
-      
+      const folders = await storage.getUserFolders(effectiveUserId);
       res.json(folders);
     } catch (error) {
       console.error("Error fetching folders:", error);
@@ -1370,14 +1362,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/folders', isAuthenticatedLocal, async (req: any, res) => {
     try {
       const userId = await getEffectiveUserId(req.user.claims.sub);
-      let folders = await storage.getUserFolders(userId);
-      
-      if (folders.length === 0) {
-        console.log(`[Auto-Migration] Creating default folders for user ${userId}`);
-        await storage.createDefaultFolders(userId);
-        folders = await storage.getUserFolders(userId);
-      }
-      
+      const folders = await storage.getUserFolders(userId);
       res.json(folders);
     } catch (error) {
       console.error("Error fetching folders:", error);

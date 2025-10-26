@@ -753,7 +753,7 @@ export default function Dashboard() {
           <TabsList className="grid w-full max-w-md grid-cols-3">
             <TabsTrigger value="all" data-testid="tab-all">Alle Dokumente</TabsTrigger>
             <TabsTrigger value="smart" data-testid="tab-smart">Smart-Ordner</TabsTrigger>
-            <TabsTrigger value="folders" data-testid="tab-folders">Ordner</TabsTrigger>
+            <TabsTrigger value="folders" data-testid="tab-folders">Meine Ordner</TabsTrigger>
           </TabsList>
         </Tabs>
 
