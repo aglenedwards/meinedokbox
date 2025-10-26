@@ -283,6 +283,7 @@ export const updateDocumentSchema = z.object({
   documentDate: z.string().datetime().nullable().optional(),
   amount: z.number().nullable().optional(),
   sender: z.string().max(200).nullable().optional(),
+  systemTags: z.array(z.enum(SYSTEM_TAGS)).nullable().optional(),
 });
 
 export const insertTagSchema = createInsertSchema(tags).omit({

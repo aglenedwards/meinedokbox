@@ -1885,7 +1885,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       const { id } = req.params;
-      const { category, title, documentDate, amount, sender } = req.body;
+      const { category, title, documentDate, amount, sender, systemTags } = req.body;
 
       // If category is being updated (backwards compatibility)
       if (category !== undefined) {
@@ -1902,8 +1902,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.json(updated);
       }
 
-      // Otherwise, update metadata fields (title, documentDate, amount, sender)
-      const updateData = { title, documentDate, amount, sender };
+      // Otherwise, update metadata fields (title, documentDate, amount, sender, systemTags)
+      const updateData = { title, documentDate, amount, sender, systemTags };
       
       // Validate with Zod schema
       const result = updateDocumentSchema.safeParse(updateData);

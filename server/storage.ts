@@ -422,6 +422,7 @@ export class DbStorage implements IStorage {
     }
     if (data.amount !== undefined) updateData.amount = data.amount;
     if (data.sender !== undefined) updateData.sender = data.sender;
+    if (data.systemTags !== undefined) updateData.systemTags = data.systemTags;
     
     // Only update if there's at least one field to update
     if (Object.keys(updateData).length === 0) {
