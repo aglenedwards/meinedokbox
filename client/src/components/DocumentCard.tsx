@@ -306,7 +306,11 @@ export function DocumentCard({
                       systemTags: null,
                     }}
                     trigger={
-                      <DropdownMenuItem onSelect={(e) => e.preventDefault()} data-testid="menuitem-edit">
+                      <DropdownMenuItem 
+                        onSelect={(e) => e.preventDefault()} 
+                        onClick={(e) => e.stopPropagation()}
+                        data-testid="menuitem-edit"
+                      >
                         Bearbeiten
                       </DropdownMenuItem>
                     }
