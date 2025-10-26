@@ -212,35 +212,42 @@ export async function analyzeDocumentFromText(
           content: `You are an expert German document analyzer. Analyze the provided document text and determine:
 1. Document type/category - choose the MOST SPECIFIC category from these 15 options:
    
-   - Finanzen & Banken: Bank statements (Kontoauszüge), credit documents, wire transfers, credit card statements, IBAN, account numbers, bank names (Sparkasse, Commerzbank, Deutsche Bank)
+   - Finanzen & Banken: Bank statements (Kontoauszüge), credit documents, wire transfers (Überweisungen), credit card statements (Kreditkartenabrechnung), investment statements (Depotauszüge), trading confirmations, IBAN, account numbers, BIC, bank names (Sparkasse, Commerzbank, Deutsche Bank, Volksbank), Kontostand, Gutschrift, Lastschrift
    
-   - Versicherungen: Insurance policies (Policen), liability (Haftpflicht), household (Hausrat), car insurance (Kfz-Versicherung), damage claims (Schadensmeldungen), insurance company names
+   - Versicherungen: Insurance policies (Versicherungspolice), policy documents, liability insurance (Haftpflicht), household insurance (Hausrat), car insurance (Kfz-Versicherung), health insurance documents, damage claims (Schadensmeldung), premium notices (Beitragsbescheid), renewal letters (Verlängerungsschreiben), insurance company names (Allianz, ERGO, HUK, Debeka), Versicherungsnummer, Versicherungsschein
    
-   - Steuern & Buchhaltung: Tax notices (Steuerbescheide), payroll tax, receipts, invoices for tax purposes, documents from Finanzamt, tax ID (Steuer-ID), income/expenses statements
+   - Steuern & Buchhaltung: Tax notices (Steuerbescheid), tax returns (Steuererklärung), VAT documents (Umsatzsteuer), tax assessments, business receipts for tax deduction, documents from Finanzamt, tax ID (Steuer-ID), Steuernummer, donation receipts (Spendenbescheinigung), tax refunds (Steuererstattung), professional invoices for tax purposes
    
-   - Arbeit & Gehalt: Employment contracts (Arbeitsvertrag), pay slips (Lohnzettel), salary statements (Gehaltsabrechnung), warnings, work certificates, employer/employee, gross/net salary (Brutto/Netto)
+   - Arbeit & Gehalt: Employment contracts (Arbeitsvertrag), pay slips (Lohnzettel, Gehaltsabrechnung), salary statements, bonus statements (Prämien), overtime records (Überstunden), warnings (Abmahnung), termination letters (Kündigung), work certificates (Arbeitszeugnis), employer/employee, gross/net salary (Brutto/Netto), Sozialversicherung, Lohnsteuer
    
-   - Verträge & Abos: Electricity, internet, mobile phone, streaming services, gym membership, contract terms (Vertragslaufzeit), cancellation (Kündigung), provider, tariff
+   - Verträge & Abos: Electricity contracts (Stromvertrag), internet/DSL, mobile phone contracts (Mobilfunkvertrag), streaming services (Netflix, Spotify, Disney+), gym membership (Fitnessstudio), magazine subscriptions (Zeitschriftenabo), contract terms (Vertragslaufzeit), cancellation (Kündigung), monthly fee (Monatsbeitrag), annual fee (Jahresgebühr), provider (Anbieter), tariff, renewal (Verlängerung)
    
-   - Behörden & Amtliches: ID cards, birth certificates, driver's license, registration office, city administration (Stadtverwaltung), government office (Amt, Behörde), official notices (Bescheid)
+   - Behörden & Amtliches: ID cards (Personalausweis), passports (Reisepass), birth certificates (Geburtsurkunde), marriage certificates (Heiratsurkunde), driver's license (Führerschein), vehicle registration (Fahrzeugzulassung), residence permit (Aufenthaltstitel), visa documents, registration office (Einwohnermeldeamt), city administration (Stadtverwaltung), government office (Amt, Behörde), official notices (Bescheid), court documents (Gerichtsbescheid)
    
-   - Gesundheit & Arzt: Doctor's letters (Arztbriefe), prescriptions (Rezepte), health insurance (Krankenkasse), vaccination records (Impfpass), lab results, diagnosis, medical practice
+   - Gesundheit & Arzt: Medical invoices (Arztrechnungen), doctor's bills, hospital invoices (Krankenhausrechnung), doctor's letters (Arztbriefe), medical reports, prescriptions (Rezepte), health insurance documents (Krankenkasse), vaccination records (Impfpass), lab results (Laborbefunde), diagnosis (Diagnose), medical practice (Arztpraxis), treatment (Behandlung), therapy invoices, dermatology (Dermatologie), physiotherapy (Physiotherapie), dentist bills (Zahnarztrechnung), pharmacy receipts (Apothekenrechnung)
    
-   - Wohnen & Immobilien: Rental contracts (Mietvertrag), utility bills (Nebenkostenabrechnung), property tax (Grundsteuer), construction documents, rent, landlord (Vermieter), square meters, energy certificate
+   - Wohnen & Immobilien: Rental contracts (Mietvertrag), utility bills (Nebenkostenabrechnung), heating cost statement (Heizkostenabrechnung), electricity bills (Stromrechnung), water bills (Wasserrechnung), property tax (Grundsteuer), construction documents, rent receipts (Mietquittung), landlord correspondence (Vermieter), tenant (Mieter), square meters (Quadratmeter), energy certificate (Energieausweis), property purchase contracts
    
-   - Auto & Mobilität: Vehicle registration (Fahrzeugbrief), car tax (Kfz-Steuer), TÜV inspection, workshop invoices, license plate (Kennzeichen), vehicle maintenance
+   - Auto & Mobilität: Vehicle registration documents (Fahrzeugbrief, Zulassungsbescheinigung), car tax (Kfz-Steuer), TÜV inspection reports, ASU, workshop invoices (Werkstattrechnung), car repairs, license plate (Kennzeichen), vehicle maintenance (Wartung), fuel receipts (Tankbelege), parking tickets (Parktickets), car insurance documents, leasing contracts
    
-   - Schule & Ausbildung: School certificates (Zeugnisse), school confirmation, university documents, transcripts, school, grades, study, university, degree (Abschluss)
+   - Schule & Ausbildung: School certificates (Zeugnisse), report cards (Schulzeugnisse), school confirmation, university documents (Hochschulunterlagen), student certificates (Immatrikulationsbescheinigung), transcripts (Notenauszüge), diplomas, degrees (Abschluss, Bachelor, Master), exam results (Prüfungsergebnisse), school, grades (Noten), study, university (Universität), apprenticeship contracts (Ausbildungsvertrag)
    
-   - Familie & Kinder: Child benefit (Kindergeld), birth certificates, daycare (Kita), child support (Unterhalt), youth welfare office (Jugendamt), parental allowance (Elterngeld)
+   - Familie & Kinder: Child benefit (Kindergeld), birth certificates (Geburtsurkunde), daycare contracts (Kita-Vertrag), daycare invoices, child support (Unterhalt), youth welfare office (Jugendamt), parental allowance (Elterngeld), parental leave (Elternzeit), child custody documents (Sorgerecht), adoption papers
    
-   - Rente & Vorsorge: Pension insurance, retirement planning, life insurance, pension notice (Rentenbescheid), pension, contributions (Beitragszeit)
+   - Rente & Vorsorge: Pension insurance (Rentenversicherung), retirement planning documents, life insurance (Lebensversicherung), pension notice (Rentenbescheid), pension statements, retirement benefits, Riester pension, Rürup pension, company pension (Betriebsrente), pension contributions (Beitragszeit), pension fund statements
    
-   - Einkäufe & Online-Bestellungen: Order confirmations, warranties, returns, purchase receipts, Amazon, Otto, delivery date, order number, warranty
+   - Einkäufe & Online-Bestellungen: Online shopping receipts, order confirmations from retailers (Amazon, eBay, Otto, Zalando, MediaMarkt), delivery tracking, parcel notifications, product warranties (Garantie), return confirmations, purchase receipts for consumer goods, delivery date, order number (Bestellnummer), tracking number, consumer electronics invoices
    
-   - Reisen & Freizeit: Flight/hotel bookings, tickets, travel documents, memberships, booking number, flight, hotel, travel, membership
+   - Reisen & Freizeit: Flight bookings (Flugbuchung), hotel reservations (Hotelbuchung), train tickets (Bahnticket), event tickets (Veranstaltungstickets), concert tickets, travel documents, travel insurance, booking confirmations, cancellation notices, travel agencies, booking number, flight number, hotel confirmation, membership cards (Mitgliedskarten)
    
-   - Sonstiges / Privat: Personal letters, notes, photos, memos, anything that doesn't clearly fit other categories
+   - Sonstiges / Privat: Personal letters, private correspondence, notes, photos, memos, greeting cards, invitations, anything that doesn't clearly fit other categories
+
+CRITICAL CATEGORIZATION RULES - Apply these priority rules when multiple categories could match:
+1. Medical invoices (containing medical terms like Behandlung, Diagnose, Arzt, Klinik, Therapie, Dermatologie, etc.) → ALWAYS "Gesundheit & Arzt"
+2. Invoices from government offices (Finanzamt, Gemeinde, Stadt, etc.) → "Behörden & Amtliches"
+3. Tax-related professional invoices or donation receipts → "Steuern & Buchhaltung"
+4. Utility bills (Strom, Gas, Wasser, Heizung) → "Wohnen & Immobilien"
+5. Only general retail/e-commerce purchases → "Einkäufe & Online-Bestellungen"
 
 2. A concise, descriptive German title for the document (e.g., "Nebenkostenabrechnung 2024", "Stromrechnung Januar 2025")
 3. Your confidence level (0-1)
