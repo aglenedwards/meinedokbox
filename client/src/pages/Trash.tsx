@@ -25,6 +25,7 @@ import {
 
 export default function Trash() {
   const { toast } = useToast();
+  const [isDeleteAllDialogOpen, setIsDeleteAllDialogOpen] = useState(false);
 
   // Fetch trashed documents
   const { data: documents = [], isLoading } = useQuery<Document[]>({
@@ -80,12 +81,14 @@ export default function Trash() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/trash"] });
       queryClient.invalidateQueries({ queryKey: ["/api/storage/stats"] });
+      setIsDeleteAllDialogOpen(false);
       toast({
         title: "Alle Dokumente gelöscht",
         description: `${data.count} Dokument${data.count !== 1 ? "e" : ""} wurde${data.count !== 1 ? "n" : ""} endgültig gelöscht.`,
       });
     },
     onError: (error: Error) => {
+      setIsDeleteAllDialogOpen(false);
       toast({
         title: "Fehler beim Löschen",
         description: "Die Dokumente konnten nicht gelöscht werden. Bitte versuchen Sie es erneut.",
@@ -134,7 +137,7 @@ export default function Trash() {
                 {documents.length} Dokument{documents.length !== 1 ? "e" : ""} im Papierkorb
               </p>
               
-              <AlertDialog>
+              <AlertDialog open={isDeleteAllDialogOpen} onOpenChange={setIsDeleteAllDialogOpen}>
                 <AlertDialogTrigger asChild>
                   <Button 
                     variant="destructive" 
@@ -158,11 +161,15 @@ export default function Trash() {
                   <AlertDialogFooter>
                     <AlertDialogCancel data-testid="button-cancel-delete-all">Abbrechen</AlertDialogCancel>
                     <AlertDialogAction 
-                      onClick={handleDeleteAll}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleDeleteAll();
+                      }}
                       className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                       data-testid="button-confirm-delete-all"
+                      disabled={deleteAllMutation.isPending}
                     >
-                      Alle löschen
+                      {deleteAllMutation.isPending ? "Wird gelöscht..." : "Alle löschen"}
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
