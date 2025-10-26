@@ -4,7 +4,7 @@ import { FileText, HardDrive, TrendingUp, Plus, Trash2, ArrowUpDown, Download, C
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { Link } from "wouter";
-import type { Document, User } from "@shared/schema";
+import type { Document, DocumentWithFolder, User } from "@shared/schema";
 import { UploadZone } from "@/components/UploadZone";
 import { DocumentCard } from "@/components/DocumentCard";
 import { SearchBar } from "@/components/SearchBar";
