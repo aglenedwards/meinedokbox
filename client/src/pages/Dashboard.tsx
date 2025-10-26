@@ -612,6 +612,10 @@ export default function Dashboard() {
     extractedDate: doc.extractedDate ? format(new Date(doc.extractedDate), "d. MMM yyyy", { locale: de }) : undefined,
     amount: doc.amount ?? undefined,
     sender: doc.sender ?? undefined,
+    // Folder assignment
+    folderId: doc.folderId ?? undefined,
+    folderName: doc.folderName ?? undefined,
+    folderIcon: doc.folderIcon ?? undefined,
   }));
 
   // Calculate stats
