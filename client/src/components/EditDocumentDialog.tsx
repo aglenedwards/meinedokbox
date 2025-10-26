@@ -28,14 +28,34 @@ import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { Document } from "@shared/schema";
 
+// Helper to parse German date format (DD.MM.YYYY) or ISO (YYYY-MM-DD)
+const parseDateString = (dateStr: string): Date | null => {
+  if (!dateStr || dateStr.trim() === "") return null;
+  
+  // Try German format DD.MM.YYYY
+  if (dateStr.includes('.')) {
+    const parts = dateStr.split('.');
+    if (parts.length === 3) {
+      const day = parseInt(parts[0], 10);
+      const month = parseInt(parts[1], 10) - 1; // months are 0-indexed
+      const year = parseInt(parts[2], 10);
+      const date = new Date(year, month, day);
+      if (!isNaN(date.getTime())) return date;
+    }
+  }
+  
+  // Try ISO format or other standard formats
+  const date = new Date(dateStr);
+  return !isNaN(date.getTime()) ? date : null;
+};
+
 const editDocumentSchema = z.object({
   title: z.string().min(1, "Titel muss mindestens 1 Zeichen lang sein").max(500),
   documentDate: z.string().optional().refine((val) => {
-    if (!val || val === "") return true; // Empty is OK
-    const date = new Date(val);
-    return !isNaN(date.getTime()); // Check if valid date
+    if (!val || val.trim() === "") return true; // Empty is OK
+    return parseDateString(val) !== null; // Check if valid date
   }, {
-    message: "Ungültiges Datumsformat. Bitte verwenden Sie das Format TT.MM.JJJJ oder wählen Sie ein Datum aus dem Kalender."
+    message: "Ungültiges Datumsformat. Bitte verwenden Sie TT.MM.JJJJ oder JJJJ-MM-TT"
   }),
   amount: z.string().optional(),
   sender: z.string().max(200).optional(),
@@ -58,32 +78,19 @@ export function EditDocumentDialog({ document, trigger, open: controlledOpen, on
   const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
   const setOpen = onOpenChange || setInternalOpen;
 
-  // Format documentDate for input (YYYY-MM-DD)
+  // Format documentDate for input (DD.MM.YYYY German format)
   const formatDateForInput = (date?: Date | string | null) => {
     if (!date) return "";
     
-    // Try to parse the date
-    let d: Date;
+    const parsedDate = parseDateString(typeof date === 'string' ? date : date.toISOString());
+    if (!parsedDate) return "";
     
-    // Check if it's already a Date object
-    if (date instanceof Date) {
-      d = date;
-    } else {
-      // Try parsing as ISO string first
-      d = new Date(date);
-      
-      // If that fails, try parsing German format DD.MM.YYYY
-      if (isNaN(d.getTime()) && typeof date === 'string' && date.includes('.')) {
-        const parts = date.split('.');
-        if (parts.length === 3) {
-          const [day, month, year] = parts;
-          d = new Date(`${year}-${month}-${day}`);
-        }
-      }
-    }
+    // Return in German format DD.MM.YYYY
+    const day = String(parsedDate.getDate()).padStart(2, '0');
+    const month = String(parsedDate.getMonth() + 1).padStart(2, '0');
+    const year = parsedDate.getFullYear();
     
-    if (isNaN(d.getTime())) return "";
-    return d.toISOString().split('T')[0];
+    return `${day}.${month}.${year}`;
   };
 
   const form = useForm<EditDocumentFormData>({
@@ -111,10 +118,10 @@ export function EditDocumentDialog({ document, trigger, open: controlledOpen, on
       }
 
       // Handle documentDate
-      if (data.documentDate) {
-        const date = new Date(data.documentDate);
-        if (!isNaN(date.getTime())) {
-          const dateValue = date.toISOString();
+      if (data.documentDate && data.documentDate.trim() !== "") {
+        const parsedDate = parseDateString(data.documentDate);
+        if (parsedDate) {
+          const dateValue = parsedDate.toISOString();
           const currentDateStr = document.documentDate ? new Date(document.documentDate).toISOString() : null;
           if (dateValue !== currentDateStr) {
             updateData.documentDate = dateValue;
@@ -214,8 +221,8 @@ export function EditDocumentDialog({ document, trigger, open: controlledOpen, on
                   <FormControl>
                     <Input
                       {...field}
-                      type="date"
-                      placeholder="Datum des Dokuments"
+                      type="text"
+                      placeholder="TT.MM.JJJJ (z.B. 08.08.2023)"
                       data-testid="input-document-date"
                     />
                   </FormControl>
