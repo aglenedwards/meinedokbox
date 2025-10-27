@@ -289,7 +289,7 @@ export function DocumentViewer({ document, open, onClose }: DocumentViewerProps)
               size="icon"
               onClick={goToPreviousPage}
               disabled={currentPage === 0}
-              className="fixed left-2 sm:left-4 bottom-20 sm:bottom-16 h-11 w-11 sm:h-12 sm:w-12 bg-background/95 hover:bg-background shadow-lg z-50"
+              className="absolute left-2 sm:left-4 bottom-4 h-11 w-11 sm:h-12 sm:w-12 bg-background/95 hover:bg-background shadow-lg z-50"
               data-testid="button-previous-page"
             >
               <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6" />
@@ -299,7 +299,7 @@ export function DocumentViewer({ document, open, onClose }: DocumentViewerProps)
               size="icon"
               onClick={goToNextPage}
               disabled={currentPage === displayedPages - 1}
-              className="fixed right-2 sm:right-4 bottom-20 sm:bottom-16 h-11 w-11 sm:h-12 sm:w-12 bg-background/95 hover:bg-background shadow-lg z-50"
+              className="absolute right-2 sm:right-4 bottom-4 h-11 w-11 sm:h-12 sm:w-12 bg-background/95 hover:bg-background shadow-lg z-50"
               data-testid="button-next-page"
             >
               <ChevronRight className="h-5 w-5 sm:h-6 sm:w-6" />
