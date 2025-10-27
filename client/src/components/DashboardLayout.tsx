@@ -250,7 +250,7 @@ export function DashboardLayout({
 
       <UpgradeModal
         open={showUpgradeModal}
-        onOpenChange={setShowUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
       />
     </div>
   );

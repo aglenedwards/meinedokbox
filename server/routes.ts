@@ -2801,27 +2801,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Calculate expiry dates based on plan
-      let updateData: any = {
-        subscriptionPlan: plan,
-        uploadedThisMonth: 0, // Reset monthly upload counter
-        uploadCounterResetAt: new Date(),
-      };
+      let trialEndsAt: Date | null = null;
+      let subscriptionEndsAt: Date | null = null;
       
       if (plan === 'trial') {
         // Trial lasts 14 days
-        updateData.trialEndsAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
-        updateData.subscriptionEndsAt = null;
+        trialEndsAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
+        subscriptionEndsAt = null;
       } else if (plan === 'free') {
         // Free plan has no expiry
-        updateData.trialEndsAt = null;
-        updateData.subscriptionEndsAt = null;
+        trialEndsAt = null;
+        subscriptionEndsAt = null;
       } else {
         // Paid plans (solo, family, family-plus) - set to 1 year from now
-        updateData.trialEndsAt = null;
-        updateData.subscriptionEndsAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+        trialEndsAt = null;
+        subscriptionEndsAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
       }
       
-      const updatedUser = await storage.updateUserSubscription(id, updateData);
+      // Update subscription using the storage method
+      const updatedUser = await storage.updateUserSubscription(id, plan, subscriptionEndsAt);
+      
+      // Also update trial end date and reset upload counter separately
+      await db.update(users)
+        .set({
+          trialEndsAt,
+          uploadedThisMonth: 0,
+          uploadCounterResetAt: new Date(),
+        })
+        .where(eq(users.id, id));
       
       if (!updatedUser) {
         return res.status(404).json({ message: 'User nicht gefunden' });
