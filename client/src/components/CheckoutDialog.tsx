@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -63,6 +63,14 @@ export function CheckoutDialog({ open, onClose, selectedPlan = "family", selecte
   const { toast } = useToast();
   const [plan, setPlan] = useState<"solo" | "family" | "family-plus">(selectedPlan);
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">(selectedPeriod);
+
+  // Update state when props change (when dialog is opened with new selection)
+  useEffect(() => {
+    if (open) {
+      setPlan(selectedPlan);
+      setBillingPeriod(selectedPeriod);
+    }
+  }, [open, selectedPlan, selectedPeriod]);
 
   const currentPlan = planDetails[plan];
   const currentPrice = billingPeriod === "monthly" ? currentPlan.monthlyPrice : currentPlan.yearlyPrice;
