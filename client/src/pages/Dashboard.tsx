@@ -11,6 +11,7 @@ import { CategoryFilter } from "@/components/CategoryFilter";
 import { StatsCard } from "@/components/StatsCard";
 import { EmptyState } from "@/components/EmptyState";
 import { ProcessingModal } from "@/components/ProcessingModal";
+import { DuplicateWarningDialog } from "@/components/DuplicateWarningDialog";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SmartFolders } from "@/components/SmartFolders";
@@ -106,6 +107,12 @@ export default function Dashboard() {
     reason?: "document_limit" | "email_feature" | "trial_expired";
   }>({ open: false });
   const [updatingSharing, setUpdatingSharing] = useState<string | null>(null);
+  const [duplicateWarning, setDuplicateWarning] = useState<{
+    open: boolean;
+    duplicates: Array<{ filename: string; duplicate: any }>;
+    files: File | File[];
+    mergeIntoOne: boolean;
+  }>({ open: false, duplicates: [], files: [], mergeIntoOne: false });
 
   // Fetch documents with React Query using infinite query for pagination
   const {
@@ -467,7 +474,7 @@ export default function Dashboard() {
     }
   };
 
-  const handleFileSelect = async (files: File | File[], mergeIntoOne: boolean = false) => {
+  const handleFileSelect = async (files: File | File[], mergeIntoOne: boolean = false, forceDuplicates: boolean = false) => {
     setShowUpload(false);
     setShowCameraMultiShot(false);
     
@@ -519,19 +526,31 @@ export default function Dashboard() {
     }, 500); // Update every 500ms for smoother animation
 
     try {
-      // Upload with mergeIntoOne flag if provided
-      const result = await uploadDocument(files, mergeIntoOne);
+      // Upload with mergeIntoOne and forceDuplicates flags if provided
+      const result = await uploadDocument(files, mergeIntoOne, forceDuplicates);
+      
+      clearInterval(progressInterval);
+      
+      // Check for duplicates
+      if (result.isDuplicate || (result.duplicates && result.duplicates.length > 0)) {
+        setProcessingModal({ open: false, status: 'processing', progress: 0 });
+        setDuplicateWarning({
+          open: true,
+          duplicates: result.duplicates || [],
+          files,
+          mergeIntoOne,
+        });
+        return;
+      }
       
       // Manually trigger mutation callbacks for cache invalidation
       queryClient.invalidateQueries({ queryKey: ["/api/documents"] });
       queryClient.invalidateQueries({ queryKey: ["/api/storage/stats"] });
       
-      clearInterval(progressInterval);
-      
       // Show success for uploaded documents
       const { documents, errors, message } = result;
       
-      if (documents.length > 0) {
+      if (documents && documents.length > 0) {
         const firstDocument = documents[0];
         setProcessingModal({
           open: true,
@@ -567,6 +586,15 @@ export default function Dashboard() {
             variant: "destructive",
           });
         }
+        
+        // Show duplicate warnings if any (for 207 multi-status responses)
+        if (result.duplicates && result.duplicates.length > 0) {
+          toast({
+            title: "Einige Dokumente waren Duplikate",
+            description: `${result.duplicates.length} Dokument(e) wurden bereits hochgeladen und übersprungen.`,
+            variant: "default",
+          });
+        }
       }
     } catch (error) {
       clearInterval(progressInterval);
@@ -581,6 +609,20 @@ export default function Dashboard() {
         variant: "destructive",
       });
     }
+  };
+  
+  const handleUploadAnyway = () => {
+    const { files, mergeIntoOne } = duplicateWarning;
+    setDuplicateWarning({ open: false, duplicates: [], files: [], mergeIntoOne: false });
+    handleFileSelect(files, mergeIntoOne, true); // Force upload with forceDuplicates=true
+  };
+  
+  const handleCancelDuplicateUpload = () => {
+    setDuplicateWarning({ open: false, duplicates: [], files: [], mergeIntoOne: false });
+    toast({
+      title: "Upload abgebrochen",
+      description: "Die Duplikate wurden nicht erneut hochgeladen.",
+    });
   };
 
   const handleDelete = (id: string) => {
@@ -1083,6 +1125,13 @@ export default function Dashboard() {
         onClose={() => setCheckoutDialogOpen(false)}
         selectedPlan={selectedPlan}
         selectedPeriod={selectedPeriod}
+      />
+
+      <DuplicateWarningDialog
+        open={duplicateWarning.open}
+        duplicates={duplicateWarning.duplicates}
+        onCancel={handleCancelDuplicateUpload}
+        onUploadAnyway={handleUploadAnyway}
       />
 
       <Footer />
