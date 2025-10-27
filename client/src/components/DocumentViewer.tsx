@@ -281,28 +281,28 @@ export function DocumentViewer({ document, open, onClose }: DocumentViewerProps)
 
           {/* Fixed navigation arrows for multi-page documents - bottom left and right */}
           {displayedPages > 1 && (
-            <>
+            <div className="absolute bottom-4 left-0 right-0 flex justify-between px-2 sm:px-4 pointer-events-none z-50">
               <Button
                 variant="outline"
                 size="icon"
                 onClick={goToPreviousPage}
                 disabled={currentPage === 0}
-                className="absolute left-2 sm:left-4 bottom-4 h-11 w-11 sm:h-12 sm:w-12 bg-background/95 hover:bg-background shadow-lg z-50"
+                className="h-12 w-12 sm:h-14 sm:w-14 bg-background/95 hover:bg-background shadow-lg pointer-events-auto"
                 data-testid="button-previous-page"
               >
-                <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6" />
+                <ChevronLeft className="h-6 w-6 sm:h-7 sm:w-7" />
               </Button>
               <Button
                 variant="outline"
                 size="icon"
                 onClick={goToNextPage}
                 disabled={currentPage === displayedPages - 1}
-                className="absolute right-2 sm:right-4 bottom-4 h-11 w-11 sm:h-12 sm:w-12 bg-background/95 hover:bg-background shadow-lg z-50"
+                className="h-12 w-12 sm:h-14 sm:w-14 bg-background/95 hover:bg-background shadow-lg pointer-events-auto"
                 data-testid="button-next-page"
               >
-                <ChevronRight className="h-5 w-5 sm:h-6 sm:w-6" />
+                <ChevronRight className="h-6 w-6 sm:h-7 sm:w-7" />
               </Button>
-            </>
+            </div>
           )}
 
         </div>
