@@ -56,9 +56,13 @@ export function DashboardLayout({
 
   // Start onboarding tour after welcome modal is closed (if user hasn't seen it yet)
   useEffect(() => {
-    if (user && user.hasSeenWelcomeModal && !user.hasSeenOnboarding && !showWelcomeModal) {
+    // Check both database flag and localStorage
+    const hasCompletedOnboarding = localStorage.getItem('onboarding-completed') === 'true';
+    
+    if (user && user.hasSeenWelcomeModal && !user.hasSeenOnboarding && !hasCompletedOnboarding && !showWelcomeModal) {
       // Small delay to ensure modal is fully closed
       const timer = setTimeout(() => {
+        console.log('[DashboardLayout] Starting onboarding tour for new user');
         setRunOnboardingTour(true);
       }, 500);
       return () => clearTimeout(timer);

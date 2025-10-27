@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import Joyride, { CallBackProps, STATUS, Step, ACTIONS, EVENTS } from "react-joyride";
+import { apiRequest } from "@/lib/queryClient";
 
 interface OnboardingTourProps {
   run: boolean;
@@ -13,6 +14,21 @@ export function OnboardingTour({ run, onFinish }: OnboardingTourProps) {
   useEffect(() => {
     setRunTour(run);
   }, [run]);
+
+  // Mark onboarding as completed in database and localStorage
+  const markOnboardingCompleted = useCallback(async () => {
+    try {
+      // Save to database
+      await apiRequest("POST", "/api/user/onboarding-seen", {});
+      // Save to localStorage as backup
+      localStorage.setItem('onboarding-completed', 'true');
+      console.log('[OnboardingTour] Marked as completed');
+    } catch (error) {
+      console.error('[OnboardingTour] Error marking as completed:', error);
+      // Still save to localStorage even if API fails
+      localStorage.setItem('onboarding-completed', 'true');
+    }
+  }, []);
 
   const steps: Step[] = [
     // Step 1: Upload Button
@@ -321,18 +337,19 @@ export function OnboardingTour({ run, onFinish }: OnboardingTourProps) {
     },
   ];
 
-  const handleJoyrideCallback = useCallback((data: CallBackProps) => {
+  const handleJoyrideCallback = useCallback(async (data: CallBackProps) => {
     const { status, type, action, index } = data;
 
     if (type === EVENTS.STEP_AFTER || type === EVENTS.TARGET_NOT_FOUND) {
       // Move to next step
       setStepIndex(index + (action === ACTIONS.PREV ? -1 : 1));
     } else if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
-      // Tour finished or skipped
+      // Tour finished or skipped - mark as completed
+      await markOnboardingCompleted();
       setRunTour(false);
       onFinish();
     }
-  }, [onFinish]);
+  }, [onFinish, markOnboardingCompleted]);
 
   return (
     <Joyride
