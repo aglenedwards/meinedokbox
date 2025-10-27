@@ -567,8 +567,11 @@ export default function Dashboard() {
             description: `${fileArray.length} Dateien wurden zu einem Dokument zusammengeführt: "${firstDocument.title}"`,
           });
         } else if (documents.length === 1) {
+          const successTitle = forceDuplicates 
+            ? "Dokument erneut hochgeladen" 
+            : "Dokument erfolgreich hochgeladen";
           toast({
-            title: "Dokument erfolgreich hochgeladen",
+            title: successTitle,
             description: `"${firstDocument.title}" wurde als ${firstDocument.category} klassifiziert.`,
           });
         } else {
@@ -593,6 +596,16 @@ export default function Dashboard() {
             title: "Einige Dokumente waren Duplikate",
             description: `${result.duplicates.length} Dokument(e) wurden bereits hochgeladen und übersprungen.`,
             variant: "default",
+          });
+        }
+      } else {
+        // No documents were uploaded - this shouldn't happen if backend returned 200
+        setProcessingModal({ open: false, status: 'processing', progress: 0 });
+        if (!result.isDuplicate && !result.duplicates) {
+          toast({
+            title: "Upload fehlgeschlagen",
+            description: "Es konnten keine Dokumente hochgeladen werden.",
+            variant: "destructive",
           });
         }
       }

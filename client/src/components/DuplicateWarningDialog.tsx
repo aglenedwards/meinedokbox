@@ -29,7 +29,7 @@ export function DuplicateWarningDialog({
   const singleDuplicate = duplicates.length === 1;
   
   return (
-    <AlertDialog open={open} onOpenChange={(isOpen) => !isOpen && onCancel()}>
+    <AlertDialog open={open}>
       <AlertDialogContent data-testid="dialog-duplicate-warning">
         <AlertDialogHeader>
           <div className="flex items-center gap-2 mb-2">
