@@ -128,9 +128,9 @@ export function DocumentViewer({ document, open, onClose }: DocumentViewerProps)
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl w-full h-[90vh] flex flex-col p-0 gap-0 relative">
+      <DialogContent className="max-w-4xl w-full h-[90vh] flex flex-col p-0 gap-0">
         {/* Header */}
-        <div className="px-4 sm:px-6 py-4 border-b relative">
+        <div className="px-4 sm:px-6 py-4 border-b relative flex-shrink-0">
           {/* Close and Download buttons - top right corner */}
           <div className="absolute top-2 right-2 flex flex-col gap-1 z-10">
             <Button
@@ -177,7 +177,7 @@ export function DocumentViewer({ document, open, onClose }: DocumentViewerProps)
         </div>
 
         {/* Main viewer area */}
-        <div className="flex-1 overflow-auto bg-muted/30 relative">
+        <div className="flex-1 overflow-auto bg-muted/30 relative min-h-0">
           {/* Floating toolbar for PDF - desktop only */}
           {isPdf && (
             <div className="hidden sm:flex absolute top-4 right-4 z-10 gap-2">
