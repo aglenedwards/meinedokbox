@@ -326,12 +326,19 @@ export function OnboardingTour({ run, onFinish }: OnboardingTourProps) {
       continuous
       showProgress
       showSkipButton
+      scrollToFirstStep
+      disableOverlay={false}
+      disableCloseOnEsc={false}
       callback={handleJoyrideCallback}
+      floaterProps={{
+        disableAnimation: true,
+      }}
       locale={{
         back: 'Zurück',
         close: 'Schließen',
         last: 'Fertig',
         next: 'Weiter',
+        open: 'Öffnen',
         skip: 'Überspringen',
       }}
       styles={{
