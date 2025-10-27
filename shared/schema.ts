@@ -103,6 +103,8 @@ export const users = pgTable("users", {
   isVerified: boolean("is_verified").notNull().default(false),
   verificationToken: varchar("verification_token"),
   verificationTokenExpiry: timestamp("verification_token_expiry"),
+  // Welcome modal (shown once on first login)
+  hasSeenWelcomeModal: boolean("has_seen_welcome_modal").notNull().default(false),
   // Password reset
   passwordResetToken: varchar("password_reset_token"),
   passwordResetTokenExpiry: timestamp("password_reset_token_expiry"),
