@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { ReactNode, useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { Plus, ChevronDown, Camera, Settings, LogOut, Trash2, Shield, Download } from "lucide-react";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -13,6 +13,8 @@ import { SearchBar } from "@/components/SearchBar";
 import { logout, getCurrentUser, getSubscriptionStatus, type SubscriptionStatus } from "@/lib/api";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { WelcomeModal } from "@/components/WelcomeModal";
+import { UpgradeModal } from "@/components/UpgradeModal";
 import type { User } from "@shared/schema";
 import logoImage from "@assets/meinedokbox_1760966015056.png";
 
@@ -37,6 +39,8 @@ export function DashboardLayout({
 }: DashboardLayoutProps) {
   const { toast } = useToast();
   const [location] = useLocation();
+  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   // Fetch user data
   const { data: user } = useQuery<User | null>({
@@ -44,6 +48,13 @@ export function DashboardLayout({
     queryFn: getCurrentUser,
     retry: false,
   });
+
+  // Show welcome modal if user hasn't seen it yet
+  useEffect(() => {
+    if (user && !user.hasSeenWelcomeModal) {
+      setShowWelcomeModal(true);
+    }
+  }, [user]);
 
   // Fetch subscription status
   const { data: subscriptionStatus } = useQuery<SubscriptionStatus>({
@@ -224,6 +235,23 @@ export function DashboardLayout({
       <main className="w-full max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-6 md:py-8">
         {children}
       </main>
+
+      <WelcomeModal
+        open={showWelcomeModal}
+        onOpenChange={setShowWelcomeModal}
+        onStartTrial={() => {
+          setShowWelcomeModal(false);
+        }}
+        onDirectPayment={() => {
+          setShowWelcomeModal(false);
+          setShowUpgradeModal(true);
+        }}
+      />
+
+      <UpgradeModal
+        open={showUpgradeModal}
+        onOpenChange={setShowUpgradeModal}
+      />
     </div>
   );
 }
