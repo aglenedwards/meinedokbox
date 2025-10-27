@@ -160,9 +160,17 @@ export function Header() {
       });
     },
     onError: (error: any) => {
+      let userMessage = "Ein Fehler ist aufgetreten.";
+      
+      if (error.message?.includes("bereits registriert")) {
+        userMessage = "Diese E-Mail-Adresse wird bereits verwendet. Bitte melden Sie sich an oder verwenden Sie eine andere E-Mail-Adresse.";
+      } else if (error.message) {
+        userMessage = error.message;
+      }
+      
       toast({
         title: "Registrierung fehlgeschlagen",
-        description: error.message || "Ein Fehler ist aufgetreten.",
+        description: userMessage,
         variant: "destructive",
       });
     },

@@ -208,7 +208,7 @@ export default function Landing() {
       // Extract user-friendly message
       let userMessage = "Die Registrierung konnte nicht abgeschlossen werden. Bitte versuchen Sie es erneut.";
       
-      if (error.message?.includes("existiert bereits")) {
+      if (error.message?.includes("bereits registriert")) {
         userMessage = "Diese E-Mail-Adresse wird bereits verwendet. Bitte melden Sie sich an oder verwenden Sie eine andere E-Mail-Adresse.";
       }
       
