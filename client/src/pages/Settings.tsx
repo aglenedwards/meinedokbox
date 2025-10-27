@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { User, Mail, UserPlus, X, Crown, Calendar, FileText, Settings as SettingsIcon, TrendingUp, HardDrive, ExternalLink } from "lucide-react";
+import { User, Mail, UserPlus, X, Crown, Calendar, FileText, Settings as SettingsIcon, TrendingUp, HardDrive, ExternalLink, Download, Trash2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { getCurrentUser, getSubscriptionStatus, type SubscriptionStatus } from "@/lib/api";
+import { getCurrentUser, getSubscriptionStatus, exportDocumentsAsZip, type SubscriptionStatus } from "@/lib/api";
 import type { User as UserType, SharedAccess } from "@shared/schema";
 import { UpgradeModal } from "@/components/UpgradeModal";
 import { CheckoutDialog } from "@/components/CheckoutDialog";
@@ -488,6 +488,33 @@ export default function Settings() {
 
           {/* Email Whitelist (Security Feature) */}
           <EmailWhitelistSettings />
+
+          {/* Export Card */}
+          <Card data-testid="card-export">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Download className="h-5 w-5" />
+                Daten exportieren
+              </CardTitle>
+              <CardDescription>
+                Exportieren Sie alle Ihre Dokumente als ZIP-Archiv
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Laden Sie alle Ihre hochgeladenen Dokumente in einer ZIP-Datei herunter. 
+                Das Archiv enthält alle Originaldateien mit ihren Dateinamen.
+              </p>
+              <Button
+                onClick={exportDocumentsAsZip}
+                variant="outline"
+                data-testid="button-export-zip"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Alle Dokumente herunterladen (ZIP)
+              </Button>
+            </CardContent>
+          </Card>
 
           {/* Shared Access Card (Family & Family Plus) */}
           <Card data-testid="card-shared-access">

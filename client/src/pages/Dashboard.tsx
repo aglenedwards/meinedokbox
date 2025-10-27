@@ -787,7 +787,7 @@ export default function Dashboard() {
               onUpgrade={() => setUpgradeModal({ 
                 open: true, 
                 reason: "trial_active",
-                daysRemaining: subscriptionStatus.daysRemaining 
+                daysRemaining: subscriptionStatus.daysRemaining ?? undefined
               })}
             />
           </div>
