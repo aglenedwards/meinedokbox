@@ -75,9 +75,13 @@ export function DashboardLayout({
         <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-3 md:py-4">
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-4 w-full">
             <div className="flex items-center justify-between md:justify-start gap-3 min-w-0">
-              <Link href="/dashboard">
-                <img src={logoImage} alt="MeineDokBox" className="h-12 md:h-16 shrink-0 cursor-pointer" data-testid="img-logo" />
-              </Link>
+              <div 
+                onClick={() => window.location.reload()}
+                className="hover-elevate active-elevate-2 rounded-lg transition-all cursor-pointer p-1"
+                data-testid="logo-refresh"
+              >
+                <img src={logoImage} alt="MeineDokBox" className="h-12 md:h-16 shrink-0" data-testid="img-logo" />
+              </div>
               <div className="flex items-center gap-2 md:hidden">
                 {!isReadOnly && (
                   <Link href="/trash">
