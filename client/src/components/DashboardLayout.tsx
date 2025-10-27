@@ -15,6 +15,7 @@ import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { WelcomeModal } from "@/components/WelcomeModal";
 import { UpgradeModal } from "@/components/UpgradeModal";
+import { OnboardingTour } from "@/components/OnboardingTour";
 import type { User } from "@shared/schema";
 import logoImage from "@assets/meinedokbox_1760966015056.png";
 
@@ -37,6 +38,7 @@ export function DashboardLayout({
   const [location] = useLocation();
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [runOnboardingTour, setRunOnboardingTour] = useState(false);
 
   // Fetch user data
   const { data: user } = useQuery<User | null>({
@@ -51,6 +53,17 @@ export function DashboardLayout({
       setShowWelcomeModal(true);
     }
   }, [user]);
+
+  // Start onboarding tour after welcome modal is closed (if user hasn't seen it yet)
+  useEffect(() => {
+    if (user && user.hasSeenWelcomeModal && !user.hasSeenOnboarding && !showWelcomeModal) {
+      // Small delay to ensure modal is fully closed
+      const timer = setTimeout(() => {
+        setRunOnboardingTour(true);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [user, showWelcomeModal]);
 
   // Fetch subscription status
   const { data: subscriptionStatus } = useQuery<SubscriptionStatus>({
@@ -238,6 +251,13 @@ export function DashboardLayout({
         open={showUpgradeModal}
         onClose={() => setShowUpgradeModal(false)}
       />
+
+      {user && location === "/" && (
+        <OnboardingTour
+          run={runOnboardingTour}
+          onFinish={() => setRunOnboardingTour(false)}
+        />
+      )}
     </div>
   );
 }
