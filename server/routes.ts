@@ -1474,6 +1474,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const files = req.files as Express.Multer.File[];
       const folderId = req.body.folderId || null; // Optional folder assignment
       const mergeIntoOne = req.body.mergeIntoOne === 'true'; // Parse boolean from form data
+      const forceDuplicates = req.body.forceDuplicates === 'true'; // Allow uploading duplicates
 
       if (!files || files.length === 0) {
         return res.status(400).json({ message: "Keine Dateien ausgewählt" });
@@ -1490,6 +1491,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         try {
           // Merge all files into a single PDF
           const mergedPdfBuffer = await mergeFilesToPdf(files);
+          
+          // Calculate hash for duplicate detection
+          const fileHash = calculateFileHash(mergedPdfBuffer);
+          
+          // Check for duplicates if not forcing upload
+          if (!forceDuplicates) {
+            const duplicate = await storage.findDuplicateDocument(userId, fileHash);
+            if (duplicate) {
+              console.log(`  ! Duplicate detected: ${duplicate.title} (uploaded ${duplicate.uploadedAt})`);
+              return res.status(409).json({
+                isDuplicate: true,
+                duplicate: {
+                  id: duplicate.id,
+                  title: duplicate.title,
+                  uploadedAt: duplicate.uploadedAt,
+                  category: duplicate.category,
+                },
+                message: "Dieses Dokument wurde bereits hochgeladen"
+              });
+            }
+          }
           
           // Create a merged file object
           const mergedFilename = `merged_${Date.now()}.pdf`;
@@ -1519,7 +1541,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
           
           // Upload merged document
-          const document = await processSingleFileUpload(userId, mergedFile, analysisResult, folderId);
+          const document = await processSingleFileUpload(userId, mergedFile, analysisResult, folderId, fileHash);
           
           // Increment upload counter by 1 (merged document counts as 1)
           await storage.incrementUploadCounter(userId, 1);
@@ -1544,11 +1566,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const uploadedDocuments = [];
       const errors = [];
+      const duplicates = [];
 
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
         try {
           console.log(`  [${i + 1}/${files.length}] Processing: ${file.originalname}`);
+          
+          // Calculate hash for duplicate detection
+          const fileHash = calculateFileHash(file.buffer);
+          
+          // Check for duplicates if not forcing upload
+          if (!forceDuplicates) {
+            const duplicate = await storage.findDuplicateDocument(userId, fileHash);
+            if (duplicate) {
+              console.log(`    ! Duplicate detected: ${duplicate.title} (uploaded ${duplicate.uploadedAt})`);
+              duplicates.push({
+                filename: file.originalname,
+                duplicate: {
+                  id: duplicate.id,
+                  title: duplicate.title,
+                  uploadedAt: duplicate.uploadedAt,
+                  category: duplicate.category,
+                }
+              });
+              continue; // Skip this file
+            }
+          }
           
           const isPdf = file.mimetype === 'application/pdf';
           let analysisResult;
@@ -1596,7 +1640,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
           
           // Upload file and create document
-          const document = await processSingleFileUpload(userId, file, analysisResult, folderId);
+          const document = await processSingleFileUpload(userId, file, analysisResult, folderId, fileHash);
           uploadedDocuments.push(document);
           
           console.log(`    ✓ Successfully uploaded: ${analysisResult.title}`);
@@ -1614,22 +1658,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await storage.incrementUploadCounter(userId, uploadedDocuments.length);
       }
       
-      // Return results
-      if (uploadedDocuments.length === 0) {
+      // Return results with duplicate information
+      if (uploadedDocuments.length === 0 && duplicates.length === 0) {
         return res.status(400).json({ 
           message: "Alle Uploads sind fehlgeschlagen",
           errors 
         });
       }
       
-      if (errors.length > 0) {
-        return res.status(207).json({ // 207 Multi-Status
-          message: `${uploadedDocuments.length} von ${files.length} Dokumenten erfolgreich hochgeladen`,
-          documents: uploadedDocuments,
-          errors
+      // If only duplicates were found (no successful uploads)
+      if (uploadedDocuments.length === 0 && duplicates.length > 0) {
+        return res.status(409).json({
+          isDuplicate: true,
+          duplicates,
+          message: duplicates.length === 1 
+            ? "Dieses Dokument wurde bereits hochgeladen" 
+            : `${duplicates.length} Dokumente wurden bereits hochgeladen`
         });
       }
       
+      // Mixed results: some uploaded, some duplicates, some errors
+      if (duplicates.length > 0 || errors.length > 0) {
+        return res.status(207).json({ // 207 Multi-Status
+          message: `${uploadedDocuments.length} von ${files.length} Dokumenten erfolgreich hochgeladen`,
+          documents: uploadedDocuments,
+          duplicates: duplicates.length > 0 ? duplicates : undefined,
+          errors: errors.length > 0 ? errors : undefined
+        });
+      }
+      
+      // All successful
       res.json({ 
         message: `${uploadedDocuments.length} Dokument(e) erfolgreich hochgeladen`,
         documents: uploadedDocuments 
@@ -1647,7 +1705,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     userId: string,
     file: Express.Multer.File,
     analysisResult: any,
-    folderId: string | null
+    folderId: string | null,
+    fileHash: string
   ) {
     const objectStorageService = new ObjectStorageService();
 
@@ -1684,6 +1743,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       mimeType: file.mimetype,
       confidence: analysisResult.confidence,
       isShared: false, // Default: private documents
+      fileHash, // Store file hash for duplicate detection
       // Phase 2: Smart metadata
       extractedDate: analysisResult.extractedDate ? new Date(analysisResult.extractedDate) : null,
       amount: analysisResult.amount ?? null,
