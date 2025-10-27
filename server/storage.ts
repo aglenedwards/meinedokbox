@@ -33,6 +33,7 @@ export interface IStorage {
   getDocument(id: string): Promise<Document | undefined>;
   getDocumentsByUserId(userId: string, sortBy?: SortOption, includeOnlySharedFolders?: boolean): Promise<Document[]>;
   searchDocuments(userId: string, query?: string, categories?: string[], sortBy?: SortOption, includeOnlySharedFolders?: boolean, limit?: number, cursor?: string): Promise<PaginatedDocuments>;
+  findDuplicateDocument(userId: string, fileHash: string): Promise<Document | undefined>;
   updateDocumentCategory(id: string, userId: string, category: string): Promise<Document | undefined>;
   updateDocumentSharing(id: string, userId: string, isShared: boolean): Promise<Document | undefined>;
   updateDocumentFolder(id: string, userId: string, folderId: string | null): Promise<Document | undefined>;
@@ -211,6 +212,20 @@ export class DbStorage implements IStorage {
   async getDocument(id: string): Promise<Document | undefined> {
     const [document] = await db.select().from(documents).where(eq(documents.id, id));
     return document;
+  }
+
+  async findDuplicateDocument(userId: string, fileHash: string): Promise<Document | undefined> {
+    const [duplicate] = await db
+      .select()
+      .from(documents)
+      .where(
+        and(
+          eq(documents.userId, userId),
+          eq(documents.fileHash, fileHash),
+          isNull(documents.deletedAt)
+        )
+      );
+    return duplicate;
   }
 
   async getDocumentsByUserId(userId: string, sortBy?: SortOption, includeOnlySharedFolders?: boolean): Promise<Document[]> {

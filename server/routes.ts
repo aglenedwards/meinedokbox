@@ -93,6 +93,15 @@ async function mergeFilesToPdf(files: Express.Multer.File[]): Promise<Buffer> {
   return Buffer.from(await mergedPdf.save());
 }
 
+/**
+ * Calculates SHA-256 hash of a file buffer for duplicate detection
+ * @param buffer - File buffer to hash
+ * @returns SHA-256 hash as hex string
+ */
+function calculateFileHash(buffer: Buffer): string {
+  return crypto.createHash('sha256').update(buffer).digest('hex');
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
