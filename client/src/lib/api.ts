@@ -10,10 +10,20 @@ export interface StorageStats {
   documentCount: number;
 }
 
+export interface DuplicateInfo {
+  id: string;
+  title: string;
+  uploadedAt: Date;
+  category: string;
+}
+
 export interface UploadResult {
   message: string;
   documents: Document[];
   errors?: Array<{ filename: string; error: string }>;
+  duplicates?: Array<{ filename: string; duplicate: DuplicateInfo }>;
+  isDuplicate?: boolean;
+  duplicate?: DuplicateInfo;
 }
 
 /**
@@ -21,8 +31,13 @@ export interface UploadResult {
  * Each file is processed as a separate document with individual AI analysis
  * @param files - Single file or array of files to upload
  * @param mergeIntoOne - If true, merge multiple files into a single document (default: false)
+ * @param forceDuplicates - If true, upload files even if duplicates are detected (default: false)
  */
-export async function uploadDocument(files: File | File[], mergeIntoOne: boolean = false): Promise<UploadResult> {
+export async function uploadDocument(
+  files: File | File[], 
+  mergeIntoOne: boolean = false,
+  forceDuplicates: boolean = false
+): Promise<UploadResult> {
   const formData = new FormData();
   const fileArray = Array.isArray(files) ? files : [files];
   
@@ -34,6 +49,11 @@ export async function uploadDocument(files: File | File[], mergeIntoOne: boolean
   if (mergeIntoOne && fileArray.length > 1) {
     formData.append("mergeIntoOne", "true");
   }
+  
+  // Add force duplicates flag if provided
+  if (forceDuplicates) {
+    formData.append("forceDuplicates", "true");
+  }
 
   const response = await fetch("/api/documents/upload", {
     method: "POST",
@@ -43,6 +63,12 @@ export async function uploadDocument(files: File | File[], mergeIntoOne: boolean
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => null);
+    
+    // If it's a duplicate error (409), return the data instead of throwing
+    if (response.status === 409 && errorData) {
+      return errorData;
+    }
+    
     const message = errorData?.message || response.statusText;
     throw new Error(message);
   }
