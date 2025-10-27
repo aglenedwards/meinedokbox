@@ -361,8 +361,9 @@ export function OnboardingTour({ run, onFinish }: OnboardingTourProps) {
         },
         tooltip: {
           borderRadius: 8,
-          fontSize: 14,
-          padding: 20,
+          fontSize: window.innerWidth < 640 ? 13 : 14,
+          padding: window.innerWidth < 640 ? 12 : 20,
+          maxWidth: window.innerWidth < 640 ? '90vw' : 420,
         },
         tooltipContainer: {
           textAlign: 'left',
@@ -370,18 +371,18 @@ export function OnboardingTour({ run, onFinish }: OnboardingTourProps) {
         buttonNext: {
           backgroundColor: 'hsl(var(--primary))',
           color: 'hsl(var(--primary-foreground))',
-          fontSize: 14,
-          padding: '8px 16px',
+          fontSize: window.innerWidth < 640 ? 13 : 14,
+          padding: window.innerWidth < 640 ? '6px 12px' : '8px 16px',
           borderRadius: 6,
         },
         buttonBack: {
           color: 'hsl(var(--muted-foreground))',
-          fontSize: 14,
+          fontSize: window.innerWidth < 640 ? 13 : 14,
           marginRight: 8,
         },
         buttonSkip: {
           color: 'hsl(var(--muted-foreground))',
-          fontSize: 13,
+          fontSize: window.innerWidth < 640 ? 12 : 13,
         },
       }}
     />
