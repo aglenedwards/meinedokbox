@@ -15,7 +15,6 @@ import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { WelcomeModal } from "@/components/WelcomeModal";
 import { UpgradeModal } from "@/components/UpgradeModal";
-import { OnboardingTour } from "@/components/OnboardingTour";
 import type { User } from "@shared/schema";
 import logoImage from "@assets/meinedokbox_1760966015056.png";
 
@@ -38,7 +37,6 @@ export function DashboardLayout({
   const [location] = useLocation();
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  const [runOnboardingTour, setRunOnboardingTour] = useState(false);
 
   // Fetch user data
   const { data: user } = useQuery<User | null>({
@@ -53,25 +51,6 @@ export function DashboardLayout({
       setShowWelcomeModal(true);
     }
   }, [user]);
-
-  // Start onboarding tour after welcome modal is closed (if user hasn't seen it yet)
-  useEffect(() => {
-    // Check both database flag and localStorage
-    const hasCompletedOnboarding = localStorage.getItem('onboarding-completed') === 'true';
-    
-    console.log('[DashboardLayout] Current location:', location);
-    console.log('[DashboardLayout] User:', user?.email, 'hasSeenWelcomeModal:', user?.hasSeenWelcomeModal, 'hasSeenOnboarding:', user?.hasSeenOnboarding);
-    console.log('[DashboardLayout] hasCompletedOnboarding from localStorage:', hasCompletedOnboarding);
-    
-    if (user && user.hasSeenWelcomeModal && !user.hasSeenOnboarding && !hasCompletedOnboarding && !showWelcomeModal) {
-      // Small delay to ensure modal is fully closed
-      const timer = setTimeout(() => {
-        console.log('[DashboardLayout] Starting onboarding tour for new user at location:', location);
-        setRunOnboardingTour(true);
-      }, 500);
-      return () => clearTimeout(timer);
-    }
-  }, [user, showWelcomeModal, location]);
 
   // Fetch subscription status
   const { data: subscriptionStatus } = useQuery<SubscriptionStatus>({
@@ -259,13 +238,6 @@ export function DashboardLayout({
         open={showUpgradeModal}
         onClose={() => setShowUpgradeModal(false)}
       />
-
-      {user && (
-        <OnboardingTour
-          run={runOnboardingTour && (location === "/" || location === "/dashboard")}
-          onFinish={() => setRunOnboardingTour(false)}
-        />
-      )}
     </div>
   );
 }
