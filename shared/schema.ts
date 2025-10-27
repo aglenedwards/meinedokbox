@@ -17,6 +17,22 @@ export const sessions = pgTable(
 // Subscription plans
 export const SUBSCRIPTION_PLANS = ["free", "trial", "solo", "family", "family-plus"] as const;
 
+// Stripe Price IDs (from Stripe Dashboard)
+export const STRIPE_PRICE_IDS = {
+  solo: {
+    monthly: "price_1SMpMqDu6qqEfVDm26V0U6D6",
+    yearly: "price_1SMpMqDu6qqEfVDmZEHB8rkX",
+  },
+  family: {
+    monthly: "price_1SMpTmDu6qqEfVDmzs0kMYsr",
+    yearly: "price_1SMpTmDu6qqEfVDm3FLxRNBc",
+  },
+  "family-plus": {
+    monthly: "price_1SMpVADu6qqEfVDmOjsR9K02",
+    yearly: "price_1SMpVADu6qqEfVDmIuFjbd1v",
+  },
+} as const;
+
 // Document limits per subscription plan
 export const PLAN_LIMITS = {
   free: {
