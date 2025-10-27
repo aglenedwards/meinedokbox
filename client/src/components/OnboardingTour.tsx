@@ -43,53 +43,15 @@ export function OnboardingTour({ run, onFinish }: OnboardingTourProps) {
         <div className="space-y-2">
           <h3 className="font-semibold text-base">📸 Dokument hochladen</h3>
           <p className="text-sm">
-            Hier oben rechts kannst du Dokumente hochladen oder direkt mit dem Handy scannen. 
-            <strong className="block mt-2">Lade jetzt dein erstes Dokument hoch!</strong>
+            Über diesen Button kannst du später Dokumente hochladen oder direkt mit dem Handy scannen. 
+            Die KI analysiert deine Dateien automatisch und kategorisiert sie.
           </p>
         </div>
       ),
       disableBeacon: true,
       placement: 'bottom',
-      spotlightClicks: true,
     },
-    // Step 2: Drag & Drop
-    {
-      target: '[data-testid="dialog-upload"]',
-      content: (
-        <div className="space-y-2">
-          <h3 className="font-semibold text-base">📂 Drag & Drop</h3>
-          <p className="text-sm">
-            Du kannst auch per Drag & Drop Dokumente hierher ziehen – maximal 10 pro Upload. 
-            Mehrere Dateien lassen sich auch zu einem PDF zusammenführen.
-          </p>
-        </div>
-      ),
-      placement: 'top',
-      disableBeacon: true,
-    },
-    // Step 3: KI-Analyse
-    {
-      target: '[data-testid="button-finish-upload"]',
-      content: (
-        <div className="space-y-2">
-          <h3 className="font-semibold text-base">🤖 KI-Analyse</h3>
-          <p className="text-sm">
-            Mit „Fertig und analysieren" startet der Upload. Unsere KI:
-          </p>
-          <ul className="text-sm list-disc list-inside space-y-1 mt-2">
-            <li>Prüft Inhalte & vergibt Titel</li>
-            <li>Extrahiert Metadaten (Datum, Betrag, Absender)</li>
-            <li>Kategorisiert automatisch</li>
-            <li>Erkennt steuerrelevante Dokumente</li>
-            <li>Korrigiert Ausrichtung</li>
-            <li>Verhindert Duplikate</li>
-          </ul>
-        </div>
-      ),
-      placement: 'top',
-      disableBeacon: true,
-    },
-    // Step 4: Alle Dokumente Tab
+    // Step 2: Alle Dokumente Tab
     {
       target: '[data-testid="tab-alle-dokumente"]',
       content: (
@@ -103,7 +65,7 @@ export function OnboardingTour({ run, onFinish }: OnboardingTourProps) {
       placement: 'bottom',
       disableBeacon: true,
     },
-    // Step 5: Statistiken
+    // Step 3: Statistiken
     {
       target: '[data-testid="section-statistics"]',
       content: (
@@ -122,7 +84,7 @@ export function OnboardingTour({ run, onFinish }: OnboardingTourProps) {
       placement: 'bottom',
       disableBeacon: true,
     },
-    // Step 6: Kategorien-Übersicht
+    // Step 4: Kategorien-Übersicht
     {
       target: '[data-testid="section-categories"]',
       content: (
@@ -136,7 +98,7 @@ export function OnboardingTour({ run, onFinish }: OnboardingTourProps) {
       placement: 'top',
       disableBeacon: true,
     },
-    // Step 7: Email-Postfach
+    // Step 5: Email-Postfach
     {
       target: '[data-testid="card-email-inbound"]',
       content: (
@@ -151,7 +113,7 @@ export function OnboardingTour({ run, onFinish }: OnboardingTourProps) {
       placement: 'bottom',
       disableBeacon: true,
     },
-    // Step 8: Whitelist-Schutz
+    // Step 6: Whitelist-Schutz
     {
       target: '[data-testid="card-email-whitelist"]',
       content: (
@@ -166,7 +128,7 @@ export function OnboardingTour({ run, onFinish }: OnboardingTourProps) {
       placement: 'top',
       disableBeacon: true,
     },
-    // Step 9: Kategorie-Filter
+    // Step 7: Kategorie-Filter
     {
       target: '[data-testid="button-filter-categories"]',
       content: (
@@ -180,7 +142,7 @@ export function OnboardingTour({ run, onFinish }: OnboardingTourProps) {
       placement: 'bottom',
       disableBeacon: true,
     },
-    // Step 10: Dokumentenkarte
+    // Step 8: Dokumentenkarte
     {
       target: '[data-testid^="card-document-"]',
       content: (
@@ -195,7 +157,7 @@ export function OnboardingTour({ run, onFinish }: OnboardingTourProps) {
       placement: 'top',
       disableBeacon: true,
     },
-    // Step 11: 3-Punkte-Menü
+    // Step 9: 3-Punkte-Menü
     {
       target: '[data-testid^="button-menu-"]',
       content: (
@@ -219,7 +181,7 @@ export function OnboardingTour({ run, onFinish }: OnboardingTourProps) {
       placement: 'left',
       disableBeacon: true,
     },
-    // Step 12: Steuererklärung Tab
+    // Step 10: Steuererklärung Tab
     {
       target: '[data-testid="tab-steuererklarung"]',
       content: (
@@ -235,7 +197,7 @@ export function OnboardingTour({ run, onFinish }: OnboardingTourProps) {
       placement: 'bottom',
       disableBeacon: true,
     },
-    // Step 13: Meine Ordner Tab
+    // Step 11: Meine Ordner Tab
     {
       target: '[data-testid="tab-meine-ordner"]',
       content: (
@@ -250,7 +212,7 @@ export function OnboardingTour({ run, onFinish }: OnboardingTourProps) {
       placement: 'bottom',
       disableBeacon: true,
     },
-    // Step 14: Papierkorb
+    // Step 12: Papierkorb
     {
       target: '[data-testid="button-trash"]',
       content: (
@@ -266,7 +228,7 @@ export function OnboardingTour({ run, onFinish }: OnboardingTourProps) {
       placement: 'bottom',
       disableBeacon: true,
     },
-    // Step 15: Einstellungen
+    // Step 13: Einstellungen
     {
       target: '[data-testid="button-settings"]',
       content: (
@@ -280,7 +242,7 @@ export function OnboardingTour({ run, onFinish }: OnboardingTourProps) {
       placement: 'bottom',
       disableBeacon: true,
     },
-    // Step 16: Abonnementsverwaltung
+    // Step 14: Abonnementsverwaltung
     {
       target: '[data-testid="section-subscription"]',
       content: (
@@ -294,7 +256,7 @@ export function OnboardingTour({ run, onFinish }: OnboardingTourProps) {
       placement: 'top',
       disableBeacon: true,
     },
-    // Step 17: Whitelist-Einstellungen
+    // Step 15: Whitelist-Einstellungen
     {
       target: '[data-testid="card-email-whitelist"]',
       content: (
@@ -308,7 +270,7 @@ export function OnboardingTour({ run, onFinish }: OnboardingTourProps) {
       placement: 'top',
       disableBeacon: true,
     },
-    // Step 18: Daten exportieren
+    // Step 16: Daten exportieren
     {
       target: '[data-testid="section-export"]',
       content: (
@@ -323,7 +285,7 @@ export function OnboardingTour({ run, onFinish }: OnboardingTourProps) {
       placement: 'top',
       disableBeacon: true,
     },
-    // Step 19: Personen einladen
+    // Step 17: Personen einladen
     {
       target: '[data-testid="section-family"]',
       content: (
