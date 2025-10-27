@@ -785,7 +785,7 @@ export default function Dashboard() {
           <div className="mb-6">
             <TrialBanner
               daysRemaining={subscriptionStatus.daysRemaining}
-              onUpgrade={() => setUpgradeModal({ open: true, reason: "trial_expired" })}
+              onUpgrade={() => setUpgradeModal({ open: true })}
             />
           </div>
         )}
