@@ -14,7 +14,8 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 interface UpgradeModalProps {
   open: boolean;
   onClose: () => void;
-  reason?: "document_limit" | "email_feature" | "trial_expired";
+  reason?: "document_limit" | "email_feature" | "trial_expired" | "trial_active";
+  daysRemaining?: number;
 }
 
 interface PricingPlan {
@@ -73,7 +74,7 @@ const pricingPlans: PricingPlan[] = [
   },
 ];
 
-export function UpgradeModal({ open, onClose, reason = "document_limit" }: UpgradeModalProps) {
+export function UpgradeModal({ open, onClose, reason = "document_limit", daysRemaining }: UpgradeModalProps) {
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">("yearly");
 
   const reasons = {
@@ -88,6 +89,12 @@ export function UpgradeModal({ open, onClose, reason = "document_limit" }: Upgra
     trial_expired: {
       title: "Trial-Phase beendet",
       description: "Ihre 14-tägige Trial-Phase ist abgelaufen. Wählen Sie jetzt Ihren passenden Tarif!",
+    },
+    trial_active: {
+      title: "Jetzt upgraden",
+      description: daysRemaining 
+        ? `Sie haben noch ${daysRemaining} ${daysRemaining === 1 ? 'Tag' : 'Tage'} Trial-Zeit. Wählen Sie jetzt Ihren passenden Tarif und sichern Sie sich alle Vorteile!`
+        : "Wählen Sie jetzt Ihren passenden Tarif und sichern Sie sich alle Vorteile!",
     },
   };
 
@@ -192,7 +199,7 @@ export function UpgradeModal({ open, onClose, reason = "document_limit" }: Upgra
                   className="w-full"
                   data-testid={`button-select-${plan.name.toLowerCase().replace(" ", "-")}`}
                 >
-                  {plan.trialAvailable && reason !== "trial_expired"
+                  {plan.trialAvailable && reason !== "trial_expired" && reason !== "trial_active"
                     ? "Jetzt 14 Tage kostenlos testen"
                     : `${plan.name} wählen`}
                 </Button>

@@ -104,7 +104,8 @@ export default function Dashboard() {
   const [viewerOpen, setViewerOpen] = useState(false);
   const [upgradeModal, setUpgradeModal] = useState<{
     open: boolean;
-    reason?: "document_limit" | "email_feature" | "trial_expired";
+    reason?: "document_limit" | "email_feature" | "trial_expired" | "trial_active";
+    daysRemaining?: number;
   }>({ open: false });
   const [updatingSharing, setUpdatingSharing] = useState<string | null>(null);
   const [duplicateWarning, setDuplicateWarning] = useState<{
@@ -785,7 +786,11 @@ export default function Dashboard() {
           <div className="mb-6">
             <TrialBanner
               daysRemaining={subscriptionStatus.daysRemaining}
-              onUpgrade={() => setUpgradeModal({ open: true })}
+              onUpgrade={() => setUpgradeModal({ 
+                open: true, 
+                reason: "trial_active",
+                daysRemaining: subscriptionStatus.daysRemaining 
+              })}
             />
           </div>
         )}
@@ -1131,6 +1136,7 @@ export default function Dashboard() {
         open={upgradeModal.open}
         onClose={() => setUpgradeModal({ open: false })}
         reason={upgradeModal.reason}
+        daysRemaining={upgradeModal.daysRemaining}
       />
 
       <CheckoutDialog
