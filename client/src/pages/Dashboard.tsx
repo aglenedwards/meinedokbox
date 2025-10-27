@@ -743,7 +743,6 @@ export default function Dashboard() {
   return (
     <DashboardLayout
       showSearch={true}
-      showExport={documents.length > 0}
       searchQuery={searchQuery}
       onSearchChange={setSearchQuery}
       onUploadClick={(mode) => {
@@ -755,7 +754,6 @@ export default function Dashboard() {
           setShowUpload(true);
         }
       }}
-      onExportClick={exportDocumentsAsZip}
     >
         <div>
           {showUpload && (

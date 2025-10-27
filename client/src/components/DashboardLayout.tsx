@@ -21,21 +21,17 @@ import logoImage from "@assets/meinedokbox_1760966015056.png";
 interface DashboardLayoutProps {
   children: ReactNode;
   showSearch?: boolean;
-  showExport?: boolean;
   searchQuery?: string;
   onSearchChange?: (query: string) => void;
   onUploadClick?: (mode: "camera" | "file") => void;
-  onExportClick?: () => void;
 }
 
 export function DashboardLayout({
   children,
   showSearch = false,
-  showExport = false,
   searchQuery = "",
   onSearchChange,
   onUploadClick,
-  onExportClick,
 }: DashboardLayoutProps) {
   const { toast } = useToast();
   const [location] = useLocation();
@@ -156,17 +152,6 @@ export function DashboardLayout({
             </div>
             
             <div className="hidden md:flex items-center gap-2 shrink-0">
-              {showExport && (
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={onExportClick}
-                  data-testid="button-export"
-                >
-                  <Download className="h-4 w-4 mr-2" />
-                  Export
-                </Button>
-              )}
               {!isReadOnly && (
                 <Link href="/trash">
                   <Button 
