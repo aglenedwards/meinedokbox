@@ -177,7 +177,11 @@ export const documents = pgTable("documents", {
   year: real("year"), // Year extracted from document (for tax/time-based filtering)
   documentDate: timestamp("document_date"), // Exact date from document if available
   systemTags: text("system_tags").array(), // Auto-assigned tags by AI (e.g., "steuerrelevant", "geschäftlich")
-});
+  // Duplicate detection
+  fileHash: varchar("file_hash", { length: 64 }), // SHA-256 hash for duplicate detection
+}, (table) => [
+  index("idx_file_hash").on(table.fileHash), // Index for fast duplicate lookups
+]);
 
 // Tags system for document organization
 export const tags = pgTable("tags", {
