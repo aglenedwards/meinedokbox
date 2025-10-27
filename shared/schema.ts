@@ -105,6 +105,8 @@ export const users = pgTable("users", {
   verificationTokenExpiry: timestamp("verification_token_expiry"),
   // Welcome modal (shown once on first login)
   hasSeenWelcomeModal: boolean("has_seen_welcome_modal").notNull().default(false),
+  // Onboarding tour (shown once after welcome modal)
+  hasSeenOnboarding: boolean("has_seen_onboarding").notNull().default(false),
   // Password reset
   passwordResetToken: varchar("password_reset_token"),
   passwordResetTokenExpiry: timestamp("password_reset_token_expiry"),

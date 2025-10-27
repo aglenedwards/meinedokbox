@@ -211,6 +211,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Mark onboarding tour as seen
+  app.post('/api/user/onboarding-seen', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      await db.update(users)
+        .set({ hasSeenOnboarding: true })
+        .where(eq(users.id, userId));
+      
+      console.log(`[OnboardingTour] Marked as seen for user ${userId}`);
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error marking onboarding tour as seen:", error);
+      res.status(500).json({ message: "Failed to update user" });
+    }
+  });
+
   // Email/Password Authentication Routes
   
   // Register with email and password (DSGVO-compliant with double opt-in)
