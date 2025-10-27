@@ -256,38 +256,38 @@ export function DocumentViewer({ document, open, onClose }: DocumentViewerProps)
             )}
           </div>
 
-          {/* Navigation arrows for multi-page documents */}
-          {displayedPages > 1 && (
-            <>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={goToPreviousPage}
-                disabled={currentPage === 0}
-                className="absolute left-0.5 sm:left-4 top-1/2 -translate-y-1/2 h-11 w-11 sm:h-12 sm:w-12 bg-background/90 hover:bg-background shadow-lg z-10"
-                data-testid="button-previous-page"
-              >
-                <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6" />
-              </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={goToNextPage}
-                disabled={currentPage === displayedPages - 1}
-                className="absolute right-0.5 sm:right-4 top-1/2 -translate-y-1/2 h-11 w-11 sm:h-12 sm:w-12 bg-background/90 hover:bg-background shadow-lg z-10"
-                data-testid="button-next-page"
-              >
-                <ChevronRight className="h-5 w-5 sm:h-6 sm:w-6" />
-              </Button>
-            </>
-          )}
-
         </div>
+
+        {/* Fixed navigation arrows for multi-page documents - bottom left and right */}
+        {displayedPages > 1 && (
+          <>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={goToPreviousPage}
+              disabled={currentPage === 0}
+              className="absolute left-2 sm:left-4 bottom-4 h-11 w-11 sm:h-12 sm:w-12 bg-background/95 hover:bg-background shadow-lg z-20"
+              data-testid="button-previous-page"
+            >
+              <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={goToNextPage}
+              disabled={currentPage === displayedPages - 1}
+              className="absolute right-2 sm:right-4 bottom-4 h-11 w-11 sm:h-12 sm:w-12 bg-background/95 hover:bg-background shadow-lg z-20"
+              data-testid="button-next-page"
+            >
+              <ChevronRight className="h-5 w-5 sm:h-6 sm:w-6" />
+            </Button>
+          </>
+        )}
 
         {/* Page thumbnails for multi-page documents (only for images, not PDFs) */}
         {totalPages > 1 && !isPdf && (
           <div className="border-t p-3 bg-background">
-            <div className="flex gap-2 overflow-x-auto">
+            <div className="flex gap-2 overflow-x-auto pb-16">
               {pageUrls.map((url, index) => (
                 <button
                   key={index}
