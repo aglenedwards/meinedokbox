@@ -1198,13 +1198,13 @@ export default function Landing() {
                 <CardTitle className="text-xl">Solo</CardTitle>
                 <div className="mt-4">
                   <span className="text-4xl font-bold">
-                    €{billingPeriod === "monthly" ? "4,99" : "3,99"}
+                    €{billingPeriod === "monthly" ? "4,99" : "4,17"}
                   </span>
                   <span className="text-muted-foreground ml-2">/Monat</span>
                 </div>
                 {billingPeriod === "yearly" && (
                   <p className="text-sm text-muted-foreground mt-2">
-                    Jährlich abgerechnet (€47,88/Jahr)
+                    Jährlich abgerechnet (€49,99/Jahr)
                   </p>
                 )}
               </CardHeader>
@@ -1253,13 +1253,13 @@ export default function Landing() {
                 <CardTitle className="text-2xl">Family</CardTitle>
                 <div className="mt-4">
                   <span className="text-5xl font-bold">
-                    €{billingPeriod === "monthly" ? "7,99" : "6,99"}
+                    €{billingPeriod === "monthly" ? "7,99" : "7,08"}
                   </span>
                   <span className="text-muted-foreground ml-2">/Monat</span>
                 </div>
                 {billingPeriod === "yearly" && (
                   <p className="text-sm text-muted-foreground mt-2">
-                    Jährlich abgerechnet (€83,88/Jahr)
+                    Jährlich abgerechnet (€84,99/Jahr)
                   </p>
                 )}
               </CardHeader>
@@ -1302,13 +1302,13 @@ export default function Landing() {
                 <CardTitle className="text-xl">Family Plus</CardTitle>
                 <div className="mt-4">
                   <span className="text-4xl font-bold">
-                    €{billingPeriod === "monthly" ? "11,99" : "9,99"}
+                    €{billingPeriod === "monthly" ? "11,99" : "10,00"}
                   </span>
                   <span className="text-muted-foreground ml-2">/Monat</span>
                 </div>
                 {billingPeriod === "yearly" && (
                   <p className="text-sm text-muted-foreground mt-2">
-                    Jährlich abgerechnet (€119,88/Jahr)
+                    Jährlich abgerechnet (€119,99/Jahr)
                   </p>
                 )}
               </CardHeader>
