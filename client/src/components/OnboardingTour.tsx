@@ -305,7 +305,12 @@ export function OnboardingTour({ run, onFinish }: OnboardingTourProps) {
   ];
 
   const handleJoyrideCallback = useCallback(async (data: CallBackProps) => {
-    const { status, type, action, index } = data;
+    const { status, type, action, index, step } = data;
+
+    // Debug logging
+    if (type === EVENTS.TARGET_NOT_FOUND) {
+      console.error('[OnboardingTour] Target not found for step:', index, 'Target:', step.target);
+    }
 
     if (type === EVENTS.STEP_AFTER || type === EVENTS.TARGET_NOT_FOUND) {
       // Move to next step
