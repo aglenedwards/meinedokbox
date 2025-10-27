@@ -356,7 +356,7 @@ export default function Settings() {
           </Card>
 
           {/* Subscription Card */}
-          <Card data-testid="card-subscription">
+          <Card data-testid="section-subscription">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Crown className="h-5 w-5" />
@@ -490,7 +490,7 @@ export default function Settings() {
           <EmailWhitelistSettings />
 
           {/* Export Card */}
-          <Card data-testid="card-export">
+          <Card data-testid="section-export">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Download className="h-5 w-5" />
@@ -517,7 +517,7 @@ export default function Settings() {
           </Card>
 
           {/* Shared Access Card (Family & Family Plus) */}
-          <Card data-testid="card-shared-access">
+          <Card data-testid="section-family">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <UserPlus className="h-5 w-5" />

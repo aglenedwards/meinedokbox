@@ -811,9 +811,9 @@ export default function Dashboard() {
         {/* Tabs Navigation */}
         <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "all" | "smart" | "folders")} className="mb-6">
           <TabsList className="grid w-full max-w-md grid-cols-3">
-            <TabsTrigger value="all" data-testid="tab-all">Alle Dokumente</TabsTrigger>
-            <TabsTrigger value="smart" data-testid="tab-smart">Steuererklärung</TabsTrigger>
-            <TabsTrigger value="folders" data-testid="tab-folders">Meine Ordner</TabsTrigger>
+            <TabsTrigger value="all" data-testid="tab-alle-dokumente">Alle Dokumente</TabsTrigger>
+            <TabsTrigger value="smart" data-testid="tab-steuererklarung">Steuererklärung</TabsTrigger>
+            <TabsTrigger value="folders" data-testid="tab-meine-ordner">Meine Ordner</TabsTrigger>
           </TabsList>
         </Tabs>
 
@@ -823,7 +823,7 @@ export default function Dashboard() {
           <Folders />
         ) : (
           <>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6 mb-6 md:mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6 mb-6 md:mb-8" data-testid="section-statistics">
           {/* Monthly Upload Limit Card */}
           <Card data-testid="card-upload-limit">
             <CardHeader className="pb-2">
@@ -914,7 +914,7 @@ export default function Dashboard() {
         </div>
 
         {categoryDistribution.length > 0 && (
-          <Card className="mb-8">
+          <Card className="mb-8" data-testid="section-categories">
             <CardHeader>
               <CardTitle>Dokumentenverteilung nach Kategorien</CardTitle>
             </CardHeader>

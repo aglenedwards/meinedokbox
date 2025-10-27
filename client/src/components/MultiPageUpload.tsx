@@ -71,7 +71,7 @@ export function MultiPageUpload({ onComplete, onCancel }: MultiPageUploadProps) 
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-testid="dialog-upload">
       <h3 className="text-lg font-semibold">
         Mehrseitiges Dokument hochladen
       </h3>
