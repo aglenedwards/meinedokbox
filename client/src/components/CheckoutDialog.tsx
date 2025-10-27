@@ -19,7 +19,7 @@ const planDetails = {
   solo: {
     name: "Solo",
     monthlyPrice: 4.99,
-    yearlyPrice: 47.88,  // 3,99€/Monat × 12
+    yearlyPrice: 49.99,
     features: [
       "1 Benutzer",
       "2 GB Speicherplatz",
@@ -31,7 +31,7 @@ const planDetails = {
   family: {
     name: "Family",
     monthlyPrice: 7.99,
-    yearlyPrice: 83.88,  // 6,99€/Monat × 12
+    yearlyPrice: 84.99,
     features: [
       "2 Benutzer",
       "Unbegrenzter Speicherplatz",
@@ -45,7 +45,7 @@ const planDetails = {
   "family-plus": {
     name: "Family Plus",
     monthlyPrice: 11.99,
-    yearlyPrice: 119.88,  // 9,99€/Monat × 12
+    yearlyPrice: 119.99,
     features: [
       "4 Benutzer",
       "Unbegrenzter Speicherplatz",
