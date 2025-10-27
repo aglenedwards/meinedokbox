@@ -85,6 +85,11 @@ export function CheckoutDialog({ open, onClose, selectedPlan = "family", selecte
         period: billingPeriod,
       });
       const data = await res.json();
+      
+      if (!res.ok) {
+        throw new Error(data.message || "Checkout fehlgeschlagen");
+      }
+      
       return data;
     },
     onSuccess: (data) => {
@@ -94,9 +99,11 @@ export function CheckoutDialog({ open, onClose, selectedPlan = "family", selecte
       }
     },
     onError: (error: Error) => {
+      let description = error.message || "Die Checkout-Session konnte nicht erstellt werden. Bitte versuchen Sie es erneut.";
+      
       toast({
         title: "Checkout fehlgeschlagen",
-        description: "Die Checkout-Session konnte nicht erstellt werden. Bitte versuchen Sie es erneut.",
+        description,
         variant: "destructive",
       });
     },

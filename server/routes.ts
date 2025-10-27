@@ -2979,10 +2979,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Create Stripe Checkout Session for subscription
   app.post("/api/stripe/create-checkout-session", isAuthenticatedLocal, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const { plan, period }: { plan: "solo" | "family" | "family-plus"; period: "monthly" | "yearly" } = req.body;
+    const userId = req.user.claims.sub;
+    const { plan, period }: { plan: "solo" | "family" | "family-plus"; period: "monthly" | "yearly" } = req.body;
+    let priceId: string | undefined;
 
+    try {
       if (!plan || !period) {
         return res.status(400).json({ message: "Plan und Zahlungsperiode erforderlich" });
       }
@@ -2996,7 +2997,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Benutzer nicht gefunden" });
       }
 
-      const priceId = STRIPE_PRICE_IDS[plan][period];
+      priceId = STRIPE_PRICE_IDS[plan][period];
 
       // Create or retrieve Stripe customer
       let customerId = user.stripeCustomerId;
