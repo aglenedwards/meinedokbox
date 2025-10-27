@@ -64,8 +64,8 @@ export const PLAN_LIMITS = {
     canUseEmailInbound: false,
     maxUsers: 1,
     displayName: "Solo",
-    priceMonthly: 3.99,
-    priceYearly: 38.30,      // 20% discount
+    priceMonthly: 4.99,      // Matches Stripe Price ID
+    priceYearly: 47.88,      // ~20% discount
   },
   family: {
     maxUploadsPerMonth: 200, // 200 new documents per month
@@ -75,8 +75,8 @@ export const PLAN_LIMITS = {
     canUseEmailInbound: true,
     maxUsers: 2,             // Master + 1 invited user
     displayName: "Family",
-    priceMonthly: 6.99,
-    priceYearly: 67.10,      // 20% discount
+    priceMonthly: 8.39,      // Matches Stripe Price ID
+    priceYearly: 83.88,      // ~20% discount
   },
   "family-plus": {
     maxUploadsPerMonth: 500, // 500 new documents per month
@@ -86,8 +86,8 @@ export const PLAN_LIMITS = {
     canUseEmailInbound: true,
     maxUsers: 4,             // Master + 3 invited users
     displayName: "Family Plus",
-    priceMonthly: 9.99,
-    priceYearly: 95.90,      // 20% discount
+    priceMonthly: 11.99,     // Matches Stripe Price ID
+    priceYearly: 119.88,     // ~20% discount
   },
 } as const;
 
