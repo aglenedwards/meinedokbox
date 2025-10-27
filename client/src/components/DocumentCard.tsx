@@ -15,7 +15,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { EditDocumentDialog } from "@/components/EditDocumentDialog";
 import { SmartTagsDialog } from "@/components/SmartTagsDialog";
 
@@ -619,6 +619,7 @@ export function DocumentCard({
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle>Kategorie ändern</DialogTitle>
+            <DialogDescription>Wählen Sie eine passende Kategorie für Ihr Dokument.</DialogDescription>
           </DialogHeader>
           <div className="max-h-[60vh] overflow-y-auto pr-2">
             <div className="grid gap-2">
@@ -660,6 +661,7 @@ export function DocumentCard({
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle>Ordner zuweisen</DialogTitle>
+            <DialogDescription>Weisen Sie das Dokument einem Ordner zu oder lassen Sie es ohne Ordner.</DialogDescription>
           </DialogHeader>
           <div className="max-h-[60vh] overflow-y-auto pr-2">
             <div className="grid gap-2">
