@@ -30,8 +30,8 @@ const planDetails = {
   },
   family: {
     name: "Family",
-    monthlyPrice: 8.39,
-    yearlyPrice: 83.88,
+    monthlyPrice: 7.99,
+    yearlyPrice: 76.70,
     features: [
       "2 Benutzer",
       "Unbegrenzter Speicherplatz",
@@ -44,8 +44,8 @@ const planDetails = {
   },
   "family-plus": {
     name: "Family Plus",
-    monthlyPrice: 11.99,
-    yearlyPrice: 119.88,
+    monthlyPrice: 10.99,
+    yearlyPrice: 105.50,
     features: [
       "4 Benutzer",
       "Unbegrenzter Speicherplatz",
