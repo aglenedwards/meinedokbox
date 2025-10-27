@@ -106,6 +106,10 @@ export const users = pgTable("users", {
   billingPostalCode: varchar("billing_postal_code"),
   billingCity: varchar("billing_city"),
   billingCountry: varchar("billing_country").default("Deutschland"),
+  // Stripe integration
+  stripeCustomerId: varchar("stripe_customer_id"),
+  stripeSubscriptionId: varchar("stripe_subscription_id"),
+  stripePriceId: varchar("stripe_price_id"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
