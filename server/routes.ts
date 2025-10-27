@@ -2994,6 +2994,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
             period,
           },
         },
+        customer_update: {
+          address: 'auto', // Automatically save address entered in Checkout for tax calculation
+        },
+        billing_address_collection: 'required', // Require billing address in Checkout
         tax_id_collection: {
           enabled: true, // Allow customers to enter VAT ID for B2B
         },
