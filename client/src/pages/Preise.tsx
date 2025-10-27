@@ -135,7 +135,7 @@ export default function Preise() {
                   </li>
                   <li className="flex items-start gap-3">
                     <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                    <span>Smartphone-App & PWA</span>
+                    <span>Web-App & Mobile</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
@@ -195,7 +195,7 @@ export default function Preise() {
                   </li>
                   <li className="flex items-start gap-3">
                     <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                    <span>Smartphone-App & PWA</span>
+                    <span>Web-App & Mobile</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
@@ -253,7 +253,7 @@ export default function Preise() {
                   </li>
                   <li className="flex items-start gap-3">
                     <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                    <span>Smartphone-App & PWA</span>
+                    <span>Web-App & Mobile</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />

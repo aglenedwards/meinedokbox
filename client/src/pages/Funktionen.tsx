@@ -238,7 +238,7 @@ export default function Funktionen() {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground mb-4">
-                  Fotografieren Sie Dokumente direkt mit der Smartphone-App oder PWA.
+                  Fotografieren Sie Dokumente direkt mit der Web-App auf Ihrem Smartphone.
                 </p>
                 <ul className="space-y-2 text-sm">
                   <li className="flex items-start gap-2">
