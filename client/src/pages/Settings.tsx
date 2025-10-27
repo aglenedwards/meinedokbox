@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { User, Mail, UserPlus, X, Crown, Calendar, FileText, Settings as SettingsIcon, TrendingUp, HardDrive } from "lucide-react";
+import { User, Mail, UserPlus, X, Crown, Calendar, FileText, Settings as SettingsIcon, TrendingUp, HardDrive, ExternalLink } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,13 +10,50 @@ import { Separator } from "@/components/ui/separator";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
-import { queryClient } from "@/lib/queryClient";
+import { queryClient, apiRequest } from "@/lib/queryClient";
 import { getCurrentUser, getSubscriptionStatus, type SubscriptionStatus } from "@/lib/api";
 import type { User as UserType, SharedAccess } from "@shared/schema";
 import { UpgradeModal } from "@/components/UpgradeModal";
 import { CheckoutDialog } from "@/components/CheckoutDialog";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { EmailWhitelistSettings } from "@/components/EmailWhitelistSettings";
+
+function ManageSubscriptionButton() {
+  const { toast } = useToast();
+  const [loading, setLoading] = useState(false);
+
+  const handleManageSubscription = async () => {
+    try {
+      setLoading(true);
+      const res = await apiRequest("POST", "/api/stripe/create-portal-session", {});
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    } catch (error) {
+      toast({
+        title: "Fehler",
+        description: "Kundenportal konnte nicht geöffnet werden. Bitte versuchen Sie es erneut.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Button
+      onClick={handleManageSubscription}
+      disabled={loading}
+      size="sm"
+      variant="outline"
+      data-testid="button-manage-subscription"
+    >
+      <ExternalLink className="h-4 w-4 mr-2" />
+      {loading ? "Lädt..." : "Abo verwalten"}
+    </Button>
+  );
+}
 
 export default function Settings() {
   const { toast } = useToast();
@@ -351,7 +388,7 @@ export default function Settings() {
                            subscriptionStatus.plan === "trial" ? "Trial" : "Free"}
                         </Badge>
                       </div>
-                      {!['family', 'family-plus'].includes(subscriptionStatus.plan) && (
+                      {!['family', 'family-plus', 'solo'].includes(subscriptionStatus.plan) ? (
                         <Button
                           onClick={() => setCheckoutDialogOpen(true)}
                           data-testid="button-upgrade"
@@ -360,6 +397,8 @@ export default function Settings() {
                           <Crown className="h-4 w-4 mr-2" />
                           Upgraden
                         </Button>
+                      ) : (
+                        <ManageSubscriptionButton />
                       )}
                     </div>
                   </div>
