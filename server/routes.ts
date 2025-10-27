@@ -44,7 +44,7 @@ if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
 }
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2024-12-18.acacia",
+  apiVersion: "2025-09-30.clover",
 });
 
 // Configure multer for file uploads (memory storage for processing)
@@ -2926,6 +2926,219 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('[DeleteSmartFolder] Error:', error);
       res.status(500).json({ message: "Fehler beim Löschen des Smart-Ordners" });
+    }
+  });
+
+  // ============================================================================
+  // STRIPE PAYMENT ROUTES
+  // ============================================================================
+
+  // Create Stripe Checkout Session for subscription
+  app.post("/api/stripe/create-checkout-session", isAuthenticatedLocal, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { plan, period }: { plan: "solo" | "family" | "family-plus"; period: "monthly" | "yearly" } = req.body;
+
+      if (!plan || !period) {
+        return res.status(400).json({ message: "Plan und Zahlungsperiode erforderlich" });
+      }
+
+      if (!STRIPE_PRICE_IDS[plan]?.[period]) {
+        return res.status(400).json({ message: "Ungültiger Plan oder Zahlungsperiode" });
+      }
+
+      const user = await storage.getUserById(userId);
+      if (!user) {
+        return res.status(404).json({ message: "Benutzer nicht gefunden" });
+      }
+
+      const priceId = STRIPE_PRICE_IDS[plan][period];
+
+      // Create or retrieve Stripe customer
+      let customerId = user.stripeCustomerId;
+      if (!customerId) {
+        const customer = await stripe.customers.create({
+          email: user.email,
+          name: `${user.firstName} ${user.lastName}`,
+          metadata: {
+            userId: user.id,
+          },
+        });
+        customerId = customer.id;
+        await storage.updateUserStripeInfo(userId, { stripeCustomerId: customerId });
+      }
+
+      // Create Checkout Session
+      const session = await stripe.checkout.sessions.create({
+        customer: customerId,
+        mode: "subscription",
+        payment_method_types: ["card", "sepa_debit"],
+        line_items: [
+          {
+            price: priceId,
+            quantity: 1,
+          },
+        ],
+        success_url: `${req.protocol}://${req.get("host")}/dashboard?checkout=success`,
+        cancel_url: `${req.protocol}://${req.get("host")}/dashboard?checkout=cancel`,
+        metadata: {
+          userId: user.id,
+          plan,
+          period,
+        },
+        subscription_data: {
+          metadata: {
+            userId: user.id,
+            plan,
+            period,
+          },
+        },
+        tax_id_collection: {
+          enabled: true, // Allow customers to enter VAT ID for B2B
+        },
+        automatic_tax: {
+          enabled: true, // Enable Stripe Tax for automatic tax calculation
+        },
+      });
+
+      res.json({ url: session.url });
+    } catch (error) {
+      console.error('[CreateCheckoutSession] Error:', error);
+      res.status(500).json({ message: "Fehler beim Erstellen der Checkout-Session" });
+    }
+  });
+
+  // Create Stripe Customer Portal Session (for managing subscriptions)
+  app.post("/api/stripe/create-portal-session", isAuthenticatedLocal, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUserById(userId);
+
+      if (!user?.stripeCustomerId) {
+        return res.status(400).json({ message: "Kein Stripe-Kunde gefunden" });
+      }
+
+      const session = await stripe.billingPortal.sessions.create({
+        customer: user.stripeCustomerId,
+        return_url: `${req.protocol}://${req.get("host")}/settings`,
+      });
+
+      res.json({ url: session.url });
+    } catch (error) {
+      console.error('[CreatePortalSession] Error:', error);
+      res.status(500).json({ message: "Fehler beim Öffnen des Kundenportals" });
+    }
+  });
+
+  // Stripe Webhook Handler
+  app.post("/api/stripe/webhook", express.raw({ type: "application/json" }), async (req, res) => {
+    const sig = req.headers["stripe-signature"];
+
+    if (!sig) {
+      console.error('[StripeWebhook] Missing signature');
+      return res.status(400).send("Missing signature");
+    }
+
+    let event: Stripe.Event;
+
+    try {
+      // In production, you should set STRIPE_WEBHOOK_SECRET from Stripe Dashboard
+      const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+      if (webhookSecret) {
+        event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
+      } else {
+        // For testing without webhook secret
+        event = JSON.parse(req.body.toString());
+      }
+    } catch (err: any) {
+      console.error('[StripeWebhook] Signature verification failed:', err.message);
+      return res.status(400).send(`Webhook Error: ${err.message}`);
+    }
+
+    console.log(`[StripeWebhook] Event received: ${event.type}`);
+
+    try {
+      switch (event.type) {
+        case "checkout.session.completed": {
+          const session = event.data.object as Stripe.Checkout.Session;
+          const userId = session.metadata?.userId;
+          const plan = session.metadata?.plan as "solo" | "family" | "family-plus";
+          
+          if (userId && session.subscription) {
+            const subscriptionId = session.subscription as string;
+            await storage.updateUserStripeInfo(userId, {
+              stripeSubscriptionId: subscriptionId,
+              stripePriceId: session.line_items?.data[0]?.price?.id,
+            });
+            
+            // Update subscription plan
+            if (plan) {
+              await storage.updateUserSubscription(userId, plan, null);
+            }
+          }
+          break;
+        }
+
+        case "customer.subscription.updated": {
+          const subscription = event.data.object as Stripe.Subscription;
+          const userId = subscription.metadata?.userId;
+          const plan = subscription.metadata?.plan as "solo" | "family" | "family-plus";
+
+          if (userId) {
+            // Check subscription status
+            if (subscription.status === "active" && plan) {
+              await storage.updateUserSubscription(userId, plan, null);
+            } else if (subscription.status === "canceled" || subscription.status === "unpaid") {
+              // Downgrade to free plan when subscription ends
+              await storage.updateUserSubscription(userId, "free", null);
+            }
+
+            await storage.updateUserStripeInfo(userId, {
+              stripeSubscriptionId: subscription.id,
+              stripePriceId: subscription.items.data[0]?.price.id,
+            });
+          }
+          break;
+        }
+
+        case "customer.subscription.deleted": {
+          const subscription = event.data.object as Stripe.Subscription;
+          const userId = subscription.metadata?.userId;
+
+          if (userId) {
+            // Downgrade to free plan
+            await storage.updateUserSubscription(userId, "free", null);
+            await storage.updateUserStripeInfo(userId, {
+              stripeSubscriptionId: null,
+              stripePriceId: null,
+            });
+          }
+          break;
+        }
+
+        case "invoice.payment_succeeded": {
+          const invoice = event.data.object as Stripe.Invoice;
+          console.log(`[StripeWebhook] Payment succeeded for invoice ${invoice.id}`);
+          // Payment successful - subscription will remain active
+          break;
+        }
+
+        case "invoice.payment_failed": {
+          const invoice = event.data.object as Stripe.Invoice;
+          console.log(`[StripeWebhook] Payment failed for invoice ${invoice.id}`);
+          // Stripe will automatically retry failed payments
+          // You could send a notification email to the user here
+          break;
+        }
+
+        default:
+          console.log(`[StripeWebhook] Unhandled event type: ${event.type}`);
+      }
+
+      res.json({ received: true });
+    } catch (error) {
+      console.error('[StripeWebhook] Error processing event:', error);
+      res.status(500).json({ error: "Webhook handler failed" });
     }
   });
 
