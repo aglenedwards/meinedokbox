@@ -12,8 +12,13 @@ export function OnboardingTour({ run, onFinish }: OnboardingTourProps) {
   const [runTour, setRunTour] = useState(run);
 
   useEffect(() => {
+    console.log('[OnboardingTour] Component mounted, run prop:', run);
     setRunTour(run);
   }, [run]);
+
+  useEffect(() => {
+    console.log('[OnboardingTour] runTour state changed to:', runTour);
+  }, [runTour]);
 
   // Mark onboarding as completed in database and localStorage
   const markOnboardingCompleted = useCallback(async () => {
@@ -31,9 +36,9 @@ export function OnboardingTour({ run, onFinish }: OnboardingTourProps) {
   }, []);
 
   const steps: Step[] = [
-    // Step 1: Upload Button
+    // Step 1: Upload Button (works on both desktop and mobile)
     {
-      target: '[data-testid="button-upload-menu"]',
+      target: '[data-testid="button-upload-menu"], [data-testid="button-upload-menu-mobile"]',
       content: (
         <div className="space-y-2">
           <h3 className="font-semibold text-base">📸 Dokument hochladen</h3>

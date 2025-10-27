@@ -59,15 +59,19 @@ export function DashboardLayout({
     // Check both database flag and localStorage
     const hasCompletedOnboarding = localStorage.getItem('onboarding-completed') === 'true';
     
+    console.log('[DashboardLayout] Current location:', location);
+    console.log('[DashboardLayout] User:', user?.email, 'hasSeenWelcomeModal:', user?.hasSeenWelcomeModal, 'hasSeenOnboarding:', user?.hasSeenOnboarding);
+    console.log('[DashboardLayout] hasCompletedOnboarding from localStorage:', hasCompletedOnboarding);
+    
     if (user && user.hasSeenWelcomeModal && !user.hasSeenOnboarding && !hasCompletedOnboarding && !showWelcomeModal) {
       // Small delay to ensure modal is fully closed
       const timer = setTimeout(() => {
-        console.log('[DashboardLayout] Starting onboarding tour for new user');
+        console.log('[DashboardLayout] Starting onboarding tour for new user at location:', location);
         setRunOnboardingTour(true);
       }, 500);
       return () => clearTimeout(timer);
     }
-  }, [user, showWelcomeModal]);
+  }, [user, showWelcomeModal, location]);
 
   // Fetch subscription status
   const { data: subscriptionStatus } = useQuery<SubscriptionStatus>({
@@ -256,9 +260,9 @@ export function DashboardLayout({
         onClose={() => setShowUpgradeModal(false)}
       />
 
-      {user && location === "/" && (
+      {user && (
         <OnboardingTour
-          run={runOnboardingTour}
+          run={runOnboardingTour && (location === "/" || location === "/dashboard")}
           onFinish={() => setRunOnboardingTour(false)}
         />
       )}
