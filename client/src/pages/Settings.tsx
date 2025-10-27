@@ -489,6 +489,35 @@ export default function Settings() {
           {/* Email Whitelist (Security Feature) */}
           <EmailWhitelistSettings />
 
+          {/* Help & Onboarding Tour */}
+          <Card data-testid="section-help">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                Hilfe & Einführung
+              </CardTitle>
+              <CardDescription>
+                Entdecken Sie die Funktionen von MeineDokBox
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Starten Sie die interaktive Tour erneut, um alle Funktionen kennenzulernen.
+              </p>
+              <Button
+                onClick={() => {
+                  localStorage.removeItem('onboarding-completed');
+                  window.location.href = '/';
+                }}
+                variant="outline"
+                data-testid="button-restart-tour"
+              >
+                <FileText className="h-4 w-4 mr-2" />
+                Tour erneut starten
+              </Button>
+            </CardContent>
+          </Card>
+
           {/* Export Card */}
           <Card data-testid="section-export">
             <CardHeader>
