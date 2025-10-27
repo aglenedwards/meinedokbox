@@ -16,6 +16,7 @@ import AdminLogin from "@/pages/AdminLogin";
 import VerifyEmail from "@/pages/VerifyEmail";
 import Invite from "@/pages/Invite";
 import ResetPassword from "@/pages/ResetPassword";
+import CheckoutSuccess from "@/pages/CheckoutSuccess";
 import Funktionen from "@/pages/Funktionen";
 import Sicherheit from "@/pages/Sicherheit";
 import Preise from "@/pages/Preise";
@@ -75,6 +76,7 @@ function Router() {
       <Route path="/verify-email" component={VerifyEmail} />
       <Route path="/invite" component={Invite} />
       <Route path="/reset-password" component={ResetPassword} />
+      <Route path="/checkout/erfolg" component={CheckoutSuccess} />
       <Route path="/impressum" component={Impressum} />
       <Route path="/datenschutz" component={Datenschutz} />
       <Route path="/kontakt" component={Kontakt} />
