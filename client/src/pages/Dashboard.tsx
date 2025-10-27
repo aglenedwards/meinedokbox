@@ -1050,8 +1050,12 @@ export default function Dashboard() {
         totalFiles={processingModal.totalFiles}
         currentFile={processingModal.currentFile}
         onClose={() => {
+          // Just close the modal, don't open the document
           setProcessingModal(prev => ({ ...prev, open: false }));
-          // Open the uploaded document in viewer
+        }}
+        onViewDocument={() => {
+          // Close modal and open the document in viewer
+          setProcessingModal(prev => ({ ...prev, open: false }));
           if (processingModal.uploadedDocumentId) {
             handleView(processingModal.uploadedDocumentId);
           }

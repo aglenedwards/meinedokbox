@@ -15,6 +15,7 @@ interface ProcessingModalProps {
   progress?: number;
   detectedCategory?: string;
   onClose: () => void;
+  onViewDocument?: () => void;
   onAddAnother?: () => void;
   totalFiles?: number;
   currentFile?: number;
@@ -44,6 +45,7 @@ export function ProcessingModal({
   progress = 0,
   detectedCategory,
   onClose,
+  onViewDocument,
   onAddAnother,
   totalFiles,
   currentFile,
@@ -51,7 +53,12 @@ export function ProcessingModal({
   const currentStep = getProcessingStep(progress, totalFiles, currentFile);
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
+    <Dialog open={open} onOpenChange={(isOpen) => {
+      // Only call onClose when the dialog is being closed
+      if (!isOpen) {
+        onClose();
+      }
+    }}>
       <DialogContent data-testid="modal-processing">
         <DialogHeader>
           <DialogTitle>
@@ -86,7 +93,7 @@ export function ProcessingModal({
             <div className="flex flex-col items-center gap-4">
               <CheckCircle2 className="h-12 w-12 text-chart-3" />
               <div className="flex gap-2">
-                <Button onClick={onClose} data-testid="button-view-document">
+                <Button onClick={onViewDocument || onClose} data-testid="button-view-document">
                   Dokument ansehen
                 </Button>
                 <Button 
