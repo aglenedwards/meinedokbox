@@ -17,19 +17,19 @@ export const sessions = pgTable(
 // Subscription plans
 export const SUBSCRIPTION_PLANS = ["free", "trial", "solo", "family", "family-plus"] as const;
 
-// Stripe Price IDs (from Stripe Dashboard)
+// Stripe Price IDs (from Stripe Dashboard - LIVE MODE)
 export const STRIPE_PRICE_IDS = {
   solo: {
-    monthly: "price_1SMpMqDu6qqEfVDm26V0U6D6",
-    yearly: "price_1SMpMqDu6qqEfVDmZEHB8rkX",
+    monthly: "price_1SMvEJDu6qqEfVDmFKeAnn2g",
+    yearly: "price_1SMvEJDu6qqEfVDmnaSGZ9Cd",
   },
   family: {
-    monthly: "price_1SMpTmDu6qqEfVDmzs0kMYsr",
-    yearly: "price_1SMpTmDu6qqEfVDm3FLxRNBc",
+    monthly: "price_1SMvILDu6qqEfVDmQl7l6VaN",
+    yearly: "price_1SMvILDu6qqEfVDm6hzJDM6X",
   },
   "family-plus": {
-    monthly: "price_1SMpVADu6qqEfVDmOjsR9K02",
-    yearly: "price_1SMpVADu6qqEfVDmIuFjbd1v",
+    monthly: "price_1SMvJUDu6qqEfVDmRleqxfKp",
+    yearly: "price_1SMvJqDu6qqEfVDmL1yBdXuy",
   },
 } as const;
 
