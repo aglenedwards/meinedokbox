@@ -65,7 +65,7 @@ export const PLAN_LIMITS = {
     maxUsers: 1,
     displayName: "Solo",
     priceMonthly: 4.99,      // inkl. 19% MwSt.
-    priceYearly: 47.88,      // ~20% discount
+    priceYearly: 47.88,      // 3,99€/Monat × 12 (20% discount)
   },
   family: {
     maxUploadsPerMonth: 200, // 200 new documents per month
@@ -76,7 +76,7 @@ export const PLAN_LIMITS = {
     maxUsers: 2,             // Master + 1 invited user
     displayName: "Family",
     priceMonthly: 7.99,      // inkl. 19% MwSt.
-    priceYearly: 76.70,      // ~20% discount
+    priceYearly: 83.88,      // 6,99€/Monat × 12 (12% discount)
   },
   "family-plus": {
     maxUploadsPerMonth: 500, // 500 new documents per month
@@ -86,8 +86,8 @@ export const PLAN_LIMITS = {
     canUseEmailInbound: true,
     maxUsers: 4,             // Master + 3 invited users
     displayName: "Family Plus",
-    priceMonthly: 10.99,     // inkl. 19% MwSt.
-    priceYearly: 105.50,     // ~20% discount
+    priceMonthly: 11.99,     // inkl. 19% MwSt.
+    priceYearly: 119.88,     // 9,99€/Monat × 12 (17% discount)
   },
 } as const;
 
