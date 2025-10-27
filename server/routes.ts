@@ -3013,7 +3013,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Create Checkout Session
-      const session = await stripe.checkout.sessions.create({
+      // Note: Stripe Tax must be activated in Stripe Dashboard for automatic_tax to work
+      const sessionConfig: any = {
         customer: customerId,
         mode: "subscription",
         payment_method_types: ["card", "sepa_debit"],
@@ -3045,15 +3046,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
         tax_id_collection: {
           enabled: true, // Allow customers to enter VAT ID for B2B
         },
-        automatic_tax: {
+      };
+
+      // Only enable automatic_tax if explicitly enabled (requires Stripe Tax activation)
+      if (process.env.STRIPE_TAX_ENABLED === 'true') {
+        sessionConfig.automatic_tax = {
           enabled: true, // Enable Stripe Tax for automatic tax calculation
-        },
-      });
+        };
+      }
+
+      const session = await stripe.checkout.sessions.create(sessionConfig);
 
       res.json({ url: session.url });
-    } catch (error) {
+    } catch (error: any) {
       console.error('[CreateCheckoutSession] Error:', error);
-      res.status(500).json({ message: "Fehler beim Erstellen der Checkout-Session" });
+      
+      // Provide detailed error information for debugging
+      const errorMessage = error?.message || "Unbekannter Fehler";
+      const errorType = error?.type || "unknown";
+      const errorCode = error?.code || "unknown";
+      
+      console.error('[CreateCheckoutSession] Error Details:', {
+        message: errorMessage,
+        type: errorType,
+        code: errorCode,
+        plan,
+        period,
+        priceId,
+      });
+
+      // Return more specific error to frontend
+      let userMessage = "Fehler beim Erstellen der Checkout-Session";
+      if (errorMessage.includes("tax")) {
+        userMessage = "Stripe Tax ist nicht aktiviert. Bitte kontaktieren Sie den Support.";
+      } else if (errorMessage.includes("price")) {
+        userMessage = "Ungültige Preis-ID. Bitte kontaktieren Sie den Support.";
+      } else if (errorMessage.includes("customer")) {
+        userMessage = "Fehler beim Erstellen des Kundenkontos. Bitte versuchen Sie es erneut.";
+      }
+
+      res.status(500).json({ 
+        message: userMessage,
+        details: process.env.NODE_ENV === 'development' ? errorMessage : undefined
+      });
     }
   });
 
