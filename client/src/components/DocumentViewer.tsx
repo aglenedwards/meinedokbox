@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Download, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, X } from "lucide-react";
+import { Download, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, X, RotateCw } from "lucide-react";
 import { Document, Page, pdfjs } from 'react-pdf';
 import type { Document as DocumentType } from "@shared/schema";
 import 'react-pdf/dist/Page/AnnotationLayer.css';
@@ -24,6 +24,8 @@ export function DocumentViewer({ document, open, onClose }: DocumentViewerProps)
   const [pdfNumPages, setPdfNumPages] = useState<number | null>(null);
   const [pdfScale, setPdfScale] = useState(1.0);
   const [pdfLoading, setPdfLoading] = useState(true);
+  const [pdfError, setPdfError] = useState<string | null>(null);
+  const [pdfKey, setPdfKey] = useState(0); // For forcing reload
 
   if (!document) return null;
 
@@ -98,7 +100,20 @@ export function DocumentViewer({ document, open, onClose }: DocumentViewerProps)
   const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
     setPdfNumPages(numPages);
     setPdfLoading(false);
+    setPdfError(null);
     setCurrentPage(0);
+  };
+
+  const handlePdfError = (error: any) => {
+    console.error('PDF load error:', error);
+    setPdfLoading(false);
+    setPdfError('Fehler beim Laden des PDFs. Bitte versuchen Sie es erneut.');
+  };
+
+  const handlePdfRetry = () => {
+    setPdfLoading(true);
+    setPdfError(null);
+    setPdfKey(prev => prev + 1); // Force remount
   };
 
   const handleZoomIn = () => {
@@ -113,7 +128,7 @@ export function DocumentViewer({ document, open, onClose }: DocumentViewerProps)
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl w-full h-[90vh] flex flex-col p-0 gap-0">
+      <DialogContent className="max-w-4xl w-full h-[90vh] flex flex-col p-0 gap-0 relative">
         {/* Header */}
         <div className="px-4 sm:px-6 py-4 border-b relative">
           {/* Close and Download buttons - top right corner */}
@@ -218,33 +233,41 @@ export function DocumentViewer({ document, open, onClose }: DocumentViewerProps)
           <div className="flex items-center justify-center h-full p-4 overflow-x-hidden">
             {isPdf ? (
               <div className="flex flex-col items-center justify-center w-full h-full max-w-full">
-                {pdfLoading && (
+                {pdfLoading && !pdfError && (
                   <div className="text-center text-muted-foreground mb-4">
                     PDF wird geladen...
                   </div>
                 )}
-                <div className="w-full max-w-full overflow-hidden flex justify-center">
-                  <Document
-                    file={pdfViewUrl}
-                    onLoadSuccess={onDocumentLoadSuccess}
-                    onLoadError={(error) => {
-                      console.error('PDF load error:', error);
-                      setPdfLoading(false);
-                    }}
-                    loading=""
-                    className="flex items-center justify-center max-w-full"
-                  >
-                    <Page 
-                      pageNumber={currentPage + 1}
-                      scale={pdfScale}
-                      renderTextLayer={true}
-                      renderAnnotationLayer={true}
-                      className="shadow-lg sm:max-w-none max-w-full"
-                      data-testid={`pdf-page-${currentPage + 1}`}
-                      width={window.innerWidth < 640 ? Math.min(window.innerWidth - 32, 800) : undefined}
-                    />
-                  </Document>
-                </div>
+                {pdfError ? (
+                  <div className="flex flex-col items-center gap-4 text-center">
+                    <p className="text-destructive">{pdfError}</p>
+                    <Button onClick={handlePdfRetry} data-testid="button-retry-pdf">
+                      <RotateCw className="h-4 w-4 mr-2" />
+                      Erneut versuchen
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="w-full max-w-full overflow-hidden flex justify-center">
+                    <Document
+                      key={pdfKey}
+                      file={pdfViewUrl}
+                      onLoadSuccess={onDocumentLoadSuccess}
+                      onLoadError={handlePdfError}
+                      loading=""
+                      className="flex items-center justify-center max-w-full"
+                    >
+                      <Page 
+                        pageNumber={currentPage + 1}
+                        scale={pdfScale}
+                        renderTextLayer={true}
+                        renderAnnotationLayer={true}
+                        className="shadow-lg sm:max-w-none max-w-full"
+                        data-testid={`pdf-page-${currentPage + 1}`}
+                        width={window.innerWidth < 640 ? Math.min(window.innerWidth - 32, 800) : undefined}
+                      />
+                    </Document>
+                  </div>
+                )}
               </div>
             ) : (
               <img
@@ -266,7 +289,7 @@ export function DocumentViewer({ document, open, onClose }: DocumentViewerProps)
               size="icon"
               onClick={goToPreviousPage}
               disabled={currentPage === 0}
-              className="absolute left-2 sm:left-4 bottom-4 h-11 w-11 sm:h-12 sm:w-12 bg-background/95 hover:bg-background shadow-lg z-20"
+              className="fixed left-2 sm:left-4 bottom-20 sm:bottom-16 h-11 w-11 sm:h-12 sm:w-12 bg-background/95 hover:bg-background shadow-lg z-50"
               data-testid="button-previous-page"
             >
               <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6" />
@@ -276,7 +299,7 @@ export function DocumentViewer({ document, open, onClose }: DocumentViewerProps)
               size="icon"
               onClick={goToNextPage}
               disabled={currentPage === displayedPages - 1}
-              className="absolute right-2 sm:right-4 bottom-4 h-11 w-11 sm:h-12 sm:w-12 bg-background/95 hover:bg-background shadow-lg z-20"
+              className="fixed right-2 sm:right-4 bottom-20 sm:bottom-16 h-11 w-11 sm:h-12 sm:w-12 bg-background/95 hover:bg-background shadow-lg z-50"
               data-testid="button-next-page"
             >
               <ChevronRight className="h-5 w-5 sm:h-6 sm:w-6" />
