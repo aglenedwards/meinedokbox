@@ -33,10 +33,19 @@ import {
   contactFormLimiter
 } from "./middleware/rateLimiters";
 import { db } from "./db";
-import { users, emailLogs, sharedAccess } from "@shared/schema";
+import { users, emailLogs, sharedAccess, STRIPE_PRICE_IDS } from "@shared/schema";
 import { eq } from "drizzle-orm";
 import sharp from "sharp";
 import { PDFDocument } from "pdf-lib";
+import Stripe from "stripe";
+
+// Initialize Stripe
+if (!process.env.STRIPE_SECRET_KEY) {
+  throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
+}
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+  apiVersion: "2024-12-18.acacia",
+});
 
 // Configure multer for file uploads (memory storage for processing)
 const upload = multer({
