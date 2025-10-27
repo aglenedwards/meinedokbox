@@ -12,12 +12,10 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { EditDocumentDialog } from "@/components/EditDocumentDialog";
 import { SmartTagsDialog } from "@/components/SmartTagsDialog";
 
@@ -195,6 +193,8 @@ export function DocumentCard({
   const [isMobile, setIsMobile] = useState(false);
   const [categoryDrawerOpen, setCategoryDrawerOpen] = useState(false);
   const [folderDrawerOpen, setFolderDrawerOpen] = useState(false);
+  const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
+  const [folderDialogOpen, setFolderDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [smartTagsDialogOpen, setSmartTagsDialogOpen] = useState(false);
   
@@ -318,89 +318,33 @@ export function DocumentCard({
                     Smart-Tags
                   </DropdownMenuItem>
                   
-                  {/* Mobile: Show drawer trigger instead of submenu */}
-                  {isMobile ? (
-                    <DropdownMenuItem 
-                      onClick={(e) => { 
-                        e.stopPropagation(); 
+                  {/* Category Change - Open Dialog or Drawer */}
+                  <DropdownMenuItem 
+                    onClick={(e) => { 
+                      e.stopPropagation(); 
+                      if (isMobile) {
                         setCategoryDrawerOpen(true);
-                      }}
-                    >
-                      Kategorie ändern
-                    </DropdownMenuItem>
-                  ) : (
-                    /* Desktop: Dropdown with scrolling */
-                    <DropdownMenuSub>
-                      <DropdownMenuSubTrigger onClick={(e) => e.stopPropagation()}>
-                        Kategorie ändern
-                      </DropdownMenuSubTrigger>
-                      <DropdownMenuSubContent className="max-h-[400px] overflow-y-auto">
-                        {allCategories.map((cat) => (
-                          <DropdownMenuItem
-                            key={cat}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (cat !== category) {
-                                onCategoryChange?.(cat);
-                              }
-                            }}
-                            disabled={cat === category}
-                            data-testid={`menuitem-category-${cat}`}
-                          >
-                            {cat}
-                            {cat === category && " ✓"}
-                          </DropdownMenuItem>
-                        ))}
-                      </DropdownMenuSubContent>
-                    </DropdownMenuSub>
-                  )}
+                      } else {
+                        setCategoryDialogOpen(true);
+                      }
+                    }}
+                  >
+                    Kategorie ändern
+                  </DropdownMenuItem>
                   
-                  {/* Folder Assignment */}
-                  {isMobile ? (
-                    <DropdownMenuItem 
-                      onClick={(e) => { 
-                        e.stopPropagation(); 
+                  {/* Folder Assignment - Open Dialog or Drawer */}
+                  <DropdownMenuItem 
+                    onClick={(e) => { 
+                      e.stopPropagation(); 
+                      if (isMobile) {
                         setFolderDrawerOpen(true);
-                      }}
-                    >
-                      Ordner zuweisen
-                    </DropdownMenuItem>
-                  ) : (
-                    <DropdownMenuSub>
-                      <DropdownMenuSubTrigger onClick={(e) => e.stopPropagation()}>
-                        Ordner zuweisen
-                      </DropdownMenuSubTrigger>
-                      <DropdownMenuSubContent className="max-h-[400px] overflow-y-auto">
-                        <DropdownMenuItem
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onFolderChange?.(null);
-                          }}
-                          disabled={!folderId}
-                          data-testid="menuitem-folder-none"
-                        >
-                          Kein Ordner
-                          {!folderId && " ✓"}
-                        </DropdownMenuItem>
-                        {folders.map((folder) => (
-                          <DropdownMenuItem
-                            key={folder.id}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (folder.id !== folderId) {
-                                onFolderChange?.(folder.id);
-                              }
-                            }}
-                            disabled={folder.id === folderId}
-                            data-testid={`menuitem-folder-${folder.id}`}
-                          >
-                            {folder.icon} {folder.name}
-                            {folder.id === folderId && " ✓"}
-                          </DropdownMenuItem>
-                        ))}
-                      </DropdownMenuSubContent>
-                    </DropdownMenuSub>
-                  )}
+                      } else {
+                        setFolderDialogOpen(true);
+                      }
+                    }}
+                  >
+                    Ordner zuweisen
+                  </DropdownMenuItem>
                   
                   <DropdownMenuItem 
                     className="text-destructive" 
@@ -668,6 +612,104 @@ export function DocumentCard({
       open={smartTagsDialogOpen}
       onOpenChange={setSmartTagsDialogOpen}
     />
+    
+    {/* Desktop Category Dialog */}
+    {!isMobile && (
+      <Dialog open={categoryDialogOpen} onOpenChange={setCategoryDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Kategorie ändern</DialogTitle>
+          </DialogHeader>
+          <div className="max-h-[60vh] overflow-y-auto pr-2">
+            <div className="grid gap-2">
+              {allCategories.map((cat) => {
+                const catConfig = categoryConfig[cat] || categoryConfig['Sonstiges / Privat'];
+                const CatIcon = catConfig.icon;
+                const isSelected = cat === category;
+                
+                return (
+                  <Button
+                    key={cat}
+                    variant={isSelected ? "default" : "outline"}
+                    className="h-auto py-4 px-4 justify-start gap-3 text-left"
+                    onClick={() => {
+                      if (cat !== category) {
+                        onCategoryChange?.(cat);
+                      }
+                      setCategoryDialogOpen(false);
+                    }}
+                    data-testid={`dialog-category-${cat}`}
+                  >
+                    <div className={`${catConfig.bgColor} rounded-lg p-2 flex-shrink-0`}>
+                      <CatIcon className={`h-5 w-5 ${catConfig.color}`} />
+                    </div>
+                    <span className="flex-1 font-medium">{cat}</span>
+                    {isSelected && <Check className="h-5 w-5 flex-shrink-0" />}
+                  </Button>
+                );
+              })}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    )}
+    
+    {/* Desktop Folder Dialog */}
+    {!isMobile && (
+      <Dialog open={folderDialogOpen} onOpenChange={setFolderDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Ordner zuweisen</DialogTitle>
+          </DialogHeader>
+          <div className="max-h-[60vh] overflow-y-auto pr-2">
+            <div className="grid gap-2">
+              {/* No Folder Option */}
+              <Button
+                variant={!folderId ? "default" : "outline"}
+                className="h-auto py-4 px-4 justify-start gap-3 text-left"
+                onClick={() => {
+                  onFolderChange?.(null);
+                  setFolderDialogOpen(false);
+                }}
+                data-testid="dialog-folder-none"
+              >
+                <div className="bg-muted rounded-lg p-2 flex-shrink-0">
+                  <Folder className="h-5 w-5 text-muted-foreground" />
+                </div>
+                <span className="flex-1 font-medium">Kein Ordner</span>
+                {!folderId && <Check className="h-5 w-5 flex-shrink-0" />}
+              </Button>
+              
+              {/* Folder Options */}
+              {folders.map((folder) => {
+                const isSelected = folder.id === folderId;
+                
+                return (
+                  <Button
+                    key={folder.id}
+                    variant={isSelected ? "default" : "outline"}
+                    className="h-auto py-4 px-4 justify-start gap-3 text-left"
+                    onClick={() => {
+                      if (folder.id !== folderId) {
+                        onFolderChange?.(folder.id);
+                      }
+                      setFolderDialogOpen(false);
+                    }}
+                    data-testid={`dialog-folder-${folder.id}`}
+                  >
+                    <div className="text-3xl flex-shrink-0">
+                      {folder.icon}
+                    </div>
+                    <span className="flex-1 font-medium">{folder.name}</span>
+                    {isSelected && <Check className="h-5 w-5 flex-shrink-0" />}
+                  </Button>
+                );
+              })}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    )}
   </>
   );
 }
