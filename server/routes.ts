@@ -3037,7 +3037,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Stripe Webhook Handler
-  app.post("/api/stripe/webhook", express.raw({ type: "application/json" }), async (req, res) => {
+  // Note: Raw body middleware is registered in index.ts BEFORE express.json()
+  app.post("/api/stripe/webhook", async (req, res) => {
     const sig = req.headers["stripe-signature"];
 
     if (!sig) {

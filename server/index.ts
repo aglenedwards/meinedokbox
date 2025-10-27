@@ -26,6 +26,9 @@ app.use((req, res, next) => {
   next();
 });
 
+// Stripe Webhook needs raw body - must be BEFORE express.json()
+app.use('/api/stripe/webhook', express.raw({ type: 'application/json' }));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
