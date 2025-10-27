@@ -25,9 +25,11 @@ export interface PaginatedDocuments {
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
+  getUserById(id: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
-  updateUserSubscription(id: string, data: Partial<Pick<User, 'subscriptionPlan' | 'trialEndsAt' | 'subscriptionEndsAt' | 'uploadedThisMonth' | 'uploadCounterResetAt'>>): Promise<User | undefined>;
+  updateUserSubscription(id: string, plan: string, endsAt: Date | null): Promise<User | undefined>;
+  updateUserStripeInfo(id: string, data: { stripeCustomerId?: string | null; stripeSubscriptionId?: string | null; stripePriceId?: string | null }): Promise<User | undefined>;
   
   createDocument(document: InsertDocument): Promise<Document>;
   getDocument(id: string): Promise<Document | undefined>;
@@ -189,18 +191,52 @@ export class DbStorage implements IStorage {
     return user;
   }
 
+  async getUserById(id: string): Promise<User | undefined> {
+    const user = await db.query.users.findFirst({
+      where: eq(users.id, id),
+    });
+    return user;
+  }
+
   async updateUserSubscription(
     id: string,
-    data: Partial<Pick<User, 'subscriptionPlan' | 'trialEndsAt' | 'subscriptionEndsAt' | 'uploadedThisMonth' | 'uploadCounterResetAt'>>
+    plan: string,
+    endsAt: Date | null
   ): Promise<User | undefined> {
     const [user] = await db
       .update(users)
       .set({
-        ...data,
+        subscriptionPlan: plan,
+        subscriptionEndsAt: endsAt,
         updatedAt: new Date(),
       })
       .where(eq(users.id, id))
       .returning();
+    return user;
+  }
+
+  async updateUserStripeInfo(
+    id: string,
+    data: { stripeCustomerId?: string | null; stripeSubscriptionId?: string | null; stripePriceId?: string | null }
+  ): Promise<User | undefined> {
+    const updateData: any = { updatedAt: new Date() };
+    
+    if (data.stripeCustomerId !== undefined) {
+      updateData.stripeCustomerId = data.stripeCustomerId;
+    }
+    if (data.stripeSubscriptionId !== undefined) {
+      updateData.stripeSubscriptionId = data.stripeSubscriptionId;
+    }
+    if (data.stripePriceId !== undefined) {
+      updateData.stripePriceId = data.stripePriceId;
+    }
+
+    const [user] = await db
+      .update(users)
+      .set(updateData)
+      .where(eq(users.id, id))
+      .returning();
+    
     return user;
   }
 
