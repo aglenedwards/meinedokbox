@@ -31,7 +31,7 @@ const pricingPlans: PricingPlan[] = [
   {
     name: "Solo",
     monthlyPrice: 4.99,
-    yearlyPrice: 47.88, // €3,99 * 12
+    yearlyPrice: 49.99,
     features: [
       "1 Benutzer",
       "50 Uploads/Monat",
@@ -44,7 +44,7 @@ const pricingPlans: PricingPlan[] = [
   {
     name: "Family",
     monthlyPrice: 7.99,
-    yearlyPrice: 83.88, // €6,99 * 12
+    yearlyPrice: 84.99,
     recommended: true,
     trialAvailable: true,
     features: [
@@ -60,7 +60,7 @@ const pricingPlans: PricingPlan[] = [
   {
     name: "Family Plus",
     monthlyPrice: 11.99,
-    yearlyPrice: 119.88, // €9,99 * 12
+    yearlyPrice: 119.99,
     features: [
       "4 Benutzer",
       "500 Uploads/Monat",
