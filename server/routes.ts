@@ -45,7 +45,7 @@ if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
 }
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2025-09-30.clover",
+  apiVersion: "2024-11-20.acacia",
 });
 
 // Configure multer for file uploads (memory storage for processing)
@@ -3030,8 +3030,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Create Checkout Session
-      // Note: Stripe Tax must be activated in Stripe Dashboard for automatic_tax to work
-      const sessionConfig: any = {
+      // Note: Prices already include 19% German VAT (inkl. MwSt.)
+      const sessionConfig: Stripe.Checkout.SessionCreateParams = {
         customer: customerId,
         mode: "subscription",
         payment_method_types: ["card", "sepa_debit"],
@@ -3056,41 +3056,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
           },
         },
         customer_update: {
-          address: 'auto', // Automatically save address entered in Checkout for tax calculation
-          name: 'auto', // Automatically save name/company name for Tax ID collection
+          address: 'auto',
+          name: 'auto',
         },
-        billing_address_collection: 'required', // Require billing address in Checkout
+        billing_address_collection: 'required',
         tax_id_collection: {
           enabled: true, // Allow customers to enter VAT ID for B2B
         },
       };
 
-      // Only enable automatic_tax if explicitly enabled (requires Stripe Tax activation)
-      if (process.env.STRIPE_TAX_ENABLED === 'true') {
-        sessionConfig.automatic_tax = {
-          enabled: true, // Enable Stripe Tax for automatic tax calculation
-        };
-      }
+      console.log('[CreateCheckoutSession] Creating session with config:', {
+        customerId,
+        plan,
+        period,
+        priceId,
+        mode: sessionConfig.mode,
+      });
 
       const session = await stripe.checkout.sessions.create(sessionConfig);
+      
+      console.log('[CreateCheckoutSession] Session created successfully:', {
+        sessionId: session.id,
+        url: session.url,
+      });
 
       res.json({ url: session.url });
     } catch (error: any) {
-      console.error('[CreateCheckoutSession] Error:', error);
+      // Enhanced error logging with full Stripe error details
+      console.error('[CreateCheckoutSession] ========== STRIPE ERROR ==========');
+      console.error('[CreateCheckoutSession] Full error object:', JSON.stringify(error, null, 2));
+      console.error('[CreateCheckoutSession] Error message:', error?.message);
+      console.error('[CreateCheckoutSession] Error type:', error?.type);
+      console.error('[CreateCheckoutSession] Error code:', error?.code);
+      console.error('[CreateCheckoutSession] Error stack:', error?.stack);
+      console.error('[CreateCheckoutSession] Request details:', {
+        plan,
+        period,
+        priceId,
+        userId: req.user.claims.sub,
+      });
+      console.error('[CreateCheckoutSession] ================================');
       
       // Provide detailed error information for debugging
       const errorMessage = error?.message || "Unbekannter Fehler";
       const errorType = error?.type || "unknown";
       const errorCode = error?.code || "unknown";
-      
-      console.error('[CreateCheckoutSession] Error Details:', {
-        message: errorMessage,
-        type: errorType,
-        code: errorCode,
-        plan,
-        period,
-        priceId,
-      });
 
       // Return more specific error to frontend
       let userMessage = "Fehler beim Erstellen der Checkout-Session";
@@ -3100,6 +3110,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userMessage = "Ungültige Preis-ID. Bitte kontaktieren Sie den Support.";
       } else if (errorMessage.includes("customer")) {
         userMessage = "Fehler beim Erstellen des Kundenkontos. Bitte versuchen Sie es erneut.";
+      } else if (errorCode === "resource_missing") {
+        userMessage = "Die angeforderte Ressource wurde nicht gefunden. Bitte kontaktieren Sie den Support.";
       }
 
       res.status(500).json({ 
