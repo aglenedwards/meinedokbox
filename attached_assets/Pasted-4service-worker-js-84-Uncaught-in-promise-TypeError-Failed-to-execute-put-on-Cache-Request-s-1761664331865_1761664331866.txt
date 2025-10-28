@@ -1,0 +1,203 @@
+4service-worker.js:84 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at cacheFirst (service-worker.js:84:13)Understand this error
+service-worker.js:99 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at networkFirst (service-worker.js:99:13)Understand this error
+service-worker.js:84 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at cacheFirst (service-worker.js:84:13)Understand this error
+service-worker.js:134 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at service-worker.js:134:13Understand this error
+service-worker.js:84 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at cacheFirst (service-worker.js:84:13)Understand this error
+10service-worker.js:134 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at service-worker.js:134:13Understand this error
+4service-worker.js:84 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at cacheFirst (service-worker.js:84:13)Understand this error
+service-worker.js:99 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at networkFirst (service-worker.js:99:13)Understand this error
+2service-worker.js:84 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at cacheFirst (service-worker.js:84:13)Understand this error
+11service-worker.js:134 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at service-worker.js:134:13Understand this error
+2service-worker.js:84 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at cacheFirst (service-worker.js:84:13)Understand this error
+service-worker.js:99 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at networkFirst (service-worker.js:99:13)Understand this error
+2service-worker.js:84 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at cacheFirst (service-worker.js:84:13)Understand this error
+11service-worker.js:134 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at service-worker.js:134:13Understand this error
+2service-worker.js:84 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at cacheFirst (service-worker.js:84:13)Understand this error
+service-worker.js:99 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at networkFirst (service-worker.js:99:13)Understand this error
+service-worker.js:84 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at cacheFirst (service-worker.js:84:13)Understand this error
+service-worker.js:134 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at service-worker.js:134:13Understand this error
+service-worker.js:84 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at cacheFirst (service-worker.js:84:13)Understand this error
+10service-worker.js:134 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at service-worker.js:134:13Understand this error
+4service-worker.js:84 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at cacheFirst (service-worker.js:84:13)Understand this error
+service-worker.js:99 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at networkFirst (service-worker.js:99:13)Understand this error
+2service-worker.js:84 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at cacheFirst (service-worker.js:84:13)Understand this error
+11service-worker.js:134 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at service-worker.js:134:13Understand this error
+4service-worker.js:84 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at cacheFirst (service-worker.js:84:13)Understand this error
+service-worker.js:99 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at networkFirst (service-worker.js:99:13)Understand this error
+8service-worker.js:134 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at service-worker.js:134:13Understand this error
+service-worker.js:84 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at cacheFirst (service-worker.js:84:13)Understand this error
+2service-worker.js:134 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at service-worker.js:134:13Understand this error
+service-worker.js:84 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at cacheFirst (service-worker.js:84:13)Understand this error
+service-worker.js:134 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at service-worker.js:134:13Understand this error
+2service-worker.js:84 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at cacheFirst (service-worker.js:84:13)Understand this error
+5service-worker.js:134 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at service-worker.js:134:13Understand this error
+4service-worker.js:1 Uncaught (in promise) NetworkError: Failed to execute 'put' on 'Cache': Cache.put() encountered a network errorUnderstand this error
+service-worker.js:99 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at networkFirst (service-worker.js:99:13)Understand this error
+2service-worker.js:84 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at cacheFirst (service-worker.js:84:13)Understand this error
+11service-worker.js:134 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at service-worker.js:134:13Understand this error
+2service-worker.js:84 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at cacheFirst (service-worker.js:84:13)Understand this error
+service-worker.js:99 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at networkFirst (service-worker.js:99:13)Understand this error
+11service-worker.js:134 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at service-worker.js:134:13Understand this error
+4service-worker.js:84 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at cacheFirst (service-worker.js:84:13)Understand this error
+service-worker.js:99 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at networkFirst (service-worker.js:99:13)Understand this error
+5service-worker.js:134 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at service-worker.js:134:13Understand this error
+service-worker.js:84 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at cacheFirst (service-worker.js:84:13)Understand this error
+4service-worker.js:134 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at service-worker.js:134:13Understand this error
+service-worker.js:84 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at cacheFirst (service-worker.js:84:13)Understand this error
+2service-worker.js:134 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at service-worker.js:134:13Understand this error
+2service-worker.js:84 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at cacheFirst (service-worker.js:84:13)Understand this error
+service-worker.js:99 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at networkFirst (service-worker.js:99:13)Understand this error
+2service-worker.js:84 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at cacheFirst (service-worker.js:84:13)Understand this error
+11service-worker.js:134 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at service-worker.js:134:13Understand this error
+2service-worker.js:84 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at cacheFirst (service-worker.js:84:13)Understand this error
+service-worker.js:99 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at networkFirst (service-worker.js:99:13)Understand this error
+2service-worker.js:84 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at cacheFirst (service-worker.js:84:13)Understand this error
+11service-worker.js:134 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at service-worker.js:134:13Understand this error
+2service-worker.js:84 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at cacheFirst (service-worker.js:84:13)Understand this error
+2service-worker.js:84 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at cacheFirst (service-worker.js:84:13)
+cacheFirst @ service-worker.js:84Understand this error
+service-worker.js:99 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at networkFirst (service-worker.js:99:13)Understand this error
+2service-worker.js:84 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at cacheFirst (service-worker.js:84:13)Understand this error
+11service-worker.js:134 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at service-worker.js:134:13Understand this error
+2service-worker.js:84 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at cacheFirst (service-worker.js:84:13)Understand this error
+service-worker.js:99 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at networkFirst (service-worker.js:99:13)Understand this error
+10service-worker.js:134 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at service-worker.js:134:13Understand this error
+2service-worker.js:84 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at cacheFirst (service-worker.js:84:13)Understand this error
+service-worker.js:134 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at service-worker.js:134:13Understand this error
+2service-worker.js:84 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at cacheFirst (service-worker.js:84:13)Understand this error
+service-worker.js:99 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at networkFirst (service-worker.js:99:13)Understand this error
+11service-worker.js:134 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at service-worker.js:134:13Understand this error
+4service-worker.js:84 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at cacheFirst (service-worker.js:84:13)Understand this error
+service-worker.js:99 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at networkFirst (service-worker.js:99:13)Understand this error
+2service-worker.js:84 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at cacheFirst (service-worker.js:84:13)Understand this error
+11service-worker.js:134 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at service-worker.js:134:13Understand this error
+dashboard:1 Error while trying to use the following icon from the Manifest: https://meinedokbox.de/icons/icon-144x144.png (Download error or resource isn't a valid image)Understand this error
+4service-worker.js:84 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at cacheFirst (service-worker.js:84:13)Understand this error
+index-DOdCRsR5.js:48  POST https://meinedokbox.de/api/stripe/create-checkout-session 500 (Internal Server Error)
+er @ index-DOdCRsR5.js:48
+mutationFn @ index-DOdCRsR5.js:608
+fn @ index-DOdCRsR5.js:48
+v @ index-DOdCRsR5.js:48
+start @ index-DOdCRsR5.js:48
+execute @ index-DOdCRsR5.js:48
+await in execute
+mutate @ index-DOdCRsR5.js:48
+(anonymous) @ index-DOdCRsR5.js:48
+p @ index-DOdCRsR5.js:608
+gJ @ index-DOdCRsR5.js:37
+yJ @ index-DOdCRsR5.js:37
+xJ @ index-DOdCRsR5.js:37
+m$ @ index-DOdCRsR5.js:37
+wU @ index-DOdCRsR5.js:37
+(anonymous) @ index-DOdCRsR5.js:37
+MD @ index-DOdCRsR5.js:40
+H6 @ index-DOdCRsR5.js:37
+Q_ @ index-DOdCRsR5.js:37
+oD @ index-DOdCRsR5.js:37
+RJ @ index-DOdCRsR5.js:37Understand this error
+service-worker.js:99 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at networkFirst (service-worker.js:99:13)
+networkFirst @ service-worker.js:99
+await in networkFirst
+(anonymous) @ service-worker.js:57Understand this error
+service-worker.js:84 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at cacheFirst (service-worker.js:84:13)
+cacheFirst @ service-worker.js:84
+await in cacheFirst
+(anonymous) @ service-worker.js:63Understand this error
+2service-worker.js:134 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at service-worker.js:134:13
+(anonymous) @ service-worker.js:134
+Promise.then
+staleWhileRevalidate @ service-worker.js:132
+await in staleWhileRevalidate
+(anonymous) @ service-worker.js:66Understand this error
+service-worker.js:84 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at cacheFirst (service-worker.js:84:13)
+cacheFirst @ service-worker.js:84
+await in cacheFirst
+(anonymous) @ service-worker.js:63Understand this error
+9service-worker.js:134 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at service-worker.js:134:13
+(anonymous) @ service-worker.js:134
+Promise.then
+staleWhileRevalidate @ service-worker.js:132
+await in staleWhileRevalidate
+(anonymous) @ service-worker.js:66Understand this error
+2service-worker.js:84 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at cacheFirst (service-worker.js:84:13)
+cacheFirst @ service-worker.js:84
+await in cacheFirst
+(anonymous) @ service-worker.js:63Understand this error

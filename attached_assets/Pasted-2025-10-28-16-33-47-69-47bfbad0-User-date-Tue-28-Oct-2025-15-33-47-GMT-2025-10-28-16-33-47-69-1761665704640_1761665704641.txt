@@ -1,0 +1,160 @@
+2025-10-28 16:33:47.69
+47bfbad0
+User
+"date": "Tue, 28 Oct 2025 15:33:47 GMT",
+2025-10-28 16:33:47.69
+47bfbad0
+User
+"content-type": "application/json",
+2025-10-28 16:33:47.69
+47bfbad0
+User
+"content-length": "601",
+2025-10-28 16:33:47.69
+47bfbad0
+User
+"connection": "keep-alive",
+2025-10-28 16:33:47.69
+47bfbad0
+User
+"access-control-allow-credentials": "true",
+2025-10-28 16:33:47.69
+47bfbad0
+User
+"access-control-allow-methods": "GET, HEAD, PUT, PATCH, POST, DELETE",
+2025-10-28 16:33:47.69
+47bfbad0
+User
+"access-control-allow-origin": "*",
+2025-10-28 16:33:47.69
+47bfbad0
+User
+"access-control-expose-headers": "Request-Id, Stripe-Manage-Version, Stripe-Should-Retry, X-Stripe-External-Auth-Required, X-Stripe-Privileged-Session-Required",
+2025-10-28 16:33:47.69
+47bfbad0
+User
+"access-control-max-age": "300",
+2025-10-28 16:33:47.69
+47bfbad0
+User
+"cache-control": "no-cache, no-store",
+2025-10-28 16:33:47.69
+47bfbad0
+User
+"content-security-policy": "base-uri 'none'; default-src 'none'; form-action 'none'; frame-ancestors 'none'; img-src 'self'; script-src 'self' 'report-sample'; style-src 'self'; worker-src 'none'; upgrade-insecure-requests; report-uri https://q.stripe.com/csp-violation?q=dmzIyW1CAqFVajwP7QKxCyQFdd5YJmBQp-zX-cLSWEUDpSbWXEud8CYhqWimhQsOKOxC0ruLvu2t1DJ5",
+2025-10-28 16:33:47.69
+47bfbad0
+User
+"idempotency-key": "stripe-node-retry-52fd56df-f2b8-4a77-8fd2-4b85f69db845",
+2025-10-28 16:33:47.69
+47bfbad0
+User
+"original-request": "req_333D42VudFq5zP",
+2025-10-28 16:33:47.69
+47bfbad0
+User
+"request-id": "req_333D42VudFq5zP",
+2025-10-28 16:33:47.69
+47bfbad0
+User
+"stripe-should-retry": "false",
+2025-10-28 16:33:47.69
+47bfbad0
+User
+"stripe-version": "2024-11-20.acacia",
+2025-10-28 16:33:47.69
+47bfbad0
+User
+"vary": "Origin",
+2025-10-28 16:33:47.69
+47bfbad0
+User
+"x-stripe-priority-routing-enabled": "true",
+2025-10-28 16:33:47.69
+47bfbad0
+User
+"x-stripe-routing-context-priority-tier": "livemode-critical",
+2025-10-28 16:33:47.69
+47bfbad0
+User
+"x-wc": "ABGHIJ",
+2025-10-28 16:33:47.69
+47bfbad0
+User
+"strict-transport-security": "max-age=63072000; includeSubDomains; preload"
+2025-10-28 16:33:47.69
+47bfbad0
+User
+},
+2025-10-28 16:33:47.69
+47bfbad0
+User
+"requestId": "req_333D42VudFq5zP",
+2025-10-28 16:33:47.69
+47bfbad0
+User
+"statusCode": 400
+2025-10-28 16:33:47.69
+47bfbad0
+User
+}
+2025-10-28 16:33:47.69
+47bfbad0
+User
+[CreateCheckoutSession] Error message: The payment method type provided: sepa_debit is invalid. Please ensure the provided type is activated in your dashboard (https://dashboard.stripe.com/account/payments/settings) and your account is enabled for any preview features that you are trying to use. See https://stripe.com/docs/payments/payment-methods/integration-options for supported payment method, currency, and country combinations.
+2025-10-28 16:33:47.69
+47bfbad0
+User
+[CreateCheckoutSession] Error type: StripeInvalidRequestError
+2025-10-28 16:33:47.69
+47bfbad0
+User
+[CreateCheckoutSession] Error code: undefined
+2025-10-28 16:33:47.69
+47bfbad0
+User
+[CreateCheckoutSession] Error stack: Error: The payment method type provided: sepa_debit is invalid. Please ensure the provided type is activated in your dashboard (https://dashboard.stripe.com/account/payments/settings) and your account is enabled for any preview features that you are trying to use. See https://stripe.com/docs/payments/payment-methods/integration-options for supported payment method, currency, and country combinations.
+2025-10-28 16:33:47.69
+47bfbad0
+User
+at generateV1Error (file:///home/runner/workspace/node_modules/stripe/esm/Error.js:8:20)
+2025-10-28 16:33:47.69
+47bfbad0
+User
+at res.toJSON.then.StripeAPIError.message (file:///home/runner/workspace/node_modules/stripe/esm/RequestSender.js:111:31)
+2025-10-28 16:33:47.69
+47bfbad0
+User
+at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-28 16:33:47.69
+47bfbad0
+User
+[CreateCheckoutSession] Request details: {
+2025-10-28 16:33:47.69
+47bfbad0
+User
+plan: 'solo',
+2025-10-28 16:33:47.69
+47bfbad0
+User
+period: 'monthly',
+2025-10-28 16:33:47.69
+47bfbad0
+User
+priceId: 'price_1SMvEJDu6qqEfVDmFKeAnn2g',
+2025-10-28 16:33:47.69
+47bfbad0
+User
+userId: 'local_1761662426232_s6ufhn'
+2025-10-28 16:33:47.69
+47bfbad0
+User
+}
+2025-10-28 16:33:47.69
+47bfbad0
+User
+[CreateCheckoutSession] ================================
+2025-10-28 16:33:47.73
+47bfbad0
+User
+3:33:47 PM [express] POST /api/stripe/create-checkout-session 500 in 535ms :: {"message":"Fehler bei…

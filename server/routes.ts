@@ -3034,7 +3034,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const sessionConfig: Stripe.Checkout.SessionCreateParams = {
         customer: customerId,
         mode: "subscription",
-        payment_method_types: ["card", "sepa_debit"],
+        payment_method_types: ["card", "paypal"],
         line_items: [
           {
             price: priceId,
