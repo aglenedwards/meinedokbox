@@ -37,7 +37,6 @@ export function DashboardLayout({
   const [location] = useLocation();
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  const [hasShownWelcomeThisSession, setHasShownWelcomeThisSession] = useState(false);
 
   // Fetch user data
   const { data: user } = useQuery<User | null>({
@@ -48,11 +47,13 @@ export function DashboardLayout({
 
   // Show welcome modal if user hasn't seen it yet (only once per session)
   useEffect(() => {
-    if (user && !user.hasSeenWelcomeModal && !hasShownWelcomeThisSession) {
+    const hasShownThisSession = sessionStorage.getItem('hasShownWelcomeThisSession') === 'true';
+    
+    if (user && !user.hasSeenWelcomeModal && !hasShownThisSession) {
       setShowWelcomeModal(true);
-      setHasShownWelcomeThisSession(true);
+      sessionStorage.setItem('hasShownWelcomeThisSession', 'true');
     }
-  }, [user, hasShownWelcomeThisSession]);
+  }, [user]);
 
   // Fetch subscription status
   const { data: subscriptionStatus } = useQuery<SubscriptionStatus>({
