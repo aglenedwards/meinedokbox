@@ -466,6 +466,36 @@ export default function Settings() {
                       </div>
                     </div>
 
+                    {/* User Count (for Family plans) */}
+                    {subscriptionStatus.maxUsers && subscriptionStatus.maxUsers > 1 && (
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="text-sm text-muted-foreground flex items-center gap-2">
+                            <UserPlus className="h-4 w-4" />
+                            Nutzer
+                          </p>
+                          <p className="text-sm font-medium" data-testid="text-user-count">
+                            {subscriptionStatus.currentUsers || 1} von {subscriptionStatus.maxUsers}
+                          </p>
+                        </div>
+                        <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                          <div 
+                            className={`h-full transition-all ${
+                              ((subscriptionStatus.currentUsers ?? 1) / (subscriptionStatus.maxUsers ?? 1)) >= 1
+                                ? 'bg-primary' 
+                                : 'bg-primary'
+                            }`}
+                            style={{ 
+                              width: `${Math.min(
+                                ((subscriptionStatus.currentUsers ?? 1) / (subscriptionStatus.maxUsers ?? 1)) * 100,
+                                100
+                              )}%` 
+                            }}
+                          />
+                        </div>
+                      </div>
+                    )}
+
                     {/* Trial Days (if applicable) */}
                     {subscriptionStatus.plan === "trial" && subscriptionStatus.daysRemaining !== null && (
                       <div className="pt-2">

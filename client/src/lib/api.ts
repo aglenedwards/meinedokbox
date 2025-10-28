@@ -360,6 +360,9 @@ export interface SubscriptionStatus {
   uploadsThisMonth: number;
   maxStorageGB: number;
   storageUsedGB: number;
+  // User count (for family plans)
+  currentUsers?: number;
+  maxUsers?: number;
   // Legacy fields (backward compatibility)
   maxDocuments: number;
   currentDocuments: number;
