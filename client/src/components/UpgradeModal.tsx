@@ -88,7 +88,7 @@ export function UpgradeModal({ open, onClose, reason = "document_limit", daysRem
     },
     trial_expired: {
       title: "Trial-Phase beendet",
-      description: "Ihre 14-tägige Trial-Phase ist abgelaufen. Wählen Sie jetzt Ihren passenden Tarif!",
+      description: "Ihre 7-tägige Trial-Phase ist abgelaufen. Wählen Sie jetzt Ihren passenden Tarif!",
     },
     trial_active: {
       title: "Jetzt upgraden",
@@ -200,7 +200,7 @@ export function UpgradeModal({ open, onClose, reason = "document_limit", daysRem
                   data-testid={`button-select-${plan.name.toLowerCase().replace(" ", "-")}`}
                 >
                   {plan.trialAvailable && reason !== "trial_expired" && reason !== "trial_active"
-                    ? "Jetzt 14 Tage kostenlos testen"
+                    ? "Jetzt 7 Tage kostenlos testen"
                     : `${plan.name} wählen`}
                 </Button>
               </div>

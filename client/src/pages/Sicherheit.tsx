@@ -372,7 +372,7 @@ export default function Sicherheit() {
             Überzeugt? Probieren Sie es aus!
           </h2>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Starten Sie noch heute mit 14 Tagen kostenloser Testphase – ohne Kreditkarte.
+            Starten Sie noch heute mit 7 Tagen kostenloser Testphase – ohne Kreditkarte.
           </p>
           <Button
             size="lg"

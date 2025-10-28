@@ -340,7 +340,7 @@ export function Header() {
             <DialogDescription>
               {authTab === "login"
                 ? "Melden Sie sich bei Ihrem Account an."
-                : "Starten Sie Ihre 14-tägige kostenlose Testphase."}
+                : "Starten Sie Ihre 7-tägige kostenlose Testphase."}
             </DialogDescription>
           </DialogHeader>
 

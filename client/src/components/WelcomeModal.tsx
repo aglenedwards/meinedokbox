@@ -29,7 +29,7 @@ export function WelcomeModal({ open, onOpenChange, onStartTrial, onDirectPayment
       
       toast({
         title: "Willkommen!",
-        description: "Ihre 14-tägige Testphase hat begonnen. Viel Spaß beim Ausprobieren!",
+        description: "Ihre 7-tägige Testphase hat begonnen. Viel Spaß beim Ausprobieren!",
       });
     } catch (error) {
       toast({
@@ -160,7 +160,7 @@ export function WelcomeModal({ open, onOpenChange, onStartTrial, onDirectPayment
             data-testid="button-start-trial"
           >
             <Sparkles className="h-4 w-4 mr-2" />
-            14 Tage kostenlos testen
+            7 Tage kostenlos testen
           </Button>
           <Button
             onClick={handleDirectPayment}

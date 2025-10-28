@@ -417,7 +417,7 @@ export default function Landing() {
             {/* Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border bg-background/80 backdrop-blur-sm mb-8 shadow-lg">
               <Sparkles className="h-4 w-4 text-primary" />
-              <span className="text-sm font-medium">Jetzt 14 Tage kostenlos testen – keine Kreditkarte nötig</span>
+              <span className="text-sm font-medium">Jetzt 7 Tage kostenlos testen – keine Kreditkarte nötig</span>
             </div>
             
             {/* Main Headline */}
@@ -1159,7 +1159,7 @@ export default function Landing() {
             Einfache, transparente Preise
           </h2>
           <p className="text-xl text-center text-muted-foreground mb-8 leading-relaxed">
-            14 Tage kostenlos testen. Keine Kreditkarte erforderlich.
+            7 Tage kostenlos testen. Keine Kreditkarte erforderlich.
           </p>
 
           {/* Billing Period Toggle */}
@@ -1291,7 +1291,7 @@ export default function Landing() {
                   }}
                   data-testid="button-pricing-family"
                 >
-                  Jetzt 14 Tage kostenlos testen
+                  Jetzt 7 Tage kostenlos testen
                 </Button>
               </CardContent>
             </Card>
@@ -1371,7 +1371,7 @@ export default function Landing() {
             <DialogDescription>
               {authTab === "login"
                 ? "Melden Sie sich bei Ihrem Account an."
-                : "Starten Sie Ihre 14-tägige kostenlose Testphase."}
+                : "Starten Sie Ihre 7-tägige kostenlose Testphase."}
             </DialogDescription>
           </DialogHeader>
 

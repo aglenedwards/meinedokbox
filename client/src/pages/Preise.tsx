@@ -24,7 +24,7 @@ export default function Preise() {
             {/* Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border bg-background/80 backdrop-blur-sm mb-8 shadow-lg">
               <Sparkles className="h-4 w-4 text-primary" />
-              <span className="text-sm font-medium">14 Tage kostenlos testen – keine Kreditkarte nötig</span>
+              <span className="text-sm font-medium">7 Tage kostenlos testen – keine Kreditkarte nötig</span>
             </div>
             
             {/* Main Headline */}
@@ -45,7 +45,7 @@ export default function Preise() {
             <div className="grid grid-cols-2 md:grid-cols-3 gap-6 max-w-3xl mx-auto">
               <div className="flex flex-col items-center gap-2 p-4 rounded-lg bg-background/50 backdrop-blur-sm border">
                 <Sparkles className="h-8 w-8 text-primary mb-1" />
-                <div className="text-2xl font-bold">14 Tage</div>
+                <div className="text-2xl font-bold">7 Tage</div>
                 <div className="text-sm text-muted-foreground text-center">Kostenlos testen</div>
               </div>
               
@@ -212,7 +212,7 @@ export default function Preise() {
                   onClick={() => setLocation("/")}
                   data-testid="button-pricing-family"
                 >
-                  Jetzt 14 Tage kostenlos testen
+                  Jetzt 7 Tage kostenlos testen
                 </Button>
               </CardContent>
             </Card>
@@ -295,11 +295,11 @@ export default function Preise() {
             <div className="space-y-6">
               <Card className="card-premium hover-elevate">
                 <CardHeader>
-                  <CardTitle>Wie funktioniert die 14-tägige Testphase?</CardTitle>
+                  <CardTitle>Wie funktioniert die 7-tägige Testphase?</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-muted-foreground">
-                    Sie können MeineDokBox 14 Tage lang vollständig kostenlos testen – ohne Angabe von Zahlungsdaten. 
+                    Sie können MeineDokBox 7 Tage lang vollständig kostenlos testen – ohne Angabe von Zahlungsdaten. 
                     Nach Ablauf der Testphase können Sie sich für einen kostenpflichtigen Plan entscheiden oder Ihren 
                     Account einfach verfallen lassen.
                   </p>
