@@ -54,7 +54,7 @@ export const PLAN_LIMITS = {
     maxUsers: 2,             // Can invite 1 user during trial (same as Family)
     displayName: "Family-Trial",
     price: 0,
-    trialDurationDays: 14,
+    trialDurationDays: 7,
   },
   solo: {
     maxUploadsPerMonth: 50,  // 50 new documents per month
