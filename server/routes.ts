@@ -681,6 +681,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // isUploadDisabled combines all upload restrictions
       const isUploadDisabled = !limits.canUpload || gracePeriod || isReadOnly;
 
+      // Count current users (Master + accepted Slaves)
+      const currentUsers = allUserIds.length; // Includes Master + all partner users
+      const maxUsers = limits.maxUsers;
+
       res.json({
         plan: effectiveUser.subscriptionPlan,
         displayName: limits.displayName,
@@ -689,6 +693,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         uploadsThisMonth,
         maxStorageGB: limits.maxStorageGB,
         storageUsedGB,
+        // User count (for family plans)
+        currentUsers,
+        maxUsers,
         // Legacy fields (for backward compatibility)
         maxDocuments: -1, // Deprecated, now using monthly uploads + storage
         currentDocuments: documentCount,
