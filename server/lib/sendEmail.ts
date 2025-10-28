@@ -523,3 +523,254 @@ Diese Nachricht wurde über das Kontaktformular auf meinedokbox.de gesendet.
   return sendEmail({ to: serviceEmail, subject: emailSubject, text, html });
 }
 
+/**
+ * Send admin notification when a new user registers
+ */
+export async function sendAdminNewUserNotification(
+  userEmail: string,
+  userName: string,
+  userId: string
+): Promise<boolean> {
+  const serviceEmail = "service@meinedokbox.de";
+  const subject = `🎉 Neue Registrierung: ${userName}`;
+  
+  const text = `
+Neue Benutzer-Registrierung bei MeineDokBox:
+
+Name: ${userName}
+E-Mail: ${userEmail}
+User ID: ${userId}
+Zeitpunkt: ${new Date().toLocaleString('de-DE', { timeZone: 'Europe/Berlin' })}
+
+Der Benutzer befindet sich nun in der 14-tägigen Testphase.
+
+---
+Automatische Benachrichtigung von MeineDokBox
+  `.trim();
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .header {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: white !important;
+      padding: 30px;
+      border-radius: 8px 8px 0 0;
+      text-align: center;
+    }
+    .content {
+      background: #f8f9fa;
+      padding: 30px;
+      border-radius: 0 0 8px 8px;
+    }
+    .info-box {
+      background: white;
+      padding: 20px;
+      border-radius: 6px;
+      margin: 20px 0;
+      border-left: 4px solid #10b981;
+    }
+    .info-row {
+      margin: 10px 0;
+      display: flex;
+      gap: 10px;
+    }
+    .info-label {
+      font-weight: 600;
+      color: #10b981;
+      min-width: 120px;
+    }
+  </style>
+</head>
+<body>
+  <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; padding: 30px; border-radius: 8px 8px 0 0; text-align: center;">
+    <h1 style="color: #ffffff !important; margin: 0 0 10px 0; font-size: 28px;">🎉 Neue Registrierung</h1>
+    <p style="color: #ffffff !important; margin: 0; font-size: 16px;">Ein neuer Benutzer hat sich registriert</p>
+  </div>
+  
+  <div class="content">
+    <div class="info-box">
+      <div class="info-row">
+        <span class="info-label">Name:</span>
+        <span>${userName}</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">E-Mail:</span>
+        <span><a href="mailto:${userEmail}">${userEmail}</a></span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">User ID:</span>
+        <span><code>${userId}</code></span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Zeitpunkt:</span>
+        <span>${new Date().toLocaleString('de-DE', { timeZone: 'Europe/Berlin' })}</span>
+      </div>
+    </div>
+    
+    <p style="margin-top: 20px;">
+      Der Benutzer befindet sich nun in der <strong>14-tägigen Testphase</strong>.
+    </p>
+    
+    <p style="margin-top: 30px; font-size: 14px; color: #999; text-align: center;">
+      Automatische Benachrichtigung von MeineDokBox
+    </p>
+  </div>
+</body>
+</html>
+  `.trim();
+
+  return sendEmail({ to: serviceEmail, subject, text, html });
+}
+
+/**
+ * Send admin notification when a subscription is purchased
+ */
+export async function sendAdminNewSubscriptionNotification(
+  userEmail: string,
+  userName: string,
+  plan: string,
+  period: string,
+  amount: number
+): Promise<boolean> {
+  const serviceEmail = "service@meinedokbox.de";
+  const subject = `💰 Neues Abo: ${plan} (${period}) - ${userName}`;
+  
+  const planNames: Record<string, string> = {
+    'solo': 'Solo',
+    'family': 'Family',
+    'family-plus': 'Family Plus'
+  };
+  
+  const periodNames: Record<string, string> = {
+    'monthly': 'Monatlich',
+    'yearly': 'Jährlich'
+  };
+  
+  const text = `
+Neues Abonnement abgeschlossen bei MeineDokBox:
+
+Kunde: ${userName} (${userEmail})
+Plan: ${planNames[plan] || plan}
+Abrechnungszeitraum: ${periodNames[period] || period}
+Betrag: ${(amount / 100).toFixed(2)} €
+Zeitpunkt: ${new Date().toLocaleString('de-DE', { timeZone: 'Europe/Berlin' })}
+
+Das Abonnement wurde erfolgreich über Stripe abgeschlossen.
+
+---
+Automatische Benachrichtigung von MeineDokBox
+  `.trim();
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .header {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      color: white !important;
+      padding: 30px;
+      border-radius: 8px 8px 0 0;
+      text-align: center;
+    }
+    .content {
+      background: #f8f9fa;
+      padding: 30px;
+      border-radius: 0 0 8px 8px;
+    }
+    .info-box {
+      background: white;
+      padding: 20px;
+      border-radius: 6px;
+      margin: 20px 0;
+      border-left: 4px solid #f59e0b;
+    }
+    .info-row {
+      margin: 10px 0;
+      display: flex;
+      gap: 10px;
+    }
+    .info-label {
+      font-weight: 600;
+      color: #f59e0b;
+      min-width: 150px;
+    }
+    .amount {
+      font-size: 24px;
+      font-weight: 700;
+      color: #10b981;
+      text-align: center;
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body>
+  <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #ffffff; padding: 30px; border-radius: 8px 8px 0 0; text-align: center;">
+    <h1 style="color: #ffffff !important; margin: 0 0 10px 0; font-size: 28px;">💰 Neues Abonnement</h1>
+    <p style="color: #ffffff !important; margin: 0; font-size: 16px;">Ein Kunde hat ein Abonnement abgeschlossen</p>
+  </div>
+  
+  <div class="content">
+    <div class="amount">
+      ${(amount / 100).toFixed(2)} €
+    </div>
+    
+    <div class="info-box">
+      <div class="info-row">
+        <span class="info-label">Kunde:</span>
+        <span>${userName}</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">E-Mail:</span>
+        <span><a href="mailto:${userEmail}">${userEmail}</a></span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Plan:</span>
+        <span><strong>${planNames[plan] || plan}</strong></span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Abrechnungszeitraum:</span>
+        <span>${periodNames[period] || period}</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Zeitpunkt:</span>
+        <span>${new Date().toLocaleString('de-DE', { timeZone: 'Europe/Berlin' })}</span>
+      </div>
+    </div>
+    
+    <p style="margin-top: 20px;">
+      Das Abonnement wurde erfolgreich über <strong>Stripe</strong> abgeschlossen.
+    </p>
+    
+    <p style="margin-top: 30px; font-size: 14px; color: #999; text-align: center;">
+      Automatische Benachrichtigung von MeineDokBox
+    </p>
+  </div>
+</body>
+</html>
+  `.trim();
+
+  return sendEmail({ to: serviceEmail, subject, text, html });
+}
+

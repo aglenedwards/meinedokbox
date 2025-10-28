@@ -20,7 +20,7 @@ import { ObjectPermission } from "./objectAcl";
 import { insertDocumentSchema, updateDocumentSchema, DOCUMENT_CATEGORIES, PLAN_LIMITS } from "@shared/schema";
 import { combineImagesToPDF, type PageBuffer } from "./lib/pdfGenerator";
 import { parseMailgunWebhook, isSupportedAttachment, isValidDocumentAttachment, isEmailWhitelisted, verifyMailgunWebhook, extractEmailAddress } from "./lib/emailInbound";
-import { sendSharedAccessInvitation, sendVerificationEmail, sendPasswordResetEmail, sendContactFormEmail } from "./lib/sendEmail";
+import { sendSharedAccessInvitation, sendVerificationEmail, sendPasswordResetEmail, sendContactFormEmail, sendAdminNewUserNotification, sendAdminNewSubscriptionNotification } from "./lib/sendEmail";
 import { emailQueue } from "./lib/emailQueue";
 import bcrypt from 'bcrypt';
 import { checkDocumentLimit, checkEmailFeature, checkAndDowngradeTrial, getEffectiveUserId, isSharedUser } from "./middleware/subscriptionLimits";
@@ -298,6 +298,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Queue verification email (async, with auto-retry)
       await emailQueue.enqueueVerificationEmail(normalizedEmail, firstName, verificationToken);
       console.log(`[Register] Verification email queued for ${normalizedEmail}`);
+
+      // Send admin notification about new registration (async, non-blocking)
+      sendAdminNewUserNotification(normalizedEmail, `${firstName} ${lastName}`, userId)
+        .catch(err => console.error('[Register] Failed to send admin notification:', err));
+      console.log(`[Register] Admin notification sent for ${normalizedEmail}`);
 
       res.json({ 
         message: "Registrierung erfolgreich. Bitte bestätigen Sie Ihre E-Mail-Adresse.",
@@ -1306,6 +1311,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Queue email verification (async, with auto-retry)
       await emailQueue.enqueueVerificationEmail(invitedEmail, firstName, verificationToken);
+      
+      // Send admin notification about new registration (async, non-blocking)
+      sendAdminNewUserNotification(invitedEmail, `${firstName} ${lastName}`, newUser.id)
+        .catch(err => console.error('[Invite Register] Failed to send admin notification:', err));
       
       console.log(`[Invite Register] Created new user ${newUser.id} for invited email ${invitedEmail}, verification email queued`);
       
@@ -3149,6 +3158,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const session = event.data.object as Stripe.Checkout.Session;
           const userId = session.metadata?.userId;
           const plan = session.metadata?.plan as "solo" | "family" | "family-plus";
+          const period = session.metadata?.period as "monthly" | "yearly";
           
           if (userId && session.subscription) {
             const subscriptionId = session.subscription as string;
@@ -3160,6 +3170,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
             // Update subscription plan
             if (plan) {
               await storage.updateUserSubscription(userId, plan, null);
+            }
+            
+            // Send admin notification about new subscription (async, non-blocking)
+            const user = await storage.getUserById(userId);
+            if (user && plan && period) {
+              const amount = session.amount_total || 0;
+              sendAdminNewSubscriptionNotification(
+                user.email,
+                `${user.firstName} ${user.lastName}`,
+                plan,
+                period,
+                amount
+              ).catch(err => console.error('[StripeWebhook] Failed to send admin notification:', err));
+              console.log(`[StripeWebhook] Admin notification sent for subscription: ${user.email} - ${plan} (${period})`);
             }
           }
           break;
