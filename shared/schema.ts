@@ -46,12 +46,12 @@ export const PLAN_LIMITS = {
     price: 0,
   },
   trial: {
-    maxUploadsPerMonth: 500, // Generous trial limit
-    maxStorageGB: 25,        // Generous trial storage
+    maxUploadsPerMonth: 200, // Same as Family plan
+    maxStorageGB: 10,        // Same as Family plan
     canUpload: true,
     canUseAI: true,
     canUseEmailInbound: true,
-    maxUsers: 2,             // Can invite 1 user during trial
+    maxUsers: 2,             // Can invite 1 user during trial (same as Family)
     displayName: "Family-Trial",
     price: 0,
     trialDurationDays: 14,
