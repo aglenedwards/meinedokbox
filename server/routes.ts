@@ -287,7 +287,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         verificationToken,
         verificationTokenExpiry,
         subscriptionPlan: "trial",
-        trialEndsAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // 14 days trial
+        trialEndsAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days trial
         inboundEmail, // Add unique email address for forwarding documents
       });
 
@@ -2839,8 +2839,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let subscriptionEndsAt: Date | null = null;
       
       if (plan === 'trial') {
-        // Trial lasts 14 days
-        trialEndsAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
+        // Trial lasts 7 days
+        trialEndsAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
         subscriptionEndsAt = null;
       } else if (plan === 'free') {
         // Free plan has no expiry
