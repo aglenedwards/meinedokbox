@@ -261,7 +261,7 @@ export const sharedAccess = pgTable("shared_access", {
 export const trialNotifications = pgTable("trial_notifications", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull(),
-  notificationType: varchar("notification_type", { length: 30 }).notNull(), // day_14, grace_start, grace_last_day, readonly_start
+  notificationType: varchar("notification_type", { length: 30 }).notNull(), // day_3, day_6
   sentAt: timestamp("sent_at").notNull().default(sql`now()`),
   emailStatus: varchar("email_status", { length: 20 }).notNull().default("sent"), // sent, failed, bounced
 });

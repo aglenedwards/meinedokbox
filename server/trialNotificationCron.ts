@@ -1,5 +1,5 @@
 import { storage } from "./storage";
-import { sendEmail, getDay7Email, getGraceStartEmail, getGraceLastDayEmail, getReadOnlyStartEmail } from "./emailService";
+import { sendEmail, getDay3Email, getDay6Email } from "./emailService";
 
 export async function checkAndSendTrialNotifications(): Promise<void> {
   try {
@@ -17,71 +17,38 @@ export async function checkAndSendTrialNotifications(): Promise<void> {
 
       const trialEndDate = new Date(user.trialEndsAt);
       const daysUntilExpiry = Math.ceil((trialEndDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-      const daysAfterExpiry = Math.ceil((now.getTime() - trialEndDate.getTime()) / (1000 * 60 * 60 * 24));
 
-      console.log(`[TrialNotificationCron] User ${user.id}: daysUntilExpiry=${daysUntilExpiry}, daysAfterExpiry=${daysAfterExpiry}`);
+      console.log(`[TrialNotificationCron] User ${user.id}: daysUntilExpiry=${daysUntilExpiry}`);
 
-      // Day 7: Trial ends tomorrow
+      // Day 3: Engagement Email (4 days remaining)
+      if (daysUntilExpiry === 4) {
+        const alreadySent = await storage.getTrialNotification(user.id, 'day_3');
+        if (!alreadySent) {
+          const userName = user.firstName ? `${user.firstName}${user.lastName ? ' ' + user.lastName : ''}` : '';
+          const { subject, html, text } = getDay3Email(userName);
+          await sendEmail({ to: user.email, subject, html, text });
+          await storage.createTrialNotification({
+            userId: user.id,
+            notificationType: 'day_3',
+            emailStatus: 'sent'
+          });
+          console.log(`[TrialNotificationCron] Sent day_3 email to ${user.email}`);
+        }
+      }
+
+      // Day 6: Urgency Email (1 day remaining - trial ends tomorrow)
       if (daysUntilExpiry === 1) {
-        const alreadySent = await storage.getTrialNotification(user.id, 'day_14');
+        const alreadySent = await storage.getTrialNotification(user.id, 'day_6');
         if (!alreadySent) {
           const userName = user.firstName ? `${user.firstName}${user.lastName ? ' ' + user.lastName : ''}` : '';
-          const { subject, html, text } = getDay7Email(userName);
+          const { subject, html, text } = getDay6Email(userName);
           await sendEmail({ to: user.email, subject, html, text });
           await storage.createTrialNotification({
             userId: user.id,
-            notificationType: 'day_14',
+            notificationType: 'day_6',
             emailStatus: 'sent'
           });
-          console.log(`[TrialNotificationCron] Sent day_14 email to ${user.email}`);
-        }
-      }
-
-      // Day 15: Grace period starts (trial just expired)
-      if (daysAfterExpiry === 1) {
-        const alreadySent = await storage.getTrialNotification(user.id, 'grace_start');
-        if (!alreadySent) {
-          const userName = user.firstName ? `${user.firstName}${user.lastName ? ' ' + user.lastName : ''}` : '';
-          const { subject, html, text } = getGraceStartEmail(userName);
-          await sendEmail({ to: user.email, subject, html, text });
-          await storage.createTrialNotification({
-            userId: user.id,
-            notificationType: 'grace_start',
-            emailStatus: 'sent'
-          });
-          console.log(`[TrialNotificationCron] Sent grace_start email to ${user.email}`);
-        }
-      }
-
-      // Day 17: Last day of grace period
-      if (daysAfterExpiry === 3) {
-        const alreadySent = await storage.getTrialNotification(user.id, 'grace_last_day');
-        if (!alreadySent) {
-          const userName = user.firstName ? `${user.firstName}${user.lastName ? ' ' + user.lastName : ''}` : '';
-          const { subject, html, text } = getGraceLastDayEmail(userName);
-          await sendEmail({ to: user.email, subject, html, text });
-          await storage.createTrialNotification({
-            userId: user.id,
-            notificationType: 'grace_last_day',
-            emailStatus: 'sent'
-          });
-          console.log(`[TrialNotificationCron] Sent grace_last_day email to ${user.email}`);
-        }
-      }
-
-      // Day 18: Read-only mode activated
-      if (daysAfterExpiry === 4) {
-        const alreadySent = await storage.getTrialNotification(user.id, 'readonly_start');
-        if (!alreadySent) {
-          const userName = user.firstName ? `${user.firstName}${user.lastName ? ' ' + user.lastName : ''}` : '';
-          const { subject, html, text } = getReadOnlyStartEmail(userName);
-          await sendEmail({ to: user.email, subject, html, text });
-          await storage.createTrialNotification({
-            userId: user.id,
-            notificationType: 'readonly_start',
-            emailStatus: 'sent'
-          });
-          console.log(`[TrialNotificationCron] Sent readonly_start email to ${user.email}`);
+          console.log(`[TrialNotificationCron] Sent day_6 email to ${user.email}`);
         }
       }
     }
