@@ -51,9 +51,9 @@ export async function sendEmail(options: EmailOptions): Promise<void> {
 
 // Trial notification email templates
 
-export function getDay14Email(userName: string): { subject: string; html: string; text: string } {
+export function getDay7Email(userName: string): { subject: string; html: string; text: string } {
   const subject = "Ihre Testphase endet morgen 📅";
-  const text = `Hallo ${userName},\n\nIhre 14-tägige Testphase von MeineDokBox endet morgen. Um weiterhin alle Funktionen nutzen zu können, wählen Sie jetzt Ihren passenden Plan.\n\nUnsere Pläne:\n- Solo: €3,99/Monat (1 Nutzer, 2GB)\n- Family: €6,99/Monat (2 Nutzer, 5GB) - EMPFOHLEN\n- Family Plus: €9,99/Monat (4 Nutzer, 15GB)\n\nJetzt Plan wählen und nahtlos weitermachen!\n\nViele Grüße,\nIhr MeineDokBox Team`;
+  const text = `Hallo ${userName},\n\nIhre 7-tägige Testphase von MeineDokBox endet morgen. Um weiterhin alle Funktionen nutzen zu können, wählen Sie jetzt Ihren passenden Plan.\n\nUnsere Pläne:\n- Solo: €3,99/Monat (1 Nutzer, 2GB)\n- Family: €6,99/Monat (2 Nutzer, 5GB) - EMPFOHLEN\n- Family Plus: €9,99/Monat (4 Nutzer, 15GB)\n\nJetzt Plan wählen und nahtlos weitermachen!\n\nViele Grüße,\nIhr MeineDokBox Team`;
   
   const html = `
 <!DOCTYPE html>
@@ -76,7 +76,7 @@ export function getDay14Email(userName: string): { subject: string; html: string
             <td style="padding: 0 40px 30px;">
               <p style="margin: 0 0 20px; font-size: 16px; line-height: 1.6; color: #333333;">Hallo${userName ? ' ' + userName : ''},</p>
               <p style="margin: 0 0 20px; font-size: 16px; line-height: 1.6; color: #333333;">
-                Ihre <strong>14-tägige Testphase</strong> von MeineDokBox endet morgen. Um weiterhin alle Funktionen nutzen zu können, wählen Sie jetzt Ihren passenden Plan.
+                Ihre <strong>7-tägige Testphase</strong> von MeineDokBox endet morgen. Um weiterhin alle Funktionen nutzen zu können, wählen Sie jetzt Ihren passenden Plan.
               </p>
             </td>
           </tr>

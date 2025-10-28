@@ -1,5 +1,5 @@
 import { storage } from "./storage";
-import { sendEmail, getDay14Email, getGraceStartEmail, getGraceLastDayEmail, getReadOnlyStartEmail } from "./emailService";
+import { sendEmail, getDay7Email, getGraceStartEmail, getGraceLastDayEmail, getReadOnlyStartEmail } from "./emailService";
 
 export async function checkAndSendTrialNotifications(): Promise<void> {
   try {
@@ -21,12 +21,12 @@ export async function checkAndSendTrialNotifications(): Promise<void> {
 
       console.log(`[TrialNotificationCron] User ${user.id}: daysUntilExpiry=${daysUntilExpiry}, daysAfterExpiry=${daysAfterExpiry}`);
 
-      // Day 14: Trial ends tomorrow
+      // Day 7: Trial ends tomorrow
       if (daysUntilExpiry === 1) {
         const alreadySent = await storage.getTrialNotification(user.id, 'day_14');
         if (!alreadySent) {
           const userName = user.firstName ? `${user.firstName}${user.lastName ? ' ' + user.lastName : ''}` : '';
-          const { subject, html, text } = getDay14Email(userName);
+          const { subject, html, text } = getDay7Email(userName);
           await sendEmail({ to: user.email, subject, html, text });
           await storage.createTrialNotification({
             userId: user.id,

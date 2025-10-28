@@ -2634,7 +2634,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: 'User not found or no email address' });
       }
 
-      const { sendEmail, getDay14Email, getGraceStartEmail, getGraceLastDayEmail, getReadOnlyStartEmail } = await import('./emailService');
+      const { sendEmail, getDay7Email, getGraceStartEmail, getGraceLastDayEmail, getReadOnlyStartEmail } = await import('./emailService');
       
       let emailData: { subject: string; html: string; text: string };
       
@@ -2642,7 +2642,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       switch (emailType) {
         case 'day_14':
-          emailData = getDay14Email(userName);
+          emailData = getDay7Email(userName);
           break;
         case 'grace_start':
           emailData = getGraceStartEmail(userName);

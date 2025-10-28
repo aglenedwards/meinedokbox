@@ -542,7 +542,7 @@ E-Mail: ${userEmail}
 User ID: ${userId}
 Zeitpunkt: ${new Date().toLocaleString('de-DE', { timeZone: 'Europe/Berlin' })}
 
-Der Benutzer befindet sich nun in der 14-tägigen Testphase.
+Der Benutzer befindet sich nun in der 7-tägigen Testphase.
 
 ---
 Automatische Benachrichtigung von MeineDokBox
@@ -620,7 +620,7 @@ Automatische Benachrichtigung von MeineDokBox
     </div>
     
     <p style="margin-top: 20px;">
-      Der Benutzer befindet sich nun in der <strong>14-tägigen Testphase</strong>.
+      Der Benutzer befindet sich nun in der <strong>7-tägigen Testphase</strong>.
     </p>
     
     <p style="margin-top: 30px; font-size: 14px; color: #999; text-align: center;">
