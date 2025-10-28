@@ -51,9 +51,10 @@ export async function sendEmail(options: EmailOptions): Promise<void> {
 
 // Trial notification email templates
 
-export function getDay7Email(userName: string): { subject: string; html: string; text: string } {
-  const subject = "Ihre Testphase endet morgen 📅";
-  const text = `Hallo ${userName},\n\nIhre 7-tägige Testphase von MeineDokBox endet morgen. Um weiterhin alle Funktionen nutzen zu können, wählen Sie jetzt Ihren passenden Plan.\n\nUnsere Pläne:\n- Solo: €3,99/Monat (1 Nutzer, 2GB)\n- Family: €6,99/Monat (2 Nutzer, 5GB) - EMPFOHLEN\n- Family Plus: €9,99/Monat (4 Nutzer, 15GB)\n\nJetzt Plan wählen und nahtlos weitermachen!\n\nViele Grüße,\nIhr MeineDokBox Team`;
+// TAG 3: Engagement Email - Feature Highlights
+export function getDay3Email(userName: string): { subject: string; html: string; text: string } {
+  const subject = "Schon gesehen, wie schnell DokBox deine Belege sortiert? 🎉";
+  const text = `Hallo ${userName},\n\ndu bist jetzt seit 3 Tagen dabei – wie läuft's?\n\nDie meisten Nutzer sind begeistert, wie schnell die KI ihre Belege automatisch sortiert. Rechnungen, Verträge, Arztbelege – alles landet automatisch im richtigen Ordner.\n\nDu hast noch 4 Tage Trial-Zeit, um alle Features auszuprobieren:\n✓ KI-Kategorisierung in 15+ Kategorien\n✓ Smartphone-Kamera-Upload\n✓ Private & geteilte Ordner\n✓ E-Mail-Eingang für Dokumente\n\nNutze die Zeit und probiere alle Features aus!\n\nViele Grüße,\nIhr MeineDokBox Team`;
   
   const html = `
 <!DOCTYPE html>
@@ -69,40 +70,55 @@ export function getDay7Email(userName: string): { subject: string; html: string;
         <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
           <tr>
             <td style="padding: 40px 40px 30px;">
-              <h1 style="margin: 0; font-size: 24px; color: #1a1a1a; font-weight: 600;">Ihre Testphase endet morgen 📅</h1>
+              <h1 style="margin: 0; font-size: 24px; color: #1a1a1a; font-weight: 600;">Schon gesehen? 🎉</h1>
             </td>
           </tr>
           <tr>
             <td style="padding: 0 40px 30px;">
               <p style="margin: 0 0 20px; font-size: 16px; line-height: 1.6; color: #333333;">Hallo${userName ? ' ' + userName : ''},</p>
               <p style="margin: 0 0 20px; font-size: 16px; line-height: 1.6; color: #333333;">
-                Ihre <strong>7-tägige Testphase</strong> von MeineDokBox endet morgen. Um weiterhin alle Funktionen nutzen zu können, wählen Sie jetzt Ihren passenden Plan.
+                du bist jetzt seit <strong>3 Tagen</strong> dabei – wie läuft's?
+              </p>
+              <p style="margin: 0 0 20px; font-size: 16px; line-height: 1.6; color: #333333;">
+                Die meisten Nutzer sind begeistert, wie schnell die KI ihre Belege automatisch sortiert. Rechnungen, Verträge, Arztbelege – alles landet automatisch im richtigen Ordner.
               </p>
             </td>
           </tr>
           <tr>
             <td style="padding: 0 40px 30px;">
+              <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 8px; padding: 24px; text-align: center;">
+                <p style="margin: 0 0 8px; font-size: 14px; color: rgba(255,255,255,0.9);">Du hast noch</p>
+                <p style="margin: 0; font-size: 36px; font-weight: 700; color: #ffffff;">4 Tage</p>
+                <p style="margin: 8px 0 0; font-size: 14px; color: rgba(255,255,255,0.9);">Trial-Zeit</p>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 0 40px 30px;">
+              <p style="margin: 0 0 16px; font-size: 15px; font-weight: 600; color: #1a1a1a;">Features, die du ausprobieren solltest:</p>
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
-                  <td style="padding: 20px; background-color: #f8f8f8; border-radius: 6px; margin-bottom: 12px;">
-                    <div style="font-size: 14px; color: #666; margin-bottom: 4px;">Solo</div>
-                    <div style="font-size: 24px; font-weight: 700; color: #1a1a1a; margin-bottom: 8px;">€3,99<span style="font-size: 14px; font-weight: 400; color: #666;">/Monat</span></div>
-                    <div style="font-size: 14px; color: #666;">1 Nutzer • 2GB Speicher</div>
+                  <td style="padding: 12px 0;">
+                    <span style="font-size: 20px; margin-right: 12px;">🤖</span>
+                    <span style="font-size: 14px; color: #333;">KI-Kategorisierung in 15+ Kategorien</span>
                   </td>
                 </tr>
                 <tr>
-                  <td style="padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 6px; margin-bottom: 12px; position: relative;">
-                    <div style="position: absolute; top: 12px; right: 12px; background-color: #fbbf24; color: #1a1a1a; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">EMPFOHLEN</div>
-                    <div style="font-size: 14px; color: rgba(255,255,255,0.9); margin-bottom: 4px;">Family</div>
-                    <div style="font-size: 24px; font-weight: 700; color: #ffffff; margin-bottom: 8px;">€6,99<span style="font-size: 14px; font-weight: 400; color: rgba(255,255,255,0.9);">/Monat</span></div>
-                    <div style="font-size: 14px; color: rgba(255,255,255,0.9);">2 Nutzer • 5GB Speicher</div>
+                  <td style="padding: 12px 0;">
+                    <span style="font-size: 20px; margin-right: 12px;">📱</span>
+                    <span style="font-size: 14px; color: #333;">Smartphone-Kamera-Upload</span>
                   </td>
                 </tr>
                 <tr>
-                  <td style="padding: 20px; background-color: #f8f8f8; border-radius: 6px;">
-                    <div style="font-size: 14px; color: #666; margin-bottom: 4px;">Family Plus</div>
-                    <div style="font-size: 24px; font-weight: 700; color: #1a1a1a; margin-bottom: 8px;">€9,99<span style="font-size: 14px; font-weight: 400; color: #666;">/Monat</span></div>
-                    <div style="font-size: 14px; color: #666;">4 Nutzer • 15GB Speicher</div>
+                  <td style="padding: 12px 0;">
+                    <span style="font-size: 20px; margin-right: 12px;">🔒</span>
+                    <span style="font-size: 14px; color: #333;">Private & geteilte Ordner</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 12px 0;">
+                    <span style="font-size: 20px; margin-right: 12px;">📧</span>
+                    <span style="font-size: 14px; color: #333;">E-Mail-Eingang für Dokumente</span>
                   </td>
                 </tr>
               </table>
@@ -110,7 +126,7 @@ export function getDay7Email(userName: string): { subject: string; html: string;
           </tr>
           <tr>
             <td style="padding: 0 40px 40px;" align="center">
-              <a href="${process.env.REPL_SLUG ? `https://${process.env.REPL_SLUG}.replit.app/#pricing` : '#pricing'}" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 6px; font-weight: 600; font-size: 16px;">Jetzt Plan wählen</a>
+              <a href="${process.env.REPL_SLUG ? `https://${process.env.REPL_SLUG}.replit.app/documents` : '/documents'}" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 6px; font-weight: 600; font-size: 16px;">Jetzt weiter ausprobieren</a>
             </td>
           </tr>
           <tr>
@@ -131,9 +147,10 @@ export function getDay7Email(userName: string): { subject: string; html: string;
   return { subject, html, text };
 }
 
-export function getGraceStartEmail(userName: string): { subject: string; html: string; text: string } {
-  const subject = "Testphase abgelaufen - Wählen Sie jetzt Ihren Plan ⏰";
-  const text = `Hallo ${userName},\n\nIhre Testphase ist abgelaufen. Sie haben noch 3 Tage Zeit, um einen Plan auszuwählen.\n\nWährend dieser Kulanzfrist:\n✓ Können Sie alle Ihre Dokumente weiterhin ansehen und herunterladen\n✗ Upload neuer Dokumente ist vorübergehend deaktiviert\n\nWählen Sie jetzt Ihren Plan und laden Sie sofort wieder Dokumente hoch!\n\nViele Grüße,\nIhr MeineDokBox Team`;
+// TAG 6: Urgency Email - Loss Aversion
+export function getDay6Email(userName: string): { subject: string; html: string; text: string } {
+  const subject = "Deine Testphase endet morgen – sichere dir deine smarten Ordner dauerhaft 📁";
+  const text = `Hallo ${userName},\n\ndeine 7-tägige Testphase endet morgen.\n\nDeine Dokumente sind bereits perfekt sortiert in deinen smarten Ordnern. Möchtest du sie wirklich verlieren?\n\nWähle jetzt deinen Plan und behalte:\n✓ Alle deine sortierten Dokumente\n✓ KI-gestützte automatische Kategorisierung\n✓ Zugriff von jedem Gerät\n✓ Sicherer Cloud-Speicher in Deutschland\n\nUnsere Pläne:\n- Solo: €4,99/Monat (1 Nutzer, 100 Uploads, 5GB)\n- Family: €7,99/Monat (2 Nutzer, 200 Uploads, 10GB) - EMPFOHLEN\n- Family Plus: €11,99/Monat (4 Nutzer, 500 Uploads, 25GB)\n\nSichere dir jetzt deinen Plan – dauert nur 2 Minuten!\n\nViele Grüße,\nIhr MeineDokBox Team`;
   
   const html = `
 <!DOCTYPE html>
@@ -146,32 +163,65 @@ export function getGraceStartEmail(userName: string): { subject: string; html: s
   <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 40px 20px;">
     <tr>
       <td align="center">
-        <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-top: 4px solid #f59e0b;">
           <tr>
             <td style="padding: 40px 40px 30px;">
-              <h1 style="margin: 0; font-size: 24px; color: #1a1a1a; font-weight: 600;">Testphase abgelaufen ⏰</h1>
+              <h1 style="margin: 0; font-size: 24px; color: #1a1a1a; font-weight: 600;">Deine Testphase endet morgen 📁</h1>
             </td>
           </tr>
           <tr>
-            <td style="padding: 0 40px 20px;">
+            <td style="padding: 0 40px 30px;">
               <p style="margin: 0 0 20px; font-size: 16px; line-height: 1.6; color: #333333;">Hallo${userName ? ' ' + userName : ''},</p>
               <p style="margin: 0 0 20px; font-size: 16px; line-height: 1.6; color: #333333;">
-                Ihre Testphase ist abgelaufen. Sie haben noch <strong style="color: #f59e0b;">3 Tage</strong> Zeit, um einen Plan auszuwählen.
+                deine <strong style="color: #f59e0b;">7-tägige Testphase endet morgen</strong>.
+              </p>
+              <p style="margin: 0 0 20px; font-size: 16px; line-height: 1.6; color: #333333;">
+                Deine Dokumente sind bereits perfekt sortiert in deinen smarten Ordnern. <strong>Möchtest du sie wirklich verlieren?</strong>
               </p>
             </td>
           </tr>
           <tr>
             <td style="padding: 0 40px 30px;">
-              <div style="background-color: #fef3c7; border-left: 4px solid #f59e0b; padding: 16px; border-radius: 4px;">
-                <p style="margin: 0 0 12px; font-size: 15px; font-weight: 600; color: #92400e;">Während dieser Kulanzfrist:</p>
-                <p style="margin: 0 0 8px; font-size: 14px; color: #78350f;">✓ Können Sie alle Ihre Dokumente weiterhin ansehen und herunterladen</p>
-                <p style="margin: 0; font-size: 14px; color: #78350f;">✗ Upload neuer Dokumente ist vorübergehend deaktiviert</p>
+              <div style="background-color: #fef3c7; border-left: 4px solid #f59e0b; padding: 20px; border-radius: 4px;">
+                <p style="margin: 0 0 12px; font-size: 15px; font-weight: 600; color: #92400e;">Das behältst du mit einem Plan:</p>
+                <p style="margin: 0 0 8px; font-size: 14px; color: #78350f;">✓ Alle deine sortierten Dokumente</p>
+                <p style="margin: 0 0 8px; font-size: 14px; color: #78350f;">✓ KI-gestützte automatische Kategorisierung</p>
+                <p style="margin: 0 0 8px; font-size: 14px; color: #78350f;">✓ Zugriff von jedem Gerät</p>
+                <p style="margin: 0; font-size: 14px; color: #78350f;">✓ Sicherer Cloud-Speicher in Deutschland</p>
               </div>
             </td>
           </tr>
           <tr>
+            <td style="padding: 0 40px 30px;">
+              <table width="100%" cellpadding="0" cellspacing="0" style="border-spacing: 0 12px;">
+                <tr>
+                  <td style="padding: 20px; background-color: #f8f8f8; border-radius: 6px;">
+                    <div style="font-size: 14px; color: #666; margin-bottom: 4px;">Solo</div>
+                    <div style="font-size: 24px; font-weight: 700; color: #1a1a1a; margin-bottom: 8px;">€4,99<span style="font-size: 14px; font-weight: 400; color: #666;">/Monat</span></div>
+                    <div style="font-size: 14px; color: #666;">1 Nutzer • 100 Uploads • 5GB</div>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 6px; position: relative;">
+                    <div style="position: absolute; top: 12px; right: 12px; background-color: #fbbf24; color: #1a1a1a; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">EMPFOHLEN</div>
+                    <div style="font-size: 14px; color: rgba(255,255,255,0.9); margin-bottom: 4px;">Family</div>
+                    <div style="font-size: 24px; font-weight: 700; color: #ffffff; margin-bottom: 8px;">€7,99<span style="font-size: 14px; font-weight: 400; color: rgba(255,255,255,0.9);">/Monat</span></div>
+                    <div style="font-size: 14px; color: rgba(255,255,255,0.9);">2 Nutzer • 200 Uploads • 10GB</div>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 20px; background-color: #f8f8f8; border-radius: 6px;">
+                    <div style="font-size: 14px; color: #666; margin-bottom: 4px;">Family Plus</div>
+                    <div style="font-size: 24px; font-weight: 700; color: #1a1a1a; margin-bottom: 8px;">€11,99<span style="font-size: 14px; font-weight: 400; color: #666;">/Monat</span></div>
+                    <div style="font-size: 14px; color: #666;">4 Nutzer • 500 Uploads • 25GB</div>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
             <td style="padding: 0 40px 40px;" align="center">
-              <a href="${process.env.REPL_SLUG ? `https://${process.env.REPL_SLUG}.replit.app/#pricing` : '#pricing'}" style="display: inline-block; background-color: #f59e0b; color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 6px; font-weight: 600; font-size: 16px;">Jetzt Plan wählen</a>
+              <a href="${process.env.REPL_SLUG ? `https://${process.env.REPL_SLUG}.replit.app/#pricing` : '#pricing'}" style="display: inline-block; background-color: #f59e0b; color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 6px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 6px rgba(245, 158, 11, 0.3);">Jetzt Plan sichern – dauert 2 Minuten</a>
             </td>
           </tr>
           <tr>
@@ -192,133 +242,3 @@ export function getGraceStartEmail(userName: string): { subject: string; html: s
   return { subject, html, text };
 }
 
-export function getGraceLastDayEmail(userName: string): { subject: string; html: string; text: string } {
-  const subject = "⚠️ Letzte Chance: Morgen wechselt Ihr Account in den Nur-Lese-Modus";
-  const text = `Hallo ${userName},\n\nDies ist Ihre letzte Erinnerung: Morgen wechselt Ihr MeineDokBox-Account in den Nur-Lese-Modus.\n\nAb morgen:\n✗ Kein Upload neuer Dokumente mehr möglich\n✗ Keine Bearbeitung bestehender Dokumente\n✓ Weiterhin Zugriff auf alle Ihre Dokumente (Ansehen & Download)\n\nWählen Sie HEUTE noch Ihren Plan und behalten Sie vollen Zugriff!\n\nViele Grüße,\nIhr MeineDokBox Team`;
-  
-  const html = `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-</head>
-<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 40px 20px;">
-    <tr>
-      <td align="center">
-        <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-top: 4px solid #dc2626;">
-          <tr>
-            <td style="padding: 40px 40px 30px;">
-              <h1 style="margin: 0; font-size: 24px; color: #dc2626; font-weight: 600;">⚠️ Letzte Chance</h1>
-            </td>
-          </tr>
-          <tr>
-            <td style="padding: 0 40px 20px;">
-              <p style="margin: 0 0 20px; font-size: 16px; line-height: 1.6; color: #333333;">Hallo${userName ? ' ' + userName : ''},</p>
-              <p style="margin: 0 0 20px; font-size: 16px; line-height: 1.6; color: #333333;">
-                Dies ist Ihre <strong style="color: #dc2626;">letzte Erinnerung</strong>: Morgen wechselt Ihr MeineDokBox-Account in den Nur-Lese-Modus.
-              </p>
-            </td>
-          </tr>
-          <tr>
-            <td style="padding: 0 40px 30px;">
-              <div style="background-color: #fee2e2; border-left: 4px solid #dc2626; padding: 16px; border-radius: 4px;">
-                <p style="margin: 0 0 12px; font-size: 15px; font-weight: 600; color: #991b1b;">Ab morgen:</p>
-                <p style="margin: 0 0 8px; font-size: 14px; color: #7f1d1d;">✗ Kein Upload neuer Dokumente mehr möglich</p>
-                <p style="margin: 0 0 8px; font-size: 14px; color: #7f1d1d;">✗ Keine Bearbeitung bestehender Dokumente</p>
-                <p style="margin: 0; font-size: 14px; color: #7f1d1d;">✓ Weiterhin Zugriff auf alle Ihre Dokumente (Ansehen & Download)</p>
-              </div>
-            </td>
-          </tr>
-          <tr>
-            <td style="padding: 0 40px 40px;" align="center">
-              <a href="${process.env.REPL_SLUG ? `https://${process.env.REPL_SLUG}.replit.app/#pricing` : '#pricing'}" style="display: inline-block; background-color: #dc2626; color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 6px; font-weight: 600; font-size: 16px;">JETZT Plan wählen</a>
-            </td>
-          </tr>
-          <tr>
-            <td style="padding: 30px 40px; background-color: #f8f8f8; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;">
-              <p style="margin: 0; font-size: 14px; color: #666; line-height: 1.5;">
-                Viele Grüße,<br>
-                Ihr <strong>MeineDokBox</strong> Team
-              </p>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>`;
-
-  return { subject, html, text };
-}
-
-export function getReadOnlyStartEmail(userName: string): { subject: string; html: string; text: string } {
-  const subject = "Ihr Account ist jetzt im Nur-Lese-Modus";
-  const text = `Hallo ${userName},\n\nIhr MeineDokBox-Account befindet sich jetzt im Nur-Lese-Modus.\n\nAktueller Status:\n✗ Kein Upload neuer Dokumente möglich\n✗ Keine Bearbeitung bestehender Dokumente\n✓ Weiterhin Zugriff auf alle Ihre Dokumente (Ansehen & Download)\n\nUpgraden Sie jetzt auf einen bezahlten Plan und erhalten Sie sofort wieder vollen Zugriff!\n\nViele Grüße,\nIhr MeineDokBox Team`;
-  
-  const html = `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-</head>
-<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 40px 20px;">
-    <tr>
-      <td align="center">
-        <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-          <tr>
-            <td style="padding: 40px 40px 30px;">
-              <h1 style="margin: 0; font-size: 24px; color: #1a1a1a; font-weight: 600;">Nur-Lese-Modus aktiv</h1>
-            </td>
-          </tr>
-          <tr>
-            <td style="padding: 0 40px 20px;">
-              <p style="margin: 0 0 20px; font-size: 16px; line-height: 1.6; color: #333333;">Hallo${userName ? ' ' + userName : ''},</p>
-              <p style="margin: 0 0 20px; font-size: 16px; line-height: 1.6; color: #333333;">
-                Ihr MeineDokBox-Account befindet sich jetzt im <strong>Nur-Lese-Modus</strong>.
-              </p>
-            </td>
-          </tr>
-          <tr>
-            <td style="padding: 0 40px 30px;">
-              <div style="background-color: #f3f4f6; border-left: 4px solid #6b7280; padding: 16px; border-radius: 4px;">
-                <p style="margin: 0 0 12px; font-size: 15px; font-weight: 600; color: #374151;">Aktueller Status:</p>
-                <p style="margin: 0 0 8px; font-size: 14px; color: #4b5563;">✗ Kein Upload neuer Dokumente möglich</p>
-                <p style="margin: 0 0 8px; font-size: 14px; color: #4b5563;">✗ Keine Bearbeitung bestehender Dokumente</p>
-                <p style="margin: 0; font-size: 14px; color: #4b5563;">✓ Weiterhin Zugriff auf alle Ihre Dokumente (Ansehen & Download)</p>
-              </div>
-            </td>
-          </tr>
-          <tr>
-            <td style="padding: 0 40px 30px;">
-              <p style="margin: 0; font-size: 16px; line-height: 1.6; color: #333333; text-align: center;">
-                <strong>Upgraden Sie jetzt</strong> auf einen bezahlten Plan und erhalten Sie sofort wieder vollen Zugriff!
-              </p>
-            </td>
-          </tr>
-          <tr>
-            <td style="padding: 0 40px 40px;" align="center">
-              <a href="${process.env.REPL_SLUG ? `https://${process.env.REPL_SLUG}.replit.app/#pricing` : '#pricing'}" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 6px; font-weight: 600; font-size: 16px;">Jetzt upgraden</a>
-            </td>
-          </tr>
-          <tr>
-            <td style="padding: 30px 40px; background-color: #f8f8f8; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;">
-              <p style="margin: 0; font-size: 14px; color: #666; line-height: 1.5;">
-                Viele Grüße,<br>
-                Ihr <strong>MeineDokBox</strong> Team
-              </p>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>`;
-
-  return { subject, html, text };
-}
