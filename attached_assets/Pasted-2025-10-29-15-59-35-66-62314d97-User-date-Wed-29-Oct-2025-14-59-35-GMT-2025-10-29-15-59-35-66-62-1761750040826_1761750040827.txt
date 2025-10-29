@@ -1,0 +1,160 @@
+2025-10-29 15:59:35.66
+62314d97
+User
+date: 'Wed, 29 Oct 2025 14:59:35 GMT'
+2025-10-29 15:59:35.66
+62314d97
+User
+},
+2025-10-29 15:59:35.66
+62314d97
+User
+body: IncomingMessage {
+2025-10-29 15:59:35.66
+62314d97
+User
+_events: [Object],
+2025-10-29 15:59:35.66
+62314d97
+User
+_readableState: [ReadableState],
+2025-10-29 15:59:35.66
+62314d97
+User
+_maxListeners: undefined,
+2025-10-29 15:59:35.66
+62314d97
+User
+socket: null,
+2025-10-29 15:59:35.66
+62314d97
+User
+httpVersionMajor: 1,
+2025-10-29 15:59:35.66
+62314d97
+User
+httpVersionMinor: 1,
+2025-10-29 15:59:35.66
+62314d97
+User
+httpVersion: '1.1',
+2025-10-29 15:59:35.66
+62314d97
+User
+complete: true,
+2025-10-29 15:59:35.66
+62314d97
+User
+rawHeaders: [Array],
+2025-10-29 15:59:35.66
+62314d97
+User
+rawTrailers: [],
+2025-10-29 15:59:35.66
+62314d97
+User
+joinDuplicateHeaders: undefined,
+2025-10-29 15:59:35.66
+62314d97
+User
+aborted: false,
+2025-10-29 15:59:35.66
+62314d97
+User
+upgrade: false,
+2025-10-29 15:59:35.66
+62314d97
+User
+url: '',
+2025-10-29 15:59:35.66
+62314d97
+User
+method: null,
+2025-10-29 15:59:35.66
+62314d97
+User
+statusCode: 404,
+2025-10-29 15:59:35.66
+62314d97
+User
+statusMessage: 'Not Found',
+2025-10-29 15:59:35.66
+62314d97
+User
+client: [TLSSocket],
+2025-10-29 15:59:35.66
+62314d97
+User
+_consuming: false,
+2025-10-29 15:59:35.66
+62314d97
+User
+_dumped: false,
+2025-10-29 15:59:35.66
+62314d97
+User
+req: [ClientRequest],
+2025-10-29 15:59:35.66
+62314d97
+User
+_eventsCount: 2,
+2025-10-29 15:59:35.66
+62314d97
+User
+[Symbol(shapeMode)]: true,
+2025-10-29 15:59:35.66
+62314d97
+User
+[Symbol(kCapture)]: false,
+2025-10-29 15:59:35.66
+62314d97
+User
+[Symbol(kHeaders)]: [Object],
+2025-10-29 15:59:35.66
+62314d97
+User
+[Symbol(kHeadersCount)]: 10,
+2025-10-29 15:59:35.66
+62314d97
+User
+[Symbol(kTrailersCount)]: 0
+2025-10-29 15:59:35.66
+62314d97
+User
+},
+2025-10-29 15:59:35.66
+62314d97
+User
+httpStatusCode: 404,
+2025-10-29 15:59:35.66
+62314d97
+User
+requestId: 'tx00000e49f4e5a9b28b24d-0069022bd7-13524-eu-central-4',
+2025-10-29 15:59:35.66
+62314d97
+User
+totalRetryDelay: 0
+2025-10-29 15:59:35.66
+62314d97
+User
+}
+2025-10-29 15:59:35.76
+62314d97
+User
+at async /home/runner/workspace/node_modules/@smithy/middleware-retry/dist-cjs/index.js:254:46
+2025-10-29 15:59:35.76
+62314d97
+User
+'$fault': 'client',
+2025-10-29 16:00:05.19
+62314d97
+User
+[PostgreSQL Pool] Client removed from pool
+2025-10-29 16:00:05.36
+62314d97
+User
+[PostgreSQL Pool] Client removed from pool
+2025-10-29 16:00:05.46
+62314d97
+User
+[PostgreSQL Pool] Client removed from pool

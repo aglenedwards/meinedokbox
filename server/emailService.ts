@@ -242,3 +242,159 @@ export function getDay6Email(userName: string): { subject: string; html: string;
   return { subject, html, text };
 }
 
+// Document Processing Feedback Email
+
+export interface ProcessedDocument {
+  filename: string;
+  success: boolean;
+  title?: string;
+  category?: string;
+  amount?: string;
+  errorMessage?: string;
+}
+
+export interface DocumentProcessingResult {
+  senderEmail: string;
+  totalAttachments: number;
+  processedCount: number;
+  documents: ProcessedDocument[];
+  accountWarning?: string; // For limits, grace period, etc.
+}
+
+export function getDocumentProcessingFeedbackEmail(result: DocumentProcessingResult): { subject: string; html: string; text: string } {
+  const { processedCount, totalAttachments, documents, senderEmail, accountWarning } = result;
+  
+  let subject: string;
+  let emoji: string;
+  
+  if (processedCount === 0) {
+    subject = "❌ Dokumente konnten nicht verarbeitet werden";
+    emoji = "❌";
+  } else if (processedCount === totalAttachments) {
+    subject = `✅ ${processedCount} ${processedCount === 1 ? 'Dokument' : 'Dokumente'} erfolgreich verarbeitet`;
+    emoji = "✅";
+  } else {
+    subject = `⚠️ ${processedCount} von ${totalAttachments} Dokumenten verarbeitet`;
+    emoji = "⚠️";
+  }
+  
+  // Plain text version
+  let text = `Hallo,\n\n`;
+  
+  if (processedCount === 0) {
+    text += `Ihre Dokumente konnten leider nicht verarbeitet werden.\n\n`;
+  } else if (processedCount === totalAttachments) {
+    text += `Ihre ${processedCount} ${processedCount === 1 ? 'Dokument wurde' : 'Dokumente wurden'} erfolgreich verarbeitet und ${processedCount === 1 ? 'ist' : 'sind'} jetzt in Ihrem Dashboard verfügbar.\n\n`;
+  } else {
+    text += `${processedCount} von ${totalAttachments} Dokumenten wurden erfolgreich verarbeitet.\n\n`;
+  }
+  
+  // List documents
+  for (const doc of documents) {
+    if (doc.success) {
+      text += `✅ ${doc.filename}\n`;
+      if (doc.title) text += `   → ${doc.title}\n`;
+      if (doc.category) text += `   → Kategorie: ${doc.category}\n`;
+      if (doc.amount) text += `   → Betrag: ${doc.amount}\n`;
+    } else {
+      text += `❌ ${doc.filename}\n`;
+      if (doc.errorMessage) text += `   → ${doc.errorMessage}\n`;
+    }
+    text += `\n`;
+  }
+  
+  if (accountWarning) {
+    text += `\nℹ️ Hinweis: ${accountWarning}\n`;
+  }
+  
+  text += `\nViele Grüße,\nIhr MeineDokBox Team`;
+  
+  // HTML version
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+          <tr>
+            <td style="padding: 40px 40px 30px;">
+              <h1 style="margin: 0; font-size: 24px; color: #1a1a1a; font-weight: 600;">${emoji} Dokumenten-Verarbeitung</h1>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 0 40px 30px;">
+              <p style="margin: 0 0 20px; font-size: 16px; line-height: 1.6; color: #333333;">Hallo,</p>
+              <p style="margin: 0 0 20px; font-size: 16px; line-height: 1.6; color: #333333;">
+                ${processedCount === 0 
+                  ? 'Ihre Dokumente konnten leider nicht verarbeitet werden.' 
+                  : processedCount === totalAttachments 
+                    ? `Ihre <strong>${processedCount} ${processedCount === 1 ? 'Dokument wurde' : 'Dokumente wurden'}</strong> erfolgreich verarbeitet und ${processedCount === 1 ? 'ist' : 'sind'} jetzt in Ihrem Dashboard verfügbar.`
+                    : `<strong>${processedCount} von ${totalAttachments}</strong> Dokumenten wurden erfolgreich verarbeitet.`
+                }
+              </p>
+            </td>
+          </tr>
+          ${accountWarning ? `
+          <tr>
+            <td style="padding: 0 40px 20px;">
+              <div style="background-color: #fef3c7; border-left: 4px solid #f59e0b; padding: 16px; border-radius: 4px;">
+                <p style="margin: 0; font-size: 14px; color: #92400e;"><strong>ℹ️ Hinweis:</strong> ${accountWarning}</p>
+              </div>
+            </td>
+          </tr>
+          ` : ''}
+          <tr>
+            <td style="padding: 0 40px 30px;">
+              ${documents.map(doc => `
+                <div style="margin-bottom: 20px; padding: 16px; background-color: ${doc.success ? '#f0fdf4' : '#fef2f2'}; border-radius: 6px; border-left: 4px solid ${doc.success ? '#10b981' : '#ef4444'};">
+                  <div style="display: flex; align-items: center; margin-bottom: ${doc.success && (doc.title || doc.category || doc.amount) ? '12px' : '0'};">
+                    <span style="font-size: 20px; margin-right: 12px;">${doc.success ? '✅' : '❌'}</span>
+                    <span style="font-size: 15px; font-weight: 600; color: ${doc.success ? '#065f46' : '#991b1b'};">${doc.filename}</span>
+                  </div>
+                  ${doc.success && doc.title ? `
+                    <div style="margin-left: 32px; font-size: 14px; color: #065f46; margin-bottom: 4px;">
+                      <strong>Titel:</strong> ${doc.title}
+                    </div>
+                  ` : ''}
+                  ${doc.success && doc.category ? `
+                    <div style="margin-left: 32px; font-size: 14px; color: #065f46; margin-bottom: 4px;">
+                      <strong>Kategorie:</strong> ${doc.category}
+                    </div>
+                  ` : ''}
+                  ${doc.success && doc.amount ? `
+                    <div style="margin-left: 32px; font-size: 14px; color: #065f46;">
+                      <strong>Betrag:</strong> ${doc.amount}
+                    </div>
+                  ` : ''}
+                  ${!doc.success && doc.errorMessage ? `
+                    <div style="margin-left: 32px; font-size: 14px; color: #991b1b;">
+                      ${doc.errorMessage}
+                    </div>
+                  ` : ''}
+                </div>
+              `).join('')}
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 30px 40px; background-color: #f8f8f8; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;">
+              <p style="margin: 0; font-size: 14px; color: #666; line-height: 1.5;">
+                Viele Grüße,<br>
+                Ihr <strong>MeineDokBox</strong> Team
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+
+  return { subject, html, text };
+}
