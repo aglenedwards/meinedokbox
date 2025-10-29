@@ -287,9 +287,12 @@ export default function Settings() {
         </p>
       </div>
 
-      <div className="space-y-6 max-w-4xl">
-          {/* Profile Card */}
-          <Card data-testid="card-profile">
+      <div className="max-w-6xl">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Left Column */}
+          <div className="space-y-6">
+            {/* Profile Card */}
+            <Card data-testid="card-profile">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <User className="h-5 w-5" />
@@ -355,6 +358,39 @@ export default function Settings() {
             </CardContent>
           </Card>
 
+          {/* Email Whitelist (Security Feature) */}
+          <EmailWhitelistSettings />
+
+          {/* Export Card */}
+          <Card data-testid="section-export">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Download className="h-5 w-5" />
+                Daten exportieren
+              </CardTitle>
+              <CardDescription>
+                Exportieren Sie alle Ihre Dokumente als ZIP-Archiv
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Laden Sie alle Ihre hochgeladenen Dokumente in einer ZIP-Datei herunter. 
+                Das Archiv enthält alle Originaldateien mit ihren Dateinamen.
+              </p>
+              <Button
+                onClick={exportDocumentsAsZip}
+                variant="outline"
+                data-testid="button-export-zip"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Alle Dokumente herunterladen (ZIP)
+              </Button>
+            </CardContent>
+          </Card>
+          </div>
+
+          {/* Right Column */}
+          <div className="space-y-6">
           {/* Subscription Card */}
           <Card data-testid="section-subscription">
             <CardHeader>
@@ -513,36 +549,6 @@ export default function Settings() {
                   </div>
                 </>
               ) : null}
-            </CardContent>
-          </Card>
-
-          {/* Email Whitelist (Security Feature) */}
-          <EmailWhitelistSettings />
-
-          {/* Export Card */}
-          <Card data-testid="section-export">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Download className="h-5 w-5" />
-                Daten exportieren
-              </CardTitle>
-              <CardDescription>
-                Exportieren Sie alle Ihre Dokumente als ZIP-Archiv
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                Laden Sie alle Ihre hochgeladenen Dokumente in einer ZIP-Datei herunter. 
-                Das Archiv enthält alle Originaldateien mit ihren Dateinamen.
-              </p>
-              <Button
-                onClick={exportDocumentsAsZip}
-                variant="outline"
-                data-testid="button-export-zip"
-              >
-                <Download className="h-4 w-4 mr-2" />
-                Alle Dokumente herunterladen (ZIP)
-              </Button>
             </CardContent>
           </Card>
 
@@ -720,7 +726,8 @@ export default function Settings() {
               )}
             </CardContent>
           </Card>
-
+          </div>
+        </div>
       </div>
 
       <UpgradeModal
