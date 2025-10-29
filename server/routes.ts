@@ -2481,6 +2481,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(200).json({ message: 'Unknown recipient' });
       }
       
+      // Import email service functions
+      const { sendEmail, getDocumentProcessingFeedbackEmail, ProcessedDocument, DocumentProcessingResult } = await import('./emailService');
+      
       // Check whitelist (security feature)
       const isWhitelisted = await storage.isEmailWhitelisted(user.id, cleanFrom);
       if (!isWhitelisted) {
@@ -2494,7 +2497,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
           status: 'error',
           errorMessage: 'Absender nicht in Whitelist - E-Mail blockiert'
         });
+        
+        // Send feedback email to sender
+        try {
+          const feedbackResult: DocumentProcessingResult = {
+            senderEmail: cleanFrom,
+            totalAttachments: attachments.length,
+            processedCount: 0,
+            documents: attachments.map(att => ({
+              filename: att.filename,
+              success: false,
+              errorMessage: 'Absender nicht in Whitelist - bitte kontaktieren Sie den Dokumenten-Empfänger'
+            }))
+          };
+          
+          const feedbackEmail = getDocumentProcessingFeedbackEmail(feedbackResult);
+          await sendEmail({
+            to: cleanFrom,
+            subject: feedbackEmail.subject,
+            html: feedbackEmail.html,
+            text: feedbackEmail.text
+          });
+          console.log('[Email Webhook] Sent whitelist error feedback to:', cleanFrom);
+        } catch (emailError) {
+          console.error('[Email Webhook] Failed to send feedback email:', emailError);
+        }
+        
         return res.status(200).json({ message: 'Sender not whitelisted' });
+      }
+      
+      // Check account limits and status
+      const limits = await storage.getUserLimits(user.id);
+      let accountWarning: string | undefined;
+      
+      if (!limits.canUpload) {
+        accountWarning = 'Ihr Monatslimit ist erreicht. Bitte upgraden Sie Ihren Plan.';
+      } else if (limits.isReadOnly) {
+        accountWarning = 'Ihr Account ist im Read-Only-Modus. Keine neuen Uploads möglich.';
+      } else if (limits.isGracePeriod) {
+        accountWarning = `Ihr Account ist in der Kulanzphase (noch ${limits.graceDaysRemaining} Tage).`;
       }
       
       // Create email log
@@ -2507,19 +2548,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
         status: 'pending'
       }).returning();
       
-      // Filter supported attachments (excluding email signatures)
-      const supportedAttachments = attachments.filter(att => 
-        isValidDocumentAttachment(att.contentType, att.filename, att.size)
-      );
-      
-      console.log('[Email Webhook] Filtered attachments:', supportedAttachments.length, 'of', attachments.length, '(excluded signatures)');
+      // Track all documents with detailed results
+      const processedDocuments: Array<{ filename: string; success: boolean; title?: string; category?: string; amount?: string; errorMessage?: string }> = [];
       
       let processedCount = 0;
       const errors: string[] = [];
       
-      // Process each attachment
-      for (const attachment of supportedAttachments) {
+      // Process each attachment with detailed error handling
+      for (const attachment of attachments) {
         try {
+          // Check file size
+          if (attachment.size > 10 * 1024 * 1024) {
+            processedDocuments.push({
+              filename: attachment.filename,
+              success: false,
+              errorMessage: 'Datei zu groß (max. 10 MB)'
+            });
+            console.log('[Email Webhook] File too large:', attachment.filename);
+            continue;
+          }
+          
+          // Check if supported document
+          if (!isValidDocumentAttachment(attachment.contentType, attachment.filename, attachment.size)) {
+            const isImage = attachment.contentType.startsWith('image/');
+            const isPDF = attachment.contentType === 'application/pdf';
+            
+            let reason = 'Nicht unterstütztes Format (nur PDF, JPG, PNG, WEBP)';
+            if (isImage && attachment.size < 100 * 1024) {
+              reason = `Datei zu klein (${Math.round(attachment.size / 1024)} KB, min. 100 KB für Bilder)`;
+            }
+            
+            processedDocuments.push({
+              filename: attachment.filename,
+              success: false,
+              errorMessage: reason
+            });
+            console.log('[Email Webhook] Invalid document:', attachment.filename, '-', reason);
+            continue;
+          }
+          
+          // Check if upload is allowed
+          if (!limits.canUpload || limits.isReadOnly) {
+            processedDocuments.push({
+              filename: attachment.filename,
+              success: false,
+              errorMessage: limits.isReadOnly ? 'Account im Read-Only-Modus' : 'Monatslimit erreicht'
+            });
+            console.log('[Email Webhook] Upload not allowed for:', attachment.filename);
+            continue;
+          }
+          
           console.log('[Email Webhook] Processing attachment:', attachment.filename);
           
           // Convert Buffer to File-like object for existing pipeline
@@ -2534,15 +2612,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           // Analyze document using existing pipeline
           let analysisResult;
-          if (attachment.contentType === 'application/pdf') {
-            const extractedText = await extractTextFromPdf(attachment.content);
-            analysisResult = await analyzeDocumentFromText(extractedText);
-          } else {
-            // For images, create ImageWithMimeType array
-            analysisResult = await analyzeDocument([{
-              base64: attachment.content.toString('base64'),
-              mimeType: attachment.contentType
-            }]);
+          try {
+            if (attachment.contentType === 'application/pdf') {
+              const extractedText = await extractTextFromPdf(attachment.content);
+              analysisResult = await analyzeDocumentFromText(extractedText);
+            } else {
+              // For images, create ImageWithMimeType array
+              analysisResult = await analyzeDocument([{
+                base64: attachment.content.toString('base64'),
+                mimeType: attachment.contentType
+              }]);
+            }
+          } catch (aiError) {
+            processedDocuments.push({
+              filename: attachment.filename,
+              success: false,
+              errorMessage: 'KI-Analyse fehlgeschlagen - bitte später erneut versuchen'
+            });
+            console.error('[Email Webhook] AI analysis failed:', attachment.filename, aiError);
+            errors.push(`${attachment.filename}: AI-Analyse fehlgeschlagen`);
+            continue;
           }
           
           // Auto-rotate image if AI detected upside down orientation
@@ -2560,39 +2649,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
           
           // Store file in object storage
-          const { filePath, thumbnailPath } = await uploadFile(
-            fileBuffer,
-            attachment.filename,
-            user.id
-          );
-          
-          // Save to database
-          await storage.createDocument({
-            userId: user.id,
-            title: analysisResult.title,
-            category: analysisResult.category,
-            extractedText: analysisResult.extractedText,
-            fileUrl: filePath,
-            thumbnailUrl: thumbnailPath,
-            mimeType: attachment.contentType, // Store MIME type
-            confidence: analysisResult.confidence,
-            extractedDate: analysisResult.extractedDate ? new Date(analysisResult.extractedDate) : null,
-            amount: analysisResult.amount,
-            sender: analysisResult.sender,
-            // Phase 3: Smart folders & scenarios
-            year: analysisResult.year ?? null,
-            documentDate: analysisResult.documentDate ? new Date(analysisResult.documentDate) : null,
-            systemTags: analysisResult.systemTags ?? [],
-          });
+          try {
+            const { filePath, thumbnailPath } = await uploadFile(
+              fileBuffer,
+              attachment.filename,
+              user.id
+            );
+            
+            // Save to database
+            await storage.createDocument({
+              userId: user.id,
+              title: analysisResult.title,
+              category: analysisResult.category,
+              extractedText: analysisResult.extractedText,
+              fileUrl: filePath,
+              thumbnailUrl: thumbnailPath,
+              mimeType: attachment.contentType, // Store MIME type
+              confidence: analysisResult.confidence,
+              extractedDate: analysisResult.extractedDate ? new Date(analysisResult.extractedDate) : null,
+              amount: analysisResult.amount,
+              sender: analysisResult.sender,
+              // Phase 3: Smart folders & scenarios
+              year: analysisResult.year ?? null,
+              documentDate: analysisResult.documentDate ? new Date(analysisResult.documentDate) : null,
+              systemTags: analysisResult.systemTags ?? [],
+            });
 
-          // Increment upload counter (monthly limit tracking)
-          await storage.incrementUploadCounter(user.id, 1);
+            // Increment upload counter (monthly limit tracking)
+            await storage.incrementUploadCounter(user.id, 1);
+            
+            processedCount++;
+            
+            // Add to successful documents
+            processedDocuments.push({
+              filename: attachment.filename,
+              success: true,
+              title: analysisResult.title,
+              category: analysisResult.category,
+              amount: analysisResult.amount
+            });
+            
+            console.log('[Email Webhook] Successfully processed:', attachment.filename);
+          } catch (storageError) {
+            processedDocuments.push({
+              filename: attachment.filename,
+              success: false,
+              errorMessage: 'Speicherung fehlgeschlagen - bitte kontaktieren Sie den Support'
+            });
+            console.error('[Email Webhook] Storage failed:', attachment.filename, storageError);
+            errors.push(`${attachment.filename}: Speicherung fehlgeschlagen`);
+          }
           
-          processedCount++;
-          console.log('[Email Webhook] Successfully processed:', attachment.filename);
         } catch (error) {
-          const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+          const errorMsg = error instanceof Error ? error.message : 'Unbekannter Fehler';
           console.error('[Email Webhook] Failed to process attachment:', attachment.filename, errorMsg);
+          processedDocuments.push({
+            filename: attachment.filename,
+            success: false,
+            errorMessage: 'Verarbeitung fehlgeschlagen'
+          });
           errors.push(`${attachment.filename}: ${errorMsg}`);
         }
       }
@@ -2606,7 +2721,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
         })
         .where(eq(emailLogs.id, emailLog.id));
       
-      console.log('[Email Webhook] Completed. Processed:', processedCount, 'Errors:', errors.length);
+      console.log('[Email Webhook] Completed. Processed:', processedCount, 'of', attachments.length);
+      
+      // Send feedback email to sender
+      try {
+        const feedbackResult: DocumentProcessingResult = {
+          senderEmail: cleanFrom,
+          totalAttachments: attachments.length,
+          processedCount,
+          documents: processedDocuments,
+          accountWarning
+        };
+        
+        const feedbackEmail = getDocumentProcessingFeedbackEmail(feedbackResult);
+        await sendEmail({
+          to: cleanFrom,
+          subject: feedbackEmail.subject,
+          html: feedbackEmail.html,
+          text: feedbackEmail.text
+        });
+        console.log('[Email Webhook] Sent feedback email to:', cleanFrom);
+      } catch (emailError) {
+        console.error('[Email Webhook] Failed to send feedback email:', emailError);
+      }
       
       res.status(200).json({
         message: `Processed ${processedCount} of ${attachments.length} attachments`,
