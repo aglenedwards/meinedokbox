@@ -1043,7 +1043,7 @@ export default function Dashboard() {
                   data-testid="checkbox-select-all-header"
                 />
                 <span className="text-sm text-muted-foreground">
-                  {someSelected ? `${selectedDocuments.size} ausgewählt` : (allSelected ? "Alle auswählen" : "Alle abwählen")}
+                  {someSelected ? `${selectedDocuments.size} ausgewählt` : (allSelected ? "Alle abwählen" : "Alle auswählen")}
                 </span>
               </div>
             )}
