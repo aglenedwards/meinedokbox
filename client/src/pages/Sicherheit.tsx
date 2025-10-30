@@ -4,9 +4,9 @@ import { Shield, Lock, Server, FileCheck, CheckCircle2, Award, Globe, ArrowRight
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
-import dataFlowImage from "@assets/generated_images/EU_data_flow_diagram_5bc1b197.png";
-import redundancyImage from "@assets/generated_images/S3_redundancy_infrastructure_diagram_1d58a12d.png";
-import euMapImage from "@assets/generated_images/EU_data_center_map_d227e0d2.png";
+import { DataFlowDiagram } from "@/components/diagrams/DataFlowDiagram";
+import { RedundancyDiagram } from "@/components/diagrams/RedundancyDiagram";
+import { EUMapDiagram } from "@/components/diagrams/EUMapDiagram";
 
 export default function Sicherheit() {
   const [, setLocation] = useLocation();
@@ -206,15 +206,7 @@ export default function Sicherheit() {
 
           {/* Data Flow Visualization */}
           <div className="max-w-5xl mx-auto mb-12">
-            <Card className="border-2 border-primary/20 overflow-hidden">
-              <CardContent className="p-0">
-                <img 
-                  src={dataFlowImage} 
-                  alt="Datenfluss-Diagramm: Upload → Neon DB (Frankfurt) → Azure OpenAI (EU) → IONOS S3 (Frankfurt)" 
-                  className="w-full h-auto"
-                />
-              </CardContent>
-            </Card>
+            <DataFlowDiagram />
           </div>
 
           {/* Infrastructure Details */}
@@ -295,15 +287,7 @@ export default function Sicherheit() {
           </div>
 
           <div className="max-w-5xl mx-auto mb-12">
-            <Card className="border-2 border-primary/20 overflow-hidden">
-              <CardContent className="p-0">
-                <img 
-                  src={redundancyImage} 
-                  alt="IONOS S3 Redundanz-Architektur mit Multi-Availability-Zone-Replikation" 
-                  className="w-full h-auto"
-                />
-              </CardContent>
-            </Card>
+            <RedundancyDiagram />
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
@@ -586,20 +570,7 @@ export default function Sicherheit() {
 
             {/* EU Map */}
             <div className="mb-16">
-              <Card className="border-2 border-primary/20 overflow-hidden">
-                <CardContent className="p-0">
-                  <img 
-                    src={euMapImage} 
-                    alt="Karte der EU mit Rechenzentrumsstandorten in Frankfurt" 
-                    className="w-full h-auto"
-                  />
-                </CardContent>
-              </Card>
-              <div className="text-center mt-6">
-                <p className="text-sm text-muted-foreground">
-                  <strong>Alle Komponenten in der EU:</strong> IONOS S3 (Frankfurt), Neon Database (Frankfurt), Azure OpenAI (EU-Regionen)
-                </p>
-              </div>
+              <EUMapDiagram />
             </div>
 
             <h3 className="text-2xl font-bold mb-8 text-center">
