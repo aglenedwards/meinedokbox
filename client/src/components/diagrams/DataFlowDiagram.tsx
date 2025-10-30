@@ -38,8 +38,7 @@ export function DataFlowDiagram() {
               <span className="text-white font-bold text-sm">2</span>
             </div>
             <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 whitespace-nowrap">
-              <div className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-blue-500 text-white text-xs font-semibold">
-                <span>🇪🇺</span>
+              <div className="inline-flex items-center justify-center px-3 py-1 rounded-full bg-blue-500 text-white text-xs font-semibold">
                 <span>EU</span>
               </div>
             </div>
@@ -68,8 +67,7 @@ export function DataFlowDiagram() {
               <span className="text-white font-bold text-sm">3</span>
             </div>
             <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 whitespace-nowrap">
-              <div className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-blue-500 text-white text-xs font-semibold">
-                <span>🇪🇺</span>
+              <div className="inline-flex items-center justify-center px-3 py-1 rounded-full bg-blue-500 text-white text-xs font-semibold">
                 <span>EU</span>
               </div>
             </div>
@@ -98,8 +96,7 @@ export function DataFlowDiagram() {
               <span className="text-white font-bold text-sm">4</span>
             </div>
             <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 whitespace-nowrap">
-              <div className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-blue-500 text-white text-xs font-semibold">
-                <span>🇪🇺</span>
+              <div className="inline-flex items-center justify-center px-3 py-1 rounded-full bg-blue-500 text-white text-xs font-semibold">
                 <span>EU</span>
               </div>
             </div>
