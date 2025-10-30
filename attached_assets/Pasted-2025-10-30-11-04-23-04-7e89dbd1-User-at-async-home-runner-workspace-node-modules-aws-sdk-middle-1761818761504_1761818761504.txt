@@ -1,0 +1,201 @@
+2025-10-30 11:04:23.04
+7e89dbd1
+User
+at async /home/runner/workspace/node_modules/@aws-sdk/middleware-logger/dist-cjs/index.js:5:26
+2025-10-30 11:04:23.04
+7e89dbd1
+User
+'$response': HttpResponse {
+2025-10-30 11:04:23.04
+7e89dbd1
+User
+'x-amz-request-id': 'tx000001c4583cfbe8be8c6-0069033826-137c1-eu-central-4',
+2025-10-30 11:04:23.04
+7e89dbd1
+User
+body: IncomingMessage {
+2025-10-30 11:04:23.04
+7e89dbd1
+User
+_events: [Object],
+2025-10-30 11:04:23.04
+7e89dbd1
+User
+_readableState: [ReadableState],
+2025-10-30 11:04:23.04
+7e89dbd1
+User
+httpVersionMinor: 1,
+2025-10-30 11:04:23.04
+7e89dbd1
+User
+httpVersion: '1.1',
+2025-10-30 11:04:23.04
+7e89dbd1
+User
+aborted: false,
+2025-10-30 11:04:23.04
+7e89dbd1
+User
+upgrade: false,
+2025-10-30 11:04:23.04
+7e89dbd1
+User
+url: '',
+2025-10-30 11:04:23.04
+7e89dbd1
+User
+statusMessage: 'Not Found',
+2025-10-30 11:04:23.04
+7e89dbd1
+User
+client: [TLSSocket],
+2025-10-30 11:04:23.04
+7e89dbd1
+User
+_consuming: false,
+2025-10-30 11:04:23.04
+7e89dbd1
+User
+_dumped: false,
+2025-10-30 11:04:23.04
+7e89dbd1
+User
+_eventsCount: 2,
+2025-10-30 11:04:23.04
+7e89dbd1
+User
+[Symbol(kHeadersCount)]: 10,
+2025-10-30 11:04:23.04
+7e89dbd1
+User
+},
+2025-10-30 11:04:23.04
+7e89dbd1
+User
+'$retryable': undefined,
+2025-10-30 11:04:23.04
+7e89dbd1
+User
+httpStatusCode: 404,
+2025-10-30 11:04:23.04
+7e89dbd1
+User
+extendedRequestId: undefined,
+2025-10-30 11:04:23.04
+7e89dbd1
+User
+}
+2025-10-30 11:04:23.11
+7e89dbd1
+User
+at de_CommandError (/home/runner/workspace/node_modules/@aws-sdk/client-s3/dist-cjs/index.js:4847:25)
+2025-10-30 11:04:23.23
+7e89dbd1
+User
+extendedRequestId: undefined,
+2025-10-30 11:04:23.23
+7e89dbd1
+User
+cfId: undefined,
+2025-10-30 11:04:23.23
+7e89dbd1
+User
+attempts: 1,
+2025-10-30 11:04:23.23
+7e89dbd1
+User
+totalRetryDelay: 0
+2025-10-30 11:04:23.23
+7e89dbd1
+User
+}
+2025-10-30 11:04:23.23
+7e89dbd1
+User
+}
+2025-10-30 11:04:23.26
+7e89dbd1
+User
+10:04:23 AM [express] GET /api/storage/stats 304 in 1246ms :: {"usedBytes":0,"usedMB":0,"usedGB":0,"t…
+2025-10-30 11:04:23.26
+7e89dbd1
+User
+Failed to get stats for /objects/uploads/d261a2d5-7f8a-46cb-a5a8-83ce4ab3f27b: NotFound: UnknownError
+2025-10-30 11:04:23.26
+7e89dbd1
+User
+at de_NotFoundRes (/home/runner/workspace/node_modules/@aws-sdk/client-s3/dist-cjs/index.js:4975:23)
+2025-10-30 11:04:23.26
+7e89dbd1
+User
+at de_CommandError (/home/runner/workspace/node_modules/@aws-sdk/client-s3/dist-cjs/index.js:4847:25)
+2025-10-30 11:04:23.26
+7e89dbd1
+User
+at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-30 11:04:23.26
+7e89dbd1
+User
+at async /home/runner/workspace/node_modules/@smithy/middleware-serde/dist-cjs/index.js:8:24
+2025-10-30 11:04:23.26
+7e89dbd1
+User
+at async /home/runner/workspace/node_modules/@aws-sdk/client-s3/node_modules/@aws-sdk/middleware-sdk-s3/dist-cjs/index.js:386:20
+2025-10-30 11:04:23.26
+7e89dbd1
+User
+at async /home/runner/workspace/node_modules/@smithy/middleware-retry/dist-cjs/index.js:254:46
+2025-10-30 11:04:23.26
+7e89dbd1
+User
+at async /home/runner/workspace/node_modules/@aws-sdk/client-s3/node_modules/@aws-sdk/middleware-sdk-s3/dist-cjs/index.js:63:28
+2025-10-30 11:04:23.26
+7e89dbd1
+User
+at async /home/runner/workspace/node_modules/@aws-sdk/client-s3/node_modules/@aws-sdk/middleware-sdk-s3/dist-cjs/index.js:90:20
+2025-10-30 11:04:23.26
+7e89dbd1
+User
+at async /home/runner/workspace/node_modules/@aws-sdk/middleware-logger/dist-cjs/index.js:5:26
+2025-10-30 11:04:23.26
+7e89dbd1
+User
+at async DbStorage.getUserStorageStats (file:///home/runner/workspace/dist/index.js:1634:32) {
+2025-10-30 11:04:23.38
+7e89dbd1
+User
+httpStatusCode: 404,
+2025-10-30 11:04:25.88
+f8ce8c24
+System
+system: received signal terminated
+2025-10-30 11:04:52.43
+7e89dbd1
+User
+[PostgreSQL Pool] Client removed from pool
+2025-10-30 11:04:52.45
+7e89dbd1
+User
+[PostgreSQL Pool] Client removed from pool
+2025-10-30 11:04:52.45
+7e89dbd1
+User
+[PostgreSQL Pool] Client removed from pool
+2025-10-30 11:04:56.98
+7e89dbd1
+User
+[Email Webhook] Processing email from: a.edwards@almaron.de to: alvin.edwards2@in.meinedokbox.de attachments: 1
+2025-10-30 11:04:57.21
+7e89dbd1
+User
+[Email Webhook] Processing attachment: Rechnung_2025_08_33686262000721.pdf
+
+2025-10-30 11:04:57.23
+7e89dbd1
+User
+[PostgreSQL Pool] New client connected
+2025-10-30 11:04:57.67
+7e89dbd1
+User
+Analyzing PDF document from extracted text (5021 characte
