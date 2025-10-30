@@ -1,0 +1,200 @@
+2025-10-30 10:32:25.26
+f8ce8c24
+User
+url: '',
+2025-10-30 10:32:25.26
+f8ce8c24
+User
+method: null,
+2025-10-30 10:32:25.26
+f8ce8c24
+User
+statusMessage: 'Not Found',
+2025-10-30 10:32:25.26
+f8ce8c24
+User
+_consuming: false,
+2025-10-30 10:32:25.26
+f8ce8c24
+User
+_dumped: false,
+2025-10-30 10:32:25.26
+f8ce8c24
+User
+req: [ClientRequest],
+2025-10-30 10:32:25.26
+f8ce8c24
+User
+_eventsCount: 2,
+2025-10-30 10:32:25.26
+f8ce8c24
+User
+[Symbol(shapeMode)]: true,
+2025-10-30 10:32:25.26
+f8ce8c24
+User
+[Symbol(kCapture)]: false,
+2025-10-30 10:32:25.26
+f8ce8c24
+User
+}
+2025-10-30 10:32:25.26
+f8ce8c24
+User
+'$retryable': undefined,
+2025-10-30 10:32:25.26
+f8ce8c24
+User
+'$metadata': {
+2025-10-30 10:32:25.26
+f8ce8c24
+User
+httpStatusCode: 404,
+2025-10-30 10:32:25.26
+f8ce8c24
+User
+requestId: 'tx000004a8aa7a37fde72d1-00690330a9-137c1-eu-central-4',
+2025-10-30 10:32:25.26
+f8ce8c24
+User
+extendedRequestId: undefined,
+2025-10-30 10:32:25.26
+f8ce8c24
+User
+cfId: undefined,
+2025-10-30 10:32:25.26
+f8ce8c24
+User
+}
+2025-10-30 10:32:25.32
+f8ce8c24
+User
+Failed to get stats for /objects/uploads/d261a2d5-7f8a-46cb-a5a8-83ce4ab3f27b: NotFound: UnknownError
+2025-10-30 10:32:25.32
+f8ce8c24
+User
+at de_NotFoundRes (/home/runner/workspace/node_modules/@aws-sdk/client-s3/dist-cjs/index.js:4975:23)
+2025-10-30 10:32:25.32
+f8ce8c24
+User
+at async /home/runner/workspace/node_modules/@aws-sdk/client-s3/node_modules/@aws-sdk/middleware-sdk-s3/dist-cjs/index.js:386:20
+2025-10-30 10:32:25.32
+f8ce8c24
+User
+at async /home/runner/workspace/node_modules/@smithy/middleware-retry/dist-cjs/index.js:254:46
+2025-10-30 10:32:25.32
+f8ce8c24
+User
+at async /home/runner/workspace/node_modules/@aws-sdk/client-s3/node_modules/@aws-sdk/middleware-sdk-s3/dist-cjs/index.js:63:28
+2025-10-30 10:32:25.32
+f8ce8c24
+User
+at async DbStorage.getUserStorageStats (file:///home/runner/workspace/dist/index.js:1417:32) {
+2025-10-30 10:32:25.32
+f8ce8c24
+User
+'$response': HttpResponse {
+2025-10-30 10:32:25.32
+f8ce8c24
+User
+statusCode: 404,
+2025-10-30 10:32:25.32
+f8ce8c24
+User
+'content-length': '253',
+2025-10-30 10:32:25.32
+f8ce8c24
+User
+'x-amz-request-id': 'tx000009439b2735f011378-00690330a9-13524-eu-central-4',
+2025-10-30 10:32:25.32
+f8ce8c24
+User
+'accept-ranges': 'bytes',
+2025-10-30 10:32:25.32
+f8ce8c24
+User
+'content-type': 'application/xml',
+2025-10-30 10:32:25.32
+f8ce8c24
+User
+date: 'Thu, 30 Oct 2025 09:32:25 GMT'
+2025-10-30 10:32:25.32
+f8ce8c24
+User
+},
+2025-10-30 10:32:25.32
+f8ce8c24
+User
+body: IncomingMessage {
+2025-10-30 10:32:25.32
+f8ce8c24
+User
+_events: [Object],
+2025-10-30 10:32:25.32
+f8ce8c24
+User
+_readableState: [ReadableState],
+2025-10-30 10:32:25.32
+f8ce8c24
+User
+_maxListeners: undefined,
+2025-10-30 10:32:25.32
+f8ce8c24
+User
+socket: null,
+2025-10-30 10:32:25.32
+f8ce8c24
+User
+httpVersionMajor: 1,
+2025-10-30 10:32:25.32
+f8ce8c24
+User
+httpVersion: '1.1',
+2025-10-30 10:32:25.32
+f8ce8c24
+User
+complete: true,
+2025-10-30 10:32:25.32
+f8ce8c24
+User
+rawHeaders: [Array],
+2025-10-30 10:32:25.32
+f8ce8c24
+User
+rawTrailers: [],
+2025-10-30 10:32:25.32
+f8ce8c24
+User
+joinDuplicateHeaders: undefined,
+2025-10-30 10:32:25.32
+f8ce8c24
+User
+aborted: false,
+2025-10-30 10:32:25.32
+f8ce8c24
+User
+upgrade: false,
+2025-10-30 10:32:54.92
+f8ce8c24
+User
+[PostgreSQL Pool] Client removed from pool
+2025-10-30 10:34:23.14
+f8ce8c24
+User
+[Email Webhook] Processing email from: a.edwards@almaron.de to: alvin.edwards2@in.meinedokbox.de attachments: 1
+2025-10-30 10:34:23.21
+f8ce8c24
+User
+[Email Webhook] Error processing email: TypeError: storage.getUserLimits is not a function
+2025-10-30 10:34:23.21
+f8ce8c24
+User
+at file:///home/runner/workspace/dist/index.js:6008:36
+2025-10-30 10:34:23.21
+f8ce8c24
+User
+at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-30 10:34:23.21
+f8ce8c24
+User
+9:34:23 AM [express] POST /api/webhook/email 500 in 84ms :: {"message":"Failed to process email","er…

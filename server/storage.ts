@@ -47,6 +47,12 @@ export interface IStorage {
   permanentlyDeleteDocument(id: string, userId: string): Promise<boolean>;
   permanentlyDeleteAllTrashedDocuments(userId: string): Promise<number>;
   getUserStorageStats(userId: string): Promise<StorageStats>;
+  getUserLimits(userId: string): Promise<{
+    canUpload: boolean;
+    isReadOnly: boolean;
+    isGracePeriod: boolean;
+    graceDaysRemaining: number;
+  }>;
   
   // Phase 2: Tags management
   createTag(tag: InsertTag): Promise<Tag>;
@@ -798,6 +804,60 @@ export class DbStorage implements IStorage {
       totalGB,
       percentageUsed: Math.round(percentageUsed * 10) / 10,
       documentCount: userDocuments.length,
+    };
+  }
+
+  async getUserLimits(userId: string): Promise<{
+    canUpload: boolean;
+    isReadOnly: boolean;
+    isGracePeriod: boolean;
+    graceDaysRemaining: number;
+  }> {
+    const { getEffectiveUser, getTrialStatus } = await import("./middleware/subscriptionLimits");
+    const { PLAN_LIMITS } = await import("../shared/schema");
+    
+    const effectiveUser = await getEffectiveUser(userId);
+    
+    if (!effectiveUser) {
+      return {
+        canUpload: false,
+        isReadOnly: true,
+        isGracePeriod: false,
+        graceDaysRemaining: 0,
+      };
+    }
+    
+    // Check trial status
+    if (effectiveUser.subscriptionPlan === "trial" && effectiveUser.trialEndsAt) {
+      const trialStatus = getTrialStatus(effectiveUser.trialEndsAt);
+      
+      if (trialStatus.status === "grace_period") {
+        return {
+          canUpload: false,
+          isReadOnly: false,
+          isGracePeriod: true,
+          graceDaysRemaining: trialStatus.graceDaysRemaining || 0,
+        };
+      }
+      
+      if (trialStatus.status === "expired") {
+        return {
+          canUpload: false,
+          isReadOnly: true,
+          isGracePeriod: false,
+          graceDaysRemaining: 0,
+        };
+      }
+    }
+    
+    const plan = effectiveUser.subscriptionPlan as keyof typeof PLAN_LIMITS;
+    const limits = PLAN_LIMITS[plan];
+    
+    return {
+      canUpload: limits.canUpload,
+      isReadOnly: !limits.canUpload,
+      isGracePeriod: false,
+      graceDaysRemaining: 0,
     };
   }
 
