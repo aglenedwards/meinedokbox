@@ -1,9 +1,12 @@
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { Shield, Lock, Server, FileCheck, CheckCircle2, Award, Globe, ArrowRight } from "lucide-react";
+import { Shield, Lock, Server, FileCheck, CheckCircle2, Award, Globe, ArrowRight, Database, Cloud, Zap, MapPin } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
+import dataFlowImage from "@assets/generated_images/EU_data_flow_diagram_5bc1b197.png";
+import redundancyImage from "@assets/generated_images/S3_redundancy_infrastructure_diagram_1d58a12d.png";
+import euMapImage from "@assets/generated_images/EU_data_center_map_d227e0d2.png";
 
 export default function Sicherheit() {
   const [, setLocation] = useLocation();
@@ -185,8 +188,274 @@ export default function Sicherheit() {
         </div>
       </section>
 
-      {/* Security Features */}
+      {/* EU Infrastructure - Data Flow */}
       <section className="py-24 bg-muted/30">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border bg-background mb-6">
+              <Globe className="h-4 w-4 text-primary" />
+              <span className="text-sm font-medium">100% EU-Infrastruktur</span>
+            </div>
+            <h2 className="text-3xl md:text-5xl font-bold mb-6">
+              Komplette EU-Infrastruktur – Volle Transparenz
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+              Ihr Dokument durchläuft mehrere Sicherheitsschichten – und verlässt dabei <strong>niemals die Europäische Union</strong>.
+            </p>
+          </div>
+
+          {/* Data Flow Visualization */}
+          <div className="max-w-5xl mx-auto mb-12">
+            <Card className="border-2 border-primary/20 overflow-hidden">
+              <CardContent className="p-0">
+                <img 
+                  src={dataFlowImage} 
+                  alt="Datenfluss-Diagramm: Upload → Neon DB (Frankfurt) → Azure OpenAI (EU) → IONOS S3 (Frankfurt)" 
+                  className="w-full h-auto"
+                />
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Infrastructure Details */}
+          <div className="grid md:grid-cols-4 gap-6 max-w-6xl mx-auto">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 mb-3">
+                  <Cloud className="h-6 w-6 text-primary" />
+                </div>
+                <CardTitle className="text-lg">1. Upload</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  TLS 1.3-verschlüsselte Übertragung direkt zu unseren EU-Servern
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 mb-3">
+                  <Database className="h-6 w-6 text-primary" />
+                </div>
+                <CardTitle className="text-lg">2. Neon DB (Frankfurt)</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  PostgreSQL-Datenbank auf Neon Serverless in Frankfurt, Deutschland
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 mb-3">
+                  <Zap className="h-6 w-6 text-primary" />
+                </div>
+                <CardTitle className="text-lg">3. Azure OpenAI (EU)</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  KI-Analyse in EU-Rechenzentren, keine Datenspeicherung, kein Training
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 mb-3">
+                  <Server className="h-6 w-6 text-primary" />
+                </div>
+                <CardTitle className="text-lg">4. IONOS S3 (Frankfurt)</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  AES-256-verschlüsselte Speicherung mit automatischer Redundanz
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Redundancy & Reliability */}
+      <section className="py-24 bg-background">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border bg-background mb-6">
+              <Shield className="h-4 w-4 text-primary" />
+              <span className="text-sm font-medium">99.99% Verfügbarkeit</span>
+            </div>
+            <h2 className="text-3xl md:text-5xl font-bold mb-6">
+              Ausfallsicherheit & Redundanz
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+              Ihre Dokumente sind mehrfach gesichert – für maximale Datensicherheit, selbst bei Serverausfällen.
+            </p>
+          </div>
+
+          <div className="max-w-5xl mx-auto mb-12">
+            <Card className="border-2 border-primary/20 overflow-hidden">
+              <CardContent className="p-0">
+                <img 
+                  src={redundancyImage} 
+                  alt="IONOS S3 Redundanz-Architektur mit Multi-Availability-Zone-Replikation" 
+                  className="w-full h-auto"
+                />
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            <Card>
+              <CardHeader>
+                <CardTitle>Multi-Availability-Zones</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground mb-4">
+                  Ihre Daten werden automatisch über mehrere physisch getrennte Rechenzentren in Frankfurt repliziert.
+                </p>
+                <div className="flex items-center gap-2 text-primary font-semibold">
+                  <CheckCircle2 className="h-5 w-5" />
+                  <span>Schutz vor Rechenzentrumsausfällen</span>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>11 Neunen Haltbarkeit</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground mb-4">
+                  IONOS S3 garantiert 99.999999999% Datenhaltbarkeit – Ihre Dokumente sind praktisch unzerstörbar.
+                </p>
+                <div className="flex items-center gap-2 text-primary font-semibold">
+                  <CheckCircle2 className="h-5 w-5" />
+                  <span>Enterprise-Grade Storage</span>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Automatische Backups</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground mb-4">
+                  Tägliche Backups an geografisch getrennten Standorten innerhalb Deutschlands.
+                </p>
+                <div className="flex items-center gap-2 text-primary font-semibold">
+                  <CheckCircle2 className="h-5 w-5" />
+                  <span>Schutz vor Datenverlust</span>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Azure OpenAI EU */}
+      <section className="py-24 bg-muted/30">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border bg-background mb-6">
+              <Zap className="h-4 w-4 text-primary" />
+              <span className="text-sm font-medium">EU Data Boundary</span>
+            </div>
+            <h2 className="text-3xl md:text-5xl font-bold mb-6">
+              Azure OpenAI – Sichere KI in der EU
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+              Wir nutzen Azure OpenAI statt Standard-OpenAI – für maximalen Datenschutz bei der KI-Analyse.
+            </p>
+          </div>
+
+          <div className="max-w-5xl mx-auto">
+            <div className="grid md:grid-cols-2 gap-8 mb-12">
+              <Card className="border-2 border-primary/20">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <CheckCircle2 className="h-6 w-6 text-primary" />
+                    Azure OpenAI (EU)
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground">Was wir nutzen</p>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-3">
+                    <li className="flex items-start gap-2">
+                      <CheckCircle2 className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                      <span className="text-sm"><strong>EU Data Boundary:</strong> Verarbeitung ausschließlich in EU-Rechenzentren</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle2 className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                      <span className="text-sm"><strong>Kein Training:</strong> Ihre Daten werden nicht zum Trainieren von KI-Modellen verwendet</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle2 className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                      <span className="text-sm"><strong>Sofortige Löschung:</strong> Daten werden nach Verarbeitung unmittelbar gelöscht</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle2 className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                      <span className="text-sm"><strong>DSGVO-konform:</strong> Vollständige Einhaltung europäischer Datenschutzstandards</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle2 className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                      <span className="text-sm"><strong>Enterprise-SLA:</strong> Garantierte Verfügbarkeit und Sicherheitsstandards</span>
+                    </li>
+                  </ul>
+                </CardContent>
+              </Card>
+
+              <Card className="border-2 border-muted">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-muted-foreground">
+                    <Lock className="h-6 w-6" />
+                    Standard OpenAI
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground">Was wir NICHT nutzen</p>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-3">
+                    <li className="flex items-start gap-2">
+                      <span className="text-sm text-muted-foreground"><strong>Global verteilt:</strong> Datenverarbeitung potenziell außerhalb der EU</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-sm text-muted-foreground"><strong>Datenspeicherung:</strong> Daten können temporär gespeichert werden (opt-out nötig)</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-sm text-muted-foreground"><strong>Training möglich:</strong> Ohne Opt-out potenziell für KI-Training nutzbar</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-sm text-muted-foreground"><strong>Consumer-API:</strong> Keine Enterprise-Garantien</span>
+                    </li>
+                  </ul>
+                </CardContent>
+              </Card>
+            </div>
+
+            <Card className="bg-primary/5 border-primary/20">
+              <CardContent className="p-6">
+                <div className="flex items-start gap-4">
+                  <Shield className="h-8 w-8 text-primary flex-shrink-0 mt-1" />
+                  <div>
+                    <h3 className="font-semibold text-lg mb-2">Warum ist das wichtig?</h3>
+                    <p className="text-muted-foreground">
+                      Mit Azure OpenAI erfüllen wir höchste europäische Datenschutzstandards. Ihre sensiblen Dokumente 
+                      (Rechnungen, Verträge, medizinische Unterlagen) werden ausschließlich in EU-Rechenzentren analysiert, 
+                      niemals gespeichert oder zum Trainieren von KI-Modellen verwendet. Sie behalten die vollständige 
+                      Kontrolle über Ihre Daten – wie es die DSGVO vorschreibt.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Security Features */}
+      <section className="py-24 bg-background">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-5xl font-bold mb-6">
@@ -301,10 +570,41 @@ export default function Sicherheit() {
       {/* Transparency Section */}
       <section className="py-24 bg-background">
         <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-bold mb-8 text-center">
-              Transparenz & Ihre Rechte
-            </h2>
+          <div className="max-w-5xl mx-auto">
+            <div className="text-center mb-16">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border bg-background mb-6">
+                <MapPin className="h-4 w-4 text-primary" />
+                <span className="text-sm font-medium">Maximale Transparenz</span>
+              </div>
+              <h2 className="text-3xl md:text-5xl font-bold mb-6">
+                Wo landen Ihre Daten?
+              </h2>
+              <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+                Jeder Pixel ist nachvollziehbar – volle Transparenz über Speicherorte und Datenverarbeitung.
+              </p>
+            </div>
+
+            {/* EU Map */}
+            <div className="mb-16">
+              <Card className="border-2 border-primary/20 overflow-hidden">
+                <CardContent className="p-0">
+                  <img 
+                    src={euMapImage} 
+                    alt="Karte der EU mit Rechenzentrumsstandorten in Frankfurt" 
+                    className="w-full h-auto"
+                  />
+                </CardContent>
+              </Card>
+              <div className="text-center mt-6">
+                <p className="text-sm text-muted-foreground">
+                  <strong>Alle Komponenten in der EU:</strong> IONOS S3 (Frankfurt), Neon Database (Frankfurt), Azure OpenAI (EU-Regionen)
+                </p>
+              </div>
+            </div>
+
+            <h3 className="text-2xl font-bold mb-8 text-center">
+              Ihre Rechte & häufige Fragen
+            </h3>
             
             <div className="space-y-6">
               <Card>
