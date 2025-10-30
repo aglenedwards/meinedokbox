@@ -106,7 +106,7 @@ export function RedundancyDiagram() {
       {/* Replication indicator */}
       <div className="relative h-16 mb-8">
         <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-primary to-transparent" />
-        <div className="absolute top-1/2 left-1/4 -translate-y-1/2 flex items-center gap-2">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-2 bg-background px-4 py-2 rounded-lg border border-primary/20">
           <Copy className="h-5 w-5 text-primary animate-pulse" />
           <span className="text-sm font-semibold text-primary">Automatische Echtzeit-Replikation</span>
         </div>
