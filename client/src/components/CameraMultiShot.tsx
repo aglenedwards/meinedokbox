@@ -246,7 +246,7 @@ export function CameraMultiShot({ onComplete, onCancel }: CameraMultiShotProps) 
             </Button>
             <Button
               variant="default"
-              className="flex-1"
+              className="flex-1 btn-upload-shimmer"
               onClick={handleComplete}
               data-testid="button-finish-captures"
             >
