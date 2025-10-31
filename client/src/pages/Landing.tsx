@@ -17,7 +17,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { z } from "zod";
 import { login, register, getCurrentUser, type LoginData, type RegisterData } from "@/lib/api";
 import { queryClient } from "@/lib/queryClient";
-import { FileText, Zap, Users, Shield, Sparkles, Check, ArrowRight, Camera, Scan, FolderOpen, X, TrendingUp, Clock, Brain, Search, Mail, Home, Briefcase, Heart, Eye, EyeOff, MapPin, Menu } from "lucide-react";
+import { FileText, Zap, Users, Shield, Sparkles, Check, ArrowRight, Camera, Scan, FolderOpen, X, TrendingUp, Clock, Brain, Search, Mail, Home, Briefcase, Heart, Eye, EyeOff, MapPin, Menu, Euro, Info, Lock } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Link } from "wouter";
 import logoImage from "@assets/meinedokbox_1760966015056.png";
@@ -312,56 +312,60 @@ export default function Landing() {
                   <span className="sr-only">Menü öffnen</span>
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-[320px]">
-                <SheetHeader className="mb-6">
-                  <SheetTitle className="text-xl">Navigation</SheetTitle>
+              <SheetContent side="right" className="w-[340px] flex flex-col">
+                <SheetHeader className="mb-8">
+                  <SheetTitle className="text-2xl font-bold">Navigation</SheetTitle>
                 </SheetHeader>
-                <nav className="flex flex-col gap-3">
+                <nav className="flex flex-col gap-2 flex-1">
                   <Link href="/funktionen">
                     <Button
                       variant="ghost"
-                      className="w-full justify-start text-base font-medium h-12"
+                      className="w-full justify-start text-base font-medium h-14 px-4 gap-3"
                       onClick={() => setMobileMenuOpen(false)}
                       data-testid="nav-mobile-funktionen"
                     >
+                      <Zap className="h-5 w-5 text-primary" />
                       Funktionen
                     </Button>
                   </Link>
                   <Link href="/sicherheit">
                     <Button
                       variant="ghost"
-                      className="w-full justify-start text-base font-medium h-12"
+                      className="w-full justify-start text-base font-medium h-14 px-4 gap-3"
                       onClick={() => setMobileMenuOpen(false)}
                       data-testid="nav-mobile-sicherheit"
                     >
+                      <Shield className="h-5 w-5 text-primary" />
                       Sicherheit
                     </Button>
                   </Link>
                   <Link href="/preise">
                     <Button
                       variant="ghost"
-                      className="w-full justify-start text-base font-medium h-12"
+                      className="w-full justify-start text-base font-medium h-14 px-4 gap-3"
                       onClick={() => setMobileMenuOpen(false)}
                       data-testid="nav-mobile-preise"
                     >
+                      <Euro className="h-5 w-5 text-primary" />
                       Preise
                     </Button>
                   </Link>
                   <Link href="/ueber-uns">
                     <Button
                       variant="ghost"
-                      className="w-full justify-start text-base font-medium h-12"
+                      className="w-full justify-start text-base font-medium h-14 px-4 gap-3"
                       onClick={() => setMobileMenuOpen(false)}
                       data-testid="nav-mobile-ueber-uns"
                     >
+                      <Info className="h-5 w-5 text-primary" />
                       Über uns
                     </Button>
                   </Link>
                   
-                  <div className="pt-6 border-t mt-4 space-y-3">
+                  <div className="pt-6 border-t mt-auto space-y-4">
                     {user ? (
                       <Button
-                        className="w-full text-base font-semibold h-12"
+                        className="w-full text-base font-semibold h-14 gap-2"
                         onClick={() => {
                           setMobileMenuOpen(false);
                           setLocation("/dashboard");
@@ -369,13 +373,13 @@ export default function Landing() {
                         data-testid="button-mobile-dashboard"
                       >
                         Zum Dashboard
-                        <ArrowRight className="ml-2 h-5 w-5" />
+                        <ArrowRight className="h-5 w-5" />
                       </Button>
                     ) : (
                       <>
                         <Button
                           variant="outline"
-                          className="w-full text-base font-medium h-12"
+                          className="w-full text-base font-medium h-14"
                           onClick={() => {
                             setMobileMenuOpen(false);
                             setAuthTab("login");
@@ -386,7 +390,7 @@ export default function Landing() {
                           Anmelden
                         </Button>
                         <Button
-                          className="w-full text-base font-semibold h-12"
+                          className="w-full text-base font-semibold h-14 gap-2"
                           onClick={() => {
                             setMobileMenuOpen(false);
                             setAuthTab("signup");
@@ -395,8 +399,24 @@ export default function Landing() {
                           data-testid="button-mobile-signup"
                         >
                           Kostenlos testen
-                          <ArrowRight className="ml-2 h-5 w-5" />
+                          <ArrowRight className="h-5 w-5" />
                         </Button>
+                        
+                        {/* USPs */}
+                        <div className="pt-4 space-y-2.5 pb-2">
+                          <div className="flex items-start gap-2 text-sm text-muted-foreground">
+                            <Check className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                            <span>7 Tage kostenlos testen</span>
+                          </div>
+                          <div className="flex items-start gap-2 text-sm text-muted-foreground">
+                            <Check className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                            <span>GDPR-konform in Deutschland</span>
+                          </div>
+                          <div className="flex items-start gap-2 text-sm text-muted-foreground">
+                            <Check className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                            <span>Verschlüsselte Speicherung</span>
+                          </div>
+                        </div>
                       </>
                     )}
                   </div>
