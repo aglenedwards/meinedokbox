@@ -2101,6 +2101,102 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get download URL (presigned URL with 1 hour expiry)
+  app.get('/api/documents/:id/download-url', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { id } = req.params;
+
+      const document = await storage.getDocument(id);
+
+      if (!document) {
+        return res.status(404).json({ message: "Document not found" });
+      }
+
+      // Verify user owns the document OR has access as partner (if shared)
+      const partnerIds = await storage.getPartnerUserIds(userId);
+      const hasAccess = document.userId === userId || 
+                       (partnerIds.includes(document.userId) && document.isShared);
+
+      if (!hasAccess) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const objectStorageService = new ObjectStorageService();
+      
+      // Get the primary file URL (fileUrl or first page)
+      const fileToDownload = document.fileUrl || 
+                            (document.pageUrls && document.pageUrls.length > 0 ? document.pageUrls[0] : null);
+      
+      if (!fileToDownload) {
+        return res.status(400).json({ message: "No file found" });
+      }
+
+      // Generate presigned URL with 1 hour expiry
+      const downloadUrl = await objectStorageService.generatePresignedDownloadUrl(
+        fileToDownload,
+        3600 // 1 hour
+      );
+
+      res.json({ 
+        url: downloadUrl,
+        filename: `${document.title}.${document.mimeType === 'application/pdf' ? 'pdf' : 'jpg'}`,
+        expiresIn: 3600
+      });
+    } catch (error) {
+      console.error("Error generating download URL:", error);
+      res.status(500).json({ message: "Failed to generate download URL" });
+    }
+  });
+
+  // Get share URL (presigned URL with 7 days expiry)
+  app.get('/api/documents/:id/share-url', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { id } = req.params;
+
+      const document = await storage.getDocument(id);
+
+      if (!document) {
+        return res.status(404).json({ message: "Document not found" });
+      }
+
+      // Verify user owns the document OR has access as partner (if shared)
+      const partnerIds = await storage.getPartnerUserIds(userId);
+      const hasAccess = document.userId === userId || 
+                       (partnerIds.includes(document.userId) && document.isShared);
+
+      if (!hasAccess) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const objectStorageService = new ObjectStorageService();
+      
+      // Get the primary file URL (fileUrl or first page)
+      const fileToShare = document.fileUrl || 
+                         (document.pageUrls && document.pageUrls.length > 0 ? document.pageUrls[0] : null);
+      
+      if (!fileToShare) {
+        return res.status(400).json({ message: "No file found" });
+      }
+
+      // Generate presigned URL with 7 days expiry
+      const shareUrl = await objectStorageService.generatePresignedDownloadUrl(
+        fileToShare,
+        604800 // 7 days (7 * 24 * 60 * 60)
+      );
+
+      res.json({ 
+        url: shareUrl,
+        filename: `${document.title}.${document.mimeType === 'application/pdf' ? 'pdf' : 'jpg'}`,
+        expiresIn: 604800
+      });
+    } catch (error) {
+      console.error("Error generating share URL:", error);
+      res.status(500).json({ message: "Failed to generate share URL" });
+    }
+  });
+
   // Update document (category or metadata fields)
   app.patch('/api/documents/:id', isAuthenticated, async (req: any, res) => {
     try {

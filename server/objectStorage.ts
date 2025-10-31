@@ -296,6 +296,20 @@ export class ObjectStorageService {
 
     await s3Client.send(command);
   }
+
+  // Helper: Generate presigned URL for object download
+  async generatePresignedDownloadUrl(objectPath: string, expiresInSeconds: number): Promise<string> {
+    const { bucketName, objectName } = parseObjectPath(objectPath);
+    
+    const command = new GetObjectCommand({
+      Bucket: bucketName,
+      Key: objectName,
+    });
+
+    return await getSignedUrl(s3Client, command, {
+      expiresIn: expiresInSeconds,
+    });
+  }
 }
 
 export function parseObjectPath(path: string): {
