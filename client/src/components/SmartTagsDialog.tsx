@@ -54,13 +54,13 @@ export function SmartTagsDialog({ document, trigger, open: controlledOpen, onOpe
       
       setOpen(false);
       toast({
-        title: "Smart-Tags aktualisiert",
-        description: "Die Smart-Tags wurden erfolgreich gespeichert.",
+        title: "Steuerrelevanz aktualisiert",
+        description: "Die Markierung wurde erfolgreich gespeichert.",
       });
     } catch (error: any) {
       toast({
         title: "Fehler beim Aktualisieren",
-        description: error.message || "Die Smart-Tags konnten nicht aktualisiert werden.",
+        description: error.message || "Die Markierung konnte nicht aktualisiert werden.",
         variant: "destructive",
       });
     } finally {
@@ -74,8 +74,8 @@ export function SmartTagsDialog({ document, trigger, open: controlledOpen, onOpe
       <DialogContent className="sm:max-w-md" data-testid="dialog-smart-tags">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Tag className="h-5 w-5" />
-            Smart-Tags bearbeiten
+            <span className="text-xl">💰</span>
+            Steuerrelevant markieren
           </DialogTitle>
           <DialogDescription>
             {document.title}

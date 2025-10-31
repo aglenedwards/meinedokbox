@@ -400,10 +400,10 @@ export function DocumentCard({
                       e.stopPropagation(); 
                       setSmartTagsDialogOpen(true);
                     }}
-                    data-testid="menuitem-smart-tags"
+                    data-testid="menuitem-steuerrelevant"
                   >
-                    <Sparkles className="h-4 w-4 mr-2" />
-                    Smart-Tags
+                    <span className="mr-2">💰</span>
+                    Steuerrelevant
                   </DropdownMenuItem>
                   
                   {/* Category Change - Open Dialog or Drawer */}
