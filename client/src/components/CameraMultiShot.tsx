@@ -4,11 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { enhanceDocumentImage } from "@/lib/edgeDetection";
 import { useToast } from "@/hooks/use-toast";
 
 interface CameraMultiShotProps {
-  onComplete: (files: File[]) => void;
+  onComplete: (files: File[], mergeIntoOne: boolean) => void;
   onCancel: () => void;
 }
 
@@ -21,6 +22,7 @@ interface CapturedImage {
 export function CameraMultiShot({ onComplete, onCancel }: CameraMultiShotProps) {
   const [captures, setCaptures] = useState<CapturedImage[]>([]);
   const [autoEnhance, setAutoEnhance] = useState(true);
+  const [mergeIntoOne, setMergeIntoOne] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -79,7 +81,7 @@ export function CameraMultiShot({ onComplete, onCancel }: CameraMultiShotProps) 
 
   const handleComplete = () => {
     if (captures.length > 0) {
-      onComplete(captures.map(c => c.file));
+      onComplete(captures.map(c => c.file), mergeIntoOne && captures.length > 1);
     }
   };
 
@@ -127,6 +129,34 @@ export function CameraMultiShot({ onComplete, onCancel }: CameraMultiShotProps) 
           }
         </p>
       </div>
+
+      {/* Merge documents option - only show when multiple pages captured */}
+      {captures.length > 1 && (
+        <div className="mb-4 p-3 bg-muted rounded-lg">
+          <div className="flex items-start gap-3">
+            <Checkbox
+              id="merge-pages"
+              checked={mergeIntoOne}
+              onCheckedChange={(checked) => setMergeIntoOne(checked as boolean)}
+              data-testid="checkbox-merge-pages"
+            />
+            <div className="flex-1">
+              <Label 
+                htmlFor="merge-pages" 
+                className="text-sm font-medium cursor-pointer leading-tight"
+              >
+                Dokumente zusammenführen
+              </Label>
+              <p className="text-xs text-muted-foreground mt-1">
+                {mergeIntoOne 
+                  ? `Alle ${captures.length} Seiten werden zu einem PDF kombiniert`
+                  : `Jede Seite wird als separates Dokument gespeichert`
+                }
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Instructions */}
       {captures.length > 0 && (
