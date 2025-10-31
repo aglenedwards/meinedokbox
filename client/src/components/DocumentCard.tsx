@@ -3,7 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { 
   FileText, Calendar, MoreVertical, Euro, FileSignature, Shield, Mail, FileQuestion,
   Landmark, Receipt, Briefcase, FileCheck, Building2, Stethoscope, Home, Car, 
-  GraduationCap, Baby, PiggyBank, ShoppingBag, Plane, User, Sparkles, Lock, Users, Check, Folder, X
+  GraduationCap, Baby, PiggyBank, ShoppingBag, Plane, User, Sparkles, Lock, Users, Check, Folder, X,
+  Download, Share2
 } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -197,6 +198,8 @@ export function DocumentCard({
   const [folderDialogOpen, setFolderDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [smartTagsDialogOpen, setSmartTagsDialogOpen] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
   
   // Fetch folders for folder assignment
   const { data: folders = [] } = useQuery<Array<{
@@ -261,6 +264,67 @@ export function DocumentCard({
   const getDocumentDate = () => {
     return formatDocumentDate(documentDate) || formatDocumentDate(extractedDate);
   };
+
+  // Download handler
+  const handleDownload = async () => {
+    try {
+      setIsDownloading(true);
+      const response = await fetch(`/api/documents/${id}/download-url`);
+      
+      if (!response.ok) {
+        throw new Error('Download failed');
+      }
+      
+      const data = await response.json();
+      
+      // Open download URL in new tab
+      window.open(data.url, '_blank');
+    } catch (error) {
+      console.error('Download error:', error);
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
+  // Share handler with Web Share API fallback
+  const handleShare = async () => {
+    try {
+      setIsSharing(true);
+      const response = await fetch(`/api/documents/${id}/share-url`);
+      
+      if (!response.ok) {
+        throw new Error('Share failed');
+      }
+      
+      const data = await response.json();
+      
+      // Try native Web Share API first (works on mobile)
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: title,
+            text: `Dokument: ${title}`,
+            url: data.url
+          });
+          return;
+        } catch (shareError) {
+          // User cancelled or share failed, fall through to clipboard
+          if ((shareError as Error).name === 'AbortError') {
+            return;
+          }
+        }
+      }
+      
+      // Fallback: Copy to clipboard
+      await navigator.clipboard.writeText(data.url);
+      alert('Link in Zwischenablage kopiert! (Gültig für 7 Tage)');
+    } catch (error) {
+      console.error('Share error:', error);
+      alert('Fehler beim Teilen');
+    } finally {
+      setIsSharing(false);
+    }
+  };
   
   return (
     <>
@@ -295,6 +359,30 @@ export function DocumentCard({
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onView?.(); }}>
                     Ansehen
+                  </DropdownMenuItem>
+                  
+                  <DropdownMenuItem 
+                    onClick={(e) => { 
+                      e.stopPropagation(); 
+                      handleDownload();
+                    }}
+                    disabled={isDownloading}
+                    data-testid="menuitem-download"
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    {isDownloading ? 'Lädt...' : 'Download'}
+                  </DropdownMenuItem>
+                  
+                  <DropdownMenuItem 
+                    onClick={(e) => { 
+                      e.stopPropagation(); 
+                      handleShare();
+                    }}
+                    disabled={isSharing}
+                    data-testid="menuitem-share"
+                  >
+                    <Share2 className="h-4 w-4 mr-2" />
+                    {isSharing ? 'Teilt...' : 'Teilen'}
                   </DropdownMenuItem>
                   
                   <DropdownMenuItem 
