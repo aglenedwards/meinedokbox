@@ -79,7 +79,18 @@ export default function Dashboard() {
   // Auto-scroll to upload area when it opens (mobile UX)
   useEffect(() => {
     if ((showUpload || showCameraMultiShot) && uploadAreaRef.current) {
-      uploadAreaRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setTimeout(() => {
+        const element = uploadAreaRef.current;
+        if (element) {
+          const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
+          const offsetPosition = elementPosition - 20;
+          
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: 'smooth'
+          });
+        }
+      }, 100);
     }
   }, [showUpload, showCameraMultiShot]);
 
