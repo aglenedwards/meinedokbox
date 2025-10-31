@@ -1551,8 +1551,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log(`Merging ${files.length} file(s) into one document${folderId ? ` into folder ${folderId}` : ''}`);
         
         try {
-          // Merge all files into a single PDF
-          const mergedPdfBuffer = await mergeFilesToPdf(files);
+          // Check if all files are images (not PDFs)
+          const allFilesAreImages = files.every(f => 
+            f.mimetype === 'image/jpeg' || 
+            f.mimetype === 'image/png' || 
+            f.mimetype === 'image/webp'
+          );
+          
+          let analysisResult;
+          let mergedPdfBuffer: Buffer;
+          
+          if (allFilesAreImages) {
+            // OPTIMIZED PATH: For camera/image files, analyze directly then merge
+            console.log('  All files are images - analyzing directly without intermediate PDF conversion');
+            
+            // Convert images to base64 for Vision API
+            const imagesForAnalysis = files.map(file => ({
+              base64: file.buffer.toString('base64'),
+              mimeType: file.mimetype,
+            }));
+            
+            // Analyze all images directly with Vision API
+            console.log(`  Analyzing ${files.length} image(s) with Vision API...`);
+            analysisResult = await analyzeDocument(imagesForAnalysis);
+            
+            // Now merge the images into a PDF
+            console.log('  Creating merged PDF from images...');
+            mergedPdfBuffer = await mergeFilesToPdf(files);
+          } else {
+            // ORIGINAL PATH: For PDFs or mixed content, merge first then analyze
+            console.log('  Files contain PDFs - merging first then analyzing');
+            
+            // Merge all files into a single PDF
+            mergedPdfBuffer = await mergeFilesToPdf(files);
+            
+            // Analyze the merged PDF
+            const extractedText = await extractTextFromPdf(mergedPdfBuffer);
+            console.log(`  Extracted ${extractedText.length} characters from merged PDF`);
+            
+            if (extractedText.length < 250) {
+              console.log('  Merged PDF has insufficient text, converting to images for Vision API OCR');
+              const pdfImages = await convertPdfToImages(mergedPdfBuffer);
+              const imagesForAnalysis = pdfImages.map(img => ({
+                base64: img.base64,
+                mimeType: img.mimeType,
+              }));
+              analysisResult = await analyzeDocument(imagesForAnalysis);
+            } else {
+              analysisResult = await analyzeDocumentFromText(extractedText);
+            }
+          }
           
           // Calculate hash for duplicate detection
           const fileHash = calculateFileHash(mergedPdfBuffer);
@@ -1584,23 +1632,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
             mimetype: 'application/pdf',
             size: mergedPdfBuffer.length,
           };
-          
-          // Analyze the merged PDF
-          const extractedText = await extractTextFromPdf(mergedPdfBuffer);
-          console.log(`  Extracted ${extractedText.length} characters from merged PDF`);
-          
-          let analysisResult;
-          if (extractedText.length < 250) {
-            console.log('  Merged PDF has insufficient text, converting to images for Vision API OCR');
-            const pdfImages = await convertPdfToImages(mergedPdfBuffer);
-            const imagesForAnalysis = pdfImages.map(img => ({
-              base64: img.base64,
-              mimeType: img.mimeType,
-            }));
-            analysisResult = await analyzeDocument(imagesForAnalysis);
-          } else {
-            analysisResult = await analyzeDocumentFromText(extractedText);
-          }
           
           // Upload merged document
           const document = await processSingleFileUpload(userId, mergedFile, analysisResult, folderId, fileHash);
