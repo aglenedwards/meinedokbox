@@ -1565,11 +1565,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
             // OPTIMIZED PATH: For camera/image files, analyze directly then merge
             console.log('  All files are images - analyzing directly without intermediate PDF conversion');
             
-            // Convert images to base64 for Vision API
-            const imagesForAnalysis = files.map(file => ({
-              base64: file.buffer.toString('base64'),
-              mimeType: file.mimetype,
-            }));
+            // Compress images before sending to Vision API (large images cause timeouts)
+            console.log('  Compressing images for Vision API...');
+            const imagesForAnalysis = await Promise.all(
+              files.map(async (file) => {
+                const compressedBuffer = await sharp(file.buffer)
+                  .resize(1920, 1920, { fit: 'inside', withoutEnlargement: true })
+                  .jpeg({ quality: 85 })
+                  .toBuffer();
+                
+                console.log(`    Compressed ${file.originalname}: ${file.buffer.length} → ${compressedBuffer.length} bytes`);
+                
+                return {
+                  base64: compressedBuffer.toString('base64'),
+                  mimeType: 'image/jpeg',
+                };
+              })
+            );
             
             // Analyze all images directly with Vision API
             console.log(`  Analyzing ${files.length} image(s) with Vision API...`);
