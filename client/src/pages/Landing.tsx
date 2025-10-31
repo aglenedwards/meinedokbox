@@ -313,10 +313,7 @@ export default function Landing() {
                 </Button>
               </SheetTrigger>
               <SheetContent side="right" className="w-[340px] flex flex-col">
-                <SheetHeader className="mb-8">
-                  <SheetTitle className="text-2xl font-bold">Navigation</SheetTitle>
-                </SheetHeader>
-                <nav className="flex flex-col gap-2 flex-1">
+                <nav className="flex flex-col gap-2 flex-1 pt-6">
                   <Link href="/funktionen">
                     <Button
                       variant="ghost"
@@ -362,7 +359,7 @@ export default function Landing() {
                     </Button>
                   </Link>
                   
-                  <div className="pt-6 border-t mt-auto space-y-4">
+                  <div className="pt-3 border-t mt-auto space-y-4">
                     {user ? (
                       <Button
                         className="w-full text-base font-semibold h-14 gap-2"
