@@ -312,7 +312,7 @@ export default function Landing() {
                   <span className="sr-only">Menü öffnen</span>
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-[340px] flex flex-col">
+              <SheetContent side="right" className="w-[90vw] max-w-[340px] flex flex-col">
                 <nav className="flex flex-col gap-2 flex-1 pt-6">
                   <Link href="/funktionen">
                     <Button
