@@ -4,7 +4,7 @@ import {
   FileText, Calendar, MoreVertical, Euro, FileSignature, Shield, Mail, FileQuestion,
   Landmark, Receipt, Briefcase, FileCheck, Building2, Stethoscope, Home, Car, 
   GraduationCap, Baby, PiggyBank, ShoppingBag, Plane, User, Sparkles, Lock, Users, Check, Folder, X,
-  Download, Share2
+  Download, Share2, Eye, Pencil, Tag, FolderInput, Trash2
 } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -358,6 +358,7 @@ export function DocumentCard({
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onView?.(); }}>
+                    <Eye className="h-4 w-4 mr-2" />
                     Ansehen
                   </DropdownMenuItem>
                   
@@ -392,6 +393,7 @@ export function DocumentCard({
                     }}
                     data-testid="menuitem-edit"
                   >
+                    <Pencil className="h-4 w-4 mr-2" />
                     Bearbeiten
                   </DropdownMenuItem>
                   
@@ -417,6 +419,7 @@ export function DocumentCard({
                       }
                     }}
                   >
+                    <Tag className="h-4 w-4 mr-2" />
                     Kategorie ändern
                   </DropdownMenuItem>
                   
@@ -431,6 +434,7 @@ export function DocumentCard({
                       }
                     }}
                   >
+                    <FolderInput className="h-4 w-4 mr-2" />
                     Ordner zuweisen
                   </DropdownMenuItem>
                   
@@ -438,6 +442,7 @@ export function DocumentCard({
                     className="text-destructive" 
                     onClick={(e) => { e.stopPropagation(); onDelete?.(); }}
                   >
+                    <Trash2 className="h-4 w-4 mr-2" />
                     Löschen
                   </DropdownMenuItem>
                 </DropdownMenuContent>
