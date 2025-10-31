@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query";
 import { FileText, HardDrive, TrendingUp, Plus, Trash2, ArrowUpDown, Download, MoreVertical } from "lucide-react";
 import { format } from "date-fns";
@@ -73,6 +73,15 @@ export default function Dashboard() {
   const [checkoutDialogOpen, setCheckoutDialogOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<"solo" | "family" | "family-plus">("family");
   const [selectedPeriod, setSelectedPeriod] = useState<"monthly" | "yearly">("yearly");
+  
+  const uploadAreaRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to upload area when it opens (mobile UX)
+  useEffect(() => {
+    if ((showUpload || showCameraMultiShot) && uploadAreaRef.current) {
+      uploadAreaRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [showUpload, showCameraMultiShot]);
 
   // Listen for checkout events from UpgradeModal
   useEffect(() => {
@@ -755,7 +764,7 @@ export default function Dashboard() {
         }
       }}
     >
-        <div>
+        <div ref={uploadAreaRef}>
           {showUpload && (
             <div className="mb-8">
               <MultiPageUpload 
