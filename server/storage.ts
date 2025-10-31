@@ -145,7 +145,24 @@ export class DbStorage implements IStorage {
 
   async getUser(id: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
-    return user;
+    if (!user) return undefined;
+    
+    // Check if user is an invited family member (slave account)
+    const [invitation] = await db
+      .select()
+      .from(sharedAccess)
+      .where(
+        and(
+          eq(sharedAccess.sharedWithUserId, id),
+          eq(sharedAccess.status, 'active')
+        )
+      );
+    
+    // Add runtime property to indicate invited user
+    return {
+      ...user,
+      isInvitedUser: !!invitation,
+    } as any;
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {

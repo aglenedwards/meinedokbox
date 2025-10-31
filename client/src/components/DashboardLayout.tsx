@@ -46,10 +46,11 @@ export function DashboardLayout({
   });
 
   // Show welcome modal if user hasn't seen it yet (only once per session)
+  // BUT: Never show for invited family members (slave accounts)
   useEffect(() => {
     const hasShownThisSession = sessionStorage.getItem('hasShownWelcomeThisSession') === 'true';
     
-    if (user && !user.hasSeenWelcomeModal && !hasShownThisSession) {
+    if (user && !user.hasSeenWelcomeModal && !hasShownThisSession && !(user as any).isInvitedUser) {
       setShowWelcomeModal(true);
       sessionStorage.setItem('hasShownWelcomeThisSession', 'true');
     }
