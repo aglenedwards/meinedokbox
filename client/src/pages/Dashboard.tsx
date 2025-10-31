@@ -80,16 +80,10 @@ export default function Dashboard() {
   useEffect(() => {
     if ((showUpload || showCameraMultiShot) && uploadAreaRef.current) {
       setTimeout(() => {
-        const element = uploadAreaRef.current;
-        if (element) {
-          const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
-          const offsetPosition = elementPosition - 20;
-          
-          window.scrollTo({
-            top: offsetPosition,
-            behavior: 'smooth'
-          });
-        }
+        window.scrollTo({
+          top: 0,
+          behavior: 'smooth'
+        });
       }, 100);
     }
   }, [showUpload, showCameraMultiShot]);
