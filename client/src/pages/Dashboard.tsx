@@ -78,13 +78,13 @@ export default function Dashboard() {
 
   // Auto-scroll to upload area when it opens (mobile UX)
   useEffect(() => {
-    if ((showUpload || showCameraMultiShot) && uploadAreaRef.current) {
+    if (showUpload || showCameraMultiShot) {
       setTimeout(() => {
-        window.scrollTo({
-          top: 0,
-          behavior: 'smooth'
-        });
-      }, 100);
+        const uploadElement = document.getElementById('upload-area');
+        if (uploadElement) {
+          uploadElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 150);
     }
   }, [showUpload, showCameraMultiShot]);
 
@@ -769,7 +769,7 @@ export default function Dashboard() {
         }
       }}
     >
-        <div ref={uploadAreaRef}>
+        <div id="upload-area" ref={uploadAreaRef}>
           {showUpload && (
             <div className="mb-8">
               <MultiPageUpload 
