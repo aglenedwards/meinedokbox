@@ -41,6 +41,7 @@ import { ReadOnlyBanner } from "@/components/ReadOnlyBanner";
 import { FreeBanner } from "@/components/FreeBanner";
 import { Footer } from "@/components/Footer";
 import { DashboardLayout } from "@/components/DashboardLayout";
+import { UnpaidInvoicesWidget } from "@/components/UnpaidInvoicesWidget";
 
 const categories = [
   "Alle",
@@ -665,6 +666,27 @@ export default function Dashboard() {
     updateFolderMutation.mutate({ id, folderId });
   };
 
+  const handlePaymentStatusChange = async (id: string, status: 'paid' | 'unpaid' | 'not_applicable') => {
+    try {
+      await apiRequest(`/api/documents/${id}/payment-status`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status }),
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/documents"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/documents/unpaid-invoices"] });
+      toast({
+        title: "Zahlungsstatus aktualisiert",
+        description: status === 'paid' ? "Rechnung als bezahlt markiert" : "Rechnung als unbezahlt markiert",
+      });
+    } catch (error) {
+      toast({
+        title: "Fehler",
+        description: "Der Zahlungsstatus konnte nicht aktualisiert werden.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleView = (id: string) => {
     const document = documents.find(doc => doc.id === id);
     if (document) {
@@ -980,6 +1002,8 @@ export default function Dashboard() {
           </div>
         )}
 
+        <UnpaidInvoicesWidget />
+
         <div className="mb-6">
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -1081,6 +1105,7 @@ export default function Dashboard() {
                     onDelete={!isReadOnly ? () => handleDelete(doc.id) : undefined}
                     onCategoryChange={(category) => handleCategoryChange(doc.id, category)}
                     onFolderChange={(folderId) => handleFolderChange(doc.id, folderId)}
+                    onPaymentStatusChange={(status) => handlePaymentStatusChange(doc.id, status)}
                     onSharingToggle={(isShared) => {
                       if (updatingSharing === null) {
                         updateSharingMutation.mutate({ id: doc.id, isShared });

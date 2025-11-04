@@ -4,7 +4,7 @@ import {
   FileText, Calendar, MoreVertical, Euro, FileSignature, Shield, Mail, FileQuestion,
   Landmark, Receipt, Briefcase, FileCheck, Building2, Stethoscope, Home, Car, 
   GraduationCap, Baby, PiggyBank, ShoppingBag, Plane, User, Sparkles, Lock, Users, Check, Folder, X,
-  Download, Share2, Eye, Pencil, Tag, FolderInput, Trash2
+  Download, Share2, Eye, Pencil, Tag, FolderInput, Trash2, CheckCircle2, DollarSign
 } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -45,6 +45,9 @@ interface DocumentCardProps {
   folderId?: string | null;
   folderName?: string;
   folderIcon?: string;
+  // Payment tracking
+  paymentStatus?: 'paid' | 'unpaid' | 'not_applicable' | null;
+  onPaymentStatusChange?: (status: 'paid' | 'unpaid' | 'not_applicable') => void;
 }
 
 const categoryConfig: Record<string, { icon: typeof Euro; color: string; bgColor: string }> = {
@@ -183,6 +186,8 @@ export function DocumentCard({
   folderId,
   folderName,
   folderIcon,
+  paymentStatus,
+  onPaymentStatusChange,
 }: DocumentCardProps) {
   // Handle null/undefined isShared values - default to false (private, not shared)
   const sharedStatus = isShared ?? false;
@@ -408,6 +413,20 @@ export function DocumentCard({
                     Steuerrelevant
                   </DropdownMenuItem>
                   
+                  {/* Payment Status Toggle */}
+                  {paymentStatus === 'unpaid' && (
+                    <DropdownMenuItem 
+                      onClick={(e) => { 
+                        e.stopPropagation(); 
+                        onPaymentStatusChange?.('paid');
+                      }}
+                      data-testid="menuitem-mark-paid"
+                    >
+                      <CheckCircle2 className="h-4 w-4 mr-2" />
+                      Als bezahlt markieren
+                    </DropdownMenuItem>
+                  )}
+                  
                   {/* Category Change - Open Dialog or Drawer */}
                   <DropdownMenuItem 
                     onClick={(e) => { 
@@ -485,6 +504,17 @@ export function DocumentCard({
                     >
                       <X className="h-3 w-3" />
                     </button>
+                  </Badge>
+                )}
+                
+                {paymentStatus === 'unpaid' && (
+                  <Badge 
+                    variant="outline" 
+                    className="gap-1 bg-orange-50 dark:bg-orange-950 text-orange-700 dark:text-orange-400 text-xs w-fit"
+                    data-testid={`badge-unpaid-${id}`}
+                  >
+                    <DollarSign className="h-3 w-3" />
+                    Unbezahlt
                   </Badge>
                 )}
               </div>
