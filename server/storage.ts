@@ -41,6 +41,7 @@ export interface IStorage {
   updateDocumentFolder(id: string, userId: string, folderId: string | null): Promise<Document | undefined>;
   updateDocument(id: string, userId: string, data: UpdateDocument): Promise<Document | undefined>;
   updateDocumentPaymentStatus(id: string, userId: string, status: 'paid' | 'unpaid' | 'not_applicable'): Promise<Document | undefined>;
+  updateDocumentPaymentReminderSent(id: string): Promise<Document | undefined>;
   getUnpaidInvoices(userId: string): Promise<Document[]>;
   deleteDocument(id: string, userId: string): Promise<boolean>;
   bulkDeleteDocuments(ids: string[], userId: string): Promise<number>;
@@ -72,6 +73,7 @@ export interface IStorage {
   getAllSharedAccessByOwner(ownerId: string): Promise<SharedAccess[]>;
   getSharedAccessByEmail(email: string): Promise<SharedAccess | undefined>;
   getSharedAccessByToken(token: string): Promise<SharedAccess | undefined>;
+  getSharedAccessByDocument(documentId: string): Promise<SharedAccess[]>;
   acceptSharedInvitation(email: string, userId: string): Promise<SharedAccess | undefined>;
   acceptSharedInvitationByToken(token: string, userId: string): Promise<SharedAccess | undefined>;
   revokeSharedAccess(ownerId: string): Promise<boolean>;
@@ -529,6 +531,16 @@ export class DbStorage implements IStorage {
           eq(documents.userId, userId)
         )
       )
+      .returning();
+    
+    return updated;
+  }
+
+  async updateDocumentPaymentReminderSent(id: string): Promise<Document | undefined> {
+    const [updated] = await db
+      .update(documents)
+      .set({ paymentReminderSentAt: new Date() })
+      .where(eq(documents.id, id))
       .returning();
     
     return updated;
@@ -1070,6 +1082,27 @@ export class DbStorage implements IStorage {
         )
       );
     return access;
+  }
+
+  async getSharedAccessByDocument(documentId: string): Promise<SharedAccess[]> {
+    // First get the document owner
+    const document = await this.getDocument(documentId);
+    if (!document) {
+      return [];
+    }
+    
+    // Then find all active shared access for this owner
+    const accesses = await db
+      .select()
+      .from(sharedAccess)
+      .where(
+        and(
+          eq(sharedAccess.ownerId, document.userId),
+          eq(sharedAccess.status, 'active')
+        )
+      );
+    
+    return accesses;
   }
 
   async getSharedAccessByToken(token: string): Promise<SharedAccess | undefined> {

@@ -2,6 +2,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { startTrialNotificationCron } from "./trialNotificationCron";
+import { startPaymentReminderCron } from "./paymentReminderCron";
 
 const app = express();
 
@@ -96,5 +97,8 @@ app.use((req, res, next) => {
     
     // Start trial notification cron job
     startTrialNotificationCron();
+    
+    // Start payment reminder cron job
+    startPaymentReminderCron();
   });
 })();
