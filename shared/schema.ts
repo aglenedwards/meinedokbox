@@ -203,6 +203,9 @@ export const documents = pgTable("documents", {
   systemTags: text("system_tags").array(), // Auto-assigned tags by AI (e.g., "steuerrelevant", "geschäftlich")
   // Duplicate detection
   fileHash: varchar("file_hash", { length: 64 }), // SHA-256 hash for duplicate detection
+  // Payment tracking for invoices/bills
+  paymentStatus: varchar("payment_status", { length: 20 }).default("not_applicable"), // 'unpaid', 'paid', 'not_applicable'
+  paymentReminderSentAt: timestamp("payment_reminder_sent_at").array(), // Track when reminders were sent
 }, (table) => [
   index("idx_file_hash").on(table.fileHash), // Index for fast duplicate lookups
 ]);
