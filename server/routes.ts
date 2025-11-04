@@ -1836,9 +1836,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
 
-    // Determine payment status: if it's an invoice/bill, mark as unpaid
-    const isInvoice = (analysisResult.systemTags ?? []).includes('rechnung') || 
-                      (analysisResult.amount && analysisResult.amount > 0);
+    // Smart payment status detection based on systemTags and category
+    const tags = analysisResult.systemTags ?? [];
+    const categoryWhitelist = [
+      'Gesundheit & Arzt',
+      'Wohnen & Immobilien',
+      'Verträge & Abos',
+      'Steuern & Buchhaltung',
+      'Auto & Mobilität',
+      'Schule & Ausbildung',
+      'Familie & Kinder'
+    ];
+    
+    let paymentStatus: 'paid' | 'unpaid' | 'not_applicable' = 'not_applicable';
+    
+    // Priority 1: Mahnung → always unpaid (highest priority)
+    if (tags.includes('mahnung')) {
+      paymentStatus = 'unpaid';
+    }
+    // Priority 2: Explicitly marked as paid
+    else if (tags.includes('rechnung_bezahlt')) {
+      paymentStatus = 'paid';
+    }
+    // Priority 3: Invoice tag → check if category is relevant
+    else if (tags.includes('rechnung')) {
+      if (categoryWhitelist.includes(analysisResult.category || '')) {
+        paymentStatus = 'unpaid';
+      } else {
+        // Invoice in non-whitelisted category (e.g., "Einkäufe") → usually already paid
+        paymentStatus = 'not_applicable';
+      }
+    }
+    // Priority 4: Has amount but no invoice tag → check category
+    else if (analysisResult.amount && analysisResult.amount > 0) {
+      if (categoryWhitelist.includes(analysisResult.category || '')) {
+        paymentStatus = 'unpaid';
+      }
+    }
+    
+    console.log(`[Payment Detection] Doc: "${analysisResult.title}", Category: "${analysisResult.category}", Tags: [${tags.join(', ')}], Status: ${paymentStatus}`);
     
     // Create document record in database
     const documentData = {
@@ -1862,7 +1898,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       documentDate: analysisResult.documentDate ? new Date(analysisResult.documentDate) : null,
       systemTags: analysisResult.systemTags ?? [],
       // Payment tracking
-      paymentStatus: isInvoice ? 'unpaid' : 'not_applicable',
+      paymentStatus,
     };
 
     // Validate with Zod schema
@@ -1910,9 +1946,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     }
 
-    // Determine payment status: if it's an invoice/bill, mark as unpaid
-    const isInvoice = (analysisResult.systemTags ?? []).includes('rechnung') || 
-                      (analysisResult.amount && analysisResult.amount > 0);
+    // Smart payment status detection based on systemTags and category
+    const tags = analysisResult.systemTags ?? [];
+    const categoryWhitelist = [
+      'Gesundheit & Arzt',
+      'Wohnen & Immobilien',
+      'Verträge & Abos',
+      'Steuern & Buchhaltung',
+      'Auto & Mobilität',
+      'Schule & Ausbildung',
+      'Familie & Kinder'
+    ];
+    
+    let paymentStatus: 'paid' | 'unpaid' | 'not_applicable' = 'not_applicable';
+    
+    // Priority 1: Mahnung → always unpaid (highest priority)
+    if (tags.includes('mahnung')) {
+      paymentStatus = 'unpaid';
+    }
+    // Priority 2: Explicitly marked as paid
+    else if (tags.includes('rechnung_bezahlt')) {
+      paymentStatus = 'paid';
+    }
+    // Priority 3: Invoice tag → check if category is relevant
+    else if (tags.includes('rechnung')) {
+      if (categoryWhitelist.includes(analysisResult.category || '')) {
+        paymentStatus = 'unpaid';
+      } else {
+        // Invoice in non-whitelisted category (e.g., "Einkäufe") → usually already paid
+        paymentStatus = 'not_applicable';
+      }
+    }
+    // Priority 4: Has amount but no invoice tag → check category
+    else if (analysisResult.amount && analysisResult.amount > 0) {
+      if (categoryWhitelist.includes(analysisResult.category || '')) {
+        paymentStatus = 'unpaid';
+      }
+    }
+    
+    console.log(`[Payment Detection] Doc: "${analysisResult.title}", Category: "${analysisResult.category}", Tags: [${tags.join(', ')}], Status: ${paymentStatus}`);
     
     // Create document record in database
     const documentData = {
@@ -1935,7 +2007,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       documentDate: analysisResult.documentDate ? new Date(analysisResult.documentDate) : null,
       systemTags: analysisResult.systemTags ?? [],
       // Payment tracking
-      paymentStatus: isInvoice ? 'unpaid' : 'not_applicable',
+      paymentStatus,
     };
 
     // Validate with Zod schema

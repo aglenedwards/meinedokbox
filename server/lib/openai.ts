@@ -113,9 +113,19 @@ CRITICAL CATEGORIZATION RULES - Apply these priority rules when multiple categor
      * "gesundheit" - Health-related (medical documents, health insurance, prescriptions)
      * "bank" - Banking documents (statements, transfers, bank correspondence)
      * "vertrag" - Contracts (employment, service contracts, subscriptions)
-     * "rechnung" - Invoices and bills
+     * "rechnung" - Invoices and bills requiring payment (Rechnung, Invoice, Faktura, Bill, Zahlungsaufforderung)
+     * "rechnung_bezahlt" - Invoices that are already marked as PAID (contains words: "BEZAHLT", "PAID", "AUSGEGLICHEN", "BEGLICHEN")
+     * "mahnung" - Payment reminders and dunning notices (Mahnung, Zahlungserinnerung, Reminder, Inkasso) - HIGH PRIORITY
      * "lohnabrechnung" - Salary/payroll statements
      * "spende" - Donation receipts
+   
+   CRITICAL INVOICE DETECTION RULES:
+   - Look for invoice keywords: "Rechnung", "Invoice", "Faktura", "Bill", "Zahlungsaufforderung", "Forderung", "Zahlung", "Betrag", "Gesamtsumme"
+   - Look for company/sender names with amounts → usually invoices
+   - Look for payment terms: "Zahlungsfrist", "fällig am", "Zahlung bis", "Zahlungsziel"
+   - If document contains "BEZAHLT", "PAID", "AUSGEGLICHEN" → add "rechnung_bezahlt" tag
+   - If document contains "Mahnung", "Zahlungserinnerung", "2. Mahnung" → add "mahnung" tag (HIGHEST PRIORITY for unpaid status)
+   - Service invoices (Umzug, Handwerker, Dienstleistung, Service) are ALWAYS "rechnung" unless marked as paid
    
    Important for systemTags: Assign ALL tags that apply. A document can have multiple tags (e.g., ["steuerrelevant", "geschäftlich", "rechnung"]).
 
@@ -267,9 +277,19 @@ CRITICAL CATEGORIZATION RULES - Apply these priority rules when multiple categor
      * "gesundheit" - Health-related (medical documents, health insurance, prescriptions)
      * "bank" - Banking documents (statements, transfers, bank correspondence)
      * "vertrag" - Contracts (employment, service contracts, subscriptions)
-     * "rechnung" - Invoices and bills
+     * "rechnung" - Invoices and bills requiring payment (Rechnung, Invoice, Faktura, Bill, Zahlungsaufforderung)
+     * "rechnung_bezahlt" - Invoices that are already marked as PAID (contains words: "BEZAHLT", "PAID", "AUSGEGLICHEN", "BEGLICHEN")
+     * "mahnung" - Payment reminders and dunning notices (Mahnung, Zahlungserinnerung, Reminder, Inkasso) - HIGH PRIORITY
      * "lohnabrechnung" - Salary/payroll statements
      * "spende" - Donation receipts
+   
+   CRITICAL INVOICE DETECTION RULES:
+   - Look for invoice keywords: "Rechnung", "Invoice", "Faktura", "Bill", "Zahlungsaufforderung", "Forderung", "Zahlung", "Betrag", "Gesamtsumme"
+   - Look for company/sender names with amounts → usually invoices
+   - Look for payment terms: "Zahlungsfrist", "fällig am", "Zahlung bis", "Zahlungsziel"
+   - If document contains "BEZAHLT", "PAID", "AUSGEGLICHEN" → add "rechnung_bezahlt" tag
+   - If document contains "Mahnung", "Zahlungserinnerung", "2. Mahnung" → add "mahnung" tag (HIGHEST PRIORITY for unpaid status)
+   - Service invoices (Umzug, Handwerker, Dienstleistung, Service) are ALWAYS "rechnung" unless marked as paid
    
    Important for systemTags: Assign ALL tags that apply. A document can have multiple tags (e.g., ["steuerrelevant", "geschäftlich", "rechnung"]).
 
