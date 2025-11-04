@@ -1,6 +1,6 @@
 import { storage } from "./storage";
 import { sendEmail } from "./emailService";
-import { db } from "../db";
+import { db } from "./db";
 import { documents } from "@shared/schema";
 import { eq, and, isNull, sql } from "drizzle-orm";
 
@@ -100,17 +100,16 @@ export async function checkAndSendPaymentReminders(): Promise<void> {
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
     
-    const unpaidInvoices = await db.query.documents.findMany({
-      where: and(
-        eq(documents.paymentStatus, 'unpaid'),
-        isNull(documents.paymentReminderSentAt),
-        sql`${documents.uploadedAt} <= ${sevenDaysAgo.toISOString()}`
-      ),
-      with: {
-        user: true,
-        folder: true
-      }
-    });
+    const unpaidInvoices = await db
+      .select()
+      .from(documents)
+      .where(
+        and(
+          eq(documents.paymentStatus, 'unpaid'),
+          isNull(documents.paymentReminderSentAt),
+          sql`${documents.uploadedAt} <= ${sevenDaysAgo.toISOString()}`
+        )
+      );
     
     console.log(`[PaymentReminderCron] Found ${unpaidInvoices.length} unpaid invoices needing reminders`);
     
