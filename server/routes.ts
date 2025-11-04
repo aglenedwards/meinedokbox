@@ -1836,6 +1836,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
 
+    // Determine payment status: if it's an invoice/bill, mark as unpaid
+    const isInvoice = (analysisResult.systemTags ?? []).includes('rechnung') || 
+                      (analysisResult.amount && analysisResult.amount > 0);
+    
     // Create document record in database
     const documentData = {
       userId,
@@ -1857,6 +1861,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       year: analysisResult.year ?? null,
       documentDate: analysisResult.documentDate ? new Date(analysisResult.documentDate) : null,
       systemTags: analysisResult.systemTags ?? [],
+      // Payment tracking
+      paymentStatus: isInvoice ? 'unpaid' : 'not_applicable',
     };
 
     // Validate with Zod schema
@@ -1904,6 +1910,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     }
 
+    // Determine payment status: if it's an invoice/bill, mark as unpaid
+    const isInvoice = (analysisResult.systemTags ?? []).includes('rechnung') || 
+                      (analysisResult.amount && analysisResult.amount > 0);
+    
     // Create document record in database
     const documentData = {
       userId,
@@ -1924,6 +1934,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       year: analysisResult.year ?? null,
       documentDate: analysisResult.documentDate ? new Date(analysisResult.documentDate) : null,
       systemTags: analysisResult.systemTags ?? [],
+      // Payment tracking
+      paymentStatus: isInvoice ? 'unpaid' : 'not_applicable',
     };
 
     // Validate with Zod schema
@@ -2476,6 +2488,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error permanently deleting document:", error);
       res.status(500).json({ message: "Failed to permanently delete document" });
+    }
+  });
+
+  // Payment tracking: Mark invoice as paid/unpaid
+  app.patch('/api/documents/:id/payment-status', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { id } = req.params;
+      const { status } = req.body;
+
+      // Validate status
+      const validStatuses = ['paid', 'unpaid', 'not_applicable'];
+      if (!status || !validStatuses.includes(status)) {
+        return res.status(400).json({ 
+          message: `Invalid status. Must be one of: ${validStatuses.join(', ')}` 
+        });
+      }
+
+      // Verify document exists and user owns it
+      const document = await storage.getDocument(id);
+
+      if (!document) {
+        return res.status(404).json({ message: "Document not found" });
+      }
+
+      // Only document owner can update payment status
+      if (document.userId !== userId) {
+        return res.status(403).json({ message: "Only document owner can update payment status" });
+      }
+
+      const updated = await storage.updateDocumentPaymentStatus(id, userId, status);
+
+      if (!updated) {
+        return res.status(500).json({ message: "Failed to update payment status" });
+      }
+
+      res.json(updated);
+    } catch (error) {
+      console.error("Error updating payment status:", error);
+      res.status(500).json({ message: "Failed to update payment status" });
+    }
+  });
+
+  // Get all unpaid invoices for authenticated user
+  app.get('/api/documents/unpaid-invoices', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const unpaidInvoices = await storage.getUnpaidInvoices(userId);
+      
+      // Calculate total amount
+      const totalAmount = unpaidInvoices.reduce((sum, doc) => sum + (doc.amount || 0), 0);
+      
+      res.json({
+        invoices: unpaidInvoices,
+        count: unpaidInvoices.length,
+        totalAmount
+      });
+    } catch (error) {
+      console.error("Error fetching unpaid invoices:", error);
+      res.status(500).json({ message: "Failed to fetch unpaid invoices" });
     }
   });
 

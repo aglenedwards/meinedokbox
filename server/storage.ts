@@ -40,6 +40,8 @@ export interface IStorage {
   updateDocumentSharing(id: string, userId: string, isShared: boolean): Promise<Document | undefined>;
   updateDocumentFolder(id: string, userId: string, folderId: string | null): Promise<Document | undefined>;
   updateDocument(id: string, userId: string, data: UpdateDocument): Promise<Document | undefined>;
+  updateDocumentPaymentStatus(id: string, userId: string, status: 'paid' | 'unpaid' | 'not_applicable'): Promise<Document | undefined>;
+  getUnpaidInvoices(userId: string): Promise<Document[]>;
   deleteDocument(id: string, userId: string): Promise<boolean>;
   bulkDeleteDocuments(ids: string[], userId: string): Promise<number>;
   getTrashedDocuments(userId: string): Promise<Document[]>;
@@ -515,6 +517,38 @@ export class DbStorage implements IStorage {
       .returning();
     
     return updated;
+  }
+
+  async updateDocumentPaymentStatus(id: string, userId: string, status: 'paid' | 'unpaid' | 'not_applicable'): Promise<Document | undefined> {
+    const [updated] = await db
+      .update(documents)
+      .set({ paymentStatus: status })
+      .where(
+        and(
+          eq(documents.id, id),
+          eq(documents.userId, userId)
+        )
+      )
+      .returning();
+    
+    return updated;
+  }
+
+  async getUnpaidInvoices(userId: string): Promise<Document[]> {
+    // Get user's master ID if they are a slave
+    const userIds = await this.getUserIdsForQueries(userId);
+    
+    return db
+      .select()
+      .from(documents)
+      .where(
+        and(
+          inArray(documents.userId, userIds),
+          eq(documents.paymentStatus, 'unpaid'),
+          isNull(documents.deletedAt)
+        )
+      )
+      .orderBy(desc(documents.uploadedAt));
   }
 
   async deleteDocument(id: string, userId: string): Promise<boolean> {
