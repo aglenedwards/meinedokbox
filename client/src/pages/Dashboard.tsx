@@ -859,95 +859,97 @@ export default function Dashboard() {
           <Folders />
         ) : (
           <>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6 mb-6 md:mb-8" data-testid="section-statistics">
-          {/* Monthly Upload Limit Card */}
-          <Card data-testid="card-upload-limit">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                Uploads diesen Monat
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {subscriptionStatus?.uploadsThisMonth ?? 0}
-                <span className="text-sm font-normal text-muted-foreground ml-1">
-                  / {subscriptionStatus?.maxUploadsPerMonth ?? "..."}
-                </span>
-              </div>
-              <div className="mt-3">
-                <div className="h-2 bg-secondary rounded-full overflow-hidden">
-                  <div 
-                    className={`h-full transition-all ${
-                      ((subscriptionStatus?.uploadsThisMonth ?? 0) / (subscriptionStatus?.maxUploadsPerMonth ?? 1)) >= 0.9 
-                        ? 'bg-destructive' 
-                        : ((subscriptionStatus?.uploadsThisMonth ?? 0) / (subscriptionStatus?.maxUploadsPerMonth ?? 1)) >= 0.7 
-                          ? 'bg-yellow-500' 
-                          : 'bg-primary'
-                    }`}
-                    style={{ 
-                      width: `${Math.min(
-                        ((subscriptionStatus?.uploadsThisMonth ?? 0) / (subscriptionStatus?.maxUploadsPerMonth ?? 1)) * 100,
-                        100
-                      )}%` 
-                    }}
-                  />
+        {!isReadOnly && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6 mb-6 md:mb-8" data-testid="section-statistics">
+            {/* Monthly Upload Limit Card */}
+            <Card data-testid="card-upload-limit">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                  Uploads diesen Monat
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {subscriptionStatus?.uploadsThisMonth ?? 0}
+                  <span className="text-sm font-normal text-muted-foreground ml-1">
+                    / {subscriptionStatus?.maxUploadsPerMonth ?? "..."}
+                  </span>
                 </div>
-                <p className="text-xs text-muted-foreground mt-2">
-                  {(subscriptionStatus?.maxUploadsPerMonth ?? 0) - (subscriptionStatus?.uploadsThisMonth ?? 0)} verfügbar
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Storage Limit Card */}
-          <Card data-testid="card-storage-limit">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <HardDrive className="h-4 w-4 text-muted-foreground" />
-                Speicher verwendet
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {subscriptionStatus?.storageUsedGB?.toFixed(2) ?? "0.00"} GB
-                <span className="text-sm font-normal text-muted-foreground ml-1">
-                  / {subscriptionStatus?.maxStorageGB ?? "..."} GB
-                </span>
-              </div>
-              <div className="mt-3">
-                <div className="h-2 bg-secondary rounded-full overflow-hidden">
-                  <div 
-                    className={`h-full transition-all ${
-                      ((subscriptionStatus?.storageUsedGB ?? 0) / (subscriptionStatus?.maxStorageGB ?? 1)) >= 0.9 
-                        ? 'bg-destructive' 
-                        : ((subscriptionStatus?.storageUsedGB ?? 0) / (subscriptionStatus?.maxStorageGB ?? 1)) >= 0.7 
-                          ? 'bg-yellow-500' 
-                          : 'bg-primary'
-                    }`}
-                    style={{ 
-                      width: `${Math.min(
-                        ((subscriptionStatus?.storageUsedGB ?? 0) / (subscriptionStatus?.maxStorageGB ?? 1)) * 100,
-                        100
-                      )}%` 
-                    }}
-                  />
+                <div className="mt-3">
+                  <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                    <div 
+                      className={`h-full transition-all ${
+                        ((subscriptionStatus?.uploadsThisMonth ?? 0) / (subscriptionStatus?.maxUploadsPerMonth ?? 1)) >= 0.9 
+                          ? 'bg-destructive' 
+                          : ((subscriptionStatus?.uploadsThisMonth ?? 0) / (subscriptionStatus?.maxUploadsPerMonth ?? 1)) >= 0.7 
+                            ? 'bg-yellow-500' 
+                            : 'bg-primary'
+                      }`}
+                      style={{ 
+                        width: `${Math.min(
+                          ((subscriptionStatus?.uploadsThisMonth ?? 0) / (subscriptionStatus?.maxUploadsPerMonth ?? 1)) * 100,
+                          100
+                        )}%` 
+                      }}
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    {(subscriptionStatus?.maxUploadsPerMonth ?? 0) - (subscriptionStatus?.uploadsThisMonth ?? 0)} verfügbar
+                  </p>
                 </div>
-                <p className="text-xs text-muted-foreground mt-2">
-                  {((subscriptionStatus?.maxStorageGB ?? 0) - (subscriptionStatus?.storageUsedGB ?? 0)).toFixed(2)} GB verfügbar
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
 
-          {/* Total Documents Card */}
-          <StatsCard
-            title="Gesamt Dokumente"
-            value={totalDocuments}
-            icon={FileText}
-            description={`+${thisMonthCount} diesen Monat`}
-          />
-        </div>
+            {/* Storage Limit Card */}
+            <Card data-testid="card-storage-limit">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center gap-2">
+                  <HardDrive className="h-4 w-4 text-muted-foreground" />
+                  Speicher verwendet
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {subscriptionStatus?.storageUsedGB?.toFixed(2) ?? "0.00"} GB
+                  <span className="text-sm font-normal text-muted-foreground ml-1">
+                    / {subscriptionStatus?.maxStorageGB ?? "..."} GB
+                  </span>
+                </div>
+                <div className="mt-3">
+                  <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                    <div 
+                      className={`h-full transition-all ${
+                        ((subscriptionStatus?.storageUsedGB ?? 0) / (subscriptionStatus?.maxStorageGB ?? 1)) >= 0.9 
+                          ? 'bg-destructive' 
+                          : ((subscriptionStatus?.storageUsedGB ?? 0) / (subscriptionStatus?.maxStorageGB ?? 1)) >= 0.7 
+                            ? 'bg-yellow-500' 
+                            : 'bg-primary'
+                      }`}
+                      style={{ 
+                        width: `${Math.min(
+                          ((subscriptionStatus?.storageUsedGB ?? 0) / (subscriptionStatus?.maxStorageGB ?? 1)) * 100,
+                          100
+                        )}%` 
+                      }}
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    {((subscriptionStatus?.maxStorageGB ?? 0) - (subscriptionStatus?.storageUsedGB ?? 0)).toFixed(2)} GB verfügbar
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Total Documents Card */}
+            <StatsCard
+              title="Gesamt Dokumente"
+              value={totalDocuments}
+              icon={FileText}
+              description={`+${thisMonthCount} diesen Monat`}
+            />
+          </div>
+        )}
 
         {categoryDistribution.length > 0 && (
           <Card className="mb-8" data-testid="section-categories">
