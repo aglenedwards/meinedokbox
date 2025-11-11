@@ -668,10 +668,7 @@ export default function Dashboard() {
 
   const handlePaymentStatusChange = async (id: string, status: 'paid' | 'unpaid' | 'not_applicable') => {
     try {
-      await apiRequest(`/api/documents/${id}/payment-status`, {
-        method: 'PATCH',
-        body: JSON.stringify({ status }),
-      });
+      await apiRequest('PATCH', `/api/documents/${id}/payment-status`, { status });
       queryClient.invalidateQueries({ queryKey: ["/api/documents"] });
       queryClient.invalidateQueries({ queryKey: ["/api/documents/unpaid-invoices"] });
       toast({
