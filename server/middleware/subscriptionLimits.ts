@@ -213,11 +213,8 @@ export async function checkAndDowngradeTrial(userId: string): Promise<void> {
       if (trialStatus.status === "expired") {
         console.log(`Auto-downgrading user ${userId} from trial to free (grace period ended)`);
         
-        // Downgrade to free plan
-        await storage.updateUserSubscription(userId, {
-          subscriptionPlan: "free",
-          trialEndsAt: user.trialEndsAt, // Keep original trial end date for records
-        });
+        // Downgrade to free plan (trialEndsAt is kept for records)
+        await storage.updateUserSubscription(userId, "free", null);
       }
     }
   } catch (error) {
