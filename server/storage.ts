@@ -800,14 +800,25 @@ export class DbStorage implements IStorage {
     const { s3Client } = await import("./objectStorage");
     const { HeadObjectCommand } = await import("@aws-sdk/client-s3");
     
+    // Get bucket name from config
+    const S3_BUCKET_NAME = process.env.IONOS_S3_BUCKET || "meinedokbox-production";
+    
     // Helper to parse S3 paths
     const parseS3Path = (path: string) => {
       if (!path.startsWith("/")) {
         path = `/${path}`;
       }
-      const pathParts = path.split("/");
-      const bucketName = pathParts[1];
-      const objectName = pathParts.slice(2).join("/");
+      
+      // Remove leading /objects/ prefix if present (logical path prefix)
+      // Example: /objects/uploads/xyz → uploads/xyz
+      // Example: /objects/.private/uploads/xyz → .private/uploads/xyz
+      let objectName = path.startsWith("/objects/") 
+        ? path.substring("/objects/".length) 
+        : path.substring(1);
+      
+      // Always use the configured S3 bucket
+      const bucketName = S3_BUCKET_NAME;
+      
       return { bucketName, objectName };
     };
     
