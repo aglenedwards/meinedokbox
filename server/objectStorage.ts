@@ -319,13 +319,16 @@ export function parseObjectPath(path: string): {
   if (!path.startsWith("/")) {
     path = `/${path}`;
   }
-  const pathParts = path.split("/");
-  if (pathParts.length < 3) {
-    throw new Error("Invalid path: must contain at least a bucket name");
-  }
-
-  const bucketName = pathParts[1];
-  const objectName = pathParts.slice(2).join("/");
+  
+  // Remove leading /objects/ prefix if present (logical path prefix)
+  // Example: /objects/uploads/xyz → uploads/xyz
+  // Example: /objects/.private/uploads/xyz → .private/uploads/xyz
+  let objectName = path.startsWith("/objects/") 
+    ? path.substring("/objects/".length) 
+    : path.substring(1);
+  
+  // Always use the configured S3 bucket
+  const bucketName = S3_BUCKET_NAME;
 
   return {
     bucketName,
