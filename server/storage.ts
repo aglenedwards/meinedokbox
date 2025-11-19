@@ -641,15 +641,18 @@ export class DbStorage implements IStorage {
     }
 
     // Delete files from S3 storage
-    const { s3Client, S3_BUCKET_NAME } = await import("./objectStorage");
+    const { s3Client } = await import("./objectStorage");
     const { DeleteObjectCommand } = await import("@aws-sdk/client-s3");
     
-    // Helper to parse S3 paths - bucket name comes from environment
+    // Helper to parse S3 paths
     const parseS3Path = (path: string) => {
-      // Path format: /objects/uploads/... or /objects/.private/...
-      // Extract the key part (everything after /objects/)
-      const objectName = path.replace(/^\/objects\//, '');
-      return { bucketName: S3_BUCKET_NAME, objectName };
+      if (!path.startsWith("/")) {
+        path = `/${path}`;
+      }
+      const pathParts = path.split("/");
+      const bucketName = pathParts[1];
+      const objectName = pathParts.slice(2).join("/");
+      return { bucketName, objectName };
     };
 
     // Collect all file paths to delete
@@ -718,15 +721,18 @@ export class DbStorage implements IStorage {
     console.log(`🗑️  Bulk deleting ${trashedDocs.length} trashed documents for user ${userId}`);
 
     // Delete files from S3 storage
-    const { s3Client, S3_BUCKET_NAME } = await import("./objectStorage");
+    const { s3Client } = await import("./objectStorage");
     const { DeleteObjectCommand } = await import("@aws-sdk/client-s3");
     
-    // Helper to parse S3 paths - bucket name comes from environment
+    // Helper to parse S3 paths
     const parseS3Path = (path: string) => {
-      // Path format: /objects/uploads/... or /objects/.private/...
-      // Extract the key part (everything after /objects/)
-      const objectName = path.replace(/^\/objects\//, '');
-      return { bucketName: S3_BUCKET_NAME, objectName };
+      if (!path.startsWith("/")) {
+        path = `/${path}`;
+      }
+      const pathParts = path.split("/");
+      const bucketName = pathParts[1];
+      const objectName = pathParts.slice(2).join("/");
+      return { bucketName, objectName };
     };
 
     // Collect all files to delete from all documents
@@ -791,15 +797,18 @@ export class DbStorage implements IStorage {
   }
 
   async getUserStorageStats(userId: string): Promise<StorageStats> {
-    const { s3Client, S3_BUCKET_NAME } = await import("./objectStorage");
+    const { s3Client } = await import("./objectStorage");
     const { HeadObjectCommand } = await import("@aws-sdk/client-s3");
     
-    // Helper to parse S3 paths - bucket name comes from environment
+    // Helper to parse S3 paths
     const parseS3Path = (path: string) => {
-      // Path format: /objects/uploads/... or /objects/.private/...
-      // Extract the key part (everything after /objects/)
-      const objectName = path.replace(/^\/objects\//, '');
-      return { bucketName: S3_BUCKET_NAME, objectName };
+      if (!path.startsWith("/")) {
+        path = `/${path}`;
+      }
+      const pathParts = path.split("/");
+      const bucketName = pathParts[1];
+      const objectName = pathParts.slice(2).join("/");
+      return { bucketName, objectName };
     };
     
     // Get all user's documents
