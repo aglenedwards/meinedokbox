@@ -323,14 +323,19 @@ export function parseObjectPath(path: string): {
   let objectName: string;
   
   // Case 1: Logical path format from database: /objects/uploads/xyz
-  if (path.startsWith("/objects/")) {
+  if (path.startsWith("/objects/uploads/")) {
+    // Maps to S3 key: .private/uploads/xyz
+    objectName = `.private/uploads/${path.substring("/objects/uploads/".length)}`;
+  }
+  // Case 2: Logical path format: /objects/.private/uploads/xyz (already has .private)
+  else if (path.startsWith("/objects/.private/")) {
     objectName = path.substring("/objects/".length);
   }
-  // Case 2: Full S3 path format: /bucket-name/.private/uploads/xyz
+  // Case 3: Full S3 path format: /bucket-name/.private/uploads/xyz
   else if (path.startsWith(`/${S3_BUCKET_NAME}/`)) {
     objectName = path.substring(`/${S3_BUCKET_NAME}/`.length);
   }
-  // Case 3: Already just the object name (fallback)
+  // Case 4: Already just the object name (fallback)
   else {
     objectName = path.substring(1);
   }
