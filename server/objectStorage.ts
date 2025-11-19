@@ -320,12 +320,20 @@ export function parseObjectPath(path: string): {
     path = `/${path}`;
   }
   
-  // Remove leading /objects/ prefix if present (logical path prefix)
-  // Example: /objects/uploads/xyz → uploads/xyz
-  // Example: /objects/.private/uploads/xyz → .private/uploads/xyz
-  let objectName = path.startsWith("/objects/") 
-    ? path.substring("/objects/".length) 
-    : path.substring(1);
+  let objectName: string;
+  
+  // Case 1: Logical path format from database: /objects/uploads/xyz
+  if (path.startsWith("/objects/")) {
+    objectName = path.substring("/objects/".length);
+  }
+  // Case 2: Full S3 path format: /bucket-name/.private/uploads/xyz
+  else if (path.startsWith(`/${S3_BUCKET_NAME}/`)) {
+    objectName = path.substring(`/${S3_BUCKET_NAME}/`.length);
+  }
+  // Case 3: Already just the object name (fallback)
+  else {
+    objectName = path.substring(1);
+  }
   
   // Always use the configured S3 bucket
   const bucketName = S3_BUCKET_NAME;
