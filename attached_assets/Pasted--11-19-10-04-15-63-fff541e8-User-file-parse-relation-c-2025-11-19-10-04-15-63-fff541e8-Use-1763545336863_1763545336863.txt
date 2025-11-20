@@ -1,0 +1,169 @@
+-11-19 10:04:15.63
+fff541e8
+User
+file: 'parse_relation.c',
+2025-11-19 10:04:15.63
+fff541e8
+User
+detail: undefined,
+2025-11-19 10:04:15.63
+fff541e8
+User
+line: '3722',
+
+2025-11-19 10:04:15.63
+fff541e8
+User
+constraint: undefined,
+2025-11-19 10:04:15.63
+fff541e8
+User
+internalPosition: undefined,
+2025-11-19 10:04:15.63
+fff541e8
+User
+length: 115,
+2025-11-19 10:04:15.63
+fff541e8
+User
+table: undefined,
+2025-11-19 10:04:15.63
+fff541e8
+User
+where: undefined,
+2025-11-19 10:04:15.63
+fff541e8
+User
+at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-11-19 10:04:15.63
+fff541e8
+User
+position: '279',
+2025-11-19 10:04:15.63
+fff541e8
+User
+at file:///home/runner/workspace/node_modules/@neondatabase/serverless/index.mjs:1345:74
+2025-11-19 10:04:15.63
+fff541e8
+User
+severity: 'ERROR',
+2025-11-19 10:04:15.63
+fff541e8
+User
+internalQuery: undefined,
+2025-11-19 10:04:15.66
+fff541e8
+User
+9:04:15 AM [express] GET /api/documents/unpaid-invoices 500 in 287ms :: {"message":"Failed to fetch …
+2025-11-19 10:04:15.67
+fff541e8
+User
+at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-11-19 10:04:15.67
+fff541e8
+User
+at async NeonPreparedQuery.execute (file:///home/runner/workspace/node_modules/drizzle-orm/neon-serverless/session.js:76:20)
+2025-11-19 10:04:15.67
+fff541e8
+User
+Error fetching documents: error: column documents.payment_status does not exist
+2025-11-19 10:04:15.67
+fff541e8
+User
+at async file:///home/runner/workspace/dist/index.js:5801:22 {
+2025-11-19 10:04:15.67
+fff541e8
+User
+code: '42703',
+2025-11-19 10:04:15.67
+fff541e8
+User
+hint: undefined,
+2025-11-19 10:04:15.67
+fff541e8
+User
+severity: 'ERROR',
+2025-11-19 10:04:42.94
+26dc7ade
+System
+system: received signal terminated
+2025-11-19 10:04:45.66
+fff541e8
+User
+[PostgreSQL Pool] Client removed from pool
+2025-11-19 10:04:46.13
+fff541e8
+User
+[PostgreSQL Pool] Client removed from pool
+2025-11-19 10:19:07.09
+fff541e8
+User
+[PostgreSQL Pool] New client connected
+2025-11-19 10:19:07.32
+fff541e8
+User
+table: undefined,
+2025-11-19 10:19:07.32
+fff541e8
+User
+length: 115,
+2025-11-19 10:19:07.32
+fff541e8
+User
+code: '42703',
+2025-11-19 10:19:07.32
+fff541e8
+User
+dataType: undefined,
+2025-11-19 10:19:07.32
+fff541e8
+User
+routine: 'errorMissingColumn'
+2025-11-19 10:19:07.32
+fff541e8
+User
+file: 'parse_relation.c',
+2025-11-19 10:19:07.32
+fff541e8
+User
+Error checking document limit: error: column "payment_status" does not exist
+2025-11-19 10:19:07.32
+fff541e8
+User
+severity: 'ERROR',
+2025-11-19 10:19:07.32
+fff541e8
+User
+at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-11-19 10:19:07.32
+fff541e8
+User
+schema: undefined,
+2025-11-19 10:19:07.32
+fff541e8
+User
+constraint: undefined,
+2025-11-19 10:19:07.32
+fff541e8
+User
+line: '3722',
+2025-11-19 10:19:07.32
+fff541e8
+User
+detail: undefined,
+2025-11-19 10:19:07.32
+fff541e8
+User
+column: undefined,
+2025-11-19 10:19:07.32
+fff541e8
+User
+at file:///home/runner/workspace/node_modules/@neondatabase/serverless/index.mjs:1345:74
+2025-11-19 10:19:07.32
+fff541e8
+User
+internalQuery: undefined,
+2025-11-19 10:19:07.32
+fff541e8
+User
+at async DbStorage.getUserStorageStats (file:///home/runner/workspace/dist/index.js:1682:31)
