@@ -3,6 +3,7 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { startTrialNotificationCron } from "./trialNotificationCron";
 import { startPaymentReminderCron } from "./paymentReminderCron";
+import { runAutoMigrations } from "./migrations/autoMigrate";
 
 const app = express();
 
@@ -64,6 +65,10 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Run auto-migrations BEFORE starting the server
+  // This ensures the database schema is up-to-date in both Dev and Production
+  await runAutoMigrations();
+  
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
