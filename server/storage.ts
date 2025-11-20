@@ -537,9 +537,17 @@ export class DbStorage implements IStorage {
   }
 
   async updateDocumentPaymentReminderSent(id: string): Promise<Document | undefined> {
+    // First, get the current document to read existing reminders
+    const doc = await this.getDocument(id);
+    if (!doc) return undefined;
+    
+    // Append the new timestamp to the array (or create new array if null)
+    const currentReminders = doc.paymentReminderSentAt || [];
+    const updatedReminders = [...currentReminders, new Date()];
+    
     const [updated] = await db
       .update(documents)
-      .set({ paymentReminderSentAt: new Date() })
+      .set({ paymentReminderSentAt: updatedReminders })
       .where(eq(documents.id, id))
       .returning();
     
