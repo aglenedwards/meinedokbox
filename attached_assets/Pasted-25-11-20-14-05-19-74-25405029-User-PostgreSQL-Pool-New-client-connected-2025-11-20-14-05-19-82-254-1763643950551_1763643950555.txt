@@ -1,0 +1,120 @@
+25-11-20 14:05:19.74
+25405029
+User
+[PostgreSQL Pool] New client connected
+2025-11-20 14:05:19.82
+25405029
+User
+[PostgreSQL Pool] Client removed from pool
+2025-11-20 14:05:19.82
+25405029
+User
+at async file:///home/runner/workspace/dist/index.js:5826:24 {
+2025-11-20 14:05:19.82
+25405029
+User
+}
+2025-11-20 14:05:19.82
+25405029
+User
+routine: 'errorMissingColumn'
+2025-11-20 14:05:19.82
+25405029
+User
+schema: undefined,
+2025-11-20 14:05:19.82
+25405029
+User
+table: undefined,
+2025-11-20 14:05:19.82
+25405029
+User
+detail: undefined,
+2025-11-20 14:05:19.82
+25405029
+User
+hint: undefined,
+2025-11-20 14:05:19.82
+25405029
+User
+at file:///home/runner/workspace/node_modules/@neondatabase/serverless/index.mjs:1345:74
+2025-11-20 14:05:19.82
+25405029
+User
+at async NeonPreparedQuery.execute (file:///home/runner/workspace/node_modules/drizzle-orm/neon-serverless/session.js:76:20)
+2025-11-20 14:05:19.82
+25405029
+User
+internalPosition: undefined,
+2025-11-20 14:05:19.82
+25405029
+User
+position: '279',
+2025-11-20 14:05:19.82
+25405029
+User
+severity: 'ERROR',
+2025-11-20 14:05:19.82
+25405029
+User
+code: '42703',
+2025-11-20 14:05:19.82
+25405029
+User
+where: undefined,
+2025-11-20 14:05:19.82
+25405029
+User
+constraint: undefined,
+2025-11-20 14:05:19.82
+25405029
+User
+at async DbStorage.getDocument (file:///home/runner/workspace/dist/index.js:1323:28)
+2025-11-20 14:05:19.82
+25405029
+User
+Error fetching document: error: column "payment_status" does not exist
+2025-11-20 14:05:19.82
+25405029
+User
+dataType: undefined,
+2025-11-20 14:05:19.82
+25405029
+User
+line: '3722',
+2025-11-20 14:05:19.82
+25405029
+User
+file: 'parse_relation.c',
+2025-11-20 14:05:19.82
+25405029
+User
+at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-11-20 14:05:19.82
+25405029
+User
+length: 115,
+2025-11-20 14:05:19.82
+25405029
+User
+column: undefined,
+2025-11-20 14:05:19.82
+25405029
+User
+internalQuery: undefined,
+2025-11-20 14:05:19.90
+25405029
+User
+table: undefined,
+2025-11-20 14:05:19.90
+25405029
+User
+[PostgreSQL Pool] Client removed from pool
+2025-11-20 14:05:19.90
+25405029
+User
+at async DbStorage.getUserStorageStats (file:///home/runner/workspace/dist/index.js:1682:31)
+2025-11-20 14:05:19.90
+25405029
+User
+code: '42703',
