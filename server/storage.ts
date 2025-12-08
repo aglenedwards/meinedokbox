@@ -104,6 +104,7 @@ export interface IStorage {
   // Email queue management (PostgreSQL-backed reliable email delivery)
   createEmailJob(job: InsertEmailJob): Promise<EmailJob>;
   getPendingEmailJobs(limit?: number): Promise<EmailJob[]>;
+  getPendingEmailJobsByEmail(email: string, type: string): Promise<EmailJob[]>;
   updateEmailJob(id: string, data: Partial<InsertEmailJob>): Promise<EmailJob | undefined>;
   deleteEmailJob(id: string): Promise<boolean>;
   
@@ -1491,6 +1492,23 @@ export class DbStorage implements IStorage {
       .where(eq(emailJobs.status, 'pending'))
       .orderBy(asc(emailJobs.createdAt))
       .limit(limit);
+    return jobs;
+  }
+
+  async getPendingEmailJobsByEmail(email: string, type: string): Promise<EmailJob[]> {
+    const jobs = await db
+      .select()
+      .from(emailJobs)
+      .where(
+        and(
+          eq(emailJobs.email, email),
+          eq(emailJobs.type, type),
+          or(
+            eq(emailJobs.status, 'pending'),
+            eq(emailJobs.status, 'processing')
+          )
+        )
+      );
     return jobs;
   }
 
