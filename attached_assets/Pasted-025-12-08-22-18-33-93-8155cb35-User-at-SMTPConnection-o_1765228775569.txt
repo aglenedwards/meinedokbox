@@ -1,0 +1,181 @@
+025-12-08 22:18:33.93
+8155cb35
+User
+at SMTPConnection._onData (/home/runner/workspace/node_modules/nodemailer/lib/smtp-connection/index.js:774:14)
+2025-12-08 22:18:33.93
+8155cb35
+User
+code: 'EMESSAGE',
+2025-12-08 22:18:33.93
+8155cb35
+User
+at SMTPConnection. (/home/runner/workspace/node_modules/nodemailer/lib/smtp-connection/index.js:1198:22)
+
+2025-12-08 22:18:33.93
+8155cb35
+User
+}
+2025-12-08 22:18:33.93
+8155cb35
+User
+at SMTPConnection._onSocketData (/home/runner/workspace/node_modules/nodemailer/lib/smtp-connection/index.js:195:44)
+2025-12-08 22:18:33.93
+8155cb35
+User
+at SMTPConnection._actionSMTPStream (/home/runner/workspace/node_modules/nodemailer/lib/smtp-connection/index.js:1737:34)
+2025-12-08 22:18:33.93
+8155cb35
+User
+command: 'DATA'
+2025-12-08 22:18:33.93
+8155cb35
+User
+at Readable.push (node:internal/streams/readable:392:5) {
+2025-12-08 22:18:33.93
+8155cb35
+User
+response: '554 5.7.1 Disabled by user from hPanel',
+2025-12-08 22:18:33.93
+8155cb35
+User
+at TLSSocket.emit (node:events:524:28)
+2025-12-08 22:18:33.93
+8155cb35
+User
+[Email] ❌ Failed to send email: Error: Message failed: 554 5.7.1 Disabled by user from hPanel
+2025-12-08 22:18:33.93
+8155cb35
+User
+at addChunk (node:internal/streams/readable:561:12)
+2025-12-08 22:18:33.93
+8155cb35
+User
+at SMTPConnection._formatError (/home/runner/workspace/node_modules/nodemailer/lib/smtp-connection/index.js:809:19)
+2025-12-08 22:18:33.93
+8155cb35
+User
+at SMTPConnection._processResponse (/home/runner/workspace/node_modules/nodemailer/lib/smtp-connection/index.js:993:20)
+2025-12-08 22:18:33.93
+8155cb35
+User
+responseCode: 554,
+2025-12-08 22:18:33.93
+8155cb35
+User
+at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+2025-12-08 22:18:34.03
+8155cb35
+User
+at addChunk (node:internal/streams/readable:561:12)
+2025-12-08 22:18:34.03
+8155cb35
+User
+at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+2025-12-08 22:18:34.03
+8155cb35
+User
+at SMTPConnection._actionSMTPStream (/home/runner/workspace/node_modules/nodemailer/lib/smtp-connection/index.js:1737:34)
+2025-12-08 22:18:34.03
+8155cb35
+User
+[Email] ❌ Failed to send email: Error: Message failed: 554 5.7.1 Disabled by user from hPanel
+2025-12-08 22:18:34.03
+8155cb35
+User
+at Readable.push (node:internal/streams/readable:392:5) {
+2025-12-08 22:18:34.03
+8155cb35
+User
+at SMTPConnection._formatError (/home/runner/workspace/node_modules/nodemailer/lib/smtp-connection/index.js:809:19)
+2025-12-08 22:18:34.03
+8155cb35
+User
+[EmailQueue] ❌ Failed to send verification email to aedwardsreplit@gmail.com: Email sending returned false
+2025-12-08 22:18:34.03
+8155cb35
+User
+at SMTPConnection._onSocketData (/home/runner/workspace/node_modules/nodemailer/lib/smtp-connection/index.js:195:44)
+2025-12-08 22:18:34.03
+8155cb35
+User
+command: 'DATA'
+2025-12-08 22:18:34.03
+8155cb35
+User
+[EmailQueue] 🔄 Will retry verification email for aedwardsreplit@gmail.com (2 retries left)
+2025-12-08 22:18:34.03
+8155cb35
+User
+at SMTPConnection._processResponse (/home/runner/workspace/node_modules/nodemailer/lib/smtp-connection/index.js:993:20)
+2025-12-08 22:18:34.03
+8155cb35
+User
+}
+2025-12-08 22:18:34.03
+8155cb35
+User
+response: '554 5.7.1 Disabled by user from hPanel',
+2025-12-08 22:18:34.03
+8155cb35
+User
+at SMTPConnection. (/home/runner/workspace/node_modules/nodemailer/lib/smtp-connection/index.js:1198:22)
+2025-12-08 22:18:34.03
+8155cb35
+User
+responseCode: 554,
+2025-12-08 22:18:34.03
+8155cb35
+User
+code: 'EMESSAGE',
+2025-12-08 22:18:34.03
+8155cb35
+User
+at TLSSocket.emit (node:events:524:28)
+2025-12-08 22:18:34.03
+8155cb35
+User
+at SMTPConnection._onData (/home/runner/workspace/node_modules/nodemailer/lib/smtp-connection/index.js:774:14)
+2025-12-08 22:18:43.03
+8155cb35
+User
+[EmailQueue] 📬 Processing 1 pending email jobs
+2025-12-08 22:18:43.06
+8155cb35
+User
+[Email] SMTP Port: 465
+2025-12-08 22:18:43.06
+8155cb35
+User
+[EmailQueue] 📨 Processing verification email for aedwardsreplit@gmail.com (attempt 2/3)
+2025-12-08 22:18:43.06
+8155cb35
+User
+[VerificationEmail] Sending to aedwardsreplit@gmail.com with link: https://meinedokbox.de/verify-email?token=8d523fafa175f00f237d27f5fc716769e21dbfb876f5d1dd4aa2ca8a250367b7
+2025-12-08 22:18:43.06
+8155cb35
+User
+[Email] SMTP User: configured
+2025-12-08 22:18:43.06
+8155cb35
+User
+[Email] SMTP Host: configured
+2025-12-08 22:18:43.06
+8155cb35
+User
+[Email] Attempting to send email to: aedwardsreplit@gmail.com
+2025-12-08 22:18:44.96
+8155cb35
+User
+at SMTPConnection._processResponse (/home/runner/workspace/node_modules/nodemailer/lib/smtp-connection/index.js:993:20)
+2025-12-08 22:18:44.96
+8155cb35
+User
+at SMTPConnection._actionSMTPStream (/home/runner/workspace/node_modules/nodemailer/lib/smtp-connection/index.js:1737:34)
+2025-12-08 22:18:44.96
+8155cb35
+User
+at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+2025-12-08 22:18:44.96
+8155cb35
+User
+code: 'EMESSAGE',
