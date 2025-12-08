@@ -2,8 +2,9 @@ import { useEffect } from "react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Mail, Camera, FolderOpen, Sparkles, ArrowRight, Check, Bell, Search, Shield } from "lucide-react";
+import { Mail, Camera, FolderOpen, Sparkles, ArrowRight, Check, Bell, Search, Shield, Menu } from "lucide-react";
 import { Footer } from "@/components/Footer";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import logoImage from "@assets/meinedokbox_1760966015056.png";
 
 export default function PostDigitalisieren() {
@@ -17,23 +18,77 @@ export default function PostDigitalisieren() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container mx-auto px-4">
-          <div className="flex h-16 items-center justify-between">
-            <Link href="/">
-              <div className="flex items-center gap-2 cursor-pointer">
-                <img src={logoImage} alt="MeineDokBox Logo" className="h-8 w-8" />
-                <span className="font-semibold text-xl">MeineDokBox</span>
-              </div>
-            </Link>
-            <div className="flex items-center gap-4">
-              <Link href="/">
-                <Button variant="outline" data-testid="button-back-home">
-                  Zur Startseite
-                </Button>
-              </Link>
+      <header className="border-b bg-background/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
+        <div className="container mx-auto px-4 lg:px-6 py-4 md:py-5 flex items-center justify-between gap-6">
+          <Link href="/">
+            <div className="flex items-center flex-shrink-0 hover-elevate active-elevate-2 px-3 py-2 rounded-lg transition-all cursor-pointer">
+              <img src={logoImage} alt="MeineDokBox" className="h-12 md:h-14 lg:h-16 w-auto" data-testid="img-logo" />
             </div>
+          </Link>
+
+          <nav className="hidden md:flex items-center gap-2">
+            <Link href="/funktionen">
+              <Button variant="ghost" size="default" className="text-base font-medium px-5" data-testid="nav-funktionen">
+                Funktionen
+              </Button>
+            </Link>
+            <Link href="/sicherheit">
+              <Button variant="ghost" size="default" className="text-base font-medium px-5" data-testid="nav-sicherheit">
+                Sicherheit
+              </Button>
+            </Link>
+            <Link href="/preise">
+              <Button variant="ghost" size="default" className="text-base font-medium px-5" data-testid="nav-preise">
+                Preise
+              </Button>
+            </Link>
+            <Link href="/ueber-uns">
+              <Button variant="ghost" size="default" className="text-base font-medium px-5" data-testid="nav-ueber-uns">
+                Über uns
+              </Button>
+            </Link>
+          </nav>
+
+          <div className="hidden md:flex items-center gap-3 flex-shrink-0">
+            <Link href="/">
+              <Button size="default" className="text-base font-semibold px-6 shadow-lg hover:shadow-xl transition-shadow" data-testid="button-header-start">
+                Kostenlos starten
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </Link>
           </div>
+
+          <Sheet>
+            <SheetTrigger asChild className="md:hidden">
+              <Button variant="ghost" size="icon" data-testid="button-mobile-menu">
+                <Menu className="h-6 w-6" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-80">
+              <SheetHeader>
+                <SheetTitle>Menu</SheetTitle>
+              </SheetHeader>
+              <div className="flex flex-col gap-4 mt-6">
+                <Link href="/funktionen">
+                  <Button variant="ghost" className="w-full justify-start text-lg">Funktionen</Button>
+                </Link>
+                <Link href="/sicherheit">
+                  <Button variant="ghost" className="w-full justify-start text-lg">Sicherheit</Button>
+                </Link>
+                <Link href="/preise">
+                  <Button variant="ghost" className="w-full justify-start text-lg">Preise</Button>
+                </Link>
+                <Link href="/ueber-uns">
+                  <Button variant="ghost" className="w-full justify-start text-lg">Über uns</Button>
+                </Link>
+                <div className="border-t pt-4 mt-2">
+                  <Link href="/">
+                    <Button className="w-full text-lg">Kostenlos starten</Button>
+                  </Link>
+                </div>
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
       </header>
 
