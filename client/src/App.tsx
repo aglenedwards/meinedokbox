@@ -24,6 +24,9 @@ import UeberUns from "@/pages/UeberUns";
 import Impressum from "@/pages/Impressum";
 import Datenschutz from "@/pages/Datenschutz";
 import Kontakt from "@/pages/Kontakt";
+import DigitalArchivieren from "@/pages/DigitalArchivieren";
+import DokumenteApp from "@/pages/DokumenteApp";
+import PostDigitalisieren from "@/pages/PostDigitalisieren";
 import NotFound from "@/pages/not-found";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { PWAUpdatePrompt } from "@/components/PWAUpdatePrompt";
@@ -80,6 +83,9 @@ function Router() {
       <Route path="/impressum" component={Impressum} />
       <Route path="/datenschutz" component={Datenschutz} />
       <Route path="/kontakt" component={Kontakt} />
+      <Route path="/digital-archivieren" component={DigitalArchivieren} />
+      <Route path="/dokumente-digitalisieren-app" component={DokumenteApp} />
+      <Route path="/post-digitalisieren" component={PostDigitalisieren} />
       <Route path="/dashboard">
         {() => <ProtectedRoute component={Dashboard} />}
       </Route>
