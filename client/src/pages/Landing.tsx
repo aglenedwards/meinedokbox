@@ -439,7 +439,7 @@ export default function Landing() {
             
             {/* Main Headline */}
             <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold mb-8 tracking-tight" data-testid="text-hero-title">
-              Dokumente digitalisieren privat
+              Dokumente digitalisieren privat –
               <br />
               <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
                 Intelligent organisiert.
