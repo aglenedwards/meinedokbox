@@ -1,5 +1,5 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { DollarSign, CheckCircle2 } from "lucide-react";
+import { Euro, CheckCircle2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -82,7 +82,7 @@ export function UnpaidInvoicesWidget() {
     <Card className="mb-6" data-testid="widget-unpaid-invoices">
       <CardHeader className="pb-3">
         <CardTitle className="text-lg font-medium flex items-center gap-2">
-          <DollarSign className="h-5 w-5 text-orange-500" />
+          <Euro className="h-5 w-5 text-orange-500" />
           Unbezahlte Rechnungen
         </CardTitle>
       </CardHeader>
