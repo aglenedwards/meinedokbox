@@ -2076,6 +2076,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get all unpaid invoices for authenticated user
+  // NOTE: This route MUST be before /api/documents/:id to avoid "unpaid-invoices" being treated as an ID
+  app.get('/api/documents/unpaid-invoices', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const unpaidInvoices = await storage.getUnpaidInvoices(userId);
+      
+      // Calculate total amount
+      const totalAmount = unpaidInvoices.reduce((sum, doc) => sum + (doc.amount || 0), 0);
+      
+      res.json({
+        invoices: unpaidInvoices,
+        count: unpaidInvoices.length,
+        totalAmount
+      });
+    } catch (error) {
+      console.error("Error fetching unpaid invoices:", error);
+      res.status(500).json({ message: "Failed to fetch unpaid invoices" });
+    }
+  });
+
   // Get single document
   app.get('/api/documents/:id', isAuthenticated, async (req: any, res) => {
     try {
@@ -2602,27 +2623,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to update payment status" });
     }
   });
-
-  // Get all unpaid invoices for authenticated user
-  app.get('/api/documents/unpaid-invoices', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const unpaidInvoices = await storage.getUnpaidInvoices(userId);
-      
-      // Calculate total amount
-      const totalAmount = unpaidInvoices.reduce((sum, doc) => sum + (doc.amount || 0), 0);
-      
-      res.json({
-        invoices: unpaidInvoices,
-        count: unpaidInvoices.length,
-        totalAmount
-      });
-    } catch (error) {
-      console.error("Error fetching unpaid invoices:", error);
-      res.status(500).json({ message: "Failed to fetch unpaid invoices" });
-    }
-  });
-
 
   // Phase 2: Export functionality - download all documents as ZIP
   app.get('/api/documents/export/zip', isAuthenticated, async (req: any, res) => {
