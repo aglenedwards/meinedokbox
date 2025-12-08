@@ -1376,6 +1376,139 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* FAQ Section */}
+      <section className="py-24 bg-muted/30">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl md:text-5xl font-bold mb-6" data-testid="text-faq-title">
+                Häufig gestellte Fragen
+              </h2>
+              <p className="text-xl text-muted-foreground leading-relaxed">
+                Alles Wichtige zur Digitalisierung Ihrer privaten Dokumente
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              {/* FAQ Item 1 */}
+              <Card className="border-0 shadow-lg overflow-hidden" data-testid="faq-item-1">
+                <details className="group">
+                  <summary className="flex items-center justify-between cursor-pointer p-6 hover:bg-muted/50 transition-colors">
+                    <h3 className="font-semibold text-lg text-left pr-4">
+                      Was kostet es, private Dokumente zu digitalisieren?
+                    </h3>
+                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center group-open:rotate-180 transition-transform">
+                      <ArrowRight className="h-4 w-4 text-primary rotate-90" />
+                    </div>
+                  </summary>
+                  <div className="px-6 pb-6 text-muted-foreground leading-relaxed">
+                    Mit MeineDokBox können Sie Ihre privaten Dokumente bereits ab 4,17 Euro pro Monat digitalisieren (bei jährlicher Zahlung). 
+                    Sie starten mit einer kostenlosen 7-Tage-Testphase ohne Kreditkarte. Im Solo-Tarif erhalten Sie 50 Dokumente pro Monat 
+                    und 5 GB Speicherplatz – perfekt für den Einstieg in die Digitalisierung Ihrer Dokumente.
+                  </div>
+                </details>
+              </Card>
+
+              {/* FAQ Item 2 */}
+              <Card className="border-0 shadow-lg overflow-hidden" data-testid="faq-item-2">
+                <details className="group">
+                  <summary className="flex items-center justify-between cursor-pointer p-6 hover:bg-muted/50 transition-colors">
+                    <h3 className="font-semibold text-lg text-left pr-4">
+                      Wie sicher ist die Digitalisierung von Dokumenten bei MeineDokBox?
+                    </h3>
+                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center group-open:rotate-180 transition-transform">
+                      <ArrowRight className="h-4 w-4 text-primary rotate-90" />
+                    </div>
+                  </summary>
+                  <div className="px-6 pb-6 text-muted-foreground leading-relaxed">
+                    Ihre digitalisierten Dokumente werden ausschließlich auf deutschen Servern gespeichert und sind vollständig DSGVO-konform. 
+                    Die Übertragung erfolgt verschlüsselt und Ihre Daten werden niemals an Dritte weitergegeben. 
+                    Zusätzlich schützt das EU-US Data Privacy Framework Ihre Dokumente bei der KI-Verarbeitung.
+                  </div>
+                </details>
+              </Card>
+
+              {/* FAQ Item 3 */}
+              <Card className="border-0 shadow-lg overflow-hidden" data-testid="faq-item-3">
+                <details className="group">
+                  <summary className="flex items-center justify-between cursor-pointer p-6 hover:bg-muted/50 transition-colors">
+                    <h3 className="font-semibold text-lg text-left pr-4">
+                      Welche Dokumente kann ich digitalisieren?
+                    </h3>
+                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center group-open:rotate-180 transition-transform">
+                      <ArrowRight className="h-4 w-4 text-primary rotate-90" />
+                    </div>
+                  </summary>
+                  <div className="px-6 pb-6 text-muted-foreground leading-relaxed">
+                    Sie können alle privaten Dokumente digitalisieren: Rechnungen, Verträge, Versicherungspolicen, Arztbriefe, 
+                    Gehaltsabrechnungen, Steuerbescheide, Kontoauszüge und vieles mehr. Unsere KI erkennt automatisch 15 verschiedene 
+                    Kategorien und sortiert Ihre Dokumente intelligent ein – vom Mietvertrag bis zur Online-Bestellung.
+                  </div>
+                </details>
+              </Card>
+
+              {/* FAQ Item 4 */}
+              <Card className="border-0 shadow-lg overflow-hidden" data-testid="faq-item-4">
+                <details className="group">
+                  <summary className="flex items-center justify-between cursor-pointer p-6 hover:bg-muted/50 transition-colors">
+                    <h3 className="font-semibold text-lg text-left pr-4">
+                      Wie funktioniert das Digitalisieren von Dokumenten mit dem Smartphone?
+                    </h3>
+                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center group-open:rotate-180 transition-transform">
+                      <ArrowRight className="h-4 w-4 text-primary rotate-90" />
+                    </div>
+                  </summary>
+                  <div className="px-6 pb-6 text-muted-foreground leading-relaxed">
+                    Öffnen Sie einfach MeineDokBox auf Ihrem Smartphone und fotografieren Sie das Dokument. 
+                    Die App optimiert das Bild automatisch für beste Lesbarkeit. Unsere KI analysiert den Inhalt, 
+                    extrahiert wichtige Daten wie Datum, Betrag und Absender und ordnet das Dokument der passenden Kategorie zu. 
+                    Der gesamte Vorgang dauert nur wenige Sekunden.
+                  </div>
+                </details>
+              </Card>
+
+              {/* FAQ Item 5 */}
+              <Card className="border-0 shadow-lg overflow-hidden" data-testid="faq-item-5">
+                <details className="group">
+                  <summary className="flex items-center justify-between cursor-pointer p-6 hover:bg-muted/50 transition-colors">
+                    <h3 className="font-semibold text-lg text-left pr-4">
+                      Kann ich meine digitalisierten Dokumente mit meinem Partner teilen?
+                    </h3>
+                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center group-open:rotate-180 transition-transform">
+                      <ArrowRight className="h-4 w-4 text-primary rotate-90" />
+                    </div>
+                  </summary>
+                  <div className="px-6 pb-6 text-muted-foreground leading-relaxed">
+                    Ja! Mit dem Family-Tarif können Sie einen Partner einladen und gemeinsam Dokumente verwalten. 
+                    Jeder Partner hat seinen eigenen privaten Bereich und zusätzlich einen gemeinsamen Bereich für geteilte Dokumente. 
+                    So behalten Sie die Kontrolle über persönliche Unterlagen und haben gleichzeitig alle Haushaltsdokumente gemeinsam im Blick.
+                  </div>
+                </details>
+              </Card>
+
+              {/* FAQ Item 6 */}
+              <Card className="border-0 shadow-lg overflow-hidden" data-testid="faq-item-6">
+                <details className="group">
+                  <summary className="flex items-center justify-between cursor-pointer p-6 hover:bg-muted/50 transition-colors">
+                    <h3 className="font-semibold text-lg text-left pr-4">
+                      Was passiert mit meinen Dokumenten, wenn ich kündige?
+                    </h3>
+                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center group-open:rotate-180 transition-transform">
+                      <ArrowRight className="h-4 w-4 text-primary rotate-90" />
+                    </div>
+                  </summary>
+                  <div className="px-6 pb-6 text-muted-foreground leading-relaxed">
+                    Vor einer Kündigung können Sie alle Ihre digitalisierten Dokumente als ZIP-Datei herunterladen. 
+                    Nach der Kündigung haben Sie noch 30 Tage Lesezugriff auf Ihre Dokumente. 
+                    Ihre Daten gehören Ihnen – wir machen den Export so einfach wie möglich.
+                  </div>
+                </details>
+              </Card>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <Footer />
 
       {/* Auth Modal */}
