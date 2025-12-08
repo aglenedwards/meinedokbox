@@ -22,10 +22,7 @@ export function UnpaidInvoicesWidget() {
 
   const markAsPaidMutation = useMutation({
     mutationFn: async (documentId: string) => {
-      return apiRequest(`/api/documents/${documentId}/payment-status`, {
-        method: "PATCH",
-        body: JSON.stringify({ status: "paid" }),
-      });
+      return apiRequest("PATCH", `/api/documents/${documentId}/payment-status`, { status: "paid" });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/documents/unpaid-invoices"] });
@@ -49,10 +46,7 @@ export function UnpaidInvoicesWidget() {
       if (!data?.invoices) return;
       return Promise.all(
         data.invoices.map((invoice) =>
-          apiRequest(`/api/documents/${invoice.id}/payment-status`, {
-            method: "PATCH",
-            body: JSON.stringify({ status: "paid" }),
-          })
+          apiRequest("PATCH", `/api/documents/${invoice.id}/payment-status`, { status: "paid" })
         )
       );
     },

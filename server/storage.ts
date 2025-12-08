@@ -556,15 +556,16 @@ export class DbStorage implements IStorage {
   }
 
   async getUnpaidInvoices(userId: string): Promise<Document[]> {
-    // Get user's master ID if they are a slave
-    const userIds = await this.getUserIdsForQueries(userId);
+    // Get user's own ID + partner IDs for combined query
+    const partnerIds = await this.getPartnerUserIds(userId);
+    const allUserIds = [userId, ...partnerIds];
     
     return db
       .select()
       .from(documents)
       .where(
         and(
-          inArray(documents.userId, userIds),
+          inArray(documents.userId, allUserIds),
           eq(documents.paymentStatus, 'unpaid'),
           isNull(documents.deletedAt)
         )
@@ -1058,6 +1059,9 @@ export class DbStorage implements IStorage {
         year: documents.year,
         documentDate: documents.documentDate,
         systemTags: documents.systemTags,
+        fileHash: documents.fileHash,
+        paymentStatus: documents.paymentStatus,
+        paymentReminderSentAt: documents.paymentReminderSentAt,
       })
       .from(documentTags)
       .innerJoin(documents, eq(documentTags.documentId, documents.id))
