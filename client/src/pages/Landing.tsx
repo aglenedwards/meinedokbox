@@ -439,7 +439,7 @@ export default function Landing() {
             
             {/* Main Headline */}
             <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold mb-8 tracking-tight" data-testid="text-hero-title">
-              Ihre Dokumente.
+              Dokumente digitalisieren privat
               <br />
               <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
                 Intelligent organisiert.
@@ -448,8 +448,8 @@ export default function Landing() {
             
             {/* Subtitle */}
             <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto mb-12 leading-relaxed" data-testid="text-hero-subtitle">
-              Einfach fotografieren, per E-Mail weiterleiten oder hochladen. 
-              Automatisch kategorisiert und sicher archiviert.
+              Private Dokumente digitalisieren leicht gemacht: Einfach fotografieren, per E-Mail weiterleiten oder hochladen. 
+              Automatisch kategorisiert und sicher in Deutschland archiviert.
             </p>
 
             {/* CTA Buttons */}
@@ -521,7 +521,7 @@ export default function Landing() {
       <section className="py-24 bg-background">
         <div className="container mx-auto px-4">
           <h2 className="text-4xl md:text-5xl font-bold text-center mb-16" data-testid="text-features-title">
-            Alles, was Sie brauchen
+            Private Dokumente digitalisieren – alles was Sie brauchen
           </h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-8">
             <Card className="border-0 shadow-lg hover-elevate" data-testid="card-feature-ai">
@@ -602,7 +602,7 @@ export default function Landing() {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-6" data-testid="text-howitworks-title">
-              So einfach geht's
+              Digitalisierung von Dokumenten – so einfach geht's
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
               In nur 3 Schritten vom Papierstapel zum organisierten Archiv – vollautomatisch dank KI
@@ -757,7 +757,7 @@ export default function Landing() {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-6" data-testid="text-problems-title">
-              Schluss mit Papierchaos
+              Digitalisieren von Dokumenten – Schluss mit Papierchaos
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
               Diese alltäglichen Probleme gehören der Vergangenheit an
@@ -1173,7 +1173,7 @@ export default function Landing() {
       <section className="py-24 bg-background">
         <div className="container mx-auto px-4">
           <h2 className="text-4xl md:text-5xl font-bold text-center mb-6" data-testid="text-pricing-title">
-            Einfache, transparente Preise
+            Digitalisierung Dokumente – einfache, transparente Preise
           </h2>
           <p className="text-xl text-center text-muted-foreground mb-8 leading-relaxed">
             7 Tage kostenlos testen. Keine Kreditkarte erforderlich.
