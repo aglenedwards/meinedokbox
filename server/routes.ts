@@ -1882,7 +1882,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       folderId,
       title: analysisResult.title,
       category: analysisResult.category,
-      extractedText: analysisResult.extractedText,
+      extractedText: (analysisResult.extractedText || '').replace(/\x00/g, ''),
       pageUrls: [filePath], // Single file = single page
       thumbnailUrl: thumbnailPath,
       mimeType: file.mimetype,
@@ -1992,7 +1992,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       folderId, // Add folder assignment
       title: analysisResult.title,
       category: analysisResult.category,
-      extractedText: analysisResult.extractedText,
+      extractedText: (analysisResult.extractedText || '').replace(/\x00/g, ''),
       pageUrls,
       thumbnailUrl: thumbnailPath,
       mimeType: files[0].mimetype, // Store original MIME type
@@ -2944,7 +2944,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               userId: user.id,
               title: analysisResult.title,
               category: analysisResult.category,
-              extractedText: analysisResult.extractedText,
+              extractedText: (analysisResult.extractedText || '').replace(/\x00/g, ''),
               fileUrl: filePath,
               thumbnailUrl: thumbnailPath,
               mimeType: attachment.contentType, // Store MIME type
