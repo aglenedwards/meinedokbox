@@ -398,3 +398,82 @@ export function getDocumentProcessingFeedbackEmail(result: DocumentProcessingRes
 
   return { subject, html, text };
 }
+
+// Invoice Paid Notification - sent to partner when shared invoice is marked as paid
+export function getInvoicePaidNotificationEmail(
+  partnerName: string,
+  paidByName: string,
+  documentTitle: string,
+  amount: number | null,
+  sender: string | null
+): { subject: string; html: string; text: string } {
+  const amountStr = amount !== null && amount !== undefined 
+    ? new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(amount)
+    : null;
+  
+  const subject = `Rechnung bezahlt: ${documentTitle}`;
+  
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+          <tr>
+            <td style="padding: 40px 40px 30px;">
+              <h1 style="margin: 0; font-size: 24px; color: #10b981; font-weight: 600;">Rechnung bezahlt</h1>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 0 40px 30px;">
+              <p style="margin: 0 0 20px; font-size: 16px; color: #333; line-height: 1.6;">
+                Hallo${partnerName ? ` ${partnerName}` : ''},
+              </p>
+              <p style="margin: 0 0 20px; font-size: 16px; color: #333; line-height: 1.6;">
+                <strong>${paidByName}</strong> hat eine Rechnung in eurer gemeinsamen DokBox als bezahlt markiert:
+              </p>
+              <div style="background-color: #f0fdf4; border-radius: 8px; padding: 20px; margin: 20px 0; border-left: 4px solid #10b981;">
+                <p style="margin: 0 0 8px; font-size: 18px; font-weight: 600; color: #065f46;">
+                  ${documentTitle}
+                </p>
+                ${sender ? `<p style="margin: 0 0 8px; font-size: 14px; color: #065f46;">Absender: ${sender}</p>` : ''}
+                ${amountStr ? `<p style="margin: 0; font-size: 16px; font-weight: 600; color: #065f46;">Betrag: ${amountStr}</p>` : ''}
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 30px 40px; background-color: #f8f8f8; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;">
+              <p style="margin: 0; font-size: 14px; color: #666; line-height: 1.5;">
+                Viele Grüße,<br>
+                Ihr <strong>MeineDokBox</strong> Team
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+
+  const text = `Rechnung bezahlt
+
+Hallo${partnerName ? ` ${partnerName}` : ''},
+
+${paidByName} hat eine Rechnung in eurer gemeinsamen DokBox als bezahlt markiert:
+
+Dokument: ${documentTitle}
+${sender ? `Absender: ${sender}` : ''}
+${amountStr ? `Betrag: ${amountStr}` : ''}
+
+Viele Grüße,
+Ihr MeineDokBox Team`;
+
+  return { subject, html, text };
+}

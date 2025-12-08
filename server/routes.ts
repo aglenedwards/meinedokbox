@@ -2617,6 +2617,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(500).json({ message: "Failed to update payment status" });
       }
 
+      // Send notification to partners if document is shared and status changed to "paid"
+      if (status === 'paid' && document.isShared) {
+        try {
+          // Get current user info
+          const currentUser = await storage.getUser(userId);
+          const currentUserName = currentUser?.firstName || currentUser?.email || 'Ein Nutzer';
+          
+          // Get all partner user IDs (bidirectional)
+          const partnerIds = await storage.getPartnerUserIds(userId);
+          
+          if (partnerIds.length > 0) {
+            const { sendEmail, getInvoicePaidNotificationEmail } = await import('./emailService');
+            
+            for (const partnerId of partnerIds) {
+              const partner = await storage.getUser(partnerId);
+              if (partner?.email) {
+                const partnerName = partner.firstName || '';
+                const emailContent = getInvoicePaidNotificationEmail(
+                  partnerName,
+                  currentUserName,
+                  document.title || 'Unbenannte Rechnung',
+                  document.amount,
+                  document.sender
+                );
+                
+                await sendEmail({
+                  to: partner.email,
+                  subject: emailContent.subject,
+                  html: emailContent.html,
+                  text: emailContent.text,
+                });
+                
+                console.log(`[PaymentStatus] Sent invoice-paid notification to partner: ${partner.email}`);
+              }
+            }
+          }
+        } catch (emailError) {
+          // Don't fail the request if email sending fails
+          console.error('[PaymentStatus] Failed to send partner notification:', emailError);
+        }
+      }
+
       res.json(updated);
     } catch (error) {
       console.error("Error updating payment status:", error);
