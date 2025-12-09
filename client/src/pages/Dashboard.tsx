@@ -39,7 +39,7 @@ import { TrialBanner } from "@/components/TrialBanner";
 import { GracePeriodBanner } from "@/components/GracePeriodBanner";
 import { ReadOnlyBanner } from "@/components/ReadOnlyBanner";
 import { FreeBanner } from "@/components/FreeBanner";
-import { Footer } from "@/components/Footer";
+import { DashboardFooter } from "@/components/DashboardFooter";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { UnpaidInvoicesWidget } from "@/components/UnpaidInvoicesWidget";
 
@@ -1189,7 +1189,7 @@ export default function Dashboard() {
         onUploadAnyway={handleUploadAnyway}
       />
 
-      <Footer />
+      <DashboardFooter />
     </DashboardLayout>
   );
 }

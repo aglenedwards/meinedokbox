@@ -359,6 +359,61 @@ export const insertSmartFolderSchema = createInsertSchema(smartFolders).omit({
   updatedAt: true,
 });
 
+// Feature Request status options
+export const FEATURE_REQUEST_STATUS = ["pending", "approved", "planned", "in_progress", "completed", "rejected"] as const;
+
+// Feature Requests / Community Board
+export const featureRequests = pgTable("feature_requests", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  status: varchar("status", { length: 20 }).notNull().default("pending"), // pending, approved, planned, in_progress, completed, rejected
+  isPublished: boolean("is_published").notNull().default(false), // Admin must approve before visible
+  adminNote: text("admin_note"), // Optional note from admin
+  voteCount: real("vote_count").notNull().default(0), // Cached vote count
+  createdAt: timestamp("created_at").notNull().default(sql`now()`),
+  updatedAt: timestamp("updated_at").notNull().default(sql`now()`),
+});
+
+// Votes for feature requests
+export const featureRequestVotes = pgTable("feature_request_votes", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  featureRequestId: varchar("feature_request_id").notNull(),
+  userId: varchar("user_id").notNull(),
+  createdAt: timestamp("created_at").notNull().default(sql`now()`),
+});
+
+// Video Tutorials
+export const videoTutorials = pgTable("video_tutorials", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  title: text("title").notNull(),
+  description: text("description"),
+  videoUrl: text("video_url").notNull(), // YouTube embed URL or direct video URL
+  thumbnailUrl: text("thumbnail_url"),
+  category: varchar("category", { length: 50 }).notNull(), // e.g., "Upload", "Ordner", "Suche", "Einstellungen"
+  sortOrder: real("sort_order").notNull().default(0),
+  isPublished: boolean("is_published").notNull().default(true),
+  createdAt: timestamp("created_at").notNull().default(sql`now()`),
+});
+
+export const insertFeatureRequestSchema = createInsertSchema(featureRequests).omit({
+  id: true,
+  voteCount: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertFeatureRequestVoteSchema = createInsertSchema(featureRequestVotes).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertVideoTutorialSchema = createInsertSchema(videoTutorials).omit({
+  id: true,
+  createdAt: true,
+});
+
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
 export type InsertFolder = z.infer<typeof insertFolderSchema>;
@@ -397,3 +452,9 @@ export type InsertEmailJob = z.infer<typeof insertEmailJobSchema>;
 export type EmailJob = typeof emailJobs.$inferSelect;
 export type InsertSmartFolder = z.infer<typeof insertSmartFolderSchema>;
 export type SmartFolder = typeof smartFolders.$inferSelect;
+export type InsertFeatureRequest = z.infer<typeof insertFeatureRequestSchema>;
+export type FeatureRequest = typeof featureRequests.$inferSelect;
+export type InsertFeatureRequestVote = z.infer<typeof insertFeatureRequestVoteSchema>;
+export type FeatureRequestVote = typeof featureRequestVotes.$inferSelect;
+export type InsertVideoTutorial = z.infer<typeof insertVideoTutorialSchema>;
+export type VideoTutorial = typeof videoTutorials.$inferSelect;
