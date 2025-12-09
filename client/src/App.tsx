@@ -27,6 +27,8 @@ import Kontakt from "@/pages/Kontakt";
 import DigitalArchivieren from "@/pages/DigitalArchivieren";
 import DokumenteApp from "@/pages/DokumenteApp";
 import PostDigitalisieren from "@/pages/PostDigitalisieren";
+import WunschFeatures from "@/pages/WunschFeatures";
+import VideoTutorials from "@/pages/VideoTutorials";
 import NotFound from "@/pages/not-found";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { PWAUpdatePrompt } from "@/components/PWAUpdatePrompt";
@@ -100,6 +102,12 @@ function Router() {
       </Route>
       <Route path="/admin">
         {() => <ProtectedRoute component={Admin} />}
+      </Route>
+      <Route path="/wunsch-features">
+        {() => <ProtectedRoute component={WunschFeatures} />}
+      </Route>
+      <Route path="/video-tutorials">
+        {() => <ProtectedRoute component={VideoTutorials} />}
       </Route>
       <Route component={NotFound} />
     </Switch>

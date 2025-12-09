@@ -1,6 +1,6 @@
-import { type User, type UpsertUser, type Document, type InsertDocument, type UpdateDocument, type Tag, type InsertTag, type DocumentTag, type InsertDocumentTag, type SharedAccess, type InsertSharedAccess, type Folder, type InsertFolder, type TrialNotification, type InsertTrialNotification, type EmailWhitelist, type EmailJob, type InsertEmailJob, type SmartFolder, type InsertSmartFolder } from "@shared/schema";
+import { type User, type UpsertUser, type Document, type InsertDocument, type UpdateDocument, type Tag, type InsertTag, type DocumentTag, type InsertDocumentTag, type SharedAccess, type InsertSharedAccess, type Folder, type InsertFolder, type TrialNotification, type InsertTrialNotification, type EmailWhitelist, type EmailJob, type InsertEmailJob, type SmartFolder, type InsertSmartFolder, type FeatureRequest, type InsertFeatureRequest, type FeatureRequestVote, type InsertFeatureRequestVote, type VideoTutorial, type InsertVideoTutorial } from "@shared/schema";
 import { db } from "./db";
-import { users, documents, tags, documentTags, sharedAccess, folders, trialNotifications, emailWhitelist, emailJobs, smartFolders } from "@shared/schema";
+import { users, documents, tags, documentTags, sharedAccess, folders, trialNotifications, emailWhitelist, emailJobs, smartFolders, featureRequests, featureRequestVotes, videoTutorials } from "@shared/schema";
 import { eq, and, or, like, desc, asc, isNull, isNotNull, inArray, sql, getTableColumns } from "drizzle-orm";
 import { generateInboundEmail } from "./lib/emailInbound";
 import crypto from "crypto";
@@ -129,6 +129,25 @@ export interface IStorage {
   deleteSmartFolder(id: string, userId: string): Promise<boolean>;
   getDocumentsBySmartFolder(userId: string, folderId: string, year?: number): Promise<Document[]>;
   createDefaultSmartFolders(userId: string): Promise<void>;
+  
+  // Feature Requests management (Community Board)
+  createFeatureRequest(data: InsertFeatureRequest): Promise<FeatureRequest>;
+  getPublishedFeatureRequests(): Promise<FeatureRequest[]>;
+  getAllFeatureRequests(): Promise<FeatureRequest[]>; // Admin only
+  getFeatureRequestById(id: string): Promise<FeatureRequest | undefined>;
+  updateFeatureRequest(id: string, data: Partial<InsertFeatureRequest & { isPublished?: boolean; status?: string; adminNote?: string }>): Promise<FeatureRequest | undefined>;
+  deleteFeatureRequest(id: string): Promise<boolean>;
+  voteForFeatureRequest(featureRequestId: string, userId: string): Promise<FeatureRequestVote | undefined>;
+  removeVoteFromFeatureRequest(featureRequestId: string, userId: string): Promise<boolean>;
+  getUserVotes(userId: string): Promise<string[]>; // Returns array of featureRequestIds user has voted for
+  
+  // Video Tutorials management
+  createVideoTutorial(data: InsertVideoTutorial): Promise<VideoTutorial>;
+  getPublishedVideoTutorials(): Promise<VideoTutorial[]>;
+  getAllVideoTutorials(): Promise<VideoTutorial[]>; // Admin only
+  getVideoTutorialById(id: string): Promise<VideoTutorial | undefined>;
+  updateVideoTutorial(id: string, data: Partial<InsertVideoTutorial>): Promise<VideoTutorial | undefined>;
+  deleteVideoTutorial(id: string): Promise<boolean>;
 }
 
 export class DbStorage implements IStorage {
@@ -1771,6 +1790,152 @@ export class DbStorage implements IStorage {
     for (const folder of defaultFolders) {
       await this.createSmartFolder(folder);
     }
+  }
+  
+  // ===== Feature Requests (Community Board) =====
+  
+  async createFeatureRequest(data: InsertFeatureRequest): Promise<FeatureRequest> {
+    const [request] = await db.insert(featureRequests)
+      .values(data)
+      .returning();
+    return request;
+  }
+  
+  async getPublishedFeatureRequests(): Promise<FeatureRequest[]> {
+    return await db.select()
+      .from(featureRequests)
+      .where(eq(featureRequests.isPublished, true))
+      .orderBy(desc(featureRequests.voteCount), desc(featureRequests.createdAt));
+  }
+  
+  async getAllFeatureRequests(): Promise<FeatureRequest[]> {
+    return await db.select()
+      .from(featureRequests)
+      .orderBy(desc(featureRequests.createdAt));
+  }
+  
+  async getFeatureRequestById(id: string): Promise<FeatureRequest | undefined> {
+    const [request] = await db.select()
+      .from(featureRequests)
+      .where(eq(featureRequests.id, id));
+    return request;
+  }
+  
+  async updateFeatureRequest(id: string, data: Partial<InsertFeatureRequest & { isPublished?: boolean; status?: string; adminNote?: string }>): Promise<FeatureRequest | undefined> {
+    const [updated] = await db.update(featureRequests)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(featureRequests.id, id))
+      .returning();
+    return updated;
+  }
+  
+  async deleteFeatureRequest(id: string): Promise<boolean> {
+    // Delete all votes for this feature request first
+    await db.delete(featureRequestVotes)
+      .where(eq(featureRequestVotes.featureRequestId, id));
+    
+    const result = await db.delete(featureRequests)
+      .where(eq(featureRequests.id, id));
+    return result.rowCount !== null && result.rowCount > 0;
+  }
+  
+  async voteForFeatureRequest(featureRequestId: string, userId: string): Promise<FeatureRequestVote | undefined> {
+    // Check if user already voted
+    const [existingVote] = await db.select()
+      .from(featureRequestVotes)
+      .where(and(
+        eq(featureRequestVotes.featureRequestId, featureRequestId),
+        eq(featureRequestVotes.userId, userId)
+      ));
+    
+    if (existingVote) {
+      return existingVote; // Already voted
+    }
+    
+    // Create vote
+    const [vote] = await db.insert(featureRequestVotes)
+      .values({ featureRequestId, userId })
+      .returning();
+    
+    // Increment vote count on feature request
+    await db.update(featureRequests)
+      .set({ 
+        voteCount: sql`${featureRequests.voteCount} + 1`,
+        updatedAt: new Date()
+      })
+      .where(eq(featureRequests.id, featureRequestId));
+    
+    return vote;
+  }
+  
+  async removeVoteFromFeatureRequest(featureRequestId: string, userId: string): Promise<boolean> {
+    const result = await db.delete(featureRequestVotes)
+      .where(and(
+        eq(featureRequestVotes.featureRequestId, featureRequestId),
+        eq(featureRequestVotes.userId, userId)
+      ));
+    
+    if (result.rowCount !== null && result.rowCount > 0) {
+      // Decrement vote count on feature request
+      await db.update(featureRequests)
+        .set({ 
+          voteCount: sql`GREATEST(${featureRequests.voteCount} - 1, 0)`,
+          updatedAt: new Date()
+        })
+        .where(eq(featureRequests.id, featureRequestId));
+      return true;
+    }
+    return false;
+  }
+  
+  async getUserVotes(userId: string): Promise<string[]> {
+    const votes = await db.select({ featureRequestId: featureRequestVotes.featureRequestId })
+      .from(featureRequestVotes)
+      .where(eq(featureRequestVotes.userId, userId));
+    return votes.map(v => v.featureRequestId);
+  }
+  
+  // ===== Video Tutorials =====
+  
+  async createVideoTutorial(data: InsertVideoTutorial): Promise<VideoTutorial> {
+    const [tutorial] = await db.insert(videoTutorials)
+      .values(data)
+      .returning();
+    return tutorial;
+  }
+  
+  async getPublishedVideoTutorials(): Promise<VideoTutorial[]> {
+    return await db.select()
+      .from(videoTutorials)
+      .where(eq(videoTutorials.isPublished, true))
+      .orderBy(asc(videoTutorials.sortOrder), desc(videoTutorials.createdAt));
+  }
+  
+  async getAllVideoTutorials(): Promise<VideoTutorial[]> {
+    return await db.select()
+      .from(videoTutorials)
+      .orderBy(asc(videoTutorials.sortOrder), desc(videoTutorials.createdAt));
+  }
+  
+  async getVideoTutorialById(id: string): Promise<VideoTutorial | undefined> {
+    const [tutorial] = await db.select()
+      .from(videoTutorials)
+      .where(eq(videoTutorials.id, id));
+    return tutorial;
+  }
+  
+  async updateVideoTutorial(id: string, data: Partial<InsertVideoTutorial>): Promise<VideoTutorial | undefined> {
+    const [updated] = await db.update(videoTutorials)
+      .set(data)
+      .where(eq(videoTutorials.id, id))
+      .returning();
+    return updated;
+  }
+  
+  async deleteVideoTutorial(id: string): Promise<boolean> {
+    const result = await db.delete(videoTutorials)
+      .where(eq(videoTutorials.id, id));
+    return result.rowCount !== null && result.rowCount > 0;
   }
 }
 

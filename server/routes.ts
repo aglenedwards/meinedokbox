@@ -3733,6 +3733,244 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ===== Feature Requests API (Community Board) =====
+  
+  // Get published feature requests (public)
+  app.get("/api/feature-requests", async (_req, res) => {
+    try {
+      const requests = await storage.getPublishedFeatureRequests();
+      res.json(requests);
+    } catch (error) {
+      console.error('[FeatureRequests] Error fetching:', error);
+      res.status(500).json({ message: "Fehler beim Laden der Feature-Anfragen" });
+    }
+  });
+  
+  // Create new feature request (authenticated users)
+  app.post("/api/feature-requests", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { title, description } = req.body;
+      
+      if (!title || !description) {
+        return res.status(400).json({ message: "Titel und Beschreibung sind erforderlich" });
+      }
+      
+      const request = await storage.createFeatureRequest({
+        userId,
+        title,
+        description,
+        status: "pending",
+        isPublished: false, // Requires admin approval
+      });
+      
+      console.log(`[FeatureRequests] User ${userId} created request: ${request.id}`);
+      res.json(request);
+    } catch (error) {
+      console.error('[FeatureRequests] Error creating:', error);
+      res.status(500).json({ message: "Fehler beim Erstellen der Feature-Anfrage" });
+    }
+  });
+  
+  // Vote for a feature request (authenticated users)
+  app.post("/api/feature-requests/:id/vote", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { id } = req.params;
+      
+      const vote = await storage.voteForFeatureRequest(id, userId);
+      
+      if (vote) {
+        res.json({ success: true, vote });
+      } else {
+        res.status(404).json({ message: "Feature-Anfrage nicht gefunden" });
+      }
+    } catch (error) {
+      console.error('[FeatureRequests] Error voting:', error);
+      res.status(500).json({ message: "Fehler beim Abstimmen" });
+    }
+  });
+  
+  // Remove vote from a feature request (authenticated users)
+  app.delete("/api/feature-requests/:id/vote", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { id } = req.params;
+      
+      const success = await storage.removeVoteFromFeatureRequest(id, userId);
+      res.json({ success });
+    } catch (error) {
+      console.error('[FeatureRequests] Error removing vote:', error);
+      res.status(500).json({ message: "Fehler beim Entfernen der Stimme" });
+    }
+  });
+  
+  // Get user's votes (authenticated users)
+  app.get("/api/my-votes", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const votes = await storage.getUserVotes(userId);
+      res.json(votes);
+    } catch (error) {
+      console.error('[FeatureRequests] Error getting user votes:', error);
+      res.status(500).json({ message: "Fehler beim Laden der Stimmen" });
+    }
+  });
+  
+  // Admin: Get all feature requests
+  app.get("/api/admin/feature-requests", isAuthenticated, isAdmin, async (_req: any, res) => {
+    try {
+      const requests = await storage.getAllFeatureRequests();
+      res.json(requests);
+    } catch (error) {
+      console.error('[Admin] Error fetching feature requests:', error);
+      res.status(500).json({ message: "Fehler beim Laden der Feature-Anfragen" });
+    }
+  });
+  
+  // Admin: Update/approve feature request
+  app.patch("/api/admin/feature-requests/:id", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const { title, description, status, isPublished, adminNote } = req.body;
+      
+      const updated = await storage.updateFeatureRequest(id, {
+        title,
+        description,
+        status,
+        isPublished,
+        adminNote,
+      });
+      
+      if (!updated) {
+        return res.status(404).json({ message: "Feature-Anfrage nicht gefunden" });
+      }
+      
+      console.log(`[Admin] Updated feature request: ${id}`);
+      res.json(updated);
+    } catch (error) {
+      console.error('[Admin] Error updating feature request:', error);
+      res.status(500).json({ message: "Fehler beim Aktualisieren der Feature-Anfrage" });
+    }
+  });
+  
+  // Admin: Delete feature request
+  app.delete("/api/admin/feature-requests/:id", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      
+      const success = await storage.deleteFeatureRequest(id);
+      
+      if (!success) {
+        return res.status(404).json({ message: "Feature-Anfrage nicht gefunden" });
+      }
+      
+      console.log(`[Admin] Deleted feature request: ${id}`);
+      res.json({ success: true });
+    } catch (error) {
+      console.error('[Admin] Error deleting feature request:', error);
+      res.status(500).json({ message: "Fehler beim Löschen der Feature-Anfrage" });
+    }
+  });
+  
+  // ===== Video Tutorials API =====
+  
+  // Get published video tutorials (public)
+  app.get("/api/video-tutorials", async (_req, res) => {
+    try {
+      const tutorials = await storage.getPublishedVideoTutorials();
+      res.json(tutorials);
+    } catch (error) {
+      console.error('[VideoTutorials] Error fetching:', error);
+      res.status(500).json({ message: "Fehler beim Laden der Video-Tutorials" });
+    }
+  });
+  
+  // Admin: Get all video tutorials
+  app.get("/api/admin/video-tutorials", isAuthenticated, isAdmin, async (_req: any, res) => {
+    try {
+      const tutorials = await storage.getAllVideoTutorials();
+      res.json(tutorials);
+    } catch (error) {
+      console.error('[Admin] Error fetching video tutorials:', error);
+      res.status(500).json({ message: "Fehler beim Laden der Video-Tutorials" });
+    }
+  });
+  
+  // Admin: Create video tutorial
+  app.post("/api/admin/video-tutorials", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const { title, description, videoUrl, thumbnailUrl, category, sortOrder, isPublished } = req.body;
+      
+      if (!title || !videoUrl || !category) {
+        return res.status(400).json({ message: "Titel, Video-URL und Kategorie sind erforderlich" });
+      }
+      
+      const tutorial = await storage.createVideoTutorial({
+        title,
+        description,
+        videoUrl,
+        thumbnailUrl,
+        category,
+        sortOrder: sortOrder ?? 0,
+        isPublished: isPublished ?? true,
+      });
+      
+      console.log(`[Admin] Created video tutorial: ${tutorial.id}`);
+      res.json(tutorial);
+    } catch (error) {
+      console.error('[Admin] Error creating video tutorial:', error);
+      res.status(500).json({ message: "Fehler beim Erstellen des Video-Tutorials" });
+    }
+  });
+  
+  // Admin: Update video tutorial
+  app.patch("/api/admin/video-tutorials/:id", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const { title, description, videoUrl, thumbnailUrl, category, sortOrder, isPublished } = req.body;
+      
+      const updated = await storage.updateVideoTutorial(id, {
+        title,
+        description,
+        videoUrl,
+        thumbnailUrl,
+        category,
+        sortOrder,
+        isPublished,
+      });
+      
+      if (!updated) {
+        return res.status(404).json({ message: "Video-Tutorial nicht gefunden" });
+      }
+      
+      console.log(`[Admin] Updated video tutorial: ${id}`);
+      res.json(updated);
+    } catch (error) {
+      console.error('[Admin] Error updating video tutorial:', error);
+      res.status(500).json({ message: "Fehler beim Aktualisieren des Video-Tutorials" });
+    }
+  });
+  
+  // Admin: Delete video tutorial
+  app.delete("/api/admin/video-tutorials/:id", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      
+      const success = await storage.deleteVideoTutorial(id);
+      
+      if (!success) {
+        return res.status(404).json({ message: "Video-Tutorial nicht gefunden" });
+      }
+      
+      console.log(`[Admin] Deleted video tutorial: ${id}`);
+      res.json({ success: true });
+    } catch (error) {
+      console.error('[Admin] Error deleting video tutorial:', error);
+      res.status(500).json({ message: "Fehler beim Löschen des Video-Tutorials" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
