@@ -19,7 +19,7 @@ import type { FeatureRequest } from "@shared/schema";
 
 const formSchema = z.object({
   title: z.string().min(5, "Titel muss mindestens 5 Zeichen haben").max(100, "Titel darf maximal 100 Zeichen haben"),
-  description: z.string().min(20, "Beschreibung muss mindestens 20 Zeichen haben").max(1000, "Beschreibung darf maximal 1000 Zeichen haben"),
+  description: z.string().max(1000, "Beschreibung darf maximal 1000 Zeichen haben").optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
