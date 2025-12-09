@@ -16,9 +16,8 @@ declare module "express-session" {
   }
 }
 
-if (!process.env.REPLIT_DOMAINS) {
-  throw new Error("Environment variable REPLIT_DOMAINS not provided");
-}
+// Check if we're running on Replit (has REPLIT_DOMAINS and REPL_ID)
+const isReplit = !!(process.env.REPLIT_DOMAINS && process.env.REPL_ID);
 
 const getOidcConfig = memoize(
   async () => {
@@ -81,6 +80,36 @@ export async function setupAuth(app: Express) {
   app.use(passport.initialize());
   app.use(passport.session());
 
+  // Serialize: Save minimal data to session (works for both OIDC and Local users)
+  passport.serializeUser((user: any, cb) => {
+    cb(null, user);
+  });
+  
+  // Deserialize: Restore user from session
+  passport.deserializeUser((user: any, cb) => {
+    cb(null, user);
+  });
+
+  // Only setup Replit OIDC auth if running on Replit
+  if (!isReplit) {
+    console.log("[Auth] Running outside Replit - Replit Auth disabled, using Email/Password only");
+    
+    // Redirect login/logout to local auth pages when not on Replit
+    app.get("/api/login", (req, res) => {
+      res.redirect("/auth");
+    });
+    
+    app.get("/api/logout", (req, res) => {
+      req.logout(() => {
+        res.redirect("/");
+      });
+    });
+    
+    return;
+  }
+
+  console.log("[Auth] Running on Replit - Replit Auth enabled");
+  
   const config = await getOidcConfig();
 
   const verify: VerifyFunction = async (
@@ -93,8 +122,7 @@ export async function setupAuth(app: Express) {
     verified(null, user);
   };
 
-  for (const domain of process.env
-    .REPLIT_DOMAINS!.split(",")) {
+  for (const domain of process.env.REPLIT_DOMAINS!.split(",")) {
     const strategy = new Strategy(
       {
         name: `replitauth:${domain}`,
@@ -106,18 +134,6 @@ export async function setupAuth(app: Express) {
     );
     passport.use(strategy);
   }
-
-  // Serialize: Save minimal data to session (works for both OIDC and Local users)
-  passport.serializeUser((user: any, cb) => {
-    // For local auth users, save the user object (already minimal)
-    // For OIDC users, save the entire object (contains tokens)
-    cb(null, user);
-  });
-  
-  // Deserialize: Restore user from session
-  passport.deserializeUser((user: any, cb) => {
-    cb(null, user);
-  });
 
   app.get("/api/login", (req, res, next) => {
     passport.authenticate(`replitauth:${req.hostname}`, {
