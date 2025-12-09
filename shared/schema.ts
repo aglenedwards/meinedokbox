@@ -130,6 +130,8 @@ export const users = pgTable("users", {
   stripeCustomerId: varchar("stripe_customer_id"),
   stripeSubscriptionId: varchar("stripe_subscription_id"),
   stripePriceId: varchar("stripe_price_id"),
+  // Notification preferences
+  notifyNewFeatures: boolean("notify_new_features").notNull().default(false),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
