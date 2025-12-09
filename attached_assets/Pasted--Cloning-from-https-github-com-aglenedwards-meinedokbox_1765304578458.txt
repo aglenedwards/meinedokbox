@@ -1,0 +1,84 @@
+==> Cloning from https://github.com/aglenedwards/meinedokbox
+==> Checking out commit 9753497b48be85fa56a94ef3be8f3f415da7fe63 in branch main
+==> Using Node.js version 22.16.0 (default)
+==> Docs on specifying a Node.js version: https://render.com/docs/node-version
+==> Running build command 'npm ci && npm run build'...
+added 729 packages, and audited 730 packages in 16s
+85 packages are looking for funding
+  run `npm fund` for details
+10 vulnerabilities (4 low, 5 moderate, 1 high)
+To address issues that do not require attention, run:
+  npm audit fix
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+Run `npm audit` for details.
+> rest-express@1.0.0 build
+> vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+vite v5.4.21 building for production...
+transforming...
+A PostCSS plugin did not pass the `from` option to `postcss.parse`. This may cause imported assets to be incorrectly transformed. If you've recently added a PostCSS plugin that raised this warning, please contact the package author to fix the issue.
+✓ 3462 modules transformed.
+rendering chunks...
+computing gzip size...
+../dist/public/index.html                                         2.69 kB │ gzip:   0.94 kB
+../dist/public/assets/meinedokbox_1760966015056-SUu2rDQo.png    262.88 kB
+../dist/public/assets/pdf.worker.min-qwK7q_zL.mjs             1,046.21 kB
+../dist/public/assets/index-rhK8Kdds.css                        131.90 kB │ gzip:  21.11 kB
+../dist/public/assets/index-BwZ4iPXi.js                       1,805.39 kB │ gzip: 487.00 kB
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 11.48s
+  dist/index.js  303.2kb
+⚡ Done in 22ms
+==> Uploading build...
+==> Uploaded in 8.8s. Compression took 6.1s
+==> Build successful 🎉
+==> Deploying...
+==> Running 'npm run start'
+> rest-express@1.0.0 start
+> NODE_ENV=production node dist/index.js
+[EmailQueue] 🚀 Email queue started with 30s check interval (PostgreSQL-backed)
+🔄 Running auto-migrations...
+✅ Auto-migrations completed successfully
+file:///opt/render/project/src/node_modules/openid-client/build/index.js:89
+    const err = new TypeError(message, { cause });
+                ^
+TypeError: "clientId" must be a non-empty string
+    at CodedTypeError (file:///opt/render/project/src/node_modules/openid-client/build/index.js:89:17)
+    at new Configuration (file:///opt/render/project/src/node_modules/openid-client/build/index.js:463:19)
+    at Module.discovery (file:///opt/render/project/src/node_modules/openid-client/build/index.js:244:22)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async memoize.maxAge (file:///opt/render/project/src/dist/index.js:2870:12)
+    at async setupAuth (file:///opt/render/project/src/dist/index.js:2919:18)
+    at async registerRoutes (file:///opt/render/project/src/dist/index.js:4596:3)
+    at async file:///opt/render/project/src/dist/index.js:7540:18 {
+  code: 'ERR_INVALID_ARG_TYPE',
+  [cause]: undefined
+}
+Node.js v22.16.0
+==> Exited with status 1
+==> Common ways to troubleshoot your deploy: https://render.com/docs/troubleshooting-deploys
+==> Running 'npm run start'
+> rest-express@1.0.0 start
+> NODE_ENV=production node dist/index.js
+[EmailQueue] 🚀 Email queue started with 30s check interval (PostgreSQL-backed)
+🔄 Running auto-migrations...
+✅ Auto-migrations completed successfully
+file:///opt/render/project/src/node_modules/openid-client/build/index.js:89
+    const err = new TypeError(message, { cause });
+                ^
+TypeError: "clientId" must be a non-empty string
+    at CodedTypeError (file:///opt/render/project/src/node_modules/openid-client/build/index.js:89:17)
+    at new Configuration (file:///opt/render/project/src/node_modules/openid-client/build/index.js:463:19)
+    at Module.discovery (file:///opt/render/project/src/node_modules/openid-client/build/index.js:244:22)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async memoize.maxAge (file:///opt/render/project/src/dist/index.js:2870:12)
+    at async setupAuth (file:///opt/render/project/src/dist/index.js:2919:18)
+    at async registerRoutes (file:///opt/render/project/src/dist/index.js:4596:3)
+    at async file:///opt/render/project/src/dist/index.js:7540:18 {
+  code: 'ERR_INVALID_ARG_TYPE',
+  [cause]: undefined
+}
+Node.js v22.16.0
