@@ -1,0 +1,15 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://meinedokbox.de/sitemap.xml
+
+# Geschützte Bereiche
+Disallow: /documents
+Disallow: /dashboard
+Disallow: /settings
+Disallow: /admin
+Disallow: /api/
+Disallow: /auth/
+Disallow: /invite
+Disallow: /verify-email
+Disallow: /reset-password
