@@ -1,11 +1,16 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
-import { User, Trash2, Search, Home, LogOut, Shield, AlertTriangle } from "lucide-react";
+import { User, Trash2, Search, Home, Shield, AlertTriangle, Lightbulb, PlayCircle, Plus, Edit2, Save, X } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -35,20 +40,55 @@ import { Link } from "wouter";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import logoImage from "@assets/meinedokbox_1760966015056.png";
-import type { User as UserType } from "@shared/schema";
+import type { User as UserType, FeatureRequest, VideoTutorial } from "@shared/schema";
 
 interface UserWithStats extends UserType {
   documentCount: number;
   storageUsed: number;
 }
 
+const TUTORIAL_CATEGORIES = ["Upload", "Ordner", "Suche", "Einstellungen", "Tags", "E-Mail", "Teilen"] as const;
+const FEATURE_STATUS_OPTIONS = ["pending", "approved", "planned", "in_progress", "completed", "rejected"] as const;
+
+const STATUS_LABELS: Record<string, string> = {
+  pending: "Ausstehend",
+  approved: "Genehmigt",
+  planned: "Geplant",
+  in_progress: "In Arbeit",
+  completed: "Abgeschlossen",
+  rejected: "Abgelehnt",
+};
+
 export default function Admin() {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
+  const [activeTab, setActiveTab] = useState("users");
   const [searchQuery, setSearchQuery] = useState("");
   const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; user: UserWithStats | null }>({
     open: false,
     user: null,
+  });
+  const [deleteFeatureDialog, setDeleteFeatureDialog] = useState<{ open: boolean; feature: FeatureRequest | null }>({
+    open: false,
+    feature: null,
+  });
+  const [deleteTutorialDialog, setDeleteTutorialDialog] = useState<{ open: boolean; tutorial: VideoTutorial | null }>({
+    open: false,
+    tutorial: null,
+  });
+  const [editingAdminNote, setEditingAdminNote] = useState<{ id: string; note: string } | null>(null);
+  const [tutorialDialog, setTutorialDialog] = useState<{ open: boolean; tutorial: VideoTutorial | null }>({
+    open: false,
+    tutorial: null,
+  });
+  const [tutorialForm, setTutorialForm] = useState({
+    title: "",
+    description: "",
+    videoUrl: "",
+    thumbnailUrl: "",
+    category: "Upload",
+    sortOrder: 0,
+    isPublished: true,
   });
 
   // Check admin authentication status
@@ -71,6 +111,20 @@ export default function Admin() {
   // Fetch all users
   const { data: users = [], isLoading } = useQuery<UserWithStats[]>({
     queryKey: ["/api/admin/users"],
+    retry: false,
+    enabled: adminStatus?.isAdminAuthenticated === true,
+  });
+
+  // Fetch feature requests
+  const { data: featureRequests = [], isLoading: loadingFeatures } = useQuery<FeatureRequest[]>({
+    queryKey: ["/api/admin/feature-requests"],
+    retry: false,
+    enabled: adminStatus?.isAdminAuthenticated === true,
+  });
+
+  // Fetch video tutorials
+  const { data: videoTutorials = [], isLoading: loadingTutorials } = useQuery<VideoTutorial[]>({
+    queryKey: ["/api/admin/video-tutorials"],
     retry: false,
     enabled: adminStatus?.isAdminAuthenticated === true,
   });
@@ -98,7 +152,7 @@ export default function Admin() {
         description: "Der User wurde erfolgreich entfernt.",
       });
     },
-    onError: (error: Error) => {
+    onError: () => {
       toast({
         title: "Fehler",
         description: "Der Benutzer konnte nicht gelöscht werden. Bitte versuchen Sie es erneut.",
@@ -142,6 +196,93 @@ export default function Admin() {
     },
   });
 
+  // Update feature request mutation
+  const updateFeatureMutation = useMutation({
+    mutationFn: async ({ id, ...updates }: { id: string; status?: string; isPublished?: boolean; adminNote?: string }) => {
+      const response = await fetch(`/api/admin/feature-requests/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updates),
+        credentials: "include",
+      });
+      if (!response.ok) throw new Error("Fehler beim Aktualisieren");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/feature-requests"] });
+      setEditingAdminNote(null);
+      toast({ title: "Gespeichert", description: "Feature Request wurde aktualisiert." });
+    },
+    onError: () => {
+      toast({ title: "Fehler", description: "Konnte nicht gespeichert werden.", variant: "destructive" });
+    },
+  });
+
+  // Delete feature request mutation
+  const deleteFeatureMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const response = await fetch(`/api/admin/feature-requests/${id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (!response.ok) throw new Error("Fehler beim Löschen");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/feature-requests"] });
+      setDeleteFeatureDialog({ open: false, feature: null });
+      toast({ title: "Gelöscht", description: "Feature Request wurde entfernt." });
+    },
+    onError: () => {
+      toast({ title: "Fehler", description: "Konnte nicht gelöscht werden.", variant: "destructive" });
+    },
+  });
+
+  // Create/Update tutorial mutation
+  const saveTutorialMutation = useMutation({
+    mutationFn: async ({ id, ...data }: { id?: string; title: string; description?: string; videoUrl: string; thumbnailUrl?: string; category: string; sortOrder: number; isPublished: boolean }) => {
+      const url = id ? `/api/admin/video-tutorials/${id}` : "/api/admin/video-tutorials";
+      const method = id ? "PATCH" : "POST";
+      const response = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+        credentials: "include",
+      });
+      if (!response.ok) throw new Error("Fehler beim Speichern");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/video-tutorials"] });
+      setTutorialDialog({ open: false, tutorial: null });
+      resetTutorialForm();
+      toast({ title: "Gespeichert", description: "Video Tutorial wurde gespeichert." });
+    },
+    onError: () => {
+      toast({ title: "Fehler", description: "Konnte nicht gespeichert werden.", variant: "destructive" });
+    },
+  });
+
+  // Delete tutorial mutation
+  const deleteTutorialMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const response = await fetch(`/api/admin/video-tutorials/${id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (!response.ok) throw new Error("Fehler beim Löschen");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/video-tutorials"] });
+      setDeleteTutorialDialog({ open: false, tutorial: null });
+      toast({ title: "Gelöscht", description: "Video Tutorial wurde entfernt." });
+    },
+    onError: () => {
+      toast({ title: "Fehler", description: "Konnte nicht gelöscht werden.", variant: "destructive" });
+    },
+  });
+
   // Filter users based on search
   const filteredUsers = users.filter((user) => {
     const query = searchQuery.toLowerCase();
@@ -176,6 +317,52 @@ export default function Admin() {
     if (deleteDialog.user) {
       deleteMutation.mutate(deleteDialog.user.id);
     }
+  };
+
+  const resetTutorialForm = () => {
+    setTutorialForm({
+      title: "",
+      description: "",
+      videoUrl: "",
+      thumbnailUrl: "",
+      category: "Upload",
+      sortOrder: 0,
+      isPublished: true,
+    });
+  };
+
+  const openTutorialDialog = (tutorial?: VideoTutorial) => {
+    if (tutorial) {
+      setTutorialForm({
+        title: tutorial.title,
+        description: tutorial.description || "",
+        videoUrl: tutorial.videoUrl,
+        thumbnailUrl: tutorial.thumbnailUrl || "",
+        category: tutorial.category,
+        sortOrder: tutorial.sortOrder,
+        isPublished: tutorial.isPublished,
+      });
+      setTutorialDialog({ open: true, tutorial });
+    } else {
+      resetTutorialForm();
+      setTutorialDialog({ open: true, tutorial: null });
+    }
+  };
+
+  const handleSaveTutorial = () => {
+    if (!tutorialForm.title || !tutorialForm.videoUrl) {
+      toast({ title: "Fehler", description: "Titel und Video-URL sind erforderlich.", variant: "destructive" });
+      return;
+    }
+    saveTutorialMutation.mutate({
+      id: tutorialDialog.tutorial?.id,
+      ...tutorialForm,
+    });
+  };
+
+  const truncateText = (text: string, maxLength: number) => {
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + "...";
   };
 
   // Show loading while checking authentication
@@ -220,112 +407,352 @@ export default function Admin() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 md:px-6 py-8">
-        <Card>
-          <CardHeader>
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-              <CardTitle className="flex items-center gap-2">
-                <User className="h-5 w-5" />
-                Benutzerverwaltung
-              </CardTitle>
-              <div className="flex items-center gap-2">
-                <div className="relative flex-1 md:w-80">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Suche nach Name, E-Mail oder ID..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-9"
-                    data-testid="input-search-users"
-                  />
-                </div>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="text-center py-8 text-muted-foreground">Lädt Benutzer...</div>
-            ) : filteredUsers.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                {searchQuery ? "Keine Benutzer gefunden" : "Keine Benutzer vorhanden"}
-              </div>
-            ) : (
-              <div className="border rounded-md">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>E-Mail</TableHead>
-                      <TableHead>Plan</TableHead>
-                      <TableHead className="text-right">Dokumente</TableHead>
-                      <TableHead className="text-right">Speicher</TableHead>
-                      <TableHead>Registriert</TableHead>
-                      <TableHead className="text-right">Aktionen</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredUsers.map((user) => (
-                      <TableRow key={user.id} data-testid={`user-row-${user.id}`}>
-                        <TableCell className="font-medium">
-                          {user.firstName} {user.lastName}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex flex-col">
-                            <span className="font-mono text-sm">{user.email}</span>
-                            {!user.isVerified && (
-                              <Badge variant="outline" className="w-fit mt-1 text-xs">
-                                Unverifiziert
-                              </Badge>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Select
-                            value={user.subscriptionPlan || "free"}
-                            onValueChange={(value) => handlePlanChange(user.id, value)}
-                            disabled={updatePlanMutation.isPending}
-                          >
-                            <SelectTrigger className="w-36" data-testid={`select-plan-${user.id}`}>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="trial">Trial</SelectItem>
-                              <SelectItem value="free">Free</SelectItem>
-                              <SelectItem value="solo">Solo</SelectItem>
-                              <SelectItem value="family">Family</SelectItem>
-                              <SelectItem value="family-plus">Family Plus</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </TableCell>
-                        <TableCell className="text-right">{user.documentCount}</TableCell>
-                        <TableCell className="text-right">{user.storageUsed.toFixed(2)} MB</TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
-                          {user.createdAt ? format(new Date(user.createdAt), "dd.MM.yyyy", { locale: de }) : "-"}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDeleteClick(user)}
-                            data-testid={`button-delete-${user.id}`}
-                          >
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            )}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+          <TabsList className="grid w-full grid-cols-3" data-testid="admin-tabs">
+            <TabsTrigger value="users" className="flex items-center gap-2" data-testid="tab-users">
+              <User className="h-4 w-4" />
+              Benutzer
+            </TabsTrigger>
+            <TabsTrigger value="features" className="flex items-center gap-2" data-testid="tab-features">
+              <Lightbulb className="h-4 w-4" />
+              Feature Requests
+            </TabsTrigger>
+            <TabsTrigger value="tutorials" className="flex items-center gap-2" data-testid="tab-tutorials">
+              <PlayCircle className="h-4 w-4" />
+              Video Tutorials
+            </TabsTrigger>
+          </TabsList>
 
-            <div className="mt-4 text-sm text-muted-foreground">
-              Gesamt: {filteredUsers.length} {filteredUsers.length === 1 ? "Benutzer" : "Benutzer"}
-            </div>
-          </CardContent>
-        </Card>
+          {/* Users Tab */}
+          <TabsContent value="users">
+            <Card>
+              <CardHeader>
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                  <CardTitle className="flex items-center gap-2">
+                    <User className="h-5 w-5" />
+                    Benutzerverwaltung
+                  </CardTitle>
+                  <div className="flex items-center gap-2">
+                    <div className="relative flex-1 md:w-80">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        placeholder="Suche nach Name, E-Mail oder ID..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="pl-9"
+                        data-testid="input-search-users"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {isLoading ? (
+                  <div className="text-center py-8 text-muted-foreground">Lädt Benutzer...</div>
+                ) : filteredUsers.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    {searchQuery ? "Keine Benutzer gefunden" : "Keine Benutzer vorhanden"}
+                  </div>
+                ) : (
+                  <div className="border rounded-md">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Name</TableHead>
+                          <TableHead>E-Mail</TableHead>
+                          <TableHead>Plan</TableHead>
+                          <TableHead className="text-right">Dokumente</TableHead>
+                          <TableHead className="text-right">Speicher</TableHead>
+                          <TableHead>Registriert</TableHead>
+                          <TableHead className="text-right">Aktionen</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredUsers.map((user) => (
+                          <TableRow key={user.id} data-testid={`user-row-${user.id}`}>
+                            <TableCell className="font-medium">
+                              {user.firstName} {user.lastName}
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex flex-col">
+                                <span className="font-mono text-sm">{user.email}</span>
+                                {!user.isVerified && (
+                                  <Badge variant="outline" className="w-fit mt-1 text-xs">
+                                    Unverifiziert
+                                  </Badge>
+                                )}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <Select
+                                value={user.subscriptionPlan || "free"}
+                                onValueChange={(value) => handlePlanChange(user.id, value)}
+                                disabled={updatePlanMutation.isPending}
+                              >
+                                <SelectTrigger className="w-36" data-testid={`select-plan-${user.id}`}>
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="trial">Trial</SelectItem>
+                                  <SelectItem value="free">Free</SelectItem>
+                                  <SelectItem value="solo">Solo</SelectItem>
+                                  <SelectItem value="family">Family</SelectItem>
+                                  <SelectItem value="family-plus">Family Plus</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </TableCell>
+                            <TableCell className="text-right">{user.documentCount}</TableCell>
+                            <TableCell className="text-right">{user.storageUsed.toFixed(2)} MB</TableCell>
+                            <TableCell className="text-sm text-muted-foreground">
+                              {user.createdAt ? format(new Date(user.createdAt), "dd.MM.yyyy", { locale: de }) : "-"}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDeleteClick(user)}
+                                data-testid={`button-delete-${user.id}`}
+                              >
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+
+                <div className="mt-4 text-sm text-muted-foreground">
+                  Gesamt: {filteredUsers.length} {filteredUsers.length === 1 ? "Benutzer" : "Benutzer"}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Feature Requests Tab */}
+          <TabsContent value="features">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Lightbulb className="h-5 w-5" />
+                  Feature Requests Verwaltung
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {loadingFeatures ? (
+                  <div className="text-center py-8 text-muted-foreground">Lädt Feature Requests...</div>
+                ) : featureRequests.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">Keine Feature Requests vorhanden</div>
+                ) : (
+                  <div className="border rounded-md overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="min-w-[150px]">Titel</TableHead>
+                          <TableHead className="min-w-[200px]">Beschreibung</TableHead>
+                          <TableHead>Benutzer-ID</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead className="text-center">Stimmen</TableHead>
+                          <TableHead>Veröffentlicht</TableHead>
+                          <TableHead className="min-w-[200px]">Admin-Notiz</TableHead>
+                          <TableHead>Erstellt</TableHead>
+                          <TableHead className="text-right">Aktionen</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {featureRequests.map((feature) => (
+                          <TableRow key={feature.id} data-testid={`feature-row-${feature.id}`}>
+                            <TableCell className="font-medium">{feature.title}</TableCell>
+                            <TableCell className="text-sm text-muted-foreground">
+                              {truncateText(feature.description, 80)}
+                            </TableCell>
+                            <TableCell className="font-mono text-xs">{truncateText(feature.userId, 12)}</TableCell>
+                            <TableCell>
+                              <Select
+                                value={feature.status}
+                                onValueChange={(value) => updateFeatureMutation.mutate({ id: feature.id, status: value })}
+                                disabled={updateFeatureMutation.isPending}
+                              >
+                                <SelectTrigger className="w-32" data-testid={`select-status-${feature.id}`}>
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {FEATURE_STATUS_OPTIONS.map((status) => (
+                                    <SelectItem key={status} value={status}>
+                                      {STATUS_LABELS[status]}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </TableCell>
+                            <TableCell className="text-center">
+                              <Badge variant="secondary">{feature.voteCount}</Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Switch
+                                checked={feature.isPublished}
+                                onCheckedChange={(checked) => updateFeatureMutation.mutate({ id: feature.id, isPublished: checked })}
+                                disabled={updateFeatureMutation.isPending}
+                                data-testid={`switch-published-${feature.id}`}
+                              />
+                            </TableCell>
+                            <TableCell>
+                              {editingAdminNote?.id === feature.id ? (
+                                <div className="flex items-center gap-1">
+                                  <Input
+                                    value={editingAdminNote.note}
+                                    onChange={(e) => setEditingAdminNote({ ...editingAdminNote, note: e.target.value })}
+                                    className="w-40"
+                                    data-testid={`input-admin-note-${feature.id}`}
+                                  />
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    onClick={() => updateFeatureMutation.mutate({ id: feature.id, adminNote: editingAdminNote.note })}
+                                    disabled={updateFeatureMutation.isPending}
+                                    data-testid={`button-save-note-${feature.id}`}
+                                  >
+                                    <Save className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    onClick={() => setEditingAdminNote(null)}
+                                    data-testid={`button-cancel-note-${feature.id}`}
+                                  >
+                                    <X className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              ) : (
+                                <div className="flex items-center gap-1">
+                                  <span className="text-sm text-muted-foreground">
+                                    {feature.adminNote || "-"}
+                                  </span>
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    onClick={() => setEditingAdminNote({ id: feature.id, note: feature.adminNote || "" })}
+                                    data-testid={`button-edit-note-${feature.id}`}
+                                  >
+                                    <Edit2 className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                              )}
+                            </TableCell>
+                            <TableCell className="text-sm text-muted-foreground">
+                              {feature.createdAt ? format(new Date(feature.createdAt), "dd.MM.yyyy", { locale: de }) : "-"}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setDeleteFeatureDialog({ open: true, feature })}
+                                data-testid={`button-delete-feature-${feature.id}`}
+                              >
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+
+                <div className="mt-4 text-sm text-muted-foreground">
+                  Gesamt: {featureRequests.length} {featureRequests.length === 1 ? "Feature Request" : "Feature Requests"}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Video Tutorials Tab */}
+          <TabsContent value="tutorials">
+            <Card>
+              <CardHeader>
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                  <CardTitle className="flex items-center gap-2">
+                    <PlayCircle className="h-5 w-5" />
+                    Video Tutorials Verwaltung
+                  </CardTitle>
+                  <Button onClick={() => openTutorialDialog()} data-testid="button-create-tutorial">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Neues Tutorial
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {loadingTutorials ? (
+                  <div className="text-center py-8 text-muted-foreground">Lädt Video Tutorials...</div>
+                ) : videoTutorials.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">Keine Video Tutorials vorhanden</div>
+                ) : (
+                  <div className="border rounded-md">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Titel</TableHead>
+                          <TableHead>Kategorie</TableHead>
+                          <TableHead className="text-center">Reihenfolge</TableHead>
+                          <TableHead>Veröffentlicht</TableHead>
+                          <TableHead>Erstellt</TableHead>
+                          <TableHead className="text-right">Aktionen</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {videoTutorials.map((tutorial) => (
+                          <TableRow key={tutorial.id} data-testid={`tutorial-row-${tutorial.id}`}>
+                            <TableCell className="font-medium">{tutorial.title}</TableCell>
+                            <TableCell>
+                              <Badge variant="outline">{tutorial.category}</Badge>
+                            </TableCell>
+                            <TableCell className="text-center">{tutorial.sortOrder}</TableCell>
+                            <TableCell>
+                              <Badge variant={tutorial.isPublished ? "default" : "secondary"}>
+                                {tutorial.isPublished ? "Ja" : "Nein"}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-sm text-muted-foreground">
+                              {tutorial.createdAt ? format(new Date(tutorial.createdAt), "dd.MM.yyyy", { locale: de }) : "-"}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex items-center justify-end gap-1">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => openTutorialDialog(tutorial)}
+                                  data-testid={`button-edit-tutorial-${tutorial.id}`}
+                                >
+                                  <Edit2 className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => setDeleteTutorialDialog({ open: true, tutorial })}
+                                  data-testid={`button-delete-tutorial-${tutorial.id}`}
+                                >
+                                  <Trash2 className="h-4 w-4 text-destructive" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+
+                <div className="mt-4 text-sm text-muted-foreground">
+                  Gesamt: {videoTutorials.length} {videoTutorials.length === 1 ? "Tutorial" : "Tutorials"}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </main>
 
-      {/* Delete Confirmation Dialog */}
+      {/* Delete User Confirmation Dialog */}
       <Dialog open={deleteDialog.open} onOpenChange={(open) => setDeleteDialog({ open, user: null })}>
         <DialogContent>
           <DialogHeader>
@@ -363,6 +790,176 @@ export default function Admin() {
               data-testid="button-confirm-delete"
             >
               {deleteMutation.isPending ? "Wird gelöscht..." : "Ja, löschen"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Feature Request Dialog */}
+      <Dialog open={deleteFeatureDialog.open} onOpenChange={(open) => setDeleteFeatureDialog({ open, feature: null })}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-destructive" />
+              Feature Request löschen?
+            </DialogTitle>
+            <DialogDescription>
+              Möchten Sie den Feature Request <strong>"{deleteFeatureDialog.feature?.title}"</strong> wirklich löschen?
+              Diese Aktion kann nicht rückgängig gemacht werden.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setDeleteFeatureDialog({ open: false, feature: null })}
+              disabled={deleteFeatureMutation.isPending}
+            >
+              Abbrechen
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => deleteFeatureDialog.feature && deleteFeatureMutation.mutate(deleteFeatureDialog.feature.id)}
+              disabled={deleteFeatureMutation.isPending}
+              data-testid="button-confirm-delete-feature"
+            >
+              {deleteFeatureMutation.isPending ? "Wird gelöscht..." : "Ja, löschen"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Tutorial Dialog */}
+      <Dialog open={deleteTutorialDialog.open} onOpenChange={(open) => setDeleteTutorialDialog({ open, tutorial: null })}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-destructive" />
+              Video Tutorial löschen?
+            </DialogTitle>
+            <DialogDescription>
+              Möchten Sie das Tutorial <strong>"{deleteTutorialDialog.tutorial?.title}"</strong> wirklich löschen?
+              Diese Aktion kann nicht rückgängig gemacht werden.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setDeleteTutorialDialog({ open: false, tutorial: null })}
+              disabled={deleteTutorialMutation.isPending}
+            >
+              Abbrechen
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => deleteTutorialDialog.tutorial && deleteTutorialMutation.mutate(deleteTutorialDialog.tutorial.id)}
+              disabled={deleteTutorialMutation.isPending}
+              data-testid="button-confirm-delete-tutorial"
+            >
+              {deleteTutorialMutation.isPending ? "Wird gelöscht..." : "Ja, löschen"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create/Edit Tutorial Dialog */}
+      <Dialog open={tutorialDialog.open} onOpenChange={(open) => { setTutorialDialog({ open, tutorial: null }); if (!open) resetTutorialForm(); }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              {tutorialDialog.tutorial ? "Tutorial bearbeiten" : "Neues Tutorial erstellen"}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="title">Titel *</Label>
+              <Input
+                id="title"
+                value={tutorialForm.title}
+                onChange={(e) => setTutorialForm({ ...tutorialForm, title: e.target.value })}
+                placeholder="Tutorial Titel"
+                data-testid="input-tutorial-title"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="description">Beschreibung</Label>
+              <Textarea
+                id="description"
+                value={tutorialForm.description}
+                onChange={(e) => setTutorialForm({ ...tutorialForm, description: e.target.value })}
+                placeholder="Beschreibung des Tutorials"
+                data-testid="input-tutorial-description"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="videoUrl">Video-URL *</Label>
+              <Input
+                id="videoUrl"
+                value={tutorialForm.videoUrl}
+                onChange={(e) => setTutorialForm({ ...tutorialForm, videoUrl: e.target.value })}
+                placeholder="https://www.youtube.com/watch?v=..."
+                data-testid="input-tutorial-videoUrl"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="thumbnailUrl">Thumbnail-URL</Label>
+              <Input
+                id="thumbnailUrl"
+                value={tutorialForm.thumbnailUrl}
+                onChange={(e) => setTutorialForm({ ...tutorialForm, thumbnailUrl: e.target.value })}
+                placeholder="https://..."
+                data-testid="input-tutorial-thumbnailUrl"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="category">Kategorie</Label>
+              <Select
+                value={tutorialForm.category}
+                onValueChange={(value) => setTutorialForm({ ...tutorialForm, category: value })}
+              >
+                <SelectTrigger data-testid="select-tutorial-category">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {TUTORIAL_CATEGORIES.map((cat) => (
+                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="sortOrder">Reihenfolge</Label>
+              <Input
+                id="sortOrder"
+                type="number"
+                value={tutorialForm.sortOrder}
+                onChange={(e) => setTutorialForm({ ...tutorialForm, sortOrder: parseInt(e.target.value) || 0 })}
+                data-testid="input-tutorial-sortOrder"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="isPublished"
+                checked={tutorialForm.isPublished}
+                onCheckedChange={(checked) => setTutorialForm({ ...tutorialForm, isPublished: checked as boolean })}
+                data-testid="checkbox-tutorial-isPublished"
+              />
+              <Label htmlFor="isPublished">Veröffentlicht</Label>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => { setTutorialDialog({ open: false, tutorial: null }); resetTutorialForm(); }}
+              disabled={saveTutorialMutation.isPending}
+            >
+              Abbrechen
+            </Button>
+            <Button
+              onClick={handleSaveTutorial}
+              disabled={saveTutorialMutation.isPending}
+              data-testid="button-save-tutorial"
+            >
+              {saveTutorialMutation.isPending ? "Speichern..." : "Speichern"}
             </Button>
           </DialogFooter>
         </DialogContent>
