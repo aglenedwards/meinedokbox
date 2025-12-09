@@ -3733,6 +3733,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ===== User Notification Settings =====
+  
+  // Update user notification preferences
+  app.patch("/api/user/notifications", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { notifyNewFeatures } = req.body;
+      
+      if (typeof notifyNewFeatures !== 'boolean') {
+        return res.status(400).json({ message: "notifyNewFeatures muss ein Boolean sein" });
+      }
+      
+      const user = await storage.updateUserNotifications(userId, notifyNewFeatures);
+      
+      if (!user) {
+        return res.status(404).json({ message: "Benutzer nicht gefunden" });
+      }
+      
+      console.log(`[UserSettings] Updated notifications for user ${userId}: notifyNewFeatures=${notifyNewFeatures}`);
+      res.json({ success: true, notifyNewFeatures: user.notifyNewFeatures });
+    } catch (error) {
+      console.error('[UserSettings] Error updating notifications:', error);
+      res.status(500).json({ message: "Fehler beim Aktualisieren der Einstellungen" });
+    }
+  });
+
   // ===== Feature Requests API (Community Board) =====
   
   // Get published feature requests (public)
@@ -3834,6 +3860,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { id } = req.params;
       const { title, description, status, isPublished, adminNote } = req.body;
       
+      // Check if this update is publishing the feature request for the first time
+      const existingRequest = await storage.getFeatureRequestById(id);
+      const isNewlyPublished = existingRequest && !existingRequest.isPublished && isPublished === true;
+      
       const updated = await storage.updateFeatureRequest(id, {
         title,
         description,
@@ -3844,6 +3874,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (!updated) {
         return res.status(404).json({ message: "Feature-Anfrage nicht gefunden" });
+      }
+      
+      // Send notifications to users who opted in for new feature notifications
+      if (isNewlyPublished) {
+        try {
+          const { sendEmail, getNewFeaturePublishedEmail } = await import('./emailService');
+          const usersToNotify = await storage.getUsersWithFeatureNotifications();
+          
+          const featureTitle = updated.title;
+          
+          for (const user of usersToNotify) {
+            // Don't notify the user who created the feature request
+            if (user.id === updated.userId) continue;
+            
+            try {
+              const emailContent = getNewFeaturePublishedEmail(user.firstName, featureTitle);
+              await sendEmail({
+                to: user.email,
+                subject: emailContent.subject,
+                html: emailContent.html,
+                text: emailContent.text,
+              });
+              console.log(`[FeatureNotification] Sent notification to: ${user.email}`);
+            } catch (emailError) {
+              console.error(`[FeatureNotification] Failed to notify ${user.email}:`, emailError);
+            }
+          }
+          
+          console.log(`[FeatureNotification] Notified ${usersToNotify.length} users about new feature: ${featureTitle}`);
+        } catch (notificationError) {
+          console.error('[FeatureNotification] Error sending notifications:', notificationError);
+          // Don't fail the request if notification fails
+        }
       }
       
       console.log(`[Admin] Updated feature request: ${id}`);

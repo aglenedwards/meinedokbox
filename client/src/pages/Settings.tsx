@@ -361,6 +361,52 @@ export default function Settings() {
           {/* Email Whitelist (Security Feature) */}
           <EmailWhitelistSettings />
 
+          {/* Notification Settings Card */}
+          <Card data-testid="section-notifications">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Mail className="h-5 w-5" />
+                Benachrichtigungen
+              </CardTitle>
+              <CardDescription>
+                E-Mail-Benachrichtigungen für Community-Funktionen
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="notify-features">Neue Feature-Wünsche</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Per E-Mail benachrichtigt werden, wenn ein neuer Feature-Wunsch zur Abstimmung freigegeben wird
+                  </p>
+                </div>
+                <Switch
+                  id="notify-features"
+                  checked={user?.notifyNewFeatures || false}
+                  onCheckedChange={async (checked) => {
+                    try {
+                      await apiRequest("PATCH", "/api/user/notifications", { notifyNewFeatures: checked });
+                      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+                      toast({
+                        title: checked ? "Benachrichtigungen aktiviert" : "Benachrichtigungen deaktiviert",
+                        description: checked 
+                          ? "Sie werden per E-Mail über neue Feature-Wünsche informiert." 
+                          : "Sie erhalten keine E-Mails mehr zu neuen Feature-Wünschen.",
+                      });
+                    } catch (error) {
+                      toast({
+                        title: "Fehler",
+                        description: "Die Einstellung konnte nicht gespeichert werden.",
+                        variant: "destructive",
+                      });
+                    }
+                  }}
+                  data-testid="switch-notify-features"
+                />
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Export Card */}
           <Card data-testid="section-export">
             <CardHeader>

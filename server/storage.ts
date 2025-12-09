@@ -30,6 +30,8 @@ export interface IStorage {
   upsertUser(user: UpsertUser): Promise<User>;
   updateUserSubscription(id: string, plan: string, endsAt: Date | null): Promise<User | undefined>;
   updateUserStripeInfo(id: string, data: { stripeCustomerId?: string | null; stripeSubscriptionId?: string | null; stripePriceId?: string | null }): Promise<User | undefined>;
+  updateUserNotifications(id: string, notifyNewFeatures: boolean): Promise<User | undefined>;
+  getUsersWithFeatureNotifications(): Promise<User[]>;
   
   createDocument(document: InsertDocument): Promise<Document>;
   getDocument(id: string): Promise<Document | undefined>;
@@ -285,6 +287,21 @@ export class DbStorage implements IStorage {
       .returning();
     
     return user;
+  }
+
+  async updateUserNotifications(id: string, notifyNewFeatures: boolean): Promise<User | undefined> {
+    const [user] = await db
+      .update(users)
+      .set({ notifyNewFeatures, updatedAt: new Date() })
+      .where(eq(users.id, id))
+      .returning();
+    return user;
+  }
+
+  async getUsersWithFeatureNotifications(): Promise<User[]> {
+    return db.query.users.findMany({
+      where: eq(users.notifyNewFeatures, true),
+    });
   }
 
   async createDocument(insertDocument: InsertDocument): Promise<Document> {
