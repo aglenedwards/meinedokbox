@@ -1,8 +1,6 @@
 /**
- * Send email using SMTP (Hostinger)
+ * Send email using Mailgun API
  */
-
-import nodemailer from 'nodemailer';
 
 interface EmailOptions {
   to: string;
@@ -12,46 +10,50 @@ interface EmailOptions {
 }
 
 export async function sendEmail(options: EmailOptions): Promise<boolean> {
-  const smtpHost = process.env.SMTP_HOST;
-  const smtpPort = process.env.SMTP_PORT;
-  const smtpUser = process.env.SMTP_USER;
-  const smtpPass = process.env.SMTP_PASS;
+  const apiKey = process.env.MAILGUN_API_KEY;
+  const domain = process.env.MAILGUN_DOMAIN;
 
-  console.log(`[Email] Attempting to send email to: ${options.to}`);
-  console.log(`[Email] SMTP Host: ${smtpHost ? 'configured' : 'NOT configured'}`);
-  console.log(`[Email] SMTP Port: ${smtpPort || 'NOT configured'}`);
-  console.log(`[Email] SMTP User: ${smtpUser ? 'configured' : 'NOT configured'}`);
+  console.log(`[Mailgun] Attempting to send email to: ${options.to}`);
+  console.log(`[Mailgun] Domain: ${domain ? 'configured' : 'NOT configured'}`);
+  console.log(`[Mailgun] API Key: ${apiKey ? 'configured' : 'NOT configured'}`);
 
-  if (!smtpHost || !smtpPort || !smtpUser || !smtpPass) {
-    console.error("[Email] ERROR: SMTP credentials not configured");
+  if (!apiKey || !domain) {
+    console.error("[Mailgun] ERROR: Mailgun credentials not configured");
     return false;
   }
 
   try {
-    // Create transporter with Hostinger SMTP settings
-    const transporter = nodemailer.createTransport({
-      host: smtpHost,
-      port: parseInt(smtpPort),
-      secure: true, // true for port 465
-      auth: {
-        user: smtpUser,
-        pass: smtpPass,
+    const fromEmail = `service@${domain}`;
+    
+    const formData = new URLSearchParams();
+    formData.append('from', `MeineDokBox <${fromEmail}>`);
+    formData.append('to', options.to);
+    formData.append('subject', options.subject);
+    formData.append('text', options.text);
+    if (options.html) {
+      formData.append('html', options.html);
+    }
+
+    const response = await fetch(`https://api.eu.mailgun.net/v3/${domain}/messages`, {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Basic ' + Buffer.from(`api:${apiKey}`).toString('base64'),
+        'Content-Type': 'application/x-www-form-urlencoded',
       },
+      body: formData.toString(),
     });
 
-    // Send email
-    const info = await transporter.sendMail({
-      from: `"MeineDokBox" <${smtpUser}>`,
-      to: options.to,
-      subject: options.subject,
-      text: options.text,
-      html: options.html || options.text,
-    });
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('[Mailgun] Error response:', errorText);
+      return false;
+    }
 
-    console.log("[Email] ✅ Email sent successfully:", info.messageId);
+    const result = await response.json();
+    console.log("[Mailgun] ✅ Email sent successfully:", result.id);
     return true;
   } catch (error) {
-    console.error("[Email] ❌ Failed to send email:", error);
+    console.error("[Mailgun] ❌ Failed to send email:", error);
     return false;
   }
 }

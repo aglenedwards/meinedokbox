@@ -1,6 +1,3 @@
-import nodemailer from "nodemailer";
-import type { Transporter } from "nodemailer";
-
 export interface EmailOptions {
   to: string;
   subject: string;
@@ -8,45 +5,42 @@ export interface EmailOptions {
   text?: string;
 }
 
-let transporter: Transporter | null = null;
-
-function getTransporter(): Transporter {
-  if (transporter) {
-    return transporter;
-  }
-
-  const host = process.env.SMTP_HOST;
-  const port = parseInt(process.env.SMTP_PORT || "587", 10);
-  const user = process.env.SMTP_USER;
-  const pass = process.env.SMTP_PASS;
-
-  if (!host || !user || !pass) {
-    throw new Error("SMTP configuration missing. Please set SMTP_HOST, SMTP_PORT, SMTP_USER, and SMTP_PASS environment variables.");
-  }
-
-  transporter = nodemailer.createTransport({
-    host,
-    port,
-    secure: port === 465,
-    auth: {
-      user,
-      pass,
-    },
-  });
-
-  return transporter;
-}
-
 export async function sendEmail(options: EmailOptions): Promise<void> {
-  const transport = getTransporter();
+  const apiKey = process.env.MAILGUN_API_KEY;
+  const domain = process.env.MAILGUN_DOMAIN;
+
+  if (!apiKey || !domain) {
+    throw new Error("Mailgun configuration missing. Please set MAILGUN_API_KEY and MAILGUN_DOMAIN environment variables.");
+  }
+
+  const fromEmail = `service@${domain}`;
   
-  await transport.sendMail({
-    from: `"MeineDokBox" <${process.env.SMTP_USER}>`,
-    to: options.to,
-    subject: options.subject,
-    text: options.text,
-    html: options.html,
+  const formData = new URLSearchParams();
+  formData.append('from', `MeineDokBox <${fromEmail}>`);
+  formData.append('to', options.to);
+  formData.append('subject', options.subject);
+  if (options.text) {
+    formData.append('text', options.text);
+  }
+  formData.append('html', options.html);
+
+  const response = await fetch(`https://api.eu.mailgun.net/v3/${domain}/messages`, {
+    method: 'POST',
+    headers: {
+      'Authorization': 'Basic ' + Buffer.from(`api:${apiKey}`).toString('base64'),
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: formData.toString(),
   });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error('[Mailgun] Error response:', errorText);
+    throw new Error(`Mailgun API error: ${response.status} ${response.statusText}`);
+  }
+
+  const result = await response.json();
+  console.log('[Mailgun] Email sent successfully:', result.id);
 }
 
 // Trial notification email templates
