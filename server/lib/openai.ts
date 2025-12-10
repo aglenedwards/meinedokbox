@@ -106,7 +106,18 @@ CRITICAL CATEGORIZATION RULES - Apply these priority rules when multiple categor
    - year: Extract the year this document relates to (e.g., 2024 for "Rechnung 2024", 2023 for "Steuerbescheid 2023"). This is used for time-based filtering.
    - documentDate: The exact date from the document in ISO format (YYYY-MM-DD) if available
    - systemTags: Automatically assign relevant tags from this list based on document content:
-     * "steuerrelevant" - Tax-relevant documents (invoices, receipts, tax notices, salary statements, donations)
+     * "steuerrelevant" - ALWAYS assign for these document types (German tax deduction rules):
+       - ALL invoices/bills with amounts (Rechnungen) - can be deducted as Werbungskosten/Betriebsausgaben
+       - ALL salary statements (Gehaltsabrechnung, Lohnabrechnung) - needed for Steuererklärung
+       - ALL utility bills (Strom, Gas, Wasser, Heizung, Nebenkosten) - deductible for home office or as Nebenkosten
+       - ALL insurance documents (Versicherung) - many are tax-deductible as Sonderausgaben or Vorsorgeaufwendungen
+       - ALL medical invoices and health documents - Außergewöhnliche Belastungen
+       - ALL donation receipts (Spendenbescheinigung)
+       - ALL tax notices from Finanzamt (Steuerbescheid)
+       - ALL pension/retirement documents (Rente, Riester, Rürup)
+       - ALL contracts with recurring costs (Verträge, Abos)
+       - Bank statements with interest or fees
+       RULE: When in doubt, mark as steuerrelevant - it's better to include than to miss!
      * "geschäftlich" - Business-related documents (if indicators like "Firma", "GmbH", "Rechnung an Firma" are present)
      * "privat" - Private/personal documents (personal letters, private contracts)
      * "versicherung" - Insurance documents (policies, claims, insurance correspondence)
@@ -114,7 +125,7 @@ CRITICAL CATEGORIZATION RULES - Apply these priority rules when multiple categor
      * "gesundheit" - Health-related (medical documents, health insurance, prescriptions)
      * "bank" - Banking documents (statements, transfers, bank correspondence)
      * "vertrag" - Contracts (employment, service contracts, subscriptions)
-     * "rechnung" - Invoices and bills requiring payment (Rechnung, Invoice, Faktura, Bill, Zahlungsaufforderung)
+     * "rechnung" - Invoices and bills requiring payment (Rechnung, Invoice, Faktura, Bill, Zahlungsaufforderung, Jahresabrechnung, Beitrag, Nachzahlung)
      * "rechnung_bezahlt" - Invoices that are already marked as PAID (contains words: "BEZAHLT", "PAID", "AUSGEGLICHEN", "BEGLICHEN")
      * "mahnung" - Payment reminders and dunning notices (Mahnung, Zahlungserinnerung, Reminder, Inkasso) - HIGH PRIORITY
      * "lohnabrechnung" - Salary/payroll statements
@@ -271,7 +282,18 @@ CRITICAL CATEGORIZATION RULES - Apply these priority rules when multiple categor
    - year: Extract the year this document relates to (e.g., 2024 for "Rechnung 2024", 2023 for "Steuerbescheid 2023")
    - documentDate: The exact date from the document in ISO format (YYYY-MM-DD) if available
    - systemTags: Automatically assign relevant tags from this list based on document content:
-     * "steuerrelevant" - Tax-relevant documents (invoices, receipts, tax notices, salary statements, donations)
+     * "steuerrelevant" - ALWAYS assign for these document types (German tax deduction rules):
+       - ALL invoices/bills with amounts (Rechnungen) - can be deducted as Werbungskosten/Betriebsausgaben
+       - ALL salary statements (Gehaltsabrechnung, Lohnabrechnung) - needed for Steuererklärung
+       - ALL utility bills (Strom, Gas, Wasser, Heizung, Nebenkosten) - deductible for home office or as Nebenkosten
+       - ALL insurance documents (Versicherung) - many are tax-deductible as Sonderausgaben or Vorsorgeaufwendungen
+       - ALL medical invoices and health documents - Außergewöhnliche Belastungen
+       - ALL donation receipts (Spendenbescheinigung)
+       - ALL tax notices from Finanzamt (Steuerbescheid)
+       - ALL pension/retirement documents (Rente, Riester, Rürup)
+       - ALL contracts with recurring costs (Verträge, Abos)
+       - Bank statements with interest or fees
+       RULE: When in doubt, mark as steuerrelevant - it's better to include than to miss!
      * "geschäftlich" - Business-related documents (if indicators like "Firma", "GmbH", "Rechnung an Firma" are present)
      * "privat" - Private/personal documents (personal letters, private contracts)
      * "versicherung" - Insurance documents (policies, claims, insurance correspondence)
@@ -279,7 +301,7 @@ CRITICAL CATEGORIZATION RULES - Apply these priority rules when multiple categor
      * "gesundheit" - Health-related (medical documents, health insurance, prescriptions)
      * "bank" - Banking documents (statements, transfers, bank correspondence)
      * "vertrag" - Contracts (employment, service contracts, subscriptions)
-     * "rechnung" - Invoices and bills requiring payment (Rechnung, Invoice, Faktura, Bill, Zahlungsaufforderung)
+     * "rechnung" - Invoices and bills requiring payment (Rechnung, Invoice, Faktura, Bill, Zahlungsaufforderung, Jahresabrechnung, Beitrag, Nachzahlung)
      * "rechnung_bezahlt" - Invoices that are already marked as PAID (contains words: "BEZAHLT", "PAID", "AUSGEGLICHEN", "BEGLICHEN")
      * "mahnung" - Payment reminders and dunning notices (Mahnung, Zahlungserinnerung, Reminder, Inkasso) - HIGH PRIORITY
      * "lohnabrechnung" - Salary/payroll statements
