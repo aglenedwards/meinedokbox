@@ -3378,6 +3378,102 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Export smart folder documents as ZIP
+  app.get("/api/smart-folders/:id/documents/export", isAuthenticatedLocal, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const year = req.query.year ? parseInt(req.query.year as string) : undefined;
+      const userId = await getEffectiveUserId(req.user.claims.sub);
+      
+      // Get the smart folder to get its name
+      const smartFolders = await storage.getUserSmartFolders(userId);
+      const folder = smartFolders.find(f => f.id === id);
+      
+      if (!folder) {
+        return res.status(404).json({ message: "Smart-Ordner nicht gefunden" });
+      }
+      
+      // Get documents for this smart folder
+      const documents = await storage.getDocumentsBySmartFolder(userId, id, year);
+      
+      if (documents.length === 0) {
+        return res.status(404).json({ message: "Keine Dokumente zum Exportieren" });
+      }
+      
+      const archiver = (await import('archiver')).default;
+      const objectStorageService = new ObjectStorageService();
+      
+      // Create safe folder name for the ZIP file
+      const safeFolderName = folder.name.replace(/[^a-zA-Z0-9äöüÄÖÜß\s-]/g, '_');
+      const filename = year 
+        ? `${safeFolderName}_${year}.zip`
+        : `${safeFolderName}.zip`;
+      
+      // Set response headers for ZIP download
+      res.setHeader('Content-Type', 'application/zip');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      
+      // Create ZIP archive with same settings as working export
+      const archive = archiver('zip', {
+        zlib: { level: 9 }
+      });
+      
+      // Handle archive errors
+      archive.on('error', (err) => {
+        console.error('[SmartFolderExport] Archive error:', err);
+        if (!res.headersSent) {
+          res.status(500).json({ message: "Fehler beim Erstellen des Archivs" });
+        }
+      });
+      
+      archive.pipe(res);
+      
+      // Add each document to the archive
+      for (const doc of documents) {
+        const pageUrls = doc.pageUrls && doc.pageUrls.length > 0 
+          ? doc.pageUrls 
+          : doc.fileUrl 
+            ? [doc.fileUrl] 
+            : [];
+        
+        for (let i = 0; i < pageUrls.length; i++) {
+          try {
+            const pageUrl = pageUrls[i];
+            const objectFile = await objectStorageService.getObjectEntityFile(pageUrl);
+            const fileBuffer = await objectStorageService.getObjectBuffer(objectFile);
+            
+            // Create safe filename with correct extension from MIME type
+            const safeTitle = (doc.title || 'Dokument').replace(/[^a-zA-Z0-9äöüÄÖÜß\s-]/g, '_');
+            const mimeTypeToExt: Record<string, string> = {
+              'application/pdf': 'pdf',
+              'image/jpeg': 'jpg',
+              'image/jpg': 'jpg',
+              'image/png': 'png',
+              'image/webp': 'webp',
+              'image/gif': 'gif',
+            };
+            const extension = doc.mimeType ? (mimeTypeToExt[doc.mimeType] || 'bin') : 'bin';
+            const docFilename = pageUrls.length > 1 
+              ? `${safeTitle}_page_${i + 1}.${extension}`
+              : `${safeTitle}.${extension}`;
+            
+            archive.append(fileBuffer, { name: docFilename });
+          } catch (error) {
+            console.error(`[SmartFolderExport] Failed to add document ${doc.id} to archive:`, error);
+          }
+        }
+      }
+      
+      await archive.finalize();
+      console.log(`[SmartFolderExport] Successfully exported ${documents.length} documents for folder: ${folder.name}`);
+    } catch (error) {
+      console.error('[SmartFolderExport] Error:', error);
+      if (!res.headersSent) {
+        res.status(500).json({ message: "Fehler beim Exportieren der Dokumente" });
+      }
+    }
+  });
+  
   // Create custom smart folder
   app.post("/api/smart-folders", isAuthenticatedLocal, async (req: any, res) => {
     try {
