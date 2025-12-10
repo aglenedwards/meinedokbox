@@ -49,6 +49,7 @@ export async function analyzeDocument(
 
     const response = await azureOpenAI.chat.completions.create({
       model: process.env.AZURE_OPENAI_DEPLOYMENT_NAME || "gpt-4o",
+      temperature: 0,
       messages: [
         {
           role: "system",
@@ -216,6 +217,7 @@ export async function analyzeDocumentFromText(
     
     const response = await azureOpenAI.chat.completions.create({
       model: process.env.AZURE_OPENAI_DEPLOYMENT_NAME || "gpt-4o",
+      temperature: 0,
       messages: [
         {
           role: "system",
@@ -361,6 +363,7 @@ export async function searchDocuments(query: string, documents: Array<{ id: stri
   try {
     const response = await azureOpenAI.chat.completions.create({
       model: process.env.AZURE_OPENAI_DEPLOYMENT_NAME || "gpt-4o",
+      temperature: 0,
       messages: [
         {
           role: "system",
