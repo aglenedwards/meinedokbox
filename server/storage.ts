@@ -137,7 +137,7 @@ export interface IStorage {
   getPublishedFeatureRequests(): Promise<FeatureRequest[]>;
   getAllFeatureRequests(): Promise<FeatureRequest[]>; // Admin only
   getFeatureRequestById(id: string): Promise<FeatureRequest | undefined>;
-  updateFeatureRequest(id: string, data: Partial<InsertFeatureRequest & { isPublished?: boolean; status?: string; adminNote?: string }>): Promise<FeatureRequest | undefined>;
+  updateFeatureRequest(id: string, data: Partial<InsertFeatureRequest & { isPublished?: boolean; status?: string; adminNote?: string; baseVotes?: number }>): Promise<FeatureRequest | undefined>;
   deleteFeatureRequest(id: string): Promise<boolean>;
   voteForFeatureRequest(featureRequestId: string, userId: string): Promise<FeatureRequestVote | undefined>;
   removeVoteFromFeatureRequest(featureRequestId: string, userId: string): Promise<boolean>;
@@ -1838,7 +1838,7 @@ export class DbStorage implements IStorage {
     return request;
   }
   
-  async updateFeatureRequest(id: string, data: Partial<InsertFeatureRequest & { isPublished?: boolean; status?: string; adminNote?: string }>): Promise<FeatureRequest | undefined> {
+  async updateFeatureRequest(id: string, data: Partial<InsertFeatureRequest & { isPublished?: boolean; status?: string; adminNote?: string; baseVotes?: number }>): Promise<FeatureRequest | undefined> {
     const [updated] = await db.update(featureRequests)
       .set({ ...data, updatedAt: new Date() })
       .where(eq(featureRequests.id, id))

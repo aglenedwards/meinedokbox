@@ -3858,7 +3858,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/admin/feature-requests/:id", isAuthenticated, isAdmin, async (req: any, res) => {
     try {
       const { id } = req.params;
-      const { title, description, status, isPublished, adminNote } = req.body;
+      const { title, description, status, isPublished, adminNote, baseVotes } = req.body;
+      
+      console.log(`[Admin] Updating feature request ${id} with:`, { title, description, status, isPublished, adminNote, baseVotes });
       
       // Check if this update is publishing the feature request for the first time
       const existingRequest = await storage.getFeatureRequestById(id);
@@ -3870,6 +3872,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         status,
         isPublished,
         adminNote,
+        baseVotes,
       });
       
       if (!updated) {
