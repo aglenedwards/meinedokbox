@@ -373,7 +373,8 @@ export const featureRequests = pgTable("feature_requests", {
   status: varchar("status", { length: 20 }).notNull().default("pending"), // pending, approved, planned, in_progress, completed, rejected
   isPublished: boolean("is_published").notNull().default(false), // Admin must approve before visible
   adminNote: text("admin_note"), // Optional note from admin
-  voteCount: real("vote_count").notNull().default(0), // Cached vote count
+  voteCount: real("vote_count").notNull().default(0), // Cached vote count (real user votes only)
+  baseVotes: real("base_votes").notNull().default(0), // Admin-set base votes for social proof (displayed as voteCount + baseVotes)
   createdAt: timestamp("created_at").notNull().default(sql`now()`),
   updatedAt: timestamp("updated_at").notNull().default(sql`now()`),
 });

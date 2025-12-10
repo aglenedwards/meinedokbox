@@ -260,7 +260,10 @@ export default function WunschFeatures() {
                             </Button>
                           )}
                           <span className="text-sm text-muted-foreground">
-                            {feature.voteCount} {feature.voteCount === 1 ? "Stimme" : "Stimmen"}
+                            {(() => {
+                              const totalVotes = (feature.voteCount || 0) + (feature.baseVotes || 0);
+                              return `${totalVotes} ${totalVotes === 1 ? "Stimme" : "Stimmen"}`;
+                            })()}
                           </span>
                         </div>
                         {feature.adminNote && (

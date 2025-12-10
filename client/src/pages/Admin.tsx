@@ -77,6 +77,7 @@ export default function Admin() {
     tutorial: null,
   });
   const [editingAdminNote, setEditingAdminNote] = useState<{ id: string; note: string } | null>(null);
+  const [editingBaseVotes, setEditingBaseVotes] = useState<{ id: string; votes: number } | null>(null);
   const [tutorialDialog, setTutorialDialog] = useState<{ open: boolean; tutorial: VideoTutorial | null }>({
     open: false,
     tutorial: null,
@@ -198,7 +199,7 @@ export default function Admin() {
 
   // Update feature request mutation
   const updateFeatureMutation = useMutation({
-    mutationFn: async ({ id, ...updates }: { id: string; status?: string; isPublished?: boolean; adminNote?: string }) => {
+    mutationFn: async ({ id, ...updates }: { id: string; status?: string; isPublished?: boolean; adminNote?: string; baseVotes?: number }) => {
       const response = await fetch(`/api/admin/feature-requests/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -553,7 +554,9 @@ export default function Admin() {
                           <TableHead className="min-w-[200px]">Beschreibung</TableHead>
                           <TableHead>Benutzer-ID</TableHead>
                           <TableHead>Status</TableHead>
-                          <TableHead className="text-center">Stimmen</TableHead>
+                          <TableHead className="text-center">Echte</TableHead>
+                          <TableHead className="text-center">Basis</TableHead>
+                          <TableHead className="text-center">Gesamt</TableHead>
                           <TableHead>Veröffentlicht</TableHead>
                           <TableHead className="min-w-[200px]">Admin-Notiz</TableHead>
                           <TableHead>Erstellt</TableHead>
@@ -587,7 +590,56 @@ export default function Admin() {
                               </Select>
                             </TableCell>
                             <TableCell className="text-center">
-                              <Badge variant="secondary">{feature.voteCount}</Badge>
+                              <Badge variant="outline">{feature.voteCount}</Badge>
+                            </TableCell>
+                            <TableCell className="text-center">
+                              {editingBaseVotes?.id === feature.id ? (
+                                <div className="flex items-center gap-1">
+                                  <Input
+                                    type="number"
+                                    value={editingBaseVotes.votes}
+                                    onChange={(e) => setEditingBaseVotes({ ...editingBaseVotes, votes: parseInt(e.target.value) || 0 })}
+                                    className="w-20"
+                                    min="0"
+                                    data-testid={`input-base-votes-${feature.id}`}
+                                  />
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    onClick={() => {
+                                      updateFeatureMutation.mutate({ id: feature.id, baseVotes: editingBaseVotes.votes });
+                                      setEditingBaseVotes(null);
+                                    }}
+                                    disabled={updateFeatureMutation.isPending}
+                                    data-testid={`button-save-votes-${feature.id}`}
+                                  >
+                                    <Save className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    onClick={() => setEditingBaseVotes(null)}
+                                    data-testid={`button-cancel-votes-${feature.id}`}
+                                  >
+                                    <X className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              ) : (
+                                <div className="flex items-center justify-center gap-1">
+                                  <Badge variant="secondary">{feature.baseVotes || 0}</Badge>
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    onClick={() => setEditingBaseVotes({ id: feature.id, votes: feature.baseVotes || 0 })}
+                                    data-testid={`button-edit-votes-${feature.id}`}
+                                  >
+                                    <Edit2 className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                              )}
+                            </TableCell>
+                            <TableCell className="text-center">
+                              <Badge variant="default">{(feature.voteCount || 0) + (feature.baseVotes || 0)}</Badge>
                             </TableCell>
                             <TableCell>
                               <Switch
