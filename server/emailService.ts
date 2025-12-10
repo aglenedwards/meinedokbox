@@ -43,6 +43,28 @@ export async function sendEmail(options: EmailOptions): Promise<void> {
   console.log('[Mailgun] Email sent successfully:', result.id);
 }
 
+// Central function to get the app URL for email links
+// Priority: APP_URL (set on Render) → REPLIT_DOMAINS → fallback
+export function getAppUrl(): string {
+  // First priority: APP_URL environment variable (for production on Render)
+  if (process.env.APP_URL) {
+    return process.env.APP_URL.replace(/\/$/, ''); // Remove trailing slash if present
+  }
+  
+  // Second priority: Replit domains (for development on Replit)
+  if (process.env.REPLIT_DOMAINS) {
+    const domain = process.env.REPLIT_DOMAINS.split(',')[0];
+    // Check if domain already includes https://
+    if (domain.startsWith('https://') || domain.startsWith('http://')) {
+      return domain.replace(/\/$/, '');
+    }
+    return `https://${domain}`;
+  }
+  
+  // Fallback: production domain
+  return 'https://meinedokbox.de';
+}
+
 // Trial notification email templates
 
 // TAG 3: Engagement Email - Feature Highlights
@@ -120,7 +142,7 @@ export function getDay3Email(userName: string): { subject: string; html: string;
           </tr>
           <tr>
             <td style="padding: 0 40px 40px;" align="center">
-              <a href="${process.env.REPL_SLUG ? `https://${process.env.REPL_SLUG}.replit.app/documents` : '/documents'}" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 6px; font-weight: 600; font-size: 16px;">Jetzt weiter ausprobieren</a>
+              <a href="${getAppUrl()}/documents" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 6px; font-weight: 600; font-size: 16px;">Jetzt weiter ausprobieren</a>
             </td>
           </tr>
           <tr>
@@ -215,7 +237,7 @@ export function getDay6Email(userName: string): { subject: string; html: string;
           </tr>
           <tr>
             <td style="padding: 0 40px 40px;" align="center">
-              <a href="${process.env.REPL_SLUG ? `https://${process.env.REPL_SLUG}.replit.app/#pricing` : '#pricing'}" style="display: inline-block; background-color: #f59e0b; color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 6px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 6px rgba(245, 158, 11, 0.3);">Jetzt Plan sichern – dauert 2 Minuten</a>
+              <a href="${getAppUrl()}/#pricing" style="display: inline-block; background-color: #f59e0b; color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 6px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 6px rgba(245, 158, 11, 0.3);">Jetzt Plan sichern – dauert 2 Minuten</a>
             </td>
           </tr>
           <tr>
@@ -477,9 +499,7 @@ export function getNewFeaturePublishedEmail(
   userName: string,
   featureTitle: string,
 ): { subject: string; html: string; text: string } {
-  const appUrl = process.env.REPLIT_DOMAINS 
-    ? `https://${process.env.REPLIT_DOMAINS.split(',')[0]}`
-    : 'https://meinedokbox.de';
+  const appUrl = getAppUrl();
 
   const subject = "Neuer Community-Feature-Wunsch zum Abstimmen! 🗳️";
   
