@@ -48,6 +48,24 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: "2024-11-20.acacia",
 });
 
+// Dynamic Stripe Price IDs - reads from environment variables with fallback to schema defaults
+function getStripePriceIds() {
+  return {
+    solo: {
+      monthly: process.env.STRIPE_PRICE_SOLO_MONTHLY || STRIPE_PRICE_IDS.solo.monthly,
+      yearly: process.env.STRIPE_PRICE_SOLO_YEARLY || STRIPE_PRICE_IDS.solo.yearly,
+    },
+    family: {
+      monthly: process.env.STRIPE_PRICE_FAMILY_MONTHLY || STRIPE_PRICE_IDS.family.monthly,
+      yearly: process.env.STRIPE_PRICE_FAMILY_YEARLY || STRIPE_PRICE_IDS.family.yearly,
+    },
+    "family-plus": {
+      monthly: process.env.STRIPE_PRICE_FAMILY_PLUS_MONTHLY || STRIPE_PRICE_IDS["family-plus"].monthly,
+      yearly: process.env.STRIPE_PRICE_FAMILY_PLUS_YEARLY || STRIPE_PRICE_IDS["family-plus"].yearly,
+    },
+  };
+}
+
 // Configure multer for file uploads (memory storage for processing)
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -3562,7 +3580,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Plan und Zahlungsperiode erforderlich" });
       }
 
-      if (!STRIPE_PRICE_IDS[plan]?.[period]) {
+      // Get dynamic price IDs (from env vars or fallback to defaults)
+      const stripePriceIds = getStripePriceIds();
+      
+      if (!stripePriceIds[plan]?.[period]) {
         return res.status(400).json({ message: "Ungültiger Plan oder Zahlungsperiode" });
       }
 
@@ -3571,7 +3592,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Benutzer nicht gefunden" });
       }
 
-      priceId = STRIPE_PRICE_IDS[plan][period];
+      priceId = stripePriceIds[plan][period];
 
       // Create or retrieve Stripe customer
       let customerId = user.stripeCustomerId;
