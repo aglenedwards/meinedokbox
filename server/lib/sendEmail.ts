@@ -774,3 +774,108 @@ Automatische Benachrichtigung von MeineDokBox
   return sendEmail({ to: serviceEmail, subject, text, html });
 }
 
+/**
+ * Send admin notification when a subscription is cancelled
+ */
+export async function sendAdminSubscriptionCancelledNotification(
+  userEmail: string,
+  userName: string,
+  plan: string
+): Promise<boolean> {
+  const serviceEmail = "service@meinedokbox.de";
+  const subject = `⚠️ Abo gekündigt: ${plan} - ${userName}`;
+  
+  const planNames: Record<string, string> = {
+    'solo': 'Solo',
+    'family': 'Family',
+    'family-plus': 'Family Plus',
+    'free': 'Kostenlos'
+  };
+  
+  const text = `
+Abonnement gekündigt bei MeineDokBox:
+
+Kunde: ${userName} (${userEmail})
+Vorheriger Plan: ${planNames[plan] || plan}
+Zeitpunkt: ${new Date().toLocaleString('de-DE', { timeZone: 'Europe/Berlin' })}
+
+Der Kunde wurde auf den kostenlosen Plan zurückgestuft.
+
+---
+Automatische Benachrichtigung von MeineDokBox
+  `.trim();
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .info-box {
+      background: white;
+      padding: 20px;
+      border-radius: 6px;
+      margin: 20px 0;
+      border-left: 4px solid #ef4444;
+    }
+    .info-row {
+      margin: 10px 0;
+      display: flex;
+      gap: 10px;
+    }
+    .info-label {
+      font-weight: 600;
+      color: #ef4444;
+      min-width: 150px;
+    }
+  </style>
+</head>
+<body>
+  <div style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: #ffffff; padding: 30px; border-radius: 8px 8px 0 0; text-align: center;">
+    <h1 style="color: #ffffff !important; margin: 0 0 10px 0; font-size: 28px;">⚠️ Abo gekündigt</h1>
+    <p style="color: #ffffff !important; margin: 0; font-size: 16px;">Ein Kunde hat sein Abonnement beendet</p>
+  </div>
+  
+  <div style="background: #f8f9fa; padding: 30px; border-radius: 0 0 8px 8px;">
+    <div class="info-box">
+      <div class="info-row">
+        <span class="info-label">Kunde:</span>
+        <span>${userName}</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">E-Mail:</span>
+        <span><a href="mailto:${userEmail}">${userEmail}</a></span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Vorheriger Plan:</span>
+        <span><strong>${planNames[plan] || plan}</strong></span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Zeitpunkt:</span>
+        <span>${new Date().toLocaleString('de-DE', { timeZone: 'Europe/Berlin' })}</span>
+      </div>
+    </div>
+    
+    <p style="margin-top: 20px;">
+      Der Kunde wurde auf den <strong>kostenlosen Plan</strong> zurückgestuft.
+    </p>
+    
+    <p style="margin-top: 30px; font-size: 14px; color: #999; text-align: center;">
+      Automatische Benachrichtigung von MeineDokBox
+    </p>
+  </div>
+</body>
+</html>
+  `.trim();
+
+  return sendEmail({ to: serviceEmail, subject, text, html });
+}
+

@@ -20,7 +20,7 @@ import { ObjectPermission } from "./objectAcl";
 import { insertDocumentSchema, updateDocumentSchema, DOCUMENT_CATEGORIES, PLAN_LIMITS } from "@shared/schema";
 import { combineImagesToPDF, type PageBuffer } from "./lib/pdfGenerator";
 import { parseMailgunWebhook, isSupportedAttachment, isValidDocumentAttachment, isEmailWhitelisted, verifyMailgunWebhook, extractEmailAddress } from "./lib/emailInbound";
-import { sendSharedAccessInvitation, sendVerificationEmail, sendPasswordResetEmail, sendContactFormEmail, sendAdminNewUserNotification, sendAdminNewSubscriptionNotification } from "./lib/sendEmail";
+import { sendSharedAccessInvitation, sendVerificationEmail, sendPasswordResetEmail, sendContactFormEmail, sendAdminNewUserNotification, sendAdminNewSubscriptionNotification, sendAdminSubscriptionCancelledNotification } from "./lib/sendEmail";
 import { emailQueue } from "./lib/emailQueue";
 import bcrypt from 'bcrypt';
 import { checkDocumentLimit, checkEmailFeature, checkAndDowngradeTrial, getEffectiveUserId, isSharedUser } from "./middleware/subscriptionLimits";
@@ -3831,14 +3831,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         case "customer.subscription.deleted": {
           const subscription = event.data.object as Stripe.Subscription;
           const userId = subscription.metadata?.userId;
+          const previousPlan = subscription.metadata?.plan || "unknown";
 
           if (userId) {
+            // Get user info before downgrade for notification
+            const user = await storage.getUserById(userId);
+            
             // Downgrade to free plan
             await storage.updateUserSubscription(userId, "free", null);
             await storage.updateUserStripeInfo(userId, {
               stripeSubscriptionId: null,
               stripePriceId: null,
             });
+            
+            // Send admin notification about cancellation (async, non-blocking)
+            if (user) {
+              sendAdminSubscriptionCancelledNotification(
+                user.email,
+                `${user.firstName} ${user.lastName}`,
+                previousPlan
+              ).catch(err => console.error('[StripeWebhook] Failed to send cancellation notification:', err));
+              console.log(`[StripeWebhook] Admin notification sent for subscription cancellation: ${user.email} - ${previousPlan}`);
+            }
           }
           break;
         }
