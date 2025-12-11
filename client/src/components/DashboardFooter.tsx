@@ -3,7 +3,7 @@ import { Lightbulb, PlayCircle, Lock, Scale, HelpCircle } from "lucide-react";
 
 export function DashboardFooter() {
   return (
-    <footer className="border-t bg-muted/20 py-4 px-6">
+    <footer className="border-t bg-muted/20 py-4 px-6 mt-8">
       <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
         <div className="text-sm text-muted-foreground">
           © 2025 MeineDokBox
