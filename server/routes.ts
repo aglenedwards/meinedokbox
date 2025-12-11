@@ -3595,7 +3595,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       priceId = stripePriceIds[plan][period];
 
       // Create or retrieve Stripe customer
+      // Handle case where customer was created in test mode but we're now in live mode
       let customerId = user.stripeCustomerId;
+      
+      if (customerId) {
+        // Verify the customer exists in current Stripe mode (test vs live)
+        try {
+          await stripe.customers.retrieve(customerId);
+          console.log('[CreateCheckoutSession] Existing customer verified:', customerId);
+        } catch (verifyError: any) {
+          if (verifyError?.code === 'resource_missing') {
+            // Customer doesn't exist in current mode - need to create new one
+            console.log('[CreateCheckoutSession] Customer not found in current Stripe mode, creating new customer');
+            customerId = null;
+          } else {
+            throw verifyError;
+          }
+        }
+      }
+      
       if (!customerId) {
         const customer = await stripe.customers.create({
           email: user.email,
@@ -3606,6 +3624,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
         customerId = customer.id;
         await storage.updateUserStripeInfo(userId, { stripeCustomerId: customerId });
+        console.log('[CreateCheckoutSession] New customer created:', customerId);
       }
 
       // Create Checkout Session
