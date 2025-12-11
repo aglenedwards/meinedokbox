@@ -377,6 +377,8 @@ export interface SubscriptionStatus {
   isReadOnly?: boolean;
   graceDaysRemaining?: number;
   subscriptionEndsAt?: Date;
+  // Stripe subscription status
+  hasActiveSubscription?: boolean;
 }
 
 /**

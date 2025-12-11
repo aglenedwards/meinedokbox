@@ -813,7 +813,8 @@ export default function Dashboard() {
         </div>
 
         {/* Subscription Status Banners */}
-        {subscriptionStatus?.plan === "trial" && subscriptionStatus.daysRemaining && subscriptionStatus.daysRemaining > 0 && (
+        {/* Only show trial banner if plan is trial AND no active Stripe subscription */}
+        {subscriptionStatus?.plan === "trial" && subscriptionStatus.daysRemaining && subscriptionStatus.daysRemaining > 0 && !subscriptionStatus.hasActiveSubscription && (
           <div className="mb-6">
             <TrialBanner
               daysRemaining={subscriptionStatus.daysRemaining}

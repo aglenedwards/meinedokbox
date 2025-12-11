@@ -728,6 +728,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         isReadOnly,
         graceDaysRemaining,
         subscriptionEndsAt: effectiveUser.subscriptionEndsAt,
+        // Stripe subscription status
+        hasActiveSubscription: !!effectiveUser.stripeSubscriptionId,
       });
     } catch (error) {
       console.error("Error fetching subscription status:", error);
