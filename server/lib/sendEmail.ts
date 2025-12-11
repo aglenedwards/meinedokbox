@@ -1,6 +1,7 @@
 /**
  * Send email using Mailgun API
  */
+import { getAppUrl } from '../emailService';
 
 interface EmailOptions {
   to: string;
@@ -66,7 +67,8 @@ export async function sendSharedAccessInvitation(
   ownerName: string,
   invitationToken: string
 ): Promise<boolean> {
-  const inviteLink = `https://meinedokbox.de/invite?token=${invitationToken}`;
+  const baseUrl = getAppUrl();
+  const inviteLink = `${baseUrl}/invite?token=${invitationToken}`;
   const subject = `${ownerName} lädt Sie zu MeineDokBox ein`;
   
   const text = `
@@ -206,10 +208,8 @@ export async function sendVerificationEmail(
   firstName: string,
   verificationToken: string
 ): Promise<boolean> {
-  // Get the base URL - use production domain in production, dev domain in development
-  const baseUrl = process.env.NODE_ENV === 'production' 
-    ? 'https://meinedokbox.de' 
-    : `https://${process.env.REPLIT_DEV_DOMAIN || 'localhost:5000'}`;
+  // Use centralized getAppUrl() which checks APP_URL first, then REPLIT_DOMAINS
+  const baseUrl = getAppUrl();
   
   const verificationLink = `${baseUrl}/verify-email?token=${verificationToken}`;
   
@@ -312,10 +312,8 @@ export async function sendPasswordResetEmail(
   firstName: string,
   resetToken: string
 ): Promise<boolean> {
-  // Get the base URL - use production domain in production, dev domain in development
-  const baseUrl = process.env.NODE_ENV === 'production' 
-    ? 'https://meinedokbox.de' 
-    : `https://${process.env.REPLIT_DEV_DOMAIN || 'localhost:5000'}`;
+  // Use centralized getAppUrl() which checks APP_URL first, then REPLIT_DOMAINS
+  const baseUrl = getAppUrl();
   
   const resetLink = `${baseUrl}/reset-password?token=${resetToken}`;
   
