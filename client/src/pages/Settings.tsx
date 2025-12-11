@@ -462,16 +462,17 @@ export default function Settings() {
                           {subscriptionStatus.displayName}
                         </p>
                         <Badge
-                          variant={getPlanBadgeVariant(subscriptionStatus.plan)}
+                          variant={subscriptionStatus.hasActiveSubscription ? "default" : getPlanBadgeVariant(subscriptionStatus.plan)}
                           data-testid="badge-plan-status"
                         >
-                          {subscriptionStatus.plan === "family" ? "Family" : 
+                          {subscriptionStatus.hasActiveSubscription ? "Aktiv" :
+                           subscriptionStatus.plan === "family" ? "Family" : 
                            subscriptionStatus.plan === "family-plus" ? "Family Plus" : 
                            subscriptionStatus.plan === "solo" ? "Solo" :
                            subscriptionStatus.plan === "trial" ? "Trial" : "Free"}
                         </Badge>
                       </div>
-                      {!['family', 'family-plus', 'solo'].includes(subscriptionStatus.plan) ? (
+                      {!['family', 'family-plus', 'solo'].includes(subscriptionStatus.plan) && !subscriptionStatus.hasActiveSubscription ? (
                         <Button
                           onClick={() => setCheckoutDialogOpen(true)}
                           data-testid="button-upgrade"
@@ -579,8 +580,8 @@ export default function Settings() {
                       </div>
                     )}
 
-                    {/* Trial Days (if applicable) */}
-                    {subscriptionStatus.plan === "trial" && subscriptionStatus.daysRemaining !== null && (
+                    {/* Trial Days (if applicable) - only show if no active Stripe subscription */}
+                    {subscriptionStatus.plan === "trial" && subscriptionStatus.daysRemaining !== null && !subscriptionStatus.hasActiveSubscription && (
                       <div className="pt-2">
                         <div className="flex items-center justify-between">
                           <p className="text-sm text-muted-foreground flex items-center gap-2">
