@@ -16,6 +16,7 @@ import type { User as UserType, SharedAccess } from "@shared/schema";
 import { UpgradeModal } from "@/components/UpgradeModal";
 import { CheckoutDialog } from "@/components/CheckoutDialog";
 import { DashboardLayout } from "@/components/DashboardLayout";
+import { DashboardFooter } from "@/components/DashboardFooter";
 import { EmailWhitelistSettings } from "@/components/EmailWhitelistSettings";
 
 function ManageSubscriptionButton() {
@@ -787,6 +788,7 @@ export default function Settings() {
         selectedPlan={selectedPlan}
         selectedPeriod={selectedPeriod}
       />
+      <DashboardFooter />
     </DashboardLayout>
   );
 }

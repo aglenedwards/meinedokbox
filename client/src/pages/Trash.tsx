@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { EmptyState } from "@/components/EmptyState";
 import { DashboardLayout } from "@/components/DashboardLayout";
+import { DashboardFooter } from "@/components/DashboardFooter";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -243,6 +244,7 @@ export default function Trash() {
             </div>
           </div>
       )}
+      <DashboardFooter />
     </DashboardLayout>
   );
 }
