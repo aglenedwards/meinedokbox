@@ -1,6 +1,7 @@
 import { Link } from "wouter";
-import { Shield, Server, Lock, FileText, CreditCard, HelpCircle, Mail, Building2, Scale, FolderOpen, Smartphone, Mail as MailIcon } from "lucide-react";
+import { Shield, Server, Lock, FileText, CreditCard, HelpCircle, Mail, Building2, Scale, FolderOpen, Smartphone, Mail as MailIcon, Cookie } from "lucide-react";
 import logoImage from "@assets/meinedokbox_1760966015056.png";
+import { openCookieSettings } from "@/components/CookieConsent";
 
 export function Footer() {
   return (
@@ -112,6 +113,14 @@ export function Footer() {
                     Hilfe & FAQ
                   </span>
                 </Link>
+                <button
+                  onClick={openCookieSettings}
+                  className="flex items-center gap-2.5 text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer group text-left"
+                  data-testid="button-cookie-settings-footer"
+                >
+                  <Cookie className="h-4 w-4 text-muted-foreground/60 group-hover:text-primary transition-colors" />
+                  Cookie-Einstellungen
+                </button>
               </div>
             </div>
           </div>

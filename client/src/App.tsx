@@ -32,6 +32,7 @@ import VideoTutorials from "@/pages/VideoTutorials";
 import NotFound from "@/pages/not-found";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { PWAUpdatePrompt } from "@/components/PWAUpdatePrompt";
+import { CookieConsent } from "@/components/CookieConsent";
 import { useEffect } from "react";
 
 function ProtectedRoute({ component: Component }: { component: () => JSX.Element | null }) {
@@ -122,6 +123,7 @@ function App() {
           <Toaster />
           <PWAInstallPrompt />
           <PWAUpdatePrompt />
+          <CookieConsent />
           <Router />
         </TooltipProvider>
       </ThemeProvider>
