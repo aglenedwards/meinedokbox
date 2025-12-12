@@ -138,8 +138,34 @@ export default function Datenschutz() {
               Rechtsgrundlage: Art. 6 Abs. 1 lit. a DSGVO (Einwilligung).
               Auch hier erfolgt die Steuerung über unseren Cookie-Banner.
             </p>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground mb-4">
               Daten können in die USA übermittelt werden; Meta ist nach dem EU-U.S. Data Privacy Framework zertifiziert.
+            </p>
+
+            <h3 className="text-lg font-semibold mb-3">6.3 Microsoft Clarity</h3>
+            <p className="text-muted-foreground mb-4">
+              Wir nutzen Microsoft Clarity, einen Webanalyse-Dienst der Microsoft Corporation.
+              Clarity erstellt Heatmaps und anonymisierte Session-Aufzeichnungen, um das Nutzerverhalten auf unserer Website zu analysieren und die Benutzerfreundlichkeit zu verbessern.
+            </p>
+            <p className="text-muted-foreground mb-4">
+              Folgende Daten werden dabei verarbeitet:
+            </p>
+            <ul className="list-disc pl-6 text-muted-foreground mb-4 space-y-1">
+              <li>Mausbewegungen und Klicks</li>
+              <li>Scroll-Verhalten</li>
+              <li>Besuchte Seiten und Verweildauer</li>
+              <li>Geräteinformationen (Browser, Bildschirmgröße)</li>
+            </ul>
+            <p className="text-muted-foreground mb-4">
+              Rechtsgrundlage: Art. 6 Abs. 1 lit. a DSGVO (Einwilligung).
+              Die Einwilligung erfolgt über unseren Cookie-Banner unter „Analyse Cookies" und kann jederzeit widerrufen werden.
+            </p>
+            <p className="text-muted-foreground">
+              Daten können in die USA übermittelt werden. Microsoft ist nach dem EU-U.S. Data Privacy Framework zertifiziert.
+              Weitere Informationen finden Sie in der{" "}
+              <a href="https://privacy.microsoft.com/de-de/privacystatement" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                Datenschutzerklärung von Microsoft
+              </a>.
             </p>
           </section>
 
