@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
-import { User, Trash2, Search, Home, Shield, AlertTriangle, Lightbulb, PlayCircle, Plus, Edit2, Save, X } from "lucide-react";
+import { User, Trash2, Search, Home, Shield, AlertTriangle, Lightbulb, PlayCircle, Plus, Edit2, Save, X, BarChart3, Users, CreditCard, TrendingUp, FileText, HardDrive } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -41,6 +41,29 @@ import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import logoImage from "@assets/meinedokbox_1760966015056.png";
 import type { User as UserType, FeatureRequest, VideoTutorial } from "@shared/schema";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
+
+interface AdminStatistics {
+  totalUsers: number;
+  verifiedUsers: number;
+  payingCustomers: number;
+  usersByPlan: {
+    trial: number;
+    free: number;
+    solo: number;
+    family: number;
+    familyPlus: number;
+  };
+  registrationsLast30Days: number;
+  registrationsLast7Days: number;
+  registrationsToday: number;
+  verificationRate: string;
+  purchaseRate: string;
+  overallConversionRate: string;
+  totalStorageUsedGB: string;
+  totalDocuments: number;
+  dailyRegistrations: { date: string; count: number }[];
+}
 
 interface UserWithStats extends UserType {
   documentCount: number;
@@ -62,7 +85,7 @@ const STATUS_LABELS: Record<string, string> = {
 export default function Admin() {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
-  const [activeTab, setActiveTab] = useState("users");
+  const [activeTab, setActiveTab] = useState("statistics");
   const [searchQuery, setSearchQuery] = useState("");
   const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; user: UserWithStats | null }>({
     open: false,
@@ -126,6 +149,13 @@ export default function Admin() {
   // Fetch video tutorials
   const { data: videoTutorials = [], isLoading: loadingTutorials } = useQuery<VideoTutorial[]>({
     queryKey: ["/api/admin/video-tutorials"],
+    retry: false,
+    enabled: adminStatus?.isAdminAuthenticated === true,
+  });
+
+  // Fetch statistics
+  const { data: statistics, isLoading: loadingStatistics } = useQuery<AdminStatistics>({
+    queryKey: ["/api/admin/statistics"],
     retry: false,
     enabled: adminStatus?.isAdminAuthenticated === true,
   });
@@ -409,7 +439,11 @@ export default function Admin() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 md:px-6 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList className="grid w-full grid-cols-3" data-testid="admin-tabs">
+          <TabsList className="grid w-full grid-cols-4" data-testid="admin-tabs">
+            <TabsTrigger value="statistics" className="flex items-center gap-2" data-testid="tab-statistics">
+              <BarChart3 className="h-4 w-4" />
+              Statistiken
+            </TabsTrigger>
             <TabsTrigger value="users" className="flex items-center gap-2" data-testid="tab-users">
               <User className="h-4 w-4" />
               Benutzer
@@ -423,6 +457,226 @@ export default function Admin() {
               Video Tutorials
             </TabsTrigger>
           </TabsList>
+
+          {/* Statistics Tab */}
+          <TabsContent value="statistics">
+            {loadingStatistics ? (
+              <div className="text-center py-8 text-muted-foreground">Lädt Statistiken...</div>
+            ) : statistics ? (
+              <div className="space-y-6">
+                {/* Key Metrics Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <Card>
+                    <CardContent className="p-6">
+                      <div className="flex items-center gap-4">
+                        <div className="p-3 rounded-full bg-primary/10">
+                          <Users className="h-6 w-6 text-primary" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground">Registrierte Nutzer</p>
+                          <p className="text-3xl font-bold" data-testid="stat-total-users">{statistics.totalUsers}</p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {statistics.verifiedUsers} verifiziert ({statistics.verificationRate}%)
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardContent className="p-6">
+                      <div className="flex items-center gap-4">
+                        <div className="p-3 rounded-full bg-green-500/10">
+                          <CreditCard className="h-6 w-6 text-green-500" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground">Zahlende Kunden</p>
+                          <p className="text-3xl font-bold" data-testid="stat-paying-customers">{statistics.payingCustomers}</p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {statistics.purchaseRate}% Kaufrate
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardContent className="p-6">
+                      <div className="flex items-center gap-4">
+                        <div className="p-3 rounded-full bg-blue-500/10">
+                          <TrendingUp className="h-6 w-6 text-blue-500" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground">Registrierungen (30 Tage)</p>
+                          <p className="text-3xl font-bold" data-testid="stat-registrations-30d">{statistics.registrationsLast30Days}</p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {statistics.registrationsToday} heute, {statistics.registrationsLast7Days} letzte 7 Tage
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardContent className="p-6">
+                      <div className="flex items-center gap-4">
+                        <div className="p-3 rounded-full bg-purple-500/10">
+                          <HardDrive className="h-6 w-6 text-purple-500" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground">Speicher / Dokumente</p>
+                          <p className="text-3xl font-bold" data-testid="stat-storage">{statistics.totalStorageUsedGB} GB</p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {statistics.totalDocuments} Dokumente gesamt
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Conversion Funnel */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <TrendingUp className="h-5 w-5" />
+                      Conversion Funnel
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex-1 text-center p-4 border rounded-lg">
+                        <p className="text-sm text-muted-foreground mb-1">Registrierungen</p>
+                        <p className="text-2xl font-bold">{statistics.totalUsers}</p>
+                      </div>
+                      <div className="text-2xl text-muted-foreground">→</div>
+                      <div className="flex-1 text-center p-4 border rounded-lg">
+                        <p className="text-sm text-muted-foreground mb-1">Verifiziert</p>
+                        <p className="text-2xl font-bold">{statistics.verifiedUsers}</p>
+                        <p className="text-xs text-green-500">{statistics.verificationRate}%</p>
+                      </div>
+                      <div className="text-2xl text-muted-foreground">→</div>
+                      <div className="flex-1 text-center p-4 border rounded-lg bg-green-500/5">
+                        <p className="text-sm text-muted-foreground mb-1">Gekauft</p>
+                        <p className="text-2xl font-bold text-green-600">{statistics.payingCustomers}</p>
+                        <p className="text-xs text-green-500">{statistics.overallConversionRate}%</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Registrations Chart */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <BarChart3 className="h-5 w-5" />
+                        Registrierungen (letzte 30 Tage)
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-64">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <AreaChart data={statistics.dailyRegistrations}>
+                            <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                            <XAxis 
+                              dataKey="date" 
+                              tick={{ fontSize: 10 }}
+                              tickFormatter={(value) => {
+                                const date = new Date(value);
+                                return `${date.getDate()}.${date.getMonth() + 1}`;
+                              }}
+                            />
+                            <YAxis allowDecimals={false} />
+                            <Tooltip 
+                              labelFormatter={(value) => {
+                                const date = new Date(value);
+                                return format(date, "dd. MMMM yyyy", { locale: de });
+                              }}
+                              formatter={(value: number) => [value, "Registrierungen"]}
+                            />
+                            <Area 
+                              type="monotone" 
+                              dataKey="count" 
+                              stroke="hsl(var(--primary))" 
+                              fill="hsl(var(--primary) / 0.2)" 
+                            />
+                          </AreaChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Plan Distribution */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <FileText className="h-5 w-5" />
+                        Verteilung nach Plan
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-64 flex items-center justify-center">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <PieChart>
+                            <Pie
+                              data={[
+                                { name: "Trial", value: statistics.usersByPlan.trial, color: "#f59e0b" },
+                                { name: "Free", value: statistics.usersByPlan.free, color: "#6b7280" },
+                                { name: "Solo", value: statistics.usersByPlan.solo, color: "#3b82f6" },
+                                { name: "Family", value: statistics.usersByPlan.family, color: "#8b5cf6" },
+                                { name: "Family Plus", value: statistics.usersByPlan.familyPlus, color: "#10b981" },
+                              ]}
+                              cx="50%"
+                              cy="50%"
+                              innerRadius={60}
+                              outerRadius={80}
+                              paddingAngle={5}
+                              dataKey="value"
+                              label={({ name, value }) => value > 0 ? `${name}: ${value}` : ""}
+                            >
+                              {[
+                                { name: "Trial", value: statistics.usersByPlan.trial, color: "#f59e0b" },
+                                { name: "Free", value: statistics.usersByPlan.free, color: "#6b7280" },
+                                { name: "Solo", value: statistics.usersByPlan.solo, color: "#3b82f6" },
+                                { name: "Family", value: statistics.usersByPlan.family, color: "#8b5cf6" },
+                                { name: "Family Plus", value: statistics.usersByPlan.familyPlus, color: "#10b981" },
+                              ].map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={entry.color} />
+                              ))}
+                            </Pie>
+                            <Tooltip formatter={(value: number, name: string) => [value, name]} />
+                          </PieChart>
+                        </ResponsiveContainer>
+                      </div>
+                      <div className="flex flex-wrap justify-center gap-4 mt-4">
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 rounded-full bg-amber-500" />
+                          <span className="text-sm">Trial ({statistics.usersByPlan.trial})</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 rounded-full bg-gray-500" />
+                          <span className="text-sm">Free ({statistics.usersByPlan.free})</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 rounded-full bg-blue-500" />
+                          <span className="text-sm">Solo ({statistics.usersByPlan.solo})</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 rounded-full bg-purple-500" />
+                          <span className="text-sm">Family ({statistics.usersByPlan.family})</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 rounded-full bg-green-500" />
+                          <span className="text-sm">Family Plus ({statistics.usersByPlan.familyPlus})</span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            ) : null}
+          </TabsContent>
 
           {/* Users Tab */}
           <TabsContent value="users">

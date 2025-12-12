@@ -4091,6 +4091,105 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // ===== Admin Statistics API =====
+  
+  // Get admin statistics (Admin only)
+  app.get("/api/admin/statistics", isAuthenticated, isAdmin, async (_req: any, res) => {
+    try {
+      const allUsers = await storage.getAllUsers();
+      
+      const now = new Date();
+      const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      
+      // Total users
+      const totalUsers = allUsers.length;
+      
+      // Verified users (completed email verification)
+      const verifiedUsers = allUsers.filter(u => u.isVerified).length;
+      
+      // Users by plan
+      const usersByPlan = {
+        trial: allUsers.filter(u => u.subscriptionPlan === 'trial').length,
+        free: allUsers.filter(u => u.subscriptionPlan === 'free').length,
+        solo: allUsers.filter(u => u.subscriptionPlan === 'solo').length,
+        family: allUsers.filter(u => u.subscriptionPlan === 'family').length,
+        familyPlus: allUsers.filter(u => u.subscriptionPlan === 'family-plus').length,
+      };
+      
+      // Paying customers (have active Stripe subscription)
+      const payingCustomers = allUsers.filter(u => u.stripeSubscriptionId).length;
+      
+      // Registrations over time
+      const registrationsLast30Days = allUsers.filter(u => 
+        u.createdAt && new Date(u.createdAt) >= thirtyDaysAgo
+      ).length;
+      
+      const registrationsLast7Days = allUsers.filter(u => 
+        u.createdAt && new Date(u.createdAt) >= sevenDaysAgo
+      ).length;
+      
+      const registrationsToday = allUsers.filter(u => 
+        u.createdAt && new Date(u.createdAt) >= todayStart
+      ).length;
+      
+      // Conversion rates
+      const verificationRate = totalUsers > 0 ? ((verifiedUsers / totalUsers) * 100).toFixed(1) : "0";
+      const purchaseRate = verifiedUsers > 0 ? ((payingCustomers / verifiedUsers) * 100).toFixed(1) : "0";
+      const overallConversionRate = totalUsers > 0 ? ((payingCustomers / totalUsers) * 100).toFixed(1) : "0";
+      
+      // Calculate total storage used
+      let totalStorageUsedBytes = 0;
+      for (const user of allUsers) {
+        const stats = await storage.getUserStorageStats(user.id);
+        totalStorageUsedBytes += stats.usedBytes;
+      }
+      const totalStorageUsedGB = (totalStorageUsedBytes / (1024 * 1024 * 1024)).toFixed(2);
+      
+      // Total documents
+      let totalDocuments = 0;
+      for (const user of allUsers) {
+        const docs = await storage.getDocumentsByUserId(user.id);
+        totalDocuments += docs.length;
+      }
+      
+      // Daily registrations for last 30 days (for chart)
+      const dailyRegistrations: { date: string; count: number }[] = [];
+      for (let i = 29; i >= 0; i--) {
+        const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+        const dateStr = date.toISOString().split('T')[0];
+        const dayStart = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+        const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60 * 1000);
+        
+        const count = allUsers.filter(u => 
+          u.createdAt && new Date(u.createdAt) >= dayStart && new Date(u.createdAt) < dayEnd
+        ).length;
+        
+        dailyRegistrations.push({ date: dateStr, count });
+      }
+      
+      res.json({
+        totalUsers,
+        verifiedUsers,
+        payingCustomers,
+        usersByPlan,
+        registrationsLast30Days,
+        registrationsLast7Days,
+        registrationsToday,
+        verificationRate,
+        purchaseRate,
+        overallConversionRate,
+        totalStorageUsedGB,
+        totalDocuments,
+        dailyRegistrations,
+      });
+    } catch (error) {
+      console.error('[Admin] Error fetching statistics:', error);
+      res.status(500).json({ message: "Fehler beim Laden der Statistiken" });
+    }
+  });
+  
   // ===== Video Tutorials API =====
   
   // Get published video tutorials (public)
