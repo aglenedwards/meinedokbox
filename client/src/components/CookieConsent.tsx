@@ -17,6 +17,7 @@ declare global {
   interface Window {
     gtag?: (...args: unknown[]) => void;
     dataLayer?: unknown[];
+    initClarity?: () => void;
   }
 }
 
@@ -28,6 +29,11 @@ function updateGoogleConsent(settings: ConsentSettings) {
       ad_user_data: settings.marketing ? "granted" : "denied",
       ad_personalization: settings.marketing ? "granted" : "denied",
     });
+  }
+  
+  // Initialize Microsoft Clarity if analytics consent is given
+  if (settings.analytics && typeof window.initClarity === "function") {
+    window.initClarity();
   }
 }
 
@@ -202,7 +208,7 @@ export function CookieConsent() {
                       <div className="space-y-1">
                         <p className="font-medium">Analyse Cookies</p>
                         <p className="text-sm text-muted-foreground">
-                          Helfen uns zu verstehen, wie Besucher mit der Website interagieren
+                          Helfen uns zu verstehen, wie Besucher mit der Website interagieren (Microsoft Clarity)
                         </p>
                       </div>
                       <Switch
