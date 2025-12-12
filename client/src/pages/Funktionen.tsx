@@ -22,7 +22,7 @@ export default function Funktionen() {
             {/* Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border bg-background/80 backdrop-blur-sm mb-8 shadow-lg">
               <Brain className="h-4 w-4 text-primary" />
-              <span className="text-sm font-medium">Powered by OpenAI GPT-4 Vision</span>
+              <span className="text-sm font-medium">Powered by Azure OpenAI</span>
             </div>
             
             {/* Main Headline */}
@@ -100,8 +100,8 @@ export default function Funktionen() {
               Wie funktioniert die KI-Kategorisierung?
             </h2>
             <p className="text-xl text-muted-foreground text-center mb-12">
-              MeineDokBox nutzt <strong>OpenAI GPT-4 Vision</strong> – die weltweit fortschrittlichste 
-              KI für Bild- und Texterkennung.
+              MeineDokBox nutzt <strong>Azure OpenAI</strong> – die weltweit fortschrittlichste 
+              KI für Bild- und Texterkennung, gehostet in europäischen Rechenzentren.
             </p>
           </div>
 

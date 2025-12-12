@@ -248,7 +248,7 @@ export default function UeberUns() {
                       <div>
                         <strong className="text-foreground">Modernste KI-Technologie</strong>
                         <p className="text-sm text-muted-foreground">
-                          OpenAI GPT-4 Vision erkennt und kategorisiert Dokumente automatisch – 
+                          Azure OpenAI erkennt und kategorisiert Dokumente automatisch – 
                           besser als jeder Mensch es manuell könnte.
                         </p>
                       </div>
