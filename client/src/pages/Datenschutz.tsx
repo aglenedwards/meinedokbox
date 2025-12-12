@@ -98,9 +98,35 @@ export default function Datenschutz() {
             </p>
 
             <h3 className="text-lg font-semibold mb-3">4.3 Kontaktformular</h3>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground mb-4">
               Bei Kontaktaufnahme per Formular oder E-Mail werden die übermittelten Angaben verarbeitet, um die Anfrage zu bearbeiten.
               Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO (Vertragserfüllung bzw. vorvertragliche Maßnahmen).
+            </p>
+
+            <h3 className="text-lg font-semibold mb-3">4.4 KI-gestützte Dokumentenanalyse (Azure OpenAI)</h3>
+            <p className="text-muted-foreground mb-4">
+              Zur automatischen Texterkennung (OCR) und intelligenten Kategorisierung Ihrer Dokumente nutzen wir den Azure OpenAI Service der Microsoft Corporation.
+            </p>
+            <p className="text-muted-foreground mb-4">
+              Folgende Daten werden dabei verarbeitet:
+            </p>
+            <ul className="list-disc pl-6 text-muted-foreground mb-4 space-y-1">
+              <li>Inhalte hochgeladener Dokumente (Bilder, PDFs)</li>
+              <li>Extrahierte Textinformationen (Titel, Datum, Beträge, Absender)</li>
+              <li>Automatisch zugewiesene Kategorien und Schlagwörter</li>
+            </ul>
+            <p className="text-muted-foreground mb-4">
+              <strong>Wichtig:</strong> Die Dokumenteninhalte werden ausschließlich zur einmaligen Analyse übermittelt und nicht von Microsoft gespeichert oder für Trainingszwecke verwendet.
+              Azure OpenAI unterliegt den strengen Datenschutzrichtlinien von Microsoft und kann auf EU-Servern betrieben werden.
+            </p>
+            <p className="text-muted-foreground mb-4">
+              Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO (Vertragserfüllung – die KI-Analyse ist Kernbestandteil unseres Dienstes).
+            </p>
+            <p className="text-muted-foreground">
+              Weitere Informationen finden Sie in der{" "}
+              <a href="https://learn.microsoft.com/de-de/legal/cognitive-services/openai/data-privacy" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                Azure OpenAI Datenschutzerklärung
+              </a>.
             </p>
           </section>
 
