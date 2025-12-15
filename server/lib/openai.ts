@@ -8,6 +8,133 @@ const azureOpenAI = new AzureOpenAI({
   deployment: process.env.AZURE_OPENAI_DEPLOYMENT_NAME
 });
 
+// ============================================================================
+// RATE LIMITER - Prevents API overload with concurrent requests
+// ============================================================================
+
+class Semaphore {
+  private permits: number;
+  private queue: Array<() => void> = [];
+
+  constructor(permits: number) {
+    this.permits = permits;
+  }
+
+  async acquire(): Promise<void> {
+    if (this.permits > 0) {
+      this.permits--;
+      return;
+    }
+    
+    return new Promise<void>((resolve) => {
+      this.queue.push(resolve);
+    });
+  }
+
+  release(): void {
+    this.permits++;
+    const next = this.queue.shift();
+    if (next) {
+      this.permits--;
+      next();
+    }
+  }
+
+  get available(): number {
+    return this.permits;
+  }
+
+  get waiting(): number {
+    return this.queue.length;
+  }
+}
+
+// Configuration
+const MAX_CONCURRENT_REQUESTS = 5;  // Max parallel API calls
+const MIN_REQUEST_INTERVAL_MS = 200; // Minimum time between requests
+const MAX_RETRIES = 3;              // Retry attempts for rate limit errors
+const INITIAL_BACKOFF_MS = 1000;    // Initial backoff for retries
+
+// Global rate limiter instance
+const apiSemaphore = new Semaphore(MAX_CONCURRENT_REQUESTS);
+let lastRequestTime = 0;
+
+// Helper: Wait for minimum interval between requests
+async function throttle(): Promise<void> {
+  const now = Date.now();
+  const timeSinceLastRequest = now - lastRequestTime;
+  if (timeSinceLastRequest < MIN_REQUEST_INTERVAL_MS) {
+    await new Promise(resolve => setTimeout(resolve, MIN_REQUEST_INTERVAL_MS - timeSinceLastRequest));
+  }
+  lastRequestTime = Date.now();
+}
+
+// Helper: Execute with retry logic for rate limit errors
+async function withRetry<T>(
+  operation: () => Promise<T>,
+  operationName: string
+): Promise<T> {
+  let lastError: Error | null = null;
+  
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      return await operation();
+    } catch (error: any) {
+      lastError = error;
+      
+      // Check if it's a rate limit error (429) or server overload (503)
+      const isRateLimitError = 
+        error?.status === 429 || 
+        error?.code === 'rate_limit_exceeded' ||
+        error?.status === 503 ||
+        error?.message?.includes('429') ||
+        error?.message?.includes('Rate limit');
+      
+      if (isRateLimitError && attempt < MAX_RETRIES) {
+        const backoffMs = INITIAL_BACKOFF_MS * Math.pow(2, attempt - 1);
+        console.warn(`[RateLimiter] ${operationName}: Rate limit hit, retry ${attempt}/${MAX_RETRIES} in ${backoffMs}ms`);
+        await new Promise(resolve => setTimeout(resolve, backoffMs));
+        continue;
+      }
+      
+      // Non-retryable error or max retries reached
+      throw error;
+    }
+  }
+  
+  throw lastError;
+}
+
+// Wrapper: Execute API call with rate limiting and retry
+async function rateLimitedApiCall<T>(
+  operation: () => Promise<T>,
+  operationName: string
+): Promise<T> {
+  const waitingCount = apiSemaphore.waiting;
+  if (waitingCount > 0) {
+    console.log(`[RateLimiter] ${operationName}: Waiting in queue (${waitingCount} ahead)`);
+  }
+  
+  await apiSemaphore.acquire();
+  
+  try {
+    await throttle();
+    console.log(`[RateLimiter] ${operationName}: Executing (${apiSemaphore.available}/${MAX_CONCURRENT_REQUESTS} slots available)`);
+    return await withRetry(operation, operationName);
+  } finally {
+    apiSemaphore.release();
+  }
+}
+
+// Export for monitoring
+export function getRateLimiterStatus() {
+  return {
+    availableSlots: apiSemaphore.available,
+    maxSlots: MAX_CONCURRENT_REQUESTS,
+    queueLength: apiSemaphore.waiting,
+  };
+}
+
 export interface DocumentAnalysisResult {
   extractedText: string;
   category: string;
@@ -47,13 +174,14 @@ export async function analyzeDocument(
       };
     });
 
-    const response = await azureOpenAI.chat.completions.create({
-      model: process.env.AZURE_OPENAI_DEPLOYMENT_NAME || "gpt-4o",
-      temperature: 0,
-      messages: [
-        {
-          role: "system",
-          content: `You are an expert German document analyzer. Analyze the document image(s) and extract:
+    const response = await rateLimitedApiCall(
+      () => azureOpenAI.chat.completions.create({
+        model: process.env.AZURE_OPENAI_DEPLOYMENT_NAME || "gpt-4o",
+        temperature: 0,
+        messages: [
+          {
+            role: "system",
+            content: `You are an expert German document analyzer. Analyze the document image(s) and extract:
 1. All visible text (OCR) from ALL pages
 2. Document type/category - choose the MOST SPECIFIC category from these 15 options:
    
@@ -177,9 +305,11 @@ Respond with JSON in this format:
           ],
         },
       ],
-      response_format: { type: "json_object" },
-      max_completion_tokens: 4096,
-    });
+        response_format: { type: "json_object" },
+        max_completion_tokens: 4096,
+      }),
+      'analyzeDocument'
+    );
 
     const result = JSON.parse(response.choices[0].message.content || "{}");
     
@@ -226,13 +356,14 @@ export async function analyzeDocumentFromText(
   try {
     console.log(`Analyzing PDF document from extracted text (${extractedText.length} characters)`);
     
-    const response = await azureOpenAI.chat.completions.create({
-      model: process.env.AZURE_OPENAI_DEPLOYMENT_NAME || "gpt-4o",
-      temperature: 0,
-      messages: [
-        {
-          role: "system",
-          content: `You are an expert German document analyzer. Analyze the provided document text and determine:
+    const response = await rateLimitedApiCall(
+      () => azureOpenAI.chat.completions.create({
+        model: process.env.AZURE_OPENAI_DEPLOYMENT_NAME || "gpt-4o",
+        temperature: 0,
+        messages: [
+          {
+            role: "system",
+            content: `You are an expert German document analyzer. Analyze the provided document text and determine:
 1. Document type/category - choose the MOST SPECIFIC category from these 15 options:
    
    - Finanzen & Banken: Bank statements (Kontoauszüge), credit documents, wire transfers (Überweisungen), credit card statements (Kreditkartenabrechnung), investment statements (Depotauszüge), trading confirmations, IBAN, account numbers, BIC, bank names (Sparkasse, Commerzbank, Deutsche Bank, Volksbank), Kontostand, Gutschrift, Lastschrift
@@ -340,10 +471,12 @@ Respond with JSON in this format:
           role: "user",
           content: `Please analyze this document text and categorize it:\n\n${extractedText.substring(0, 8000)}`
         },
-      ],
-      response_format: { type: "json_object" },
-      max_completion_tokens: 1024,
-    });
+        ],
+        response_format: { type: "json_object" },
+        max_completion_tokens: 1024,
+      }),
+      'analyzeDocumentFromText'
+    );
 
     const result = JSON.parse(response.choices[0].message.content || "{}");
     
@@ -383,26 +516,29 @@ export async function searchDocuments(query: string, documents: Array<{ id: stri
   }
 
   try {
-    const response = await azureOpenAI.chat.completions.create({
-      model: process.env.AZURE_OPENAI_DEPLOYMENT_NAME || "gpt-4o",
-      temperature: 0,
-      messages: [
-        {
-          role: "system",
-          content: `You are a document search assistant. Given a search query and a list of documents, return the IDs of documents that match the query.
+    const response = await rateLimitedApiCall(
+      () => azureOpenAI.chat.completions.create({
+        model: process.env.AZURE_OPENAI_DEPLOYMENT_NAME || "gpt-4o",
+        temperature: 0,
+        messages: [
+          {
+            role: "system",
+            content: `You are a document search assistant. Given a search query and a list of documents, return the IDs of documents that match the query.
 Respond with JSON in this format: { "matchingIds": ["id1", "id2", ...] }`
-        },
-        {
-          role: "user",
-          content: `Search query: "${query}"
+          },
+          {
+            role: "user",
+            content: `Search query: "${query}"
 
 Documents:
 ${documents.map(d => `ID: ${d.id}, Title: ${d.title}, Content: ${d.extractedText.substring(0, 200)}...`).join('\n\n')}`
-        },
-      ],
-      response_format: { type: "json_object" },
-      max_completion_tokens: 1024,
-    });
+          },
+        ],
+        response_format: { type: "json_object" },
+        max_completion_tokens: 1024,
+      }),
+      'searchDocuments'
+    );
 
     const result = JSON.parse(response.choices[0].message.content || "{}");
     return result.matchingIds || [];
