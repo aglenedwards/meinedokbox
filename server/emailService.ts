@@ -102,11 +102,15 @@ export function getDay3Email(userName: string): { subject: string; html: string;
           </tr>
           <tr>
             <td style="padding: 0 40px 30px;">
-              <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 8px; padding: 24px; text-align: center;">
-                <p style="margin: 0 0 8px; font-size: 14px; color: rgba(255,255,255,0.9);">Du hast noch</p>
-                <p style="margin: 0; font-size: 36px; font-weight: 700; color: #ffffff;">4 Tage</p>
-                <p style="margin: 8px 0 0; font-size: 14px; color: rgba(255,255,255,0.9);">Trial-Zeit</p>
-              </div>
+              <table width="100%" cellpadding="0" cellspacing="0" bgcolor="#059669" style="background-color: #059669; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 8px;">
+                <tr>
+                  <td style="padding: 24px; text-align: center;">
+                    <p style="margin: 0 0 8px; font-size: 14px; color: #ffffff;">Du hast noch</p>
+                    <p style="margin: 0; font-size: 36px; font-weight: 700; color: #ffffff;">4 Tage</p>
+                    <p style="margin: 8px 0 0; font-size: 14px; color: #ffffff;">Trial-Zeit</p>
+                  </td>
+                </tr>
+              </table>
             </td>
           </tr>
           <tr>
@@ -142,7 +146,13 @@ export function getDay3Email(userName: string): { subject: string; html: string;
           </tr>
           <tr>
             <td style="padding: 0 40px 40px;" align="center">
-              <a href="${getAppUrl()}/documents" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 6px; font-weight: 600; font-size: 16px;">Jetzt weiter ausprobieren</a>
+              <table cellpadding="0" cellspacing="0" bgcolor="#667eea" style="border-radius: 6px;">
+                <tr>
+                  <td style="background-color: #667eea; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 6px; padding: 14px 32px;">
+                    <a href="${getAppUrl()}/documents" style="display: inline-block; color: #ffffff; text-decoration: none; font-weight: 600; font-size: 16px;">Jetzt weiter ausprobieren</a>
+                  </td>
+                </tr>
+              </table>
             </td>
           </tr>
           <tr>
@@ -218,11 +228,11 @@ export function getDay6Email(userName: string): { subject: string; html: string;
                   </td>
                 </tr>
                 <tr>
-                  <td style="padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 6px; position: relative;">
+                  <td bgcolor="#667eea" style="padding: 20px; background-color: #667eea; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 6px; position: relative;">
                     <div style="position: absolute; top: 12px; right: 12px; background-color: #fbbf24; color: #1a1a1a; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">EMPFOHLEN</div>
-                    <div style="font-size: 14px; color: rgba(255,255,255,0.9); margin-bottom: 4px;">Family</div>
-                    <div style="font-size: 24px; font-weight: 700; color: #ffffff; margin-bottom: 8px;">€7,99<span style="font-size: 14px; font-weight: 400; color: rgba(255,255,255,0.9);">/Monat</span></div>
-                    <div style="font-size: 14px; color: rgba(255,255,255,0.9);">2 Nutzer • 200 Uploads • 10GB</div>
+                    <div style="font-size: 14px; color: #ffffff; margin-bottom: 4px;">Family</div>
+                    <div style="font-size: 24px; font-weight: 700; color: #ffffff; margin-bottom: 8px;">€7,99<span style="font-size: 14px; font-weight: 400; color: #ffffff;">/Monat</span></div>
+                    <div style="font-size: 14px; color: #ffffff;">2 Nutzer • 200 Uploads • 10GB</div>
                   </td>
                 </tr>
                 <tr>
