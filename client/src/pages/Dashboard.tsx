@@ -32,6 +32,7 @@ import { MultiPageUpload } from "@/components/MultiPageUpload";
 import { CameraMultiShot } from "@/components/CameraMultiShot";
 import { EmailInbound } from "@/components/EmailInbound";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { DocumentGridSkeleton } from "@/components/ui/skeleton";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { UpgradeModal } from "@/components/UpgradeModal";
 import { CheckoutDialog } from "@/components/CheckoutDialog";
@@ -1061,8 +1062,8 @@ export default function Dashboard() {
         </div>
 
         {isLoading ? (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground">Dokumente werden geladen...</p>
+          <div className="py-4">
+            <DocumentGridSkeleton count={6} />
           </div>
         ) : formattedDocuments.length === 0 ? (
           <EmptyState
