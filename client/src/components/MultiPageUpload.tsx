@@ -113,156 +113,165 @@ export function MultiPageUpload({ onComplete, onCancel }: MultiPageUploadProps) 
   };
 
   return (
-    <div className="space-y-4" data-testid="dialog-upload">
-      <h3 className="text-lg font-semibold">
-        Mehrseitiges Dokument hochladen
-      </h3>
+    <div className="flex flex-col" data-testid="dialog-upload">
+      <div className={`space-y-4 ${pages.length > 0 ? 'pb-24' : ''}`}>
+        <h3 className="text-lg font-semibold">
+          Mehrseitiges Dokument hochladen
+        </h3>
 
-      {pages.length > 0 && (
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">
-              {pages.length}/{MAX_FILES} Datei{pages.length !== 1 ? 'en' : ''} ausgewählt
-            </p>
-            
-            {pages.length > 1 && (
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  id="merge-checkbox"
-                  checked={mergeIntoOne}
-                  onCheckedChange={(checked) => setMergeIntoOne(checked as boolean)}
-                  data-testid="checkbox-merge-documents"
-                />
-                <Label 
-                  htmlFor="merge-checkbox" 
-                  className="text-sm font-normal cursor-pointer"
-                >
-                  Zu einem Dokument zusammenführen
-                </Label>
-              </div>
-            )}
-          </div>
-
-          {pages.length >= MAX_FILES && (
-            <Alert>
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                Maximale Anzahl von {MAX_FILES} Dateien erreicht. Entfernen Sie Dateien, um weitere hinzuzufügen.
-              </AlertDescription>
-            </Alert>
-          )}
-          
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {pages.map((page, index) => (
-              <Card
-                key={index}
-                className="relative group overflow-hidden"
-                data-testid={`card-page-${index}`}
-              >
-                <div className="aspect-[3/4] bg-muted relative overflow-hidden">
-                  {page.file.type.startsWith('image/') ? (
-                    <img
-                      src={page.previewUrl}
-                      alt={`Seite ${index + 1}`}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : page.file.type === 'application/pdf' ? (
-                    <PdfThumbnail url={page.previewUrl} />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <FileText className="h-12 w-12 text-muted-foreground" />
-                    </div>
-                  )}
-                  
-                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <Button
-                      variant="destructive"
-                      size="icon"
-                      onClick={() => handleRemovePage(index)}
-                      data-testid={`button-remove-page-${index}`}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  
-                  <div className="absolute bottom-2 left-2 bg-background/90 rounded px-2 py-1 text-xs font-medium">
-                    Seite {index + 1}
-                  </div>
+        {pages.length > 0 && (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-muted-foreground">
+                {pages.length}/{MAX_FILES} Datei{pages.length !== 1 ? 'en' : ''} ausgewählt
+              </p>
+              
+              {pages.length > 1 && (
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="merge-checkbox"
+                    checked={mergeIntoOne}
+                    onCheckedChange={(checked) => setMergeIntoOne(checked as boolean)}
+                    data-testid="checkbox-merge-documents"
+                  />
+                  <Label 
+                    htmlFor="merge-checkbox" 
+                    className="text-sm font-normal cursor-pointer"
+                  >
+                    Zu einem Dokument zusammenführen
+                  </Label>
                 </div>
-              </Card>
-            ))}
-          </div>
-        </div>
-      )}
+              )}
+            </div>
 
-      <div
-        className={`border-2 border-dashed rounded-lg p-8 transition-colors ${
-          isDragging
-            ? "border-primary bg-primary/5"
-            : "border-border hover:border-primary/50"
-        }`}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
-      >
-        <div className="flex flex-col items-center gap-4 text-center">
-          <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-            <ImageIcon className="h-6 w-6 text-primary" />
+            {pages.length >= MAX_FILES && (
+              <Alert>
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  Maximale Anzahl von {MAX_FILES} Dateien erreicht. Entfernen Sie Dateien, um weitere hinzuzufügen.
+                </AlertDescription>
+              </Alert>
+            )}
+            
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {pages.map((page, index) => (
+                <Card
+                  key={index}
+                  className="relative group overflow-hidden"
+                  data-testid={`card-page-${index}`}
+                >
+                  <div className="aspect-[3/4] bg-muted relative overflow-hidden">
+                    {page.file.type.startsWith('image/') ? (
+                      <img
+                        src={page.previewUrl}
+                        alt={`Seite ${index + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : page.file.type === 'application/pdf' ? (
+                      <PdfThumbnail url={page.previewUrl} />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <FileText className="h-12 w-12 text-muted-foreground" />
+                      </div>
+                    )}
+                    
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <Button
+                        variant="destructive"
+                        size="icon"
+                        onClick={() => handleRemovePage(index)}
+                        data-testid={`button-remove-page-${index}`}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    
+                    <div className="absolute bottom-2 left-2 bg-background/90 rounded px-2 py-1 text-xs font-medium">
+                      Seite {index + 1}
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
           </div>
-          
-          <div>
-            <p className="font-medium mb-1">
-              {pages.length === 0 
-                ? "Erste Seite hinzufügen" 
-                : "Weitere Seite hinzufügen"
-              }
-            </p>
-            <p className="text-sm text-muted-foreground">
-              Ziehen Sie eine Datei hierher oder klicken Sie zum Auswählen
-            </p>
-            <p className="text-xs text-muted-foreground/70 mt-1">
-              Maximal {MAX_FILES} Dateien pro Upload (JPG, PNG, PDF)
-            </p>
-          </div>
+        )}
 
-          <input
-            type="file"
-            id="page-upload"
-            className="hidden"
-            accept="image/*,application/pdf"
-            multiple
-            onChange={(e) => handleFileSelect(e.target.files)}
-            data-testid="input-page-upload"
-          />
-          
-          <Button
-            variant="outline"
-            onClick={() => document.getElementById('page-upload')?.click()}
-            disabled={pages.length >= MAX_FILES}
-            data-testid="button-add-page"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            {pages.length >= MAX_FILES ? 'Limit erreicht' : 'Seite auswählen'}
-          </Button>
+        <div
+          className={`border-2 border-dashed rounded-lg p-8 transition-colors ${
+            isDragging
+              ? "border-primary bg-primary/5"
+              : "border-border hover:border-primary/50"
+          }`}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+        >
+          <div className="flex flex-col items-center gap-4 text-center">
+            <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+              <ImageIcon className="h-6 w-6 text-primary" />
+            </div>
+            
+            <div>
+              <p className="font-medium mb-1">
+                {pages.length === 0 
+                  ? "Erste Seite hinzufügen" 
+                  : "Weitere Seite hinzufügen"
+                }
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Ziehen Sie eine Datei hierher oder klicken Sie zum Auswählen
+              </p>
+              <p className="text-xs text-muted-foreground/70 mt-1">
+                Maximal {MAX_FILES} Dateien pro Upload (JPG, PNG, PDF)
+              </p>
+            </div>
+
+            <input
+              type="file"
+              id="page-upload"
+              className="hidden"
+              accept="image/*,application/pdf"
+              multiple
+              onChange={(e) => handleFileSelect(e.target.files)}
+              data-testid="input-page-upload"
+            />
+            
+            <Button
+              variant="outline"
+              onClick={() => document.getElementById('page-upload')?.click()}
+              disabled={pages.length >= MAX_FILES}
+              data-testid="button-add-page"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              {pages.length >= MAX_FILES ? 'Limit erreicht' : 'Seite auswählen'}
+            </Button>
+          </div>
         </div>
       </div>
 
       {pages.length > 0 && (
-        <div className="flex gap-3 justify-end">
-          <Button
-            variant="outline"
-            onClick={onCancel}
-            data-testid="button-cancel-upload"
-          >
-            Abbrechen
-          </Button>
-          <Button
-            onClick={handleComplete}
-            className="btn-upload-shimmer text-white border-green-700"
-            data-testid="button-finish-upload"
-          >
-            Fertig und analysieren
-          </Button>
+        <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t border-border shadow-lg z-50">
+          <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between gap-4">
+            <div className="text-sm text-muted-foreground">
+              {pages.length} {pages.length === 1 ? 'Dokument' : 'Dokumente'} bereit zur Analyse
+            </div>
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                onClick={onCancel}
+                data-testid="button-cancel-upload"
+              >
+                Abbrechen
+              </Button>
+              <Button
+                onClick={handleComplete}
+                className="btn-upload-shimmer text-white border-green-700 px-8"
+                data-testid="button-finish-upload"
+              >
+                Fertig und analysieren
+              </Button>
+            </div>
+          </div>
         </div>
       )}
     </div>

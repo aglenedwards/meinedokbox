@@ -1,0 +1,335 @@
+Symbol für microsoft.
+model-router
+Chatabschluss
+
+Symbol für openai.
+gpt-5.2-chat
+Chatabschluss, Antworten
+
+Symbol für openai.
+gpt-5.2
+Chatabschluss, Antworten
+
+Symbol für OpenAI.
+gpt-5.1-codex-max
+Antworten
+
+Symbol für openai.
+gpt-5.1
+Chatabschluss, Antworten
+
+Symbol für openai.
+gpt-5.1-codex
+Antworten
+
+Symbol für openai.
+gpt-5-chat
+Chatabschluss, Antworten
+
+Symbol für openai.
+gpt-5.1-chat
+Chatabschluss, Antworten
+
+Symbol für openai.
+gpt-5.1-codex-mini
+Antworten
+
+Symbol für openai.
+gpt-5-pro
+Chatabschluss, Antworten
+
+Symbol für openai.
+gpt-5
+Chatabschluss, Antworten
+
+Symbol für openai.
+gpt-4.1
+Chatabschluss, Antworten
+
+Symbol für openai.
+gpt-4.1-mini
+Chatabschluss, Antworten
+
+Symbol für openai.
+gpt-4o-transcribe-diarize
+Spracherkennung
+
+Symbol für openai.
+gpt-5-codex
+Chatabschluss, Antworten
+
+Symbol für openai.
+o3
+Chatabschluss, Antworten
+
+Symbol für openai.
+gpt-realtime-mini
+Audiogenerierung
+
+Symbol für openai.
+gpt-5-nano
+Chatabschluss, Antworten
+
+Symbol für openai.
+gpt-5-mini
+Chatabschluss, Antworten
+
+Symbol für openai.
+o4-mini
+Chatabschluss, Antworten
+
+Symbol für openai.
+gpt-4.1-nano
+Chatabschluss, Antworten
+
+Symbol für openai.
+o3-mini
+Chatabschluss, Antworten
+
+Symbol für openai.
+gpt-audio-mini
+Audiogenerierung
+
+Symbol für openai.
+gpt-oss-120b
+Chatabschluss
+
+Symbol für openai.
+gpt-realtime
+Audiogenerierung
+
+Symbol für openai.
+gpt-audio
+Audiogenerierung
+
+Symbol für openai.
+o3-deep-research
+Datengenerierung
+
+Symbol für openai.
+codex-mini
+Antworten
+
+Symbol für openai.
+gpt-4.5-preview
+Chatabschluss, Antworten
+
+Symbol für openai.
+gpt-oss-20b
+Chatabschluss
+
+Symbol für openai.
+o3-pro
+Chatabschluss, Antworten
+
+Symbol für openai.
+sora
+Videogenerierung
+
+Symbol für openai.
+gpt-image-1
+Text-zu-Bild, Bild zu Bild
+
+Symbol für openai.
+gpt-4o-mini-tts
+Sprachsynthese
+
+Symbol für openai.
+gpt-4o-transcribe
+Spracherkennung
+
+Symbol für openai.
+gpt-4o-mini-transcribe
+Spracherkennung
+
+Symbol für openai.
+computer-use-preview
+Antworten
+
+Symbol für openai.
+gpt-4o-mini-audio-preview
+Audiogenerierung
+
+Symbol für openai.
+gpt-4o-mini-realtime-preview
+Audiogenerierung
+
+Symbol für openai.
+o1
+Chatabschluss, Antworten
+
+Symbol für openai.
+o1-mini
+Chatabschluss, Antworten
+
+Symbol für openai.
+gpt-4o
+Chatabschluss, Antworten
+
+Symbol für openai.
+gpt-4o-mini
+Chatabschluss, Antworten
+
+Symbol für openai.
+gpt-4o-audio-preview
+Audiogenerierung
+
+Symbol für openai.
+gpt-4o-realtime-preview
+Audiogenerierung
+
+Symbol für openai.
+o1-preview
+Chatabschluss, Antworten
+
+Symbol für openai.
+gpt-4
+Chatabschluss, Antworten
+
+Symbol für openai.
+dall-e-3
+Text-zu-Bild
+
+Symbol für openai.
+davinci-002
+Abschlüsse
+
+Symbol für openai.
+gpt-35-turbo-16k
+Chatabschluss
+
+Symbol für openai.
+gpt-35-turbo-instruct
+Chatabschluss
+
+Symbol für openai.
+gpt-35-turbo
+Chatabschluss
+
+Symbol für openai.
+tts
+Sprachsynthese
+
+Symbol für openai.
+text-embedding-ada-002
+Einbettungen
+
+Symbol für openai.
+text-embedding-3-large
+Einbettungen
+
+Symbol für openai.
+gpt-4-32k
+Chatabschluss, Antworten
+
+Symbol für openai.
+tts-hd
+Sprachsynthese
+
+Symbol für openai.
+whisper
+Automatische Spracherkennung
+
+Symbol für openai.
+gpt-image-1-mini
+Text-zu-Bild
+
+Symbol für openai.
+text-embedding-3-small
+Einbettungen
+
+Symbol für cohere.
+Cohere-rerank-v4.0-pro
+Textklassifizierung
+
+Symbol für cohere.
+Cohere-rerank-v4.0-fast
+Textklassifizierung
+
+Symbol für Moonshot AI.
+Kimi-K2-Thinking
+Chatabschluss
+
+Symbol für Anthropic.
+claude-opus-4-5
+Nachrichten
+
+Symbol für Anthropic.
+claude-sonnet-4-5
+Nachrichten
+
+Symbol für deepseek.
+DeepSeek-V3.1
+Chatabschluss
+
+Symbol für Mistral AI.
+Mistral-Large-3
+Chatabschluss
+
+Symbol für anthropic.
+claude-haiku-4-5
+Nachrichten
+
+Symbol für Anthropic.
+claude-opus-4-1
+Nachrichten
+
+Symbol für xai.
+grok-4
+Chatabschluss
+
+Symbol für cohere.
+embed-v-4-0
+Einbettungen, Zusammenfassung
+
+Symbol für xai.
+grok-4-fast-reasoning
+Chatabschluss
+
+Symbol für meta.
+Llama-4-Maverick-17B-128E-Instruct-FP8
+Chatabschluss
+
+Symbol für deepseek.
+DeepSeek-V3-0324
+Chatabschluss
+
+Symbol für xai.
+grok-4-fast-non-reasoning
+Chatabschluss
+
+Symbol für black forest labs.
+FLUX.1-Kontext-pro
+Text-zu-Bild, Bild zu Bild
+
+Symbol für black forest labs.
+FLUX-1.1-pro
+Text-zu-Bild
+
+Symbol für deepseek.
+DeepSeek-R1-0528
+Chatabschluss
+
+Symbol für xai.
+grok-3
+Chatabschluss
+
+Symbol für microsoft.
+MAI-DS-R1
+Chatabschluss
+
+Symbol für xai.
+grok-code-fast-1
+Chatabschluss
+
+Symbol für mistral ai.
+mistral-document-ai-2505
+Bild-zu-Text
+
+Symbol für xai.
+grok-3-mini
+Chatabschluss
+
+Symbol für meta.
+Llama-3.3-70B-Instruct
+Chatabschluss
