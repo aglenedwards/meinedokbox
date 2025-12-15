@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { Shield, Server, Lock, FileText, CreditCard, HelpCircle, Mail, Building2, Scale, FolderOpen, Smartphone, Mail as MailIcon, Cookie } from "lucide-react";
+import { Shield, Server, Lock, FileText, CreditCard, Mail, Building2, Scale, FolderOpen, Smartphone, Mail as MailIcon, Cookie } from "lucide-react";
 import logoImage from "@assets/meinedokbox_1760966015056.png";
 import { openCookieSettings } from "@/components/CookieConsent";
 
@@ -105,12 +105,6 @@ export function Footer() {
                   <span className="flex items-center gap-2.5 text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer group">
                     <Mail className="h-4 w-4 text-muted-foreground/60 group-hover:text-primary transition-colors" />
                     Kontakt
-                  </span>
-                </Link>
-                <Link href="/hilfe" data-testid="link-hilfe">
-                  <span className="flex items-center gap-2.5 text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer group">
-                    <HelpCircle className="h-4 w-4 text-muted-foreground/60 group-hover:text-primary transition-colors" />
-                    Hilfe & FAQ
                   </span>
                 </Link>
                 <button
