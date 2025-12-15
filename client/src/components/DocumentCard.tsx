@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { 
-  FileText, Calendar, MoreVertical, Euro, FileSignature, Shield, Mail, FileQuestion,
-  Landmark, Receipt, Briefcase, FileCheck, Building2, Stethoscope, Home, Car, 
-  GraduationCap, Baby, PiggyBank, ShoppingBag, Plane, User, Sparkles, Lock, Users, Check, Folder, X,
-  Download, Share2, Eye, Pencil, Tag, FolderInput, Trash2, CheckCircle2, DollarSign
+  MoreVertical, Sparkles, Lock, Users, User, Check, Folder, X,
+  Download, Share2, Eye, Pencil, Tag, FolderInput, Trash2, CheckCircle2, DollarSign,
+  Calendar, FileText, Euro
 } from "lucide-react";
+import { categoryConfig, allCategories, getCategoryBadgeClasses, getCategoryBorderColor } from "@shared/categories";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -50,119 +50,6 @@ interface DocumentCardProps {
   onPaymentStatusChange?: (status: 'paid' | 'unpaid' | 'not_applicable') => void;
 }
 
-const categoryConfig: Record<string, { icon: typeof Euro; color: string; bgColor: string }> = {
-  'Finanzen & Banken': { 
-    icon: Landmark, 
-    color: 'text-blue-600 dark:text-blue-400',
-    bgColor: 'bg-blue-50 dark:bg-blue-950'
-  },
-  'Versicherungen': { 
-    icon: Shield, 
-    color: 'text-emerald-600 dark:text-emerald-400',
-    bgColor: 'bg-emerald-50 dark:bg-emerald-950'
-  },
-  'Steuern & Buchhaltung': { 
-    icon: Euro, 
-    color: 'text-amber-600 dark:text-amber-400',
-    bgColor: 'bg-amber-50 dark:bg-amber-950'
-  },
-  'Arbeit & Gehalt': { 
-    icon: Briefcase, 
-    color: 'text-purple-600 dark:text-purple-400',
-    bgColor: 'bg-purple-50 dark:bg-purple-950'
-  },
-  'Verträge & Abos': { 
-    icon: FileSignature, 
-    color: 'text-indigo-600 dark:text-indigo-400',
-    bgColor: 'bg-indigo-50 dark:bg-indigo-950'
-  },
-  'Behörden & Amtliches': { 
-    icon: Building2, 
-    color: 'text-slate-600 dark:text-slate-400',
-    bgColor: 'bg-slate-50 dark:bg-slate-900'
-  },
-  'Gesundheit & Arzt': { 
-    icon: Stethoscope, 
-    color: 'text-red-600 dark:text-red-400',
-    bgColor: 'bg-red-50 dark:bg-red-950'
-  },
-  'Wohnen & Immobilien': { 
-    icon: Home, 
-    color: 'text-orange-600 dark:text-orange-400',
-    bgColor: 'bg-orange-50 dark:bg-orange-950'
-  },
-  'Auto & Mobilität': { 
-    icon: Car, 
-    color: 'text-cyan-600 dark:text-cyan-400',
-    bgColor: 'bg-cyan-50 dark:bg-cyan-950'
-  },
-  'Schule & Ausbildung': { 
-    icon: GraduationCap, 
-    color: 'text-violet-600 dark:text-violet-400',
-    bgColor: 'bg-violet-50 dark:bg-violet-950'
-  },
-  'Familie & Kinder': { 
-    icon: Baby, 
-    color: 'text-pink-600 dark:text-pink-400',
-    bgColor: 'bg-pink-50 dark:bg-pink-950'
-  },
-  'Rente & Vorsorge': { 
-    icon: PiggyBank, 
-    color: 'text-teal-600 dark:text-teal-400',
-    bgColor: 'bg-teal-50 dark:bg-teal-950'
-  },
-  'Einkäufe & Online-Bestellungen': { 
-    icon: ShoppingBag, 
-    color: 'text-lime-600 dark:text-lime-400',
-    bgColor: 'bg-lime-50 dark:bg-lime-950'
-  },
-  'Reisen & Freizeit': { 
-    icon: Plane, 
-    color: 'text-sky-600 dark:text-sky-400',
-    bgColor: 'bg-sky-50 dark:bg-sky-950'
-  },
-  'Sonstiges / Privat': { 
-    icon: FileQuestion, 
-    color: 'text-muted-foreground',
-    bgColor: 'bg-muted'
-  },
-};
-
-const categoryColors: Record<string, string> = {
-  'Finanzen & Banken': 'bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800',
-  'Versicherungen': 'bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800',
-  'Steuern & Buchhaltung': 'bg-amber-50 dark:bg-amber-950 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-800',
-  'Arbeit & Gehalt': 'bg-purple-50 dark:bg-purple-950 text-purple-600 dark:text-purple-400 border-purple-200 dark:border-purple-800',
-  'Verträge & Abos': 'bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800',
-  'Behörden & Amtliches': 'bg-slate-50 dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700',
-  'Gesundheit & Arzt': 'bg-red-50 dark:bg-red-950 text-red-600 dark:text-red-400 border-red-200 dark:border-red-800',
-  'Wohnen & Immobilien': 'bg-orange-50 dark:bg-orange-950 text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-800',
-  'Auto & Mobilität': 'bg-cyan-50 dark:bg-cyan-950 text-cyan-600 dark:text-cyan-400 border-cyan-200 dark:border-cyan-800',
-  'Schule & Ausbildung': 'bg-violet-50 dark:bg-violet-950 text-violet-600 dark:text-violet-400 border-violet-200 dark:border-violet-800',
-  'Familie & Kinder': 'bg-pink-50 dark:bg-pink-950 text-pink-600 dark:text-pink-400 border-pink-200 dark:border-pink-800',
-  'Rente & Vorsorge': 'bg-teal-50 dark:bg-teal-950 text-teal-600 dark:text-teal-400 border-teal-200 dark:border-teal-800',
-  'Einkäufe & Online-Bestellungen': 'bg-lime-50 dark:bg-lime-950 text-lime-600 dark:text-lime-400 border-lime-200 dark:border-lime-800',
-  'Reisen & Freizeit': 'bg-sky-50 dark:bg-sky-950 text-sky-600 dark:text-sky-400 border-sky-200 dark:border-sky-800',
-  'Sonstiges / Privat': 'bg-muted text-muted-foreground border-border',
-};
-
-const allCategories = [
-  'Finanzen & Banken',
-  'Versicherungen',
-  'Steuern & Buchhaltung',
-  'Arbeit & Gehalt',
-  'Verträge & Abos',
-  'Behörden & Amtliches',
-  'Gesundheit & Arzt',
-  'Wohnen & Immobilien',
-  'Auto & Mobilität',
-  'Schule & Ausbildung',
-  'Familie & Kinder',
-  'Rente & Vorsorge',
-  'Einkäufe & Online-Bestellungen',
-  'Reisen & Freizeit',
-  'Sonstiges / Privat'
-];
 
 export function DocumentCard({
   id,
@@ -331,32 +218,10 @@ export function DocumentCard({
     }
   };
   
-  // Get category accent color for left border
-  const getCategoryBorderColor = () => {
-    const colorMap: Record<string, string> = {
-      'Finanzen & Banken': 'border-l-blue-500',
-      'Versicherungen': 'border-l-emerald-500',
-      'Steuern & Buchhaltung': 'border-l-amber-500',
-      'Arbeit & Gehalt': 'border-l-purple-500',
-      'Verträge & Abos': 'border-l-indigo-500',
-      'Behörden & Amtliches': 'border-l-slate-500',
-      'Gesundheit & Arzt': 'border-l-red-500',
-      'Wohnen & Immobilien': 'border-l-orange-500',
-      'Auto & Mobilität': 'border-l-cyan-500',
-      'Schule & Ausbildung': 'border-l-violet-500',
-      'Familie & Kinder': 'border-l-pink-500',
-      'Rente & Vorsorge': 'border-l-teal-500',
-      'Einkäufe & Online-Bestellungen': 'border-l-lime-500',
-      'Reisen & Freizeit': 'border-l-sky-500',
-      'Sonstiges / Privat': 'border-l-gray-400',
-    };
-    return colorMap[category] || 'border-l-gray-400';
-  };
-
   return (
     <>
     <Card 
-      className={`relative cursor-pointer transition-all duration-200 border-l-4 ${getCategoryBorderColor()} hover:shadow-lg hover:scale-[1.02] hover:-translate-y-0.5`}
+      className={`relative cursor-pointer transition-all duration-200 border-l-4 ${getCategoryBorderColor(category)} hover:shadow-lg hover:scale-[1.02] hover:-translate-y-0.5`}
       onClick={onView}
       data-testid={`card-document-${id}`}
     >
@@ -494,7 +359,7 @@ export function DocumentCard({
               <div className="flex flex-wrap items-center gap-2">
                 <Badge 
                   variant="outline" 
-                  className={`${categoryColors[category] || categoryColors['Sonstiges']} text-xs w-fit`}
+                  className={`${getCategoryBadgeClasses(category)} text-xs w-fit`}
                   data-testid={`badge-category-${id}`}
                 >
                   {category}
