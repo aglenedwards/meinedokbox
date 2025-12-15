@@ -1,10 +1,52 @@
 import { useState } from "react";
-import { X, Plus, FileText, Image as ImageIcon, AlertCircle } from "lucide-react";
+import { X, Plus, FileText, Image as ImageIcon, AlertCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Document, Page, pdfjs } from 'react-pdf';
+import 'react-pdf/dist/Page/AnnotationLayer.css';
+import 'react-pdf/dist/Page/TextLayer.css';
+
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+  'pdfjs-dist/build/pdf.worker.min.mjs',
+  import.meta.url,
+).toString();
+
+function PdfThumbnail({ url }: { url: string }) {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  return (
+    <div className="w-full h-full flex items-center justify-center bg-muted">
+      {loading && !error && (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        </div>
+      )}
+      {error ? (
+        <FileText className="h-12 w-12 text-muted-foreground" />
+      ) : (
+        <Document
+          file={url}
+          onLoadSuccess={() => setLoading(false)}
+          onLoadError={() => { setLoading(false); setError(true); }}
+          loading=""
+          className="flex items-center justify-center"
+        >
+          <Page
+            pageNumber={1}
+            width={120}
+            renderTextLayer={false}
+            renderAnnotationLayer={false}
+            className={loading ? 'opacity-0' : 'opacity-100'}
+          />
+        </Document>
+      )}
+    </div>
+  );
+}
 
 interface MultiPageUploadProps {
   onComplete: (files: File[], mergeIntoOne: boolean) => void;
@@ -117,13 +159,15 @@ export function MultiPageUpload({ onComplete, onCancel }: MultiPageUploadProps) 
                 className="relative group overflow-hidden"
                 data-testid={`card-page-${index}`}
               >
-                <div className="aspect-[3/4] bg-muted relative">
+                <div className="aspect-[3/4] bg-muted relative overflow-hidden">
                   {page.file.type.startsWith('image/') ? (
                     <img
                       src={page.previewUrl}
                       alt={`Seite ${index + 1}`}
                       className="w-full h-full object-cover"
                     />
+                  ) : page.file.type === 'application/pdf' ? (
+                    <PdfThumbnail url={page.previewUrl} />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
                       <FileText className="h-12 w-12 text-muted-foreground" />
