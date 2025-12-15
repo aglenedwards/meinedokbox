@@ -131,6 +131,8 @@ export default function Dashboard() {
   }>({ open: false, duplicates: [], files: [], mergeIntoOne: false });
 
   // Fetch documents with React Query using infinite query for pagination
+  const DOCS_PER_PAGE = 25;
+  
   const {
     data,
     isLoading,
@@ -140,7 +142,7 @@ export default function Dashboard() {
   } = useInfiniteQuery<PaginatedDocuments>({
     queryKey: ["/api/documents", searchQuery, selectedCategories, sortBy],
     queryFn: ({ pageParam }) => 
-      getDocuments(searchQuery, selectedCategories, sortBy, undefined, pageParam as string | undefined),
+      getDocuments(searchQuery, selectedCategories, sortBy, DOCS_PER_PAGE, pageParam as string | undefined),
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
     initialPageParam: undefined,
     refetchOnWindowFocus: false,
