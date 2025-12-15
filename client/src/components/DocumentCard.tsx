@@ -331,16 +331,38 @@ export function DocumentCard({
     }
   };
   
+  // Get category accent color for left border
+  const getCategoryBorderColor = () => {
+    const colorMap: Record<string, string> = {
+      'Finanzen & Banken': 'border-l-blue-500',
+      'Versicherungen': 'border-l-emerald-500',
+      'Steuern & Buchhaltung': 'border-l-amber-500',
+      'Arbeit & Gehalt': 'border-l-purple-500',
+      'Verträge & Abos': 'border-l-indigo-500',
+      'Behörden & Amtliches': 'border-l-slate-500',
+      'Gesundheit & Arzt': 'border-l-red-500',
+      'Wohnen & Immobilien': 'border-l-orange-500',
+      'Auto & Mobilität': 'border-l-cyan-500',
+      'Schule & Ausbildung': 'border-l-violet-500',
+      'Familie & Kinder': 'border-l-pink-500',
+      'Rente & Vorsorge': 'border-l-teal-500',
+      'Einkäufe & Online-Bestellungen': 'border-l-lime-500',
+      'Reisen & Freizeit': 'border-l-sky-500',
+      'Sonstiges / Privat': 'border-l-gray-400',
+    };
+    return colorMap[category] || 'border-l-gray-400';
+  };
+
   return (
     <>
     <Card 
-      className="relative hover-elevate cursor-pointer transition-all" 
+      className={`relative cursor-pointer transition-all duration-200 border-l-4 ${getCategoryBorderColor()} hover:shadow-lg hover:scale-[1.02] hover:-translate-y-0.5`}
       onClick={onView}
       data-testid={`card-document-${id}`}
     >
       <CardHeader className="pb-3">
         <div className="flex items-start gap-4">
-          <div className={`${config.bgColor} rounded-lg p-3 flex-shrink-0`}>
+          <div className={`${config.bgColor} rounded-lg p-3 flex-shrink-0 transition-transform duration-200 group-hover:scale-110`}>
             <CategoryIcon className={`h-8 w-8 ${config.color}`} />
           </div>
           
