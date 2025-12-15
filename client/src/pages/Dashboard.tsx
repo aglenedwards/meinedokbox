@@ -862,29 +862,29 @@ export default function Dashboard() {
         {!isReadOnly && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6 mb-6 md:mb-8" data-testid="section-statistics">
             {/* Monthly Upload Limit Card */}
-            <Card data-testid="card-upload-limit">
+            <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5" data-testid="card-upload-limit">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium flex items-center gap-2">
-                  <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                  <TrendingUp className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
                   Uploads diesen Monat
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">
+                <div className="text-2xl font-bold tracking-tight">
                   {subscriptionStatus?.uploadsThisMonth ?? 0}
                   <span className="text-sm font-normal text-muted-foreground ml-1">
                     / {subscriptionStatus?.maxUploadsPerMonth ?? "..."}
                   </span>
                 </div>
                 <div className="mt-3">
-                  <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                  <div className="h-3 bg-secondary/50 rounded-full overflow-hidden shadow-inner">
                     <div 
-                      className={`h-full transition-all ${
+                      className={`h-full transition-all duration-500 ease-out rounded-full ${
                         ((subscriptionStatus?.uploadsThisMonth ?? 0) / (subscriptionStatus?.maxUploadsPerMonth ?? 1)) >= 0.9 
-                          ? 'bg-destructive' 
+                          ? 'bg-gradient-to-r from-red-400 to-red-600' 
                           : ((subscriptionStatus?.uploadsThisMonth ?? 0) / (subscriptionStatus?.maxUploadsPerMonth ?? 1)) >= 0.7 
-                            ? 'bg-yellow-500' 
-                            : 'bg-primary'
+                            ? 'bg-gradient-to-r from-amber-400 to-amber-600' 
+                            : 'bg-gradient-to-r from-emerald-400 to-emerald-600'
                       }`}
                       style={{ 
                         width: `${Math.min(
@@ -895,36 +895,36 @@ export default function Dashboard() {
                     />
                   </div>
                   <p className="text-xs text-muted-foreground mt-2">
-                    {(subscriptionStatus?.maxUploadsPerMonth ?? 0) - (subscriptionStatus?.uploadsThisMonth ?? 0)} verfügbar
+                    <span className="font-medium text-foreground">{(subscriptionStatus?.maxUploadsPerMonth ?? 0) - (subscriptionStatus?.uploadsThisMonth ?? 0)}</span> verfügbar
                   </p>
                 </div>
               </CardContent>
             </Card>
 
             {/* Storage Limit Card */}
-            <Card data-testid="card-storage-limit">
+            <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5" data-testid="card-storage-limit">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium flex items-center gap-2">
-                  <HardDrive className="h-4 w-4 text-muted-foreground" />
+                  <HardDrive className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
                   Speicher verwendet
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">
+                <div className="text-2xl font-bold tracking-tight">
                   {subscriptionStatus?.storageUsedGB?.toFixed(2) ?? "0.00"} GB
                   <span className="text-sm font-normal text-muted-foreground ml-1">
                     / {subscriptionStatus?.maxStorageGB ?? "..."} GB
                   </span>
                 </div>
                 <div className="mt-3">
-                  <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                  <div className="h-3 bg-secondary/50 rounded-full overflow-hidden shadow-inner">
                     <div 
-                      className={`h-full transition-all ${
+                      className={`h-full transition-all duration-500 ease-out rounded-full ${
                         ((subscriptionStatus?.storageUsedGB ?? 0) / (subscriptionStatus?.maxStorageGB ?? 1)) >= 0.9 
-                          ? 'bg-destructive' 
+                          ? 'bg-gradient-to-r from-red-400 to-red-600' 
                           : ((subscriptionStatus?.storageUsedGB ?? 0) / (subscriptionStatus?.maxStorageGB ?? 1)) >= 0.7 
-                            ? 'bg-yellow-500' 
-                            : 'bg-primary'
+                            ? 'bg-gradient-to-r from-amber-400 to-amber-600' 
+                            : 'bg-gradient-to-r from-blue-400 to-blue-600'
                       }`}
                       style={{ 
                         width: `${Math.min(
@@ -935,7 +935,7 @@ export default function Dashboard() {
                     />
                   </div>
                   <p className="text-xs text-muted-foreground mt-2">
-                    {((subscriptionStatus?.maxStorageGB ?? 0) - (subscriptionStatus?.storageUsedGB ?? 0)).toFixed(2)} GB verfügbar
+                    <span className="font-medium text-foreground">{((subscriptionStatus?.maxStorageGB ?? 0) - (subscriptionStatus?.storageUsedGB ?? 0)).toFixed(2)} GB</span> verfügbar
                   </p>
                 </div>
               </CardContent>
