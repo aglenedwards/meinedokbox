@@ -251,25 +251,28 @@ export function MultiPageUpload({ onComplete, onCancel }: MultiPageUploadProps) 
 
       {pages.length > 0 && (
         <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t border-border shadow-lg z-50">
-          <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between gap-4">
-            <div className="text-sm text-muted-foreground">
-              {pages.length} {pages.length === 1 ? 'Dokument' : 'Dokumente'} bereit zur Analyse
-            </div>
-            <div className="flex gap-3">
-              <Button
-                variant="outline"
-                onClick={onCancel}
-                data-testid="button-cancel-upload"
-              >
-                Abbrechen
-              </Button>
-              <Button
-                onClick={handleComplete}
-                className="btn-upload-shimmer text-white border-green-700 px-8"
-                data-testid="button-finish-upload"
-              >
-                Fertig und analysieren
-              </Button>
+          <div className="max-w-4xl mx-auto px-3 py-3 md:px-4 md:py-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div className="hidden sm:block text-sm text-muted-foreground">
+                {pages.length} {pages.length === 1 ? 'Dokument' : 'Dokumente'} bereit zur Analyse
+              </div>
+              <div className="flex gap-2 sm:gap-3 w-full sm:w-auto">
+                <Button
+                  variant="outline"
+                  onClick={onCancel}
+                  className="flex-1 sm:flex-none"
+                  data-testid="button-cancel-upload"
+                >
+                  Abbrechen
+                </Button>
+                <Button
+                  onClick={handleComplete}
+                  className="btn-upload-shimmer text-white border-green-700 flex-1 sm:flex-none sm:px-8"
+                  data-testid="button-finish-upload"
+                >
+                  Fertig und analysieren
+                </Button>
+              </div>
             </div>
           </div>
         </div>
