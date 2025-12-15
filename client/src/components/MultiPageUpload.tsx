@@ -176,6 +176,9 @@ export function MultiPageUpload({ onComplete, onCancel }: MultiPageUploadProps) 
             <p className="text-sm text-muted-foreground">
               Ziehen Sie eine Datei hierher oder klicken Sie zum Auswählen
             </p>
+            <p className="text-xs text-muted-foreground/70 mt-1">
+              Maximal {MAX_FILES} Dateien pro Upload (JPG, PNG, PDF)
+            </p>
           </div>
 
           <input
