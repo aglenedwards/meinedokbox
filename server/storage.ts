@@ -1,7 +1,7 @@
 import { type User, type UpsertUser, type Document, type InsertDocument, type UpdateDocument, type Tag, type InsertTag, type DocumentTag, type InsertDocumentTag, type SharedAccess, type InsertSharedAccess, type Folder, type InsertFolder, type TrialNotification, type InsertTrialNotification, type EmailWhitelist, type EmailJob, type InsertEmailJob, type SmartFolder, type InsertSmartFolder, type FeatureRequest, type InsertFeatureRequest, type FeatureRequestVote, type InsertFeatureRequestVote, type VideoTutorial, type InsertVideoTutorial } from "@shared/schema";
 import { db } from "./db";
 import { users, documents, tags, documentTags, sharedAccess, folders, trialNotifications, emailWhitelist, emailJobs, smartFolders, featureRequests, featureRequestVotes, videoTutorials } from "@shared/schema";
-import { eq, and, or, like, desc, asc, isNull, isNotNull, inArray, sql, getTableColumns } from "drizzle-orm";
+import { eq, and, or, like, ilike, desc, asc, isNull, isNotNull, inArray, sql, getTableColumns } from "drizzle-orm";
 import { generateInboundEmail } from "./lib/emailInbound";
 import crypto from "crypto";
 
@@ -405,8 +405,8 @@ export class DbStorage implements IStorage {
       whereClause = and(
         whereClause,
         or(
-          like(documents.title, `%${query}%`),
-          like(documents.extractedText, `%${query}%`)
+          ilike(documents.title, `%${query}%`),
+          ilike(documents.extractedText, `%${query}%`)
         )
       ) as any;
     }
