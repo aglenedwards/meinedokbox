@@ -6,6 +6,21 @@ PaperEase is a web and mobile application designed to digitize paper documents u
 
 ## Recent Changes
 
+### December 15, 2025 - Image Compression & Code Optimization
+
+**Image Compression on Upload:**
+- Implemented automatic WebP conversion for all uploaded images (JPEG, PNG, WEBP)
+- Max dimension limit: 2000px (maintains aspect ratio)
+- Quality setting: 85% (optimal balance between size and quality)
+- PDFs remain unchanged (no compression needed)
+- Significantly reduces storage costs and improves loading times
+
+**Code Quality Improvements:**
+- Centralized category configuration in `shared/categories.ts`
+- Removed duplicate categoryConfig from DocumentCard.tsx and CategoryFilter.tsx
+- Added helper functions: `getCategoryConfig()`, `getCategoryBadgeClasses()`, `getCategoryBorderColor()`
+- Verified all useEffect hooks have proper cleanup functions (no memory leaks)
+
 ### October 26, 2025 - AI Classification Improvements & Multi-Upload Enhancement
 
 **AI Document Categorization Overhaul:**
