@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Download, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, X, RotateCw } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Download, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, X, RotateCw, Loader2 } from "lucide-react";
 import { Document, Page, pdfjs } from 'react-pdf';
 import type { Document as DocumentType } from "@shared/schema";
 import 'react-pdf/dist/Page/AnnotationLayer.css';
@@ -17,6 +18,38 @@ interface DocumentViewerProps {
   document: DocumentType | null;
   open: boolean;
   onClose: () => void;
+}
+
+function ImageWithLoader({ src, alt, testId }: { src: string; alt: string; testId: string }) {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  return (
+    <div className="relative flex items-center justify-center w-full h-full">
+      {loading && !error && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
+          <Skeleton className="w-64 h-80 sm:w-96 sm:h-[480px] rounded-lg" />
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            <span className="text-sm">Bild wird geladen...</span>
+          </div>
+        </div>
+      )}
+      {error && (
+        <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground">
+          <span className="text-sm">Bild konnte nicht geladen werden</span>
+        </div>
+      )}
+      <img
+        src={src}
+        alt={alt}
+        className={`max-w-full max-h-full object-contain transition-opacity duration-300 ${loading ? 'opacity-0' : 'opacity-100'}`}
+        onLoad={() => setLoading(false)}
+        onError={() => { setLoading(false); setError(true); }}
+        data-testid={testId}
+      />
+    </div>
+  );
 }
 
 export function DocumentViewer({ document, open, onClose }: DocumentViewerProps) {
@@ -270,11 +303,10 @@ export function DocumentViewer({ document, open, onClose }: DocumentViewerProps)
                 )}
               </div>
             ) : (
-              <img
+              <ImageWithLoader
                 src={currentPageUrl}
                 alt={`${document.title} - Seite ${currentPage + 1}`}
-                className="max-w-full max-h-full object-contain"
-                data-testid={`img-page-${currentPage}`}
+                testId={`img-page-${currentPage}`}
               />
             )}
           </div>

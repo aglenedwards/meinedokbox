@@ -16,7 +16,7 @@ interface PagePreview {
   previewUrl: string;
 }
 
-const MAX_FILES = 10;
+const MAX_FILES = 20;
 
 export function MultiPageUpload({ onComplete, onCancel }: MultiPageUploadProps) {
   const [pages, setPages] = useState<PagePreview[]>([]);

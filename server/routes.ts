@@ -1549,8 +1549,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Document upload endpoint - supports single or multiple files (max 10)
-  app.post('/api/documents/upload', isAuthenticated, uploadLimiter, checkDocumentLimit, upload.array('files', 10), async (req: any, res) => {
+  // Document upload endpoint - supports single or multiple files (max 20)
+  app.post('/api/documents/upload', isAuthenticated, uploadLimiter, checkDocumentLimit, upload.array('files', 20), async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const files = req.files as Express.Multer.File[];
@@ -1562,8 +1562,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Keine Dateien ausgewählt" });
       }
 
-      if (files.length > 10) {
-        return res.status(400).json({ message: "Maximal 10 Dateien gleichzeitig möglich" });
+      if (files.length > 20) {
+        return res.status(400).json({ message: "Maximal 20 Dateien gleichzeitig möglich" });
       }
 
       // Handle merge into one document
