@@ -20,6 +20,50 @@ function getContentType(fileName: string): string {
   return contentTypes[ext || ''] || 'application/octet-stream';
 }
 
+// Check if file is a compressible image format
+function isCompressibleImage(fileName: string): boolean {
+  const ext = fileName.toLowerCase().split('.').pop();
+  return ['jpg', 'jpeg', 'png', 'webp'].includes(ext || '');
+}
+
+// Compress image to WebP format with quality and size limits
+async function compressImage(
+  buffer: Buffer,
+  fileName: string,
+  maxDimension: number = 2000,
+  quality: number = 85
+): Promise<{ buffer: Buffer; contentType: string }> {
+  const originalSize = buffer.length;
+  
+  // Get image metadata to check dimensions
+  const metadata = await sharp(buffer).metadata();
+  const needsResize = (metadata.width && metadata.width > maxDimension) || 
+                      (metadata.height && metadata.height > maxDimension);
+  
+  let sharpInstance = sharp(buffer);
+  
+  // Resize if larger than max dimension
+  if (needsResize) {
+    sharpInstance = sharpInstance.resize(maxDimension, maxDimension, {
+      fit: 'inside',
+      withoutEnlargement: true
+    });
+  }
+  
+  // Convert to WebP with quality setting
+  const compressedBuffer = await sharpInstance
+    .webp({ quality })
+    .toBuffer();
+  
+  const compressionRatio = ((1 - compressedBuffer.length / originalSize) * 100).toFixed(1);
+  console.log(`  Image compression: ${originalSize} → ${compressedBuffer.length} bytes (${compressionRatio}% reduction)`);
+  
+  return {
+    buffer: compressedBuffer,
+    contentType: 'image/webp'
+  };
+}
+
 export async function uploadFile(
   file: Buffer,
   fileName: string,
@@ -29,14 +73,29 @@ export async function uploadFile(
   
   // Generate unique object key
   const objectId = randomUUID();
-  const key = `.private/uploads/${objectId}`;
   
-  // Determine correct content type
-  const contentType = getContentType(fileName);
-  console.log('Uploading file to S3:', fileName, 'Key:', key, 'Content-Type:', contentType);
+  let uploadBuffer = file;
+  let contentType = getContentType(fileName);
+  let finalKey = `.private/uploads/${objectId}`;
+  
+  // Compress images to WebP format for storage efficiency
+  if (isCompressibleImage(fileName)) {
+    try {
+      console.log(`Compressing image: ${fileName}`);
+      const compressed = await compressImage(file, fileName);
+      uploadBuffer = compressed.buffer;
+      contentType = compressed.contentType;
+      // Keep the same key - WebP is the storage format
+    } catch (error) {
+      console.error('Image compression failed, uploading original:', error);
+      // Fall back to original file if compression fails
+    }
+  }
+  
+  console.log('Uploading file to S3:', fileName, 'Key:', finalKey, 'Content-Type:', contentType);
   
   // Upload file directly to S3
-  await objectStorageService.uploadBuffer(file, key, contentType);
+  await objectStorageService.uploadBuffer(uploadBuffer, finalKey, contentType);
   
   // Construct normalized path
   const filePath = `/objects/uploads/${objectId}`;
