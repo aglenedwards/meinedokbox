@@ -6,7 +6,14 @@ PaperEase is a web and mobile application designed to digitize paper documents u
 
 ## Recent Changes
 
-### December 15, 2025 - Image Compression & Code Optimization
+### December 15, 2025 - Image Compression, Rate Limiting & Code Optimization
+
+**OpenAI API Rate Limiting:**
+- Implemented Semaphore-based concurrency limiter (max 5 parallel API calls)
+- Added retry logic with exponential backoff for 429/503 errors (3 retries, starting at 1s)
+- Request throttling with 200ms minimum interval between API calls
+- Wrapped all OpenAI API calls: analyzeDocument(), analyzeDocumentFromText(), searchDocuments()
+- Prevents API quota exhaustion during high-concurrency scenarios
 
 **Image Compression on Upload:**
 - Implemented automatic WebP conversion for all uploaded images (JPEG, PNG, WEBP)
