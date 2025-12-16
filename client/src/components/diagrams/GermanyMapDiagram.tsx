@@ -1,4 +1,14 @@
 import { MapPin, Server, Database, Shield } from "lucide-react";
+import germanyMap from "@assets/Deutschlandkarte_1765890129712.png";
+
+// ============================================
+// MARKER-POSITIONEN (in Prozent der Kartenbreite/höhe)
+// Hier kannst du die X/Y Werte anpassen um die Marker zu verschieben
+// ============================================
+const locations = {
+  frankfurt: { x: 38, y: 55 },  // Frankfurt am Main
+  berlin: { x: 62, y: 30 },     // Berlin
+};
 
 export function GermanyMapDiagram() {
   return (
@@ -8,68 +18,64 @@ export function GermanyMapDiagram() {
         <p className="text-muted-foreground">Redundante Speicherung in deutschen IONOS-Rechenzentren</p>
       </div>
 
-      <div className="relative max-w-3xl mx-auto">
-        <svg viewBox="0 0 400 500" className="w-full h-auto max-h-[400px]" xmlns="http://www.w3.org/2000/svg">
-          {/* Germany outline - simplified but recognizable shape */}
-          <path 
-            d="M 180 30 
-               L 220 25 L 260 35 L 290 50 L 310 70 L 320 95 
-               L 340 120 L 350 150 L 345 180 L 350 210 
-               L 340 250 L 320 280 L 300 320 L 280 350 
-               L 250 380 L 220 410 L 180 430 L 150 440 
-               L 120 430 L 100 400 L 80 360 L 70 320 
-               L 60 280 L 55 240 L 60 200 L 70 160 
-               L 85 120 L 100 90 L 120 60 L 150 40 Z"
-            fill="hsl(var(--primary))" 
-            opacity="0.12" 
-            stroke="hsl(var(--primary))" 
-            strokeWidth="2"
-          />
+      <div className="relative max-w-2xl mx-auto">
+        {/* Germany Map Image */}
+        <img 
+          src={germanyMap} 
+          alt="Deutschlandkarte mit Rechenzentrumsstandorten" 
+          className="w-full h-auto"
+        />
 
-          {/* Frankfurt Region - Primary with pulsing effect */}
-          <g>
-            <circle cx="190" cy="280" r="50" fill="hsl(var(--primary))" opacity="0.08">
-              <animate attributeName="r" values="45;60;45" dur="3s" repeatCount="indefinite" />
-              <animate attributeName="opacity" values="0.15;0.05;0.15" dur="3s" repeatCount="indefinite" />
-            </circle>
-            <circle cx="190" cy="280" r="30" fill="hsl(var(--primary))" opacity="0.15">
-              <animate attributeName="r" values="28;38;28" dur="3s" repeatCount="indefinite" />
-              <animate attributeName="opacity" values="0.25;0.1;0.25" dur="3s" repeatCount="indefinite" />
-            </circle>
-            
-            {/* Main Frankfurt marker */}
-            <circle cx="190" cy="280" r="18" fill="hsl(var(--primary))" stroke="white" strokeWidth="3" />
-            <circle cx="190" cy="280" r="7" fill="white" />
-          </g>
-
-          {/* Berlin marker */}
-          <g>
-            <circle cx="290" cy="140" r="12" fill="hsl(var(--primary))" opacity="0.6" stroke="white" strokeWidth="2" />
-            <circle cx="290" cy="140" r="4" fill="white" />
-          </g>
-
-          {/* Multi-AZ within Frankfurt - show redundancy */}
-          <g opacity="0.7">
-            {/* Connection lines showing redundancy */}
-            <line x1="190" y1="280" x2="160" y2="310" stroke="hsl(var(--primary))" strokeWidth="2" strokeDasharray="4,4" />
-            <line x1="190" y1="280" x2="220" y2="310" stroke="hsl(var(--primary))" strokeWidth="2" strokeDasharray="4,4" />
-            
-            {/* Redundant AZ markers */}
-            <circle cx="160" cy="310" r="8" fill="hsl(var(--primary))" opacity="0.5" stroke="white" strokeWidth="2" />
-            <circle cx="220" cy="310" r="8" fill="hsl(var(--primary))" opacity="0.5" stroke="white" strokeWidth="2" />
-          </g>
-
-          {/* City Labels */}
-          <text x="190" y="250" textAnchor="middle" fontSize="14" fill="hsl(var(--foreground))" fontWeight="700">Frankfurt</text>
-          <text x="290" y="165" textAnchor="middle" fontSize="12" fill="hsl(var(--muted-foreground))" fontWeight="600">Berlin</text>
+        {/* Frankfurt Marker - Primary Location */}
+        <div 
+          className="absolute transform -translate-x-1/2 -translate-y-1/2"
+          style={{ left: `${locations.frankfurt.x}%`, top: `${locations.frankfurt.y}%` }}
+        >
+          {/* Pulsing circles */}
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+            <div className="w-24 h-24 rounded-full bg-primary/10 animate-ping" style={{ animationDuration: '3s' }} />
+          </div>
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+            <div className="w-16 h-16 rounded-full bg-primary/20 animate-ping" style={{ animationDuration: '3s', animationDelay: '0.5s' }} />
+          </div>
           
-          {/* Multi-AZ Label */}
-          <text x="190" y="345" textAnchor="middle" fontSize="10" fill="hsl(var(--muted-foreground))">Multi-AZ Redundanz</text>
-        </svg>
+          {/* Main marker */}
+          <div className="relative z-10 w-8 h-8 rounded-full bg-primary border-4 border-white shadow-lg flex items-center justify-center">
+            <div className="w-3 h-3 rounded-full bg-white" />
+          </div>
+          
+          {/* Label */}
+          <div className="absolute left-1/2 -translate-x-1/2 mt-2 whitespace-nowrap">
+            <span className="px-2 py-1 bg-primary text-primary-foreground text-sm font-bold rounded shadow-lg">
+              Frankfurt
+            </span>
+          </div>
+        </div>
+
+        {/* Berlin Marker - Secondary Location */}
+        <div 
+          className="absolute transform -translate-x-1/2 -translate-y-1/2"
+          style={{ left: `${locations.berlin.x}%`, top: `${locations.berlin.y}%` }}
+        >
+          {/* Smaller marker */}
+          <div className="relative z-10 w-5 h-5 rounded-full bg-primary/70 border-3 border-white shadow-md flex items-center justify-center">
+            <div className="w-2 h-2 rounded-full bg-white" />
+          </div>
+          
+          {/* Label */}
+          <div className="absolute left-1/2 -translate-x-1/2 mt-1 whitespace-nowrap">
+            <span className="px-2 py-0.5 bg-muted text-muted-foreground text-xs font-medium rounded shadow">
+              Berlin
+            </span>
+          </div>
+        </div>
 
         {/* Frankfurt Info Card */}
-        <div className="absolute top-[45%] right-0 md:right-[-10%] lg:right-[5%]">
-          <div className="bg-background border-2 border-primary rounded-lg px-4 py-3 shadow-xl max-w-[200px]">
+        <div 
+          className="absolute z-20"
+          style={{ left: `${locations.frankfurt.x + 12}%`, top: `${locations.frankfurt.y - 5}%` }}
+        >
+          <div className="bg-background border-2 border-primary rounded-lg px-4 py-3 shadow-xl max-w-[180px]">
             <div className="flex items-center gap-2 mb-2">
               <MapPin className="h-4 w-4 text-primary flex-shrink-0" />
               <span className="font-bold text-sm">Frankfurt am Main</span>
@@ -88,13 +94,6 @@ export function GermanyMapDiagram() {
                 <span>C5 & ISO 27001</span>
               </div>
             </div>
-          </div>
-        </div>
-
-        {/* Berlin Info - smaller */}
-        <div className="absolute top-[18%] right-[5%] md:right-[10%]">
-          <div className="bg-background/90 border rounded-md px-2 py-1 shadow-md">
-            <span className="text-xs text-muted-foreground">IONOS Backup</span>
           </div>
         </div>
       </div>
