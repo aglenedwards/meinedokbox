@@ -132,6 +132,10 @@ export const users = pgTable("users", {
   stripePriceId: varchar("stripe_price_id"),
   // Notification preferences
   notifyNewFeatures: boolean("notify_new_features").notNull().default(false),
+  // Marketing attribution (UTM tracking)
+  utmSource: varchar("utm_source"),
+  utmMedium: varchar("utm_medium"),
+  utmCampaign: varchar("utm_campaign"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

@@ -267,12 +267,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         acceptPrivacy: z.boolean().refine(val => val === true, {
           message: "Sie müssen den Datenschutzbestimmungen zustimmen"
         }),
+        // Marketing attribution (optional)
+        utmSource: z.string().optional(),
+        utmMedium: z.string().optional(),
+        utmCampaign: z.string().optional(),
       }).refine(data => data.password === data.passwordConfirm, {
         message: "Passwörter stimmen nicht überein",
         path: ["passwordConfirm"],
       });
 
-      const { email, password, firstName, lastName } = registerSchema.parse(req.body);
+      const { email, password, firstName, lastName, utmSource, utmMedium, utmCampaign } = registerSchema.parse(req.body);
       const normalizedEmail = email.toLowerCase();
 
       // Check if user already exists
@@ -308,6 +312,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         subscriptionPlan: "trial",
         trialEndsAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days trial
         inboundEmail, // Add unique email address for forwarding documents
+        // Marketing attribution
+        utmSource: utmSource || null,
+        utmMedium: utmMedium || null,
+        utmCampaign: utmCampaign || null,
       });
 
       // Add user's own email to whitelist (allows forwarding from their own address)
@@ -4200,6 +4208,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
         dailyRegistrations.push({ date: dateStr, count });
       }
       
+      // Marketing attribution (UTM) statistics
+      const utmSourceStats: Record<string, { registrations: number; verified: number; paying: number }> = {};
+      
+      for (const user of allUsers) {
+        const source = user.utmSource || 'Direkt / Organisch';
+        
+        if (!utmSourceStats[source]) {
+          utmSourceStats[source] = { registrations: 0, verified: 0, paying: 0 };
+        }
+        
+        utmSourceStats[source].registrations++;
+        if (user.isVerified) utmSourceStats[source].verified++;
+        if (user.stripeSubscriptionId) utmSourceStats[source].paying++;
+      }
+      
+      // Convert to array and sort by registrations
+      const marketingChannels = Object.entries(utmSourceStats)
+        .map(([source, stats]) => ({
+          source,
+          registrations: stats.registrations,
+          verified: stats.verified,
+          paying: stats.paying,
+          conversionRate: stats.registrations > 0 
+            ? ((stats.paying / stats.registrations) * 100).toFixed(1) 
+            : "0",
+        }))
+        .sort((a, b) => b.registrations - a.registrations);
+      
       res.json({
         totalUsers,
         verifiedUsers,
@@ -4214,6 +4250,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         totalStorageUsedGB,
         totalDocuments,
         dailyRegistrations,
+        marketingChannels,
       });
     } catch (error) {
       console.error('[Admin] Error fetching statistics:', error);
