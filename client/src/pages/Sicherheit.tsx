@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
 import { DataFlowDiagram } from "@/components/diagrams/DataFlowDiagram";
 import { RedundancyDiagram } from "@/components/diagrams/RedundancyDiagram";
-import { EUMapDiagram } from "@/components/diagrams/EUMapDiagram";
+import { GermanyMapDiagram } from "@/components/diagrams/GermanyMapDiagram";
 
 export default function Sicherheit() {
   const [, setLocation] = useLocation();
@@ -455,9 +455,9 @@ export default function Sicherheit() {
               </p>
             </div>
 
-            {/* EU Map */}
+            {/* Germany Map - IONOS Datacenter Locations */}
             <div className="mb-16">
-              <EUMapDiagram />
+              <GermanyMapDiagram />
             </div>
 
             <h3 className="text-2xl font-bold mb-8 text-center">
