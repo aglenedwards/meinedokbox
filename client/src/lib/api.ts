@@ -406,6 +406,10 @@ export interface RegisterData {
   firstName: string;
   lastName: string;
   acceptPrivacy: boolean;
+  // Marketing attribution (optional)
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
 }
 
 export interface LoginData {

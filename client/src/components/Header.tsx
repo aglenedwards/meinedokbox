@@ -181,7 +181,18 @@ export function Header() {
   };
 
   const onRegister = (data: RegisterData) => {
-    registerMutation.mutate(data);
+    // Capture UTM parameters from URL for marketing attribution
+    const urlParams = new URLSearchParams(window.location.search);
+    const utmSource = urlParams.get('utm_source') || undefined;
+    const utmMedium = urlParams.get('utm_medium') || undefined;
+    const utmCampaign = urlParams.get('utm_campaign') || undefined;
+    
+    registerMutation.mutate({
+      ...data,
+      utmSource,
+      utmMedium,
+      utmCampaign,
+    });
   };
 
   const handleForgotPassword = async (e: React.FormEvent) => {

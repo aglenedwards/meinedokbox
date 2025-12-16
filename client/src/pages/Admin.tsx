@@ -43,6 +43,14 @@ import logoImage from "@assets/meinedokbox_1760966015056.png";
 import type { User as UserType, FeatureRequest, VideoTutorial } from "@shared/schema";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 
+interface MarketingChannel {
+  source: string;
+  registrations: number;
+  verified: number;
+  paying: number;
+  conversionRate: string;
+}
+
 interface AdminStatistics {
   totalUsers: number;
   verifiedUsers: number;
@@ -63,6 +71,7 @@ interface AdminStatistics {
   totalStorageUsedGB: string;
   totalDocuments: number;
   dailyRegistrations: { date: string; count: number }[];
+  marketingChannels: MarketingChannel[];
 }
 
 interface UserWithStats extends UserType {
@@ -671,6 +680,59 @@ export default function Admin() {
                           <span className="text-sm">Family Plus ({statistics.usersByPlan.familyPlus})</span>
                         </div>
                       </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Marketing Channels */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <TrendingUp className="h-5 w-5" />
+                        Marketing-Kanäle
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {statistics.marketingChannels && statistics.marketingChannels.length > 0 ? (
+                        <div className="space-y-3">
+                          {statistics.marketingChannels.map((channel) => (
+                            <div key={channel.source} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                              <div className="flex items-center gap-3">
+                                <div className={`w-3 h-3 rounded-full ${
+                                  channel.source === 'google' ? 'bg-red-500' :
+                                  channel.source === 'facebook' ? 'bg-blue-600' :
+                                  channel.source === 'instagram' ? 'bg-pink-500' :
+                                  channel.source === 'tiktok' ? 'bg-black' :
+                                  channel.source === 'linkedin' ? 'bg-blue-700' :
+                                  'bg-gray-400'
+                                }`} />
+                                <span className="font-medium capitalize">{channel.source}</span>
+                              </div>
+                              <div className="flex items-center gap-6 text-sm">
+                                <div className="text-center">
+                                  <div className="font-bold">{channel.registrations}</div>
+                                  <div className="text-muted-foreground text-xs">Registr.</div>
+                                </div>
+                                <div className="text-center">
+                                  <div className="font-bold">{channel.verified}</div>
+                                  <div className="text-muted-foreground text-xs">Verifiziert</div>
+                                </div>
+                                <div className="text-center">
+                                  <div className="font-bold text-green-600">{channel.paying}</div>
+                                  <div className="text-muted-foreground text-xs">Zahlend</div>
+                                </div>
+                                <div className="text-center">
+                                  <div className="font-bold text-primary">{channel.conversionRate}%</div>
+                                  <div className="text-muted-foreground text-xs">Conv.</div>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-8 text-muted-foreground">
+                          Noch keine Marketing-Daten verfügbar. Nutze UTM-Parameter in deinen Werbelinks.
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 </div>
