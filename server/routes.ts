@@ -39,6 +39,7 @@ import { eq } from "drizzle-orm";
 import sharp from "sharp";
 import { PDFDocument } from "pdf-lib";
 import Stripe from "stripe";
+import { trackCompleteRegistration, trackStartTrial, trackSubscribe } from "./lib/meta";
 
 // Initialize Stripe
 if (!process.env.STRIPE_SECRET_KEY) {
@@ -321,6 +322,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       sendAdminNewUserNotification(normalizedEmail, `${firstName} ${lastName}`, userId)
         .catch(err => console.error('[Register] Failed to send admin notification:', err));
       console.log(`[Register] Admin notification sent for ${normalizedEmail}`);
+
+      // Track Meta Conversions API events (async, non-blocking)
+      const clientIp = req.headers['x-forwarded-for']?.toString().split(',')[0] || req.ip;
+      const userAgent = req.headers['user-agent'];
+      
+      trackCompleteRegistration({
+        userId: parseInt(userId.replace(/\D/g, '').slice(0, 10)) || Date.now(),
+        email: normalizedEmail,
+        ipAddress: clientIp,
+        userAgent: userAgent,
+      }).catch(err => console.error('[Register] Meta CompleteRegistration event failed:', err));
+      
+      trackStartTrial({
+        userId: parseInt(userId.replace(/\D/g, '').slice(0, 10)) || Date.now(),
+        email: normalizedEmail,
+        ipAddress: clientIp,
+        userAgent: userAgent,
+      }).catch(err => console.error('[Register] Meta StartTrial event failed:', err));
+      
+      console.log(`[Register] Meta events queued for ${normalizedEmail}`);
 
       res.json({ 
         message: "Registrierung erfolgreich. Bitte bestätigen Sie Ihre E-Mail-Adresse.",
@@ -3803,6 +3824,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 amount
               ).catch(err => console.error('[StripeWebhook] Failed to send admin notification:', err));
               console.log(`[StripeWebhook] Admin notification sent for subscription: ${user.email} - ${plan} (${period})`);
+              
+              // Track Meta Conversions API Subscribe event (async, non-blocking)
+              trackSubscribe({
+                userId: parseInt(userId.replace(/\D/g, '').slice(0, 10)) || Date.now(),
+                email: user.email,
+                plan: plan,
+                value: amount / 100, // Convert cents to euros
+                currency: 'EUR',
+              }).catch(err => console.error('[StripeWebhook] Meta Subscribe event failed:', err));
+              console.log(`[StripeWebhook] Meta Subscribe event queued for ${user.email} - ${plan}`);
             }
           }
           break;
