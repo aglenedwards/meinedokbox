@@ -481,36 +481,26 @@ export default function Landing() {
               </Button>
             </div>
 
-            {/* Trust Badges */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-              <div className="flex flex-col items-center gap-3 p-6 rounded-lg bg-background/50 backdrop-blur-sm border">
-                <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary/10">
-                  <MapPin className="h-6 w-6 text-primary" />
-                </div>
-                <div className="text-center">
-                  <div className="font-semibold text-lg">100% Deutschland</div>
-                  <div className="text-sm text-muted-foreground">Daten auf deutschen Servern</div>
-                </div>
+            {/* Trust Badges - Security focused */}
+            <div className="flex flex-wrap items-center justify-center gap-3 max-w-4xl mx-auto">
+              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-background/60 backdrop-blur-sm border text-sm" data-testid="badge-server-de">
+                <MapPin className="h-4 w-4 text-primary" />
+                <span className="font-medium">Serverstandort Deutschland</span>
               </div>
               
-              <div className="flex flex-col items-center gap-3 p-6 rounded-lg bg-background/50 backdrop-blur-sm border">
-                <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary/10">
-                  <Shield className="h-6 w-6 text-primary" />
-                </div>
-                <div className="text-center">
-                  <div className="font-semibold text-lg">DSGVO-konform</div>
-                  <div className="text-sm text-muted-foreground">EU-Speicherung mit DPF-Absicherung</div>
-                </div>
+              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-background/60 backdrop-blur-sm border text-sm" data-testid="badge-tls">
+                <Lock className="h-4 w-4 text-primary" />
+                <span className="font-medium">TLS 1.3 verschlüsselt</span>
               </div>
               
-              <div className="flex flex-col items-center gap-3 p-6 rounded-lg bg-background/50 backdrop-blur-sm border">
-                <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary/10">
-                  <Brain className="h-6 w-6 text-primary" />
-                </div>
-                <div className="text-center">
-                  <div className="font-semibold text-lg">KI-Kategorisierung</div>
-                  <div className="text-sm text-muted-foreground">Automatisch sortiert in Sekunden</div>
-                </div>
+              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-background/60 backdrop-blur-sm border text-sm" data-testid="badge-dsgvo">
+                <Shield className="h-4 w-4 text-primary" />
+                <span className="font-medium">DSGVO-konform</span>
+              </div>
+              
+              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-background/60 backdrop-blur-sm border text-sm" data-testid="badge-no-training">
+                <Eye className="h-4 w-4 text-primary" />
+                <span className="font-medium">Kein KI-Training</span>
               </div>
             </div>
           </div>
@@ -1780,6 +1770,12 @@ export default function Landing() {
                   >
                     {registerMutation.isPending ? "Registrieren..." : "Kostenlos registrieren"}
                   </Button>
+                  
+                  {/* Trust hint */}
+                  <div className="flex items-center justify-center gap-2 pt-3 text-xs text-muted-foreground" data-testid="signup-trust-hint">
+                    <Lock className="h-3 w-3" />
+                    <span>Ihre Daten werden sicher in Deutschland gespeichert</span>
+                  </div>
                 </form>
               </Form>
             </TabsContent>
