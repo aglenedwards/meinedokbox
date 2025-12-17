@@ -14,6 +14,7 @@ class EmailQueue {
   private processingInterval: NodeJS.Timeout | null = null;
   private emailsSentInWindow: number = 0;
   private windowStartTime: number = Date.now();
+  private tickCount: number = 0;
 
   constructor() {
     this.startProcessing();
@@ -118,7 +119,11 @@ class EmailQueue {
    * Process all pending jobs in queue
    */
   private async processQueue(): Promise<void> {
+    this.tickCount++;
+    console.log(`[EmailQueue] ⏰ Tick #${this.tickCount} - checking for pending jobs...`);
+    
     if (this.processing) {
+      console.log(`[EmailQueue] ⏭️ Already processing, skipping tick #${this.tickCount}`);
       return;
     }
 
@@ -126,17 +131,26 @@ class EmailQueue {
 
     try {
       // Get pending jobs from database
+      console.log(`[EmailQueue] 🔍 Querying database for pending jobs...`);
       const pendingJobs = await storage.getPendingEmailJobs(10);
+      console.log(`[EmailQueue] 📊 Found ${pendingJobs.length} pending jobs in database`);
 
       if (pendingJobs.length === 0) {
+        console.log(`[EmailQueue] 📭 No pending jobs found, nothing to process`);
         this.processing = false;
         return;
       }
+
+      // Log job details for debugging
+      pendingJobs.forEach((job, i) => {
+        console.log(`[EmailQueue] 📧 Job ${i + 1}: id=${job.id}, type=${job.type}, email=${job.email}, attempts=${job.attempts}, status=${job.status}`);
+      });
 
       // Filter jobs that are ready for retry (respecting backoff)
       const readyJobs = pendingJobs.filter(job => this.shouldRetryNow(job));
       
       if (readyJobs.length === 0) {
+        console.log(`[EmailQueue] ⏳ All ${pendingJobs.length} jobs waiting for backoff, nothing ready to process`);
         this.processing = false;
         return;
       }
@@ -227,10 +241,14 @@ class EmailQueue {
   private startProcessing(): void {
     // Check for pending jobs every 30 seconds
     this.processingInterval = setInterval(() => {
-      this.processQueue();
+      this.processQueue().catch(err => {
+        console.error('[EmailQueue] ❌ Unhandled error in processQueue:', err);
+      });
     }, 30000);
 
     console.log('[EmailQueue] 🚀 Email queue started with 30s check interval (PostgreSQL-backed)');
+    console.log(`[EmailQueue] 📍 APP_URL = ${process.env.APP_URL || '(not set)'}`);
+    console.log(`[EmailQueue] 📍 REPLIT_DOMAINS = ${process.env.REPLIT_DOMAINS || '(not set)'}`);
   }
 
   /**
