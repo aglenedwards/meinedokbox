@@ -405,6 +405,24 @@ export const videoTutorials = pgTable("video_tutorials", {
   createdAt: timestamp("created_at").notNull().default(sql`now()`),
 });
 
+// Changelog / What's New entries
+export const CHANGELOG_TYPES = ["new", "improved", "fixed"] as const;
+
+export const changelog = pgTable("changelog", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  type: varchar("type", { length: 20 }).notNull().default("new"), // new, improved, fixed
+  isPublished: boolean("is_published").notNull().default(true),
+  publishedAt: timestamp("published_at").notNull().default(sql`now()`),
+  createdAt: timestamp("created_at").notNull().default(sql`now()`),
+});
+
+export const insertChangelogSchema = createInsertSchema(changelog).omit({
+  id: true,
+  createdAt: true,
+});
+
 export const insertFeatureRequestSchema = createInsertSchema(featureRequests).omit({
   id: true,
   voteCount: true,
@@ -466,3 +484,5 @@ export type InsertFeatureRequestVote = z.infer<typeof insertFeatureRequestVoteSc
 export type FeatureRequestVote = typeof featureRequestVotes.$inferSelect;
 export type InsertVideoTutorial = z.infer<typeof insertVideoTutorialSchema>;
 export type VideoTutorial = typeof videoTutorials.$inferSelect;
+export type InsertChangelog = z.infer<typeof insertChangelogSchema>;
+export type Changelog = typeof changelog.$inferSelect;
