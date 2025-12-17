@@ -138,7 +138,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Serve PWA files with correct MIME types (fix production deployment)
   app.get('/service-worker.js', (_req, res) => {
-    const filePath = path.resolve(import.meta.dirname, '..', 'public', 'service-worker.js');
+    const filePath = path.resolve(import.meta.dirname, '..', 'client', 'public', 'service-worker.js');
     if (fs.existsSync(filePath)) {
       res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
       res.setHeader('Service-Worker-Allowed', '/');
@@ -149,12 +149,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.get('/manifest.json', (_req, res) => {
-    const filePath = path.resolve(import.meta.dirname, '..', 'public', 'manifest.json');
+    const filePath = path.resolve(import.meta.dirname, '..', 'client', 'public', 'manifest.json');
     if (fs.existsSync(filePath)) {
       res.setHeader('Content-Type', 'application/json; charset=utf-8');
       res.sendFile(filePath);
     } else {
       res.status(404).send('Manifest not found');
+    }
+  });
+
+  // Serve PWA icons with correct content type
+  app.get('/icons/:filename', (req, res) => {
+    const { filename } = req.params;
+    const filePath = path.resolve(import.meta.dirname, '..', 'client', 'public', 'icons', filename);
+    if (fs.existsSync(filePath)) {
+      res.setHeader('Content-Type', 'image/png');
+      res.sendFile(filePath);
+    } else {
+      res.status(404).send('Icon not found');
     }
   });
 
