@@ -35,9 +35,8 @@ export default function AdminLogin() {
         title: "Authentifizierung erfolgreich",
         description: "Sie werden zum Admin-Bereich weitergeleitet...",
       });
-      setTimeout(() => {
-        setLocation("/admin");
-      }, 500);
+      // Use window.location for reliable navigation
+      window.location.href = "/admin";
     },
     onError: (error: Error) => {
       toast({
