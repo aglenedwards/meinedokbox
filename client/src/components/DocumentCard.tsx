@@ -27,6 +27,7 @@ interface DocumentCardProps {
   date: string;
   thumbnailUrl?: string;
   isShared?: boolean;
+  isSharedViaFolder?: boolean; // Document is shared via SmartFolder shareWithPartner setting
   isUpdatingSharing?: boolean;
   onView?: () => void;
   onDelete?: () => void;
@@ -58,6 +59,7 @@ export function DocumentCard({
   date,
   thumbnailUrl,
   isShared,
+  isSharedViaFolder = false,
   isUpdatingSharing = false,
   onView,
   onDelete,
@@ -78,6 +80,8 @@ export function DocumentCard({
 }: DocumentCardProps) {
   // Handle null/undefined isShared values - default to false (private, not shared)
   const sharedStatus = isShared ?? false;
+  // Document is effectively shared if either directly shared OR shared via folder
+  const effectivelyShared = sharedStatus || isSharedViaFolder;
   
   const config = categoryConfig[category] || categoryConfig['Sonstiges / Privat'];
   const CategoryIcon = config.icon;
@@ -450,17 +454,25 @@ export function DocumentCard({
           variant="ghost"
           size="icon"
           className="h-8 w-8"
-          disabled={isUpdatingSharing}
+          disabled={isUpdatingSharing || isSharedViaFolder}
           onClick={(e) => {
             e.stopPropagation();
-            if (onSharingToggle && !isUpdatingSharing) {
+            if (onSharingToggle && !isUpdatingSharing && !isSharedViaFolder) {
               onSharingToggle(!sharedStatus);
             }
           }}
           data-testid={`button-sharing-${id}`}
-          title={sharedStatus ? "Geteilt mit Partner" : "Privat (nur Sie)"}
+          title={
+            isSharedViaFolder 
+              ? "Automatisch geteilt via Tab-Einstellung" 
+              : sharedStatus 
+                ? "Geteilt mit Partner" 
+                : "Privat (nur Sie)"
+          }
         >
-          {sharedStatus ? (
+          {isSharedViaFolder ? (
+            <Users className="h-4 w-4 text-green-600 dark:text-green-500" />
+          ) : sharedStatus ? (
             <Users className="h-4 w-4 text-blue-600 dark:text-blue-500" />
           ) : (
             <Lock className="h-4 w-4 text-muted-foreground" />
