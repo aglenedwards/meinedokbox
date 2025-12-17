@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { Lightbulb, PlayCircle, Lock, Scale } from "lucide-react";
+import { Lightbulb, PlayCircle, Lock, Scale, Sparkles } from "lucide-react";
 
 export function DashboardFooter() {
   return (
@@ -20,6 +20,12 @@ export function DashboardFooter() {
             <span className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
               <PlayCircle className="h-3.5 w-3.5" />
               Video-Tutorials
+            </span>
+          </Link>
+          <Link href="/changelog" data-testid="link-changelog">
+            <span className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
+              <Sparkles className="h-3.5 w-3.5" />
+              Was ist neu?
             </span>
           </Link>
           <Link href="/datenschutz" data-testid="link-datenschutz-dashboard">

@@ -29,6 +29,7 @@ import DokumenteApp from "@/pages/DokumenteApp";
 import PostDigitalisieren from "@/pages/PostDigitalisieren";
 import WunschFeatures from "@/pages/WunschFeatures";
 import VideoTutorials from "@/pages/VideoTutorials";
+import Changelog from "@/pages/Changelog";
 import NotFound from "@/pages/not-found";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { PWAUpdatePrompt } from "@/components/PWAUpdatePrompt";
@@ -109,6 +110,9 @@ function Router() {
       </Route>
       <Route path="/video-tutorials">
         {() => <ProtectedRoute component={VideoTutorials} />}
+      </Route>
+      <Route path="/changelog">
+        {() => <ProtectedRoute component={Changelog} />}
       </Route>
       <Route component={NotFound} />
     </Switch>
