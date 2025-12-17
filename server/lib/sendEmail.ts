@@ -879,3 +879,131 @@ Automatische Benachrichtigung von MeineDokBox
   return sendEmail({ to: serviceEmail, subject, text, html });
 }
 
+/**
+ * Send notification email when a user is removed from a family account
+ * They become their own Master with 7-day trial
+ */
+export async function sendAccountSeparatedEmail(
+  to: string,
+  userName: string,
+  masterName: string
+): Promise<boolean> {
+  const baseUrl = getAppUrl();
+  const loginLink = `${baseUrl}/login`;
+  const subject = "Wichtig: Änderungen an deinem MeineDokBox-Zugang";
+  
+  const text = `
+Hallo ${userName}!
+
+Dein Zugang zum MeineDokBox-Konto von ${masterName} wurde beendet.
+
+Keine Sorge - deine Dokumente sind sicher! Du hast jetzt dein eigenes MeineDokBox-Konto:
+
+✓ Alle deine Dokumente bleiben erhalten
+✓ Du hast 7 Tage kostenlos Zeit um ein eigenes Abo zu wählen
+✓ Nach dem Test-Zeitraum kannst du weiterhin deine Dokumente ansehen
+
+So geht es weiter:
+1. Melde dich mit deiner E-Mail (${to}) an
+2. Wähle ein Abo-Modell, das zu dir passt
+3. Lade weiterhin Dokumente hoch und organisiere sie
+
+Du kannst dich jetzt anmelden: ${loginLink}
+
+Bei Fragen sind wir gerne für dich da!
+
+Viele Grüße,
+Dein MeineDokBox Team
+  `.trim();
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .content {
+      background: #f8f9fa;
+      padding: 30px;
+      border-radius: 0 0 8px 8px;
+    }
+    .button {
+      display: inline-block;
+      background: #667eea;
+      color: white;
+      padding: 12px 30px;
+      text-decoration: none;
+      border-radius: 6px;
+      margin: 20px 0;
+    }
+    .benefits {
+      background: white;
+      padding: 20px;
+      border-radius: 6px;
+      margin: 20px 0;
+      border-left: 4px solid #10b981;
+    }
+    .benefit {
+      margin: 10px 0;
+      padding-left: 25px;
+      position: relative;
+    }
+    .benefit:before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      color: #10b981;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #ffffff; padding: 30px; border-radius: 8px 8px 0 0; text-align: center;">
+    <h1 style="color: #ffffff !important; margin: 0 0 10px 0; font-size: 24px;">📂 MeineDokBox</h1>
+    <p style="color: #ffffff !important; margin: 0; font-size: 16px;">Wichtige Änderungen an deinem Zugang</p>
+  </div>
+  
+  <div class="content">
+    <p>Hallo ${userName}!</p>
+    
+    <p>Dein Zugang zum MeineDokBox-Konto von <strong>${masterName}</strong> wurde beendet.</p>
+    
+    <div class="benefits">
+      <h3 style="color: #10b981; margin-top: 0;">🎉 Gute Nachrichten!</h3>
+      <div class="benefit">Alle deine Dokumente bleiben erhalten</div>
+      <div class="benefit">Du hast <strong>7 Tage kostenlos</strong> Zeit um ein eigenes Abo zu wählen</div>
+      <div class="benefit">Nach dem Test-Zeitraum kannst du weiterhin deine Dokumente ansehen</div>
+    </div>
+    
+    <p>Du hast jetzt dein eigenes MeineDokBox-Konto! Melde dich einfach an und wähle ein Abo-Modell, das zu dir passt.</p>
+    
+    <center>
+      <a href="${loginLink}" class="button" style="display: inline-block; background: #667eea; color: #ffffff !important; padding: 12px 30px; text-decoration: none; border-radius: 6px; margin: 20px 0;">
+        Jetzt anmelden
+      </a>
+    </center>
+    
+    <p style="margin-top: 30px; font-size: 14px; color: #666;">
+      Bei Fragen sind wir gerne für dich da!
+    </p>
+    
+    <p style="margin-top: 20px; font-size: 14px; color: #666; text-align: center;">
+      Viele Grüße,<br>
+      Dein MeineDokBox Team
+    </p>
+  </div>
+</body>
+</html>
+  `.trim();
+
+  return sendEmail({ to, subject, text, html });
+}
+
