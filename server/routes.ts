@@ -20,7 +20,7 @@ import { ObjectPermission } from "./objectAcl";
 import { insertDocumentSchema, updateDocumentSchema, DOCUMENT_CATEGORIES, PLAN_LIMITS } from "@shared/schema";
 import { combineImagesToPDF, type PageBuffer } from "./lib/pdfGenerator";
 import { parseMailgunWebhook, isSupportedAttachment, isValidDocumentAttachment, isEmailWhitelisted, verifyMailgunWebhook, extractEmailAddress } from "./lib/emailInbound";
-import { sendSharedAccessInvitation, sendVerificationEmail, sendPasswordResetEmail, sendContactFormEmail, sendAdminNewUserNotification, sendAdminNewSubscriptionNotification, sendAdminSubscriptionCancelledNotification } from "./lib/sendEmail";
+import { sendSharedAccessInvitation, sendVerificationEmail, sendPasswordResetEmail, sendContactFormEmail, sendAdminNewUserNotification, sendAdminNewSubscriptionNotification, sendAdminSubscriptionCancelledNotification, sendAccountSeparatedEmail } from "./lib/sendEmail";
 import { emailQueue } from "./lib/emailQueue";
 import bcrypt from 'bcrypt';
 import { checkDocumentLimit, checkEmailFeature, checkAndDowngradeTrial, getEffectiveUserId, isSharedUser } from "./middleware/subscriptionLimits";
@@ -828,9 +828,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
             .sort((a, b) => new Date(a.invitedAt || 0).getTime() - new Date(b.invitedAt || 0).getTime())
             .slice(0, activeCount - allowedInvites);
 
+          // Get master name for email
+          const masterName = user?.firstName && user?.lastName
+            ? `${user.firstName} ${user.lastName}`
+            : user?.email || "Ihr Partner";
+
           for (const invite of toRevoke) {
-            await storage.revokeSharedAccess(invite.id);
+            // Revoke the invitation using correct function
+            await storage.revokeSharedAccessById(invite.id);
             console.log(`[Downgrade] Revoked shared access ${invite.id} for ${invite.sharedWithEmail}`);
+            
+            // Convert slave to Master with 7-day trial if they have a user account
+            if (invite.sharedWithUserId) {
+              const slaveUser = await storage.getUser(invite.sharedWithUserId);
+              
+              if (slaveUser) {
+                const trialEndsAt = new Date();
+                trialEndsAt.setDate(trialEndsAt.getDate() + 7);
+                
+                await db.update(users)
+                  .set({
+                    subscriptionPlan: 'trial',
+                    subscriptionEndsAt: trialEndsAt,
+                    masterAccountId: null,
+                    updatedAt: new Date(),
+                  })
+                  .where(eq(users.id, invite.sharedWithUserId));
+                
+                console.log(`[Downgrade] Converted slave ${invite.sharedWithUserId} to trial Master`);
+                
+                // Send notification email
+                const slaveName = slaveUser.firstName || slaveUser.email || "Nutzer";
+                const slaveEmail = slaveUser.email || invite.sharedWithEmail;
+                
+                if (slaveEmail) {
+                  try {
+                    await sendAccountSeparatedEmail(slaveEmail, slaveName, masterName);
+                    console.log(`[Downgrade] Sent separation email to ${slaveEmail}`);
+                  } catch (emailError) {
+                    console.error(`[Downgrade] Failed to send email to ${slaveEmail}:`, emailError);
+                  }
+                }
+              }
+            }
           }
 
           console.log(`[Downgrade] Revoked ${toRevoke.length} invitations due to plan downgrade`);
@@ -1086,10 +1126,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete('/api/shared-access', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
+      
+      // Get current user (master) info for email
+      const masterUser = await storage.getUser(userId);
+      const masterName = masterUser?.firstName && masterUser?.lastName
+        ? `${masterUser.firstName} ${masterUser.lastName}`
+        : masterUser?.email || "Ihr Partner";
+      
+      // Get all active shared access records before revoking
+      const allInvitations = await db.select()
+        .from(sharedAccess)
+        .where(eq(sharedAccess.ownerId, userId));
+      
+      const activeInvitations = allInvitations.filter(
+        inv => (inv.status === 'active' || inv.status === 'pending') && inv.sharedWithUserId
+      );
+      
+      // Revoke the shared access
       const revoked = await storage.revokeSharedAccess(userId);
       
       if (!revoked) {
         return res.status(404).json({ message: "Kein aktiver Zugriff gefunden" });
+      }
+      
+      // Convert each revoked slave to their own Master with 7-day trial
+      for (const invitation of activeInvitations) {
+        if (invitation.sharedWithUserId) {
+          const slaveUser = await storage.getUser(invitation.sharedWithUserId);
+          
+          if (slaveUser) {
+            // Set trial plan for 7 days
+            const trialEndsAt = new Date();
+            trialEndsAt.setDate(trialEndsAt.getDate() + 7);
+            
+            await db.update(users)
+              .set({
+                subscriptionPlan: 'trial',
+                subscriptionEndsAt: trialEndsAt,
+                masterAccountId: null, // Unlink from master
+                updatedAt: new Date(),
+              })
+              .where(eq(users.id, invitation.sharedWithUserId));
+            
+            console.log(`[Revoke] Converted slave ${invitation.sharedWithUserId} to trial Master (ends ${trialEndsAt.toISOString()})`);
+            
+            // Send notification email
+            const slaveName = slaveUser.firstName || slaveUser.email || "Nutzer";
+            const slaveEmail = slaveUser.email || invitation.sharedWithEmail;
+            
+            if (slaveEmail) {
+              try {
+                await sendAccountSeparatedEmail(slaveEmail, slaveName, masterName);
+                console.log(`[Revoke] Sent separation email to ${slaveEmail}`);
+              } catch (emailError) {
+                console.error(`[Revoke] Failed to send email to ${slaveEmail}:`, emailError);
+              }
+            }
+          }
+        }
       }
 
       res.json({ message: "Zugriff widerrufen" });

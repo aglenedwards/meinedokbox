@@ -79,6 +79,7 @@ export interface IStorage {
   acceptSharedInvitation(email: string, userId: string): Promise<SharedAccess | undefined>;
   acceptSharedInvitationByToken(token: string, userId: string): Promise<SharedAccess | undefined>;
   revokeSharedAccess(ownerId: string): Promise<boolean>;
+  revokeSharedAccessById(invitationId: string): Promise<SharedAccess | undefined>;
   resendInvitation(invitationId: string, ownerId: string): Promise<SharedAccess | undefined>;
   getAccessibleAccounts(userId: string): Promise<{ ownedAccount: User | undefined; sharedAccounts: (SharedAccess & { owner: User })[] }>;
   
@@ -1228,6 +1229,15 @@ export class DbStorage implements IStorage {
       .set({ status: 'revoked' })
       .where(eq(sharedAccess.ownerId, ownerId));
     return result.rowCount ? result.rowCount > 0 : false;
+  }
+
+  async revokeSharedAccessById(invitationId: string): Promise<SharedAccess | undefined> {
+    const [access] = await db
+      .update(sharedAccess)
+      .set({ status: 'revoked' })
+      .where(eq(sharedAccess.id, invitationId))
+      .returning();
+    return access;
   }
 
   async resendInvitation(invitationId: string, ownerId: string): Promise<SharedAccess | undefined> {
