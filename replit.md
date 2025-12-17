@@ -6,6 +6,17 @@ PaperEase is a web and mobile application designed to digitize paper documents u
 
 ## Recent Changes
 
+### December 17, 2025 - SmartFolder Partner Sharing
+
+**Steuererklärung Tab Auto-Sharing:**
+- Added `shareWithPartner` boolean field to SmartFolders schema
+- When enabled, all documents in the SmartFolder are automatically visible to partners
+- No need to manually toggle `isShared` on each individual document
+- Partners bypass the `isShared` filter when viewing SmartFolders with shareWithPartner=true
+- Toggle only visible to users who have linked partners (Master/Slave accounts)
+- Green Users icon indicates documents shared via folder setting (vs blue for manually shared)
+- Disabled manual sharing toggle on documents when shareWithPartner is active
+
 ### December 15, 2025 - Image Compression, Rate Limiting & Code Optimization
 
 **OpenAI API Rate Limiting:**
