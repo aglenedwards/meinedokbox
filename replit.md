@@ -6,7 +6,7 @@ PaperEase is a web and mobile application designed to digitize paper documents u
 
 ## Recent Changes
 
-### December 17, 2025 - SmartFolder Partner Sharing
+### December 17, 2025 - SmartFolder Partner Sharing & Slave Protection
 
 **Steuererklärung Tab Auto-Sharing:**
 - Added `shareWithPartner` boolean field to SmartFolders schema
@@ -16,6 +16,14 @@ PaperEase is a web and mobile application designed to digitize paper documents u
 - Toggle only visible to users who have linked partners (Master/Slave accounts)
 - Green Users icon indicates documents shared via folder setting (vs blue for manually shared)
 - Disabled manual sharing toggle on documents when shareWithPartner is active
+
+**Slave Protection on Removal:**
+- When a Master revokes/removes a Slave from their family account, the Slave is not deleted
+- Slave automatically becomes an independent Master with their own account
+- Slave receives a 7-day trial period to choose their own subscription plan
+- All documents belonging to the Slave are preserved
+- Email notification sent to the Slave explaining the change and their options
+- Same protection applies during plan downgrade (when max users is reduced)
 
 ### December 15, 2025 - Image Compression, Rate Limiting & Code Optimization
 
