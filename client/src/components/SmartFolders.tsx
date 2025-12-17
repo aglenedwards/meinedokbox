@@ -1,14 +1,17 @@
 import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { Download, FileText, Check } from "lucide-react";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { Download, FileText, Check, Users } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { DocumentCard } from "@/components/DocumentCard";
 import { EmptyState } from "@/components/EmptyState";
 import { useToast } from "@/hooks/use-toast";
-import type { SmartFolder, Document } from "@shared/schema";
+import { queryClient, apiRequest } from "@/lib/queryClient";
+import type { SmartFolder, Document, User } from "@shared/schema";
 
 export function SmartFolders() {
   const { toast } = useToast();
@@ -29,8 +32,42 @@ export function SmartFolders() {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+  // Get current user info to check if they have partners
+  const { data: user } = useQuery<User>({
+    queryKey: ["/api/user"],
+  });
+
+  // Check if user has partners (slaves or is linked to a master)
+  const { data: linkedAccounts = [] } = useQuery<any[]>({
+    queryKey: ["/api/linked-accounts"],
+    enabled: !!user,
+  });
+
+  const hasPartners = linkedAccounts.length > 0;
+
   const { data: smartFolders = [], isLoading: foldersLoading } = useQuery<SmartFolder[]>({
     queryKey: ["/api/smart-folders"],
+  });
+
+  // Mutation to update shareWithPartner setting
+  const updateShareWithPartner = useMutation({
+    mutationFn: async ({ folderId, shareWithPartner }: { folderId: string; shareWithPartner: boolean }) => {
+      return apiRequest("PATCH", `/api/smart-folders/${folderId}`, { shareWithPartner });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/smart-folders"] });
+      toast({
+        title: "Einstellung gespeichert",
+        description: "Die Partner-Freigabe wurde aktualisiert.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Fehler",
+        description: "Die Einstellung konnte nicht gespeichert werden.",
+        variant: "destructive",
+      });
+    },
   });
 
   // Get the first (and only) smart folder - Steuererklärung
@@ -173,6 +210,34 @@ export function SmartFolders() {
               )}
             </div>
           </div>
+          {/* Partner sharing toggle - only show if user has partners */}
+          {hasPartners && (
+            <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg border">
+              <div className="flex items-center gap-2">
+                <Users className="w-4 h-4 text-muted-foreground" />
+                <div>
+                  <Label htmlFor="share-with-partner" className="text-sm font-medium cursor-pointer">
+                    Mit Partner teilen
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    Alle Dokumente in diesem Tab werden automatisch für Partner sichtbar
+                  </p>
+                </div>
+              </div>
+              <Switch
+                id="share-with-partner"
+                checked={taxFolder.shareWithPartner || false}
+                onCheckedChange={(checked) => {
+                  updateShareWithPartner.mutate({
+                    folderId: taxFolder.id,
+                    shareWithPartner: checked,
+                  });
+                }}
+                disabled={updateShareWithPartner.isPending}
+                data-testid="switch-share-with-partner"
+              />
+            </div>
+          )}
         </CardHeader>
         <CardContent>
           {documentsLoading ? (
@@ -198,6 +263,7 @@ export function SmartFolders() {
                   date={new Date(doc.uploadedAt).toISOString()}
                   thumbnailUrl={doc.thumbnailUrl || undefined}
                   isShared={doc.isShared}
+                  isSharedViaFolder={taxFolder.shareWithPartner || false}
                   confidence={doc.confidence || undefined}
                   extractedDate={doc.extractedDate ? new Date(doc.extractedDate).toISOString() : undefined}
                   documentDate={doc.documentDate ? new Date(doc.documentDate).toISOString() : undefined}
