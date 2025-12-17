@@ -4486,6 +4486,100 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ===== Changelog / What's New API =====
+  
+  // Get published changelog (public)
+  app.get("/api/changelog", async (_req, res) => {
+    try {
+      const entries = await storage.getPublishedChangelog();
+      res.json(entries);
+    } catch (error) {
+      console.error('[Changelog] Error fetching:', error);
+      res.status(500).json({ message: "Fehler beim Laden der Neuigkeiten" });
+    }
+  });
+  
+  // Admin: Get all changelog entries
+  app.get("/api/admin/changelog", isAuthenticated, isAdmin, async (_req: any, res) => {
+    try {
+      const entries = await storage.getAllChangelog();
+      res.json(entries);
+    } catch (error) {
+      console.error('[Admin] Error fetching changelog:', error);
+      res.status(500).json({ message: "Fehler beim Laden der Changelog-Einträge" });
+    }
+  });
+  
+  // Admin: Create changelog entry
+  app.post("/api/admin/changelog", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const { title, description, type, isPublished, publishedAt } = req.body;
+      
+      if (!title || !description) {
+        return res.status(400).json({ message: "Titel und Beschreibung sind erforderlich" });
+      }
+      
+      const entry = await storage.createChangelog({
+        title,
+        description,
+        type: type ?? 'new',
+        isPublished: isPublished ?? true,
+        publishedAt: publishedAt ? new Date(publishedAt) : new Date(),
+      });
+      
+      console.log(`[Admin] Created changelog entry: ${entry.id}`);
+      res.json(entry);
+    } catch (error) {
+      console.error('[Admin] Error creating changelog entry:', error);
+      res.status(500).json({ message: "Fehler beim Erstellen des Changelog-Eintrags" });
+    }
+  });
+  
+  // Admin: Update changelog entry
+  app.patch("/api/admin/changelog/:id", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const { title, description, type, isPublished, publishedAt } = req.body;
+      
+      const updated = await storage.updateChangelog(id, {
+        title,
+        description,
+        type,
+        isPublished,
+        publishedAt: publishedAt ? new Date(publishedAt) : undefined,
+      });
+      
+      if (!updated) {
+        return res.status(404).json({ message: "Changelog-Eintrag nicht gefunden" });
+      }
+      
+      console.log(`[Admin] Updated changelog entry: ${id}`);
+      res.json(updated);
+    } catch (error) {
+      console.error('[Admin] Error updating changelog entry:', error);
+      res.status(500).json({ message: "Fehler beim Aktualisieren des Changelog-Eintrags" });
+    }
+  });
+  
+  // Admin: Delete changelog entry
+  app.delete("/api/admin/changelog/:id", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      
+      const success = await storage.deleteChangelog(id);
+      
+      if (!success) {
+        return res.status(404).json({ message: "Changelog-Eintrag nicht gefunden" });
+      }
+      
+      console.log(`[Admin] Deleted changelog entry: ${id}`);
+      res.json({ success: true });
+    } catch (error) {
+      console.error('[Admin] Error deleting changelog entry:', error);
+      res.status(500).json({ message: "Fehler beim Löschen des Changelog-Eintrags" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;

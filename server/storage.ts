@@ -1,6 +1,6 @@
-import { type User, type UpsertUser, type Document, type InsertDocument, type UpdateDocument, type Tag, type InsertTag, type DocumentTag, type InsertDocumentTag, type SharedAccess, type InsertSharedAccess, type Folder, type InsertFolder, type TrialNotification, type InsertTrialNotification, type EmailWhitelist, type EmailJob, type InsertEmailJob, type SmartFolder, type InsertSmartFolder, type FeatureRequest, type InsertFeatureRequest, type FeatureRequestVote, type InsertFeatureRequestVote, type VideoTutorial, type InsertVideoTutorial } from "@shared/schema";
+import { type User, type UpsertUser, type Document, type InsertDocument, type UpdateDocument, type Tag, type InsertTag, type DocumentTag, type InsertDocumentTag, type SharedAccess, type InsertSharedAccess, type Folder, type InsertFolder, type TrialNotification, type InsertTrialNotification, type EmailWhitelist, type EmailJob, type InsertEmailJob, type SmartFolder, type InsertSmartFolder, type FeatureRequest, type InsertFeatureRequest, type FeatureRequestVote, type InsertFeatureRequestVote, type VideoTutorial, type InsertVideoTutorial, type Changelog, type InsertChangelog } from "@shared/schema";
 import { db } from "./db";
-import { users, documents, tags, documentTags, sharedAccess, folders, trialNotifications, emailWhitelist, emailJobs, smartFolders, featureRequests, featureRequestVotes, videoTutorials } from "@shared/schema";
+import { users, documents, tags, documentTags, sharedAccess, folders, trialNotifications, emailWhitelist, emailJobs, smartFolders, featureRequests, featureRequestVotes, videoTutorials, changelog } from "@shared/schema";
 import { eq, and, or, like, ilike, desc, asc, isNull, isNotNull, inArray, sql, getTableColumns } from "drizzle-orm";
 import { generateInboundEmail } from "./lib/emailInbound";
 import crypto from "crypto";
@@ -151,6 +151,14 @@ export interface IStorage {
   getVideoTutorialById(id: string): Promise<VideoTutorial | undefined>;
   updateVideoTutorial(id: string, data: Partial<InsertVideoTutorial>): Promise<VideoTutorial | undefined>;
   deleteVideoTutorial(id: string): Promise<boolean>;
+  
+  // Changelog / What's New management
+  createChangelog(data: InsertChangelog): Promise<Changelog>;
+  getPublishedChangelog(): Promise<Changelog[]>;
+  getAllChangelog(): Promise<Changelog[]>; // Admin only
+  getChangelogById(id: string): Promise<Changelog | undefined>;
+  updateChangelog(id: string, data: Partial<InsertChangelog>): Promise<Changelog | undefined>;
+  deleteChangelog(id: string): Promise<boolean>;
 }
 
 export class DbStorage implements IStorage {
@@ -1962,6 +1970,49 @@ export class DbStorage implements IStorage {
   async deleteVideoTutorial(id: string): Promise<boolean> {
     const result = await db.delete(videoTutorials)
       .where(eq(videoTutorials.id, id));
+    return result.rowCount !== null && result.rowCount > 0;
+  }
+  
+  // ===== Changelog / What's New =====
+  
+  async createChangelog(data: InsertChangelog): Promise<Changelog> {
+    const [entry] = await db.insert(changelog)
+      .values(data)
+      .returning();
+    return entry;
+  }
+  
+  async getPublishedChangelog(): Promise<Changelog[]> {
+    return await db.select()
+      .from(changelog)
+      .where(eq(changelog.isPublished, true))
+      .orderBy(desc(changelog.publishedAt));
+  }
+  
+  async getAllChangelog(): Promise<Changelog[]> {
+    return await db.select()
+      .from(changelog)
+      .orderBy(desc(changelog.publishedAt));
+  }
+  
+  async getChangelogById(id: string): Promise<Changelog | undefined> {
+    const [entry] = await db.select()
+      .from(changelog)
+      .where(eq(changelog.id, id));
+    return entry;
+  }
+  
+  async updateChangelog(id: string, data: Partial<InsertChangelog>): Promise<Changelog | undefined> {
+    const [updated] = await db.update(changelog)
+      .set(data)
+      .where(eq(changelog.id, id))
+      .returning();
+    return updated;
+  }
+  
+  async deleteChangelog(id: string): Promise<boolean> {
+    const result = await db.delete(changelog)
+      .where(eq(changelog.id, id));
     return result.rowCount !== null && result.rowCount > 0;
   }
 }
