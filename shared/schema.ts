@@ -300,6 +300,7 @@ export const smartFolders = pgTable("smart_folders", {
   // Filter configuration (stored as JSON)
   filters: jsonb("filters").notNull(), // { categories?: string[], systemTags?: string[], userTagIds?: string[], dateRange?: { from: string, to: string }, year?: number }
   downloadEnabled: boolean("download_enabled").notNull().default(true), // Can be downloaded as ZIP
+  shareWithPartner: boolean("share_with_partner").notNull().default(false), // If true, all documents in this folder are visible to partners
   sortOrder: real("sort_order").notNull().default(0), // For custom ordering
   createdAt: timestamp("created_at").notNull().default(sql`now()`),
   updatedAt: timestamp("updated_at").notNull().default(sql`now()`),
