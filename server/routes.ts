@@ -3435,10 +3435,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Check if caller is a partner (slave) viewing master's documents
       const isPartnerAccess = callerId !== effectiveUserId;
       
+      // Get the smart folder to check shareWithPartner setting
+      const smartFolders = await storage.getUserSmartFolders(effectiveUserId);
+      const folder = smartFolders.find(f => f.id === id);
+      
       let documents = await storage.getDocumentsBySmartFolder(effectiveUserId, id, year);
       
-      // SECURITY: Partners can only see shared documents
-      if (isPartnerAccess) {
+      // SECURITY: Partners can only see shared documents, UNLESS folder has shareWithPartner=true
+      if (isPartnerAccess && !(folder?.shareWithPartner)) {
         documents = documents.filter(doc => doc.isShared === true);
       }
       
@@ -3471,8 +3475,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get documents for this smart folder
       let documents = await storage.getDocumentsBySmartFolder(effectiveUserId, id, year);
       
-      // SECURITY: Partners can only export shared documents
-      if (isPartnerAccess) {
+      // SECURITY: Partners can only export shared documents, UNLESS folder has shareWithPartner=true
+      if (isPartnerAccess && !(folder?.shareWithPartner)) {
         documents = documents.filter(doc => doc.isShared === true);
       }
       
@@ -3582,13 +3586,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       const userId = await getEffectiveUserId(req.user.claims.sub);
-      const { name, icon, filters, downloadEnabled, sortOrder } = req.body;
+      const { name, icon, filters, downloadEnabled, shareWithPartner, sortOrder } = req.body;
       
       const updated = await storage.updateSmartFolder(id, userId, {
         name,
         icon,
         filters,
         downloadEnabled,
+        shareWithPartner,
         sortOrder,
       });
       
