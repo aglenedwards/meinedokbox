@@ -3429,9 +3429,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       const year = req.query.year ? parseInt(req.query.year as string) : undefined;
-      const userId = await getEffectiveUserId(req.user.claims.sub);
+      const callerId = req.user.claims.sub;
+      const effectiveUserId = await getEffectiveUserId(callerId);
       
-      const documents = await storage.getDocumentsBySmartFolder(userId, id, year);
+      // Check if caller is a partner (slave) viewing master's documents
+      const isPartnerAccess = callerId !== effectiveUserId;
+      
+      let documents = await storage.getDocumentsBySmartFolder(effectiveUserId, id, year);
+      
+      // SECURITY: Partners can only see shared documents
+      if (isPartnerAccess) {
+        documents = documents.filter(doc => doc.isShared === true);
+      }
+      
       res.json(documents);
     } catch (error) {
       console.error('[GetSmartFolderDocuments] Error:', error);
@@ -3444,10 +3454,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       const year = req.query.year ? parseInt(req.query.year as string) : undefined;
-      const userId = await getEffectiveUserId(req.user.claims.sub);
+      const callerId = req.user.claims.sub;
+      const effectiveUserId = await getEffectiveUserId(callerId);
+      
+      // Check if caller is a partner (slave) viewing master's documents
+      const isPartnerAccess = callerId !== effectiveUserId;
       
       // Get the smart folder to get its name
-      const smartFolders = await storage.getUserSmartFolders(userId);
+      const smartFolders = await storage.getUserSmartFolders(effectiveUserId);
       const folder = smartFolders.find(f => f.id === id);
       
       if (!folder) {
@@ -3455,7 +3469,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Get documents for this smart folder
-      const documents = await storage.getDocumentsBySmartFolder(userId, id, year);
+      let documents = await storage.getDocumentsBySmartFolder(effectiveUserId, id, year);
+      
+      // SECURITY: Partners can only export shared documents
+      if (isPartnerAccess) {
+        documents = documents.filter(doc => doc.isShared === true);
+      }
       
       if (documents.length === 0) {
         return res.status(404).json({ message: "Keine Dokumente zum Exportieren" });
