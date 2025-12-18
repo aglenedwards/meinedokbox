@@ -138,6 +138,23 @@ export const users = pgTable("users", {
   utmCampaign: varchar("utm_campaign"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
+  // Referral program
+  referralCode: varchar("referral_code", { length: 12 }).unique(), // Unique referral code for this user
+  referredBy: varchar("referred_by"), // User ID who referred this user
+  referralBonusGB: real("referral_bonus_gb").notNull().default(0), // +1GB per active referral
+  freeFromReferrals: boolean("free_from_referrals").notNull().default(false), // True if 5+ active referrals
+});
+
+// Referral tracking table
+export const referrals = pgTable("referrals", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  referrerId: varchar("referrer_id").notNull(), // User who made the referral (Master gets credit, even if Slave referred)
+  referredUserId: varchar("referred_user_id").notNull(), // User who was referred
+  referredBySlaveId: varchar("referred_by_slave_id"), // If a Slave made the referral, track them here
+  status: varchar("status", { length: 20 }).notNull().default("pending"), // pending (trial), active (paying), churned
+  createdAt: timestamp("created_at").notNull().default(sql`now()`),
+  activatedAt: timestamp("activated_at"), // When referred user became paying customer
+  churnedAt: timestamp("churned_at"), // When referred user stopped paying
 });
 
 // 15 document categories covering all common document types
@@ -423,6 +440,11 @@ export const insertChangelogSchema = createInsertSchema(changelog).omit({
   createdAt: true,
 });
 
+export const insertReferralSchema = createInsertSchema(referrals).omit({
+  id: true,
+  createdAt: true,
+});
+
 export const insertFeatureRequestSchema = createInsertSchema(featureRequests).omit({
   id: true,
   voteCount: true,
@@ -486,3 +508,5 @@ export type InsertVideoTutorial = z.infer<typeof insertVideoTutorialSchema>;
 export type VideoTutorial = typeof videoTutorials.$inferSelect;
 export type InsertChangelog = z.infer<typeof insertChangelogSchema>;
 export type Changelog = typeof changelog.$inferSelect;
+export type InsertReferral = z.infer<typeof insertReferralSchema>;
+export type Referral = typeof referrals.$inferSelect;
