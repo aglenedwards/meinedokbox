@@ -164,6 +164,7 @@ export interface IStorage {
   generateReferralCode(): string;
   getUserByReferralCode(code: string): Promise<User | undefined>;
   createReferral(data: InsertReferral): Promise<Referral>;
+  getAllReferrals(): Promise<Referral[]>; // Admin only
   getReferralsByReferrer(referrerId: string): Promise<Referral[]>;
   getActiveReferralCount(referrerId: string): Promise<number>;
   updateReferralStatus(referredUserId: string, status: 'pending' | 'active' | 'churned'): Promise<Referral | undefined>;
@@ -2045,6 +2046,12 @@ export class DbStorage implements IStorage {
       .values(data)
       .returning();
     return referral;
+  }
+  
+  async getAllReferrals(): Promise<Referral[]> {
+    return await db.select()
+      .from(referrals)
+      .orderBy(desc(referrals.createdAt));
   }
   
   async getReferralsByReferrer(referrerId: string): Promise<Referral[]> {

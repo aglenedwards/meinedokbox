@@ -4518,6 +4518,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }))
         .sort((a, b) => b.registrations - a.registrations);
       
+      // Referral program statistics
+      const allReferrals = await storage.getAllReferrals();
+      const referralStats = {
+        totalReferrals: allReferrals.length,
+        activeReferrals: allReferrals.filter(r => r.status === 'active').length,
+        pendingReferrals: allReferrals.filter(r => r.status === 'pending').length,
+        churnedReferrals: allReferrals.filter(r => r.status === 'churned').length,
+        totalBonusStorageGB: allUsers.reduce((sum, u) => sum + (u.referralBonusGB || 0), 0),
+        usersWithFreeFromReferrals: allUsers.filter(u => u.freeFromReferrals).length,
+        topReferrers: allUsers
+          .filter(u => (u.referralBonusGB || 0) > 0)
+          .map(u => ({
+            email: u.email,
+            name: `${u.firstName || ''} ${u.lastName || ''}`.trim() || u.email,
+            referralCount: u.referralBonusGB || 0,
+            activeCount: allReferrals.filter(r => r.referrerId === u.id && r.status === 'active').length,
+            freeFromReferrals: u.freeFromReferrals || false,
+          }))
+          .sort((a, b) => b.referralCount - a.referralCount)
+          .slice(0, 10), // Top 10 referrers
+      };
+      
       res.json({
         totalUsers,
         verifiedUsers,
@@ -4533,6 +4555,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         totalDocuments,
         dailyRegistrations,
         marketingChannels,
+        referralStats,
       });
     } catch (error) {
       console.error('[Admin] Error fetching statistics:', error);

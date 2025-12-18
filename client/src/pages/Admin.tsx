@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
-import { User, Trash2, Search, Home, Shield, AlertTriangle, Lightbulb, PlayCircle, Plus, Edit2, Save, X, BarChart3, Users, CreditCard, TrendingUp, FileText, HardDrive } from "lucide-react";
+import { User, Trash2, Search, Home, Shield, AlertTriangle, Lightbulb, PlayCircle, Plus, Edit2, Save, X, BarChart3, Users, CreditCard, TrendingUp, FileText, HardDrive, Gift, UserPlus, Crown } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,6 +51,22 @@ interface MarketingChannel {
   conversionRate: string;
 }
 
+interface ReferralStats {
+  totalReferrals: number;
+  activeReferrals: number;
+  pendingReferrals: number;
+  churnedReferrals: number;
+  totalBonusStorageGB: number;
+  usersWithFreeFromReferrals: number;
+  topReferrers: {
+    email: string;
+    name: string;
+    referralCount: number;
+    activeCount: number;
+    freeFromReferrals: boolean;
+  }[];
+}
+
 interface AdminStatistics {
   totalUsers: number;
   verifiedUsers: number;
@@ -72,6 +88,7 @@ interface AdminStatistics {
   totalDocuments: number;
   dailyRegistrations: { date: string; count: number }[];
   marketingChannels: MarketingChannel[];
+  referralStats?: ReferralStats;
 }
 
 interface UserWithStats extends UserType {
@@ -735,6 +752,108 @@ export default function Admin() {
                       )}
                     </CardContent>
                   </Card>
+
+                  {/* Referral Program Stats */}
+                  {statistics.referralStats && (
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <Gift className="h-5 w-5 text-purple-500" />
+                          Empfehlungsprogramm
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-6">
+                        {/* Overview Cards */}
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                          <div className="p-4 rounded-lg bg-muted/50 text-center">
+                            <div className="text-2xl font-bold text-purple-600">
+                              {statistics.referralStats.totalReferrals}
+                            </div>
+                            <div className="text-xs text-muted-foreground">Gesamt Empfehlungen</div>
+                          </div>
+                          <div className="p-4 rounded-lg bg-muted/50 text-center">
+                            <div className="text-2xl font-bold text-green-600">
+                              {statistics.referralStats.activeReferrals}
+                            </div>
+                            <div className="text-xs text-muted-foreground">Aktive (Zahlend)</div>
+                          </div>
+                          <div className="p-4 rounded-lg bg-muted/50 text-center">
+                            <div className="text-2xl font-bold text-yellow-600">
+                              {statistics.referralStats.pendingReferrals}
+                            </div>
+                            <div className="text-xs text-muted-foreground">Ausstehend (Trial)</div>
+                          </div>
+                          <div className="p-4 rounded-lg bg-muted/50 text-center">
+                            <div className="text-2xl font-bold text-gray-500">
+                              {statistics.referralStats.churnedReferrals}
+                            </div>
+                            <div className="text-xs text-muted-foreground">Abgewandert</div>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="p-4 rounded-lg bg-blue-50 dark:bg-blue-950/30 text-center">
+                            <div className="text-2xl font-bold text-blue-600">
+                              {statistics.referralStats.totalBonusStorageGB} GB
+                            </div>
+                            <div className="text-xs text-muted-foreground">Bonus-Speicher vergeben</div>
+                          </div>
+                          <div className="p-4 rounded-lg bg-amber-50 dark:bg-amber-950/30 text-center">
+                            <div className="text-2xl font-bold text-amber-600 flex items-center justify-center gap-1">
+                              <Crown className="h-5 w-5" />
+                              {statistics.referralStats.usersWithFreeFromReferrals}
+                            </div>
+                            <div className="text-xs text-muted-foreground">Nutzer mit kostenlosem Plan</div>
+                          </div>
+                        </div>
+
+                        {/* Top Referrers */}
+                        {statistics.referralStats.topReferrers.length > 0 && (
+                          <div className="space-y-3">
+                            <h4 className="font-medium flex items-center gap-2">
+                              <UserPlus className="h-4 w-4" />
+                              Top Empfehler
+                            </h4>
+                            <div className="space-y-2">
+                              {statistics.referralStats.topReferrers.map((referrer, index) => (
+                                <div key={referrer.email} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                                  <div className="flex items-center gap-3">
+                                    <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                                      index === 0 ? 'bg-yellow-500 text-white' :
+                                      index === 1 ? 'bg-gray-400 text-white' :
+                                      index === 2 ? 'bg-amber-700 text-white' :
+                                      'bg-muted text-muted-foreground'
+                                    }`}>
+                                      {index + 1}
+                                    </div>
+                                    <div>
+                                      <div className="font-medium flex items-center gap-2">
+                                        {referrer.name || referrer.email}
+                                        {referrer.freeFromReferrals && (
+                                          <Crown className="h-4 w-4 text-amber-500" />
+                                        )}
+                                      </div>
+                                      <div className="text-xs text-muted-foreground">{referrer.email}</div>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-4 text-sm">
+                                    <div className="text-center">
+                                      <div className="font-bold text-purple-600">{referrer.referralCount}</div>
+                                      <div className="text-muted-foreground text-xs">Gesamt</div>
+                                    </div>
+                                    <div className="text-center">
+                                      <div className="font-bold text-green-600">{referrer.activeCount}</div>
+                                      <div className="text-muted-foreground text-xs">Aktiv</div>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  )}
                 </div>
               </div>
             ) : null}
