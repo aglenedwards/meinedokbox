@@ -133,6 +133,25 @@ export default function Referral() {
               </p>
             </div>
 
+            {!referralData?.isFreeFromReferrals && (
+              <Card className="mb-6 border-primary bg-gradient-to-r from-primary/10 via-primary/5 to-transparent">
+                <CardContent className="pt-6 pb-5">
+                  <div className="flex flex-col md:flex-row md:items-center gap-4">
+                    <div className="p-3 rounded-full bg-primary/20 shrink-0">
+                      <Award className="h-8 w-8 text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-lg">MeineDokBox dauerhaft kostenlos nutzen!</h3>
+                      <p className="text-muted-foreground">
+                        Empfiehl 5 Freunde, die zahlende Kunden werden - und dein Family-Plan wird <span className="font-semibold text-primary">dauerhaft kostenlos</span>.
+                        Aktuell: <span className="font-bold">{referralData?.activeReferrals || 0}/5</span> aktive Empfehlungen.
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             {referralData?.isFreeFromReferrals && (
               <Card className="mb-6 border-primary/50 bg-primary/5">
                 <CardContent className="pt-6">
@@ -387,17 +406,6 @@ export default function Referral() {
                   <CardTitle className="text-lg">Vorteile für Eingeladene</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <div className="flex items-start gap-3">
-                    <div className="p-1.5 rounded-full bg-blue-500/10 mt-0.5">
-                      <Check className="h-4 w-4 text-blue-500" />
-                    </div>
-                    <div>
-                      <p className="font-medium">14 Tage kostenlos testen</p>
-                      <p className="text-sm text-muted-foreground">
-                        Alle Funktionen ohne Einschränkungen
-                      </p>
-                    </div>
-                  </div>
                   <div className="flex items-start gap-3">
                     <div className="p-1.5 rounded-full bg-blue-500/10 mt-0.5">
                       <Check className="h-4 w-4 text-blue-500" />
