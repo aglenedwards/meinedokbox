@@ -284,19 +284,35 @@ export default function Referral() {
                   </div>
 
                   <div className="mt-4 grid grid-cols-5 gap-2">
-                    {[1, 2, 3, 4, 5].map((num) => (
-                      <div
-                        key={num}
-                        className={`p-3 rounded-lg text-center transition-all ${
-                          (referralData?.activeReferrals || 0) >= num
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-muted text-muted-foreground"
-                        }`}
-                      >
-                        <Users className="h-5 w-5 mx-auto mb-1" />
-                        <span className="text-xs font-medium">{num}</span>
-                      </div>
-                    ))}
+                    {[0, 1, 2, 3, 4].map((index) => {
+                      const referral = referralData?.referrals[index];
+                      let bgClass = "bg-muted text-muted-foreground";
+                      let statusText = "Frei";
+                      
+                      if (referral) {
+                        if (referral.status === "active") {
+                          bgClass = "bg-green-500 text-white";
+                          statusText = "Aktiv";
+                        } else if (referral.status === "churned") {
+                          bgClass = "bg-gray-400 text-white";
+                          statusText = "Beendet";
+                        } else {
+                          bgClass = "bg-amber-500 text-white";
+                          statusText = "Test";
+                        }
+                      }
+                      
+                      return (
+                        <div
+                          key={index}
+                          className={`p-3 rounded-lg text-center transition-all ${bgClass}`}
+                          title={referral ? `Registriert: ${new Date(referral.createdAt).toLocaleDateString("de-DE")}` : "Noch frei"}
+                        >
+                          <Users className="h-5 w-5 mx-auto mb-1" />
+                          <span className="text-xs font-medium">{statusText}</span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </CardContent>
               </Card>
