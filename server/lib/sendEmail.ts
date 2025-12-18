@@ -1085,14 +1085,16 @@ export async function sendReferralActivationNotification(
   to: string,
   referrerName: string,
   activeCount: number,
-  isFreeNow: boolean
+  isFreeNow: boolean,
+  requiredReferrals: number = 5
 ): Promise<boolean> {
   const baseUrl = getAppUrl();
   const referralLink = `${baseUrl}/referral`;
+  const remaining = requiredReferrals - activeCount;
   
   const subject = isFreeNow 
     ? `🎊 Glückwunsch! Dein MeineDokBox ist jetzt dauerhaft kostenlos!`
-    : `✅ Deine Empfehlung ist jetzt zahlender Kunde (${activeCount}/5)`;
+    : `✅ Deine Empfehlung ist jetzt zahlender Kunde (${activeCount}/${requiredReferrals})`;
   
   const text = isFreeNow
     ? `
@@ -1100,7 +1102,7 @@ Hallo ${referrerName}!
 
 🎊 HERZLICHEN GLÜCKWUNSCH! 🎊
 
-Du hast es geschafft! Mit 5 aktiven zahlenden Empfehlungen ist dein Family-Plan ab sofort DAUERHAFT KOSTENLOS!
+Du hast es geschafft! Mit ${requiredReferrals} aktiven zahlenden Empfehlungen ist dein Plan ab sofort DAUERHAFT KOSTENLOS!
 
 Schau dir deine Empfehlungen an: ${referralLink}
 
@@ -1112,9 +1114,9 @@ Hallo ${referrerName}!
 
 Tolle Neuigkeiten! Eine deiner Empfehlungen ist jetzt zahlender Kunde geworden.
 
-Dein Fortschritt: ${activeCount} von 5 aktiven Empfehlungen
+Dein Fortschritt: ${activeCount} von ${requiredReferrals} aktiven Empfehlungen
 
-Bei 5 aktiven Empfehlungen wird dein Family-Plan dauerhaft kostenlos!
+Bei ${requiredReferrals} aktiven Empfehlungen wird dein Plan dauerhaft kostenlos!
 
 Schau dir deinen Fortschritt an: ${referralLink}
 
@@ -1147,7 +1149,7 @@ Dein MeineDokBox Team
     <div class="celebration">
       <p style="font-size: 48px; margin: 0;">🎉</p>
       <p class="free-text" style="margin: 15px 0;">DAUERHAFT KOSTENLOS!</p>
-      <p style="margin: 0; color: #666;">Mit 5 aktiven zahlenden Empfehlungen ist dein Family-Plan ab sofort kostenlos!</p>
+      <p style="margin: 0; color: #666;">Mit ${requiredReferrals} aktiven zahlenden Empfehlungen ist dein Plan ab sofort kostenlos!</p>
     </div>
     <p>Danke, dass du MeineDokBox weiterempfiehlst!</p>
     <center>
@@ -1187,10 +1189,10 @@ Dein MeineDokBox Team
     <p>Tolle Neuigkeiten! Eine deiner Empfehlungen ist jetzt zahlender Kunde geworden.</p>
     <div class="progress-box">
       <p style="margin: 0; color: #666;">Dein Fortschritt</p>
-      <p class="progress-count" style="margin: 10px 0;">${activeCount} / 5</p>
+      <p class="progress-count" style="margin: 10px 0;">${activeCount} / ${requiredReferrals}</p>
       <p style="margin: 0; color: #666;">aktive Empfehlungen</p>
     </div>
-    <p><strong>Noch ${5 - activeCount} weitere</strong> und dein Family-Plan wird dauerhaft kostenlos!</p>
+    <p><strong>Noch ${remaining} weitere</strong> und dein Plan wird dauerhaft kostenlos!</p>
     <center>
       <a href="${referralLink}" class="button" style="display: inline-block; background: #667eea; color: #ffffff !important; padding: 12px 30px; text-decoration: none; border-radius: 6px; margin: 20px 0;">
         Fortschritt ansehen

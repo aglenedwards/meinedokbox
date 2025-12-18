@@ -132,6 +132,14 @@ function calculateFileHash(buffer: Buffer): string {
 }
 
 /**
+ * Gets the required number of active referrals for a free plan based on subscription
+ * Solo/Family: 5 referrals, Family-Plus: 10 referrals
+ */
+function getRequiredReferralsForPlan(plan: string): number {
+  return plan === 'family-plus' ? 10 : 5;
+}
+
+/**
  * Updates referral status and recalculates the referrer's bonus (storage + free plan eligibility)
  * @param referredUserId - The user who was referred
  * @param newStatus - New status ('active' when they pay, 'churned' when they cancel)
@@ -159,26 +167,26 @@ async function updateReferralStatusAndRecalculateBonus(
     // Calculate bonus: +1GB per referral (including pending ones that signed up)
     const bonusGB = allReferrals.length; // All signups give +1GB
     
-    // Check if referrer qualifies for free Family plan (5+ active paying referrals)
-    const qualifiesForFree = activeCount >= 5;
-    
-    // Get referrer's current plan
+    // Get referrer's current plan to determine required threshold
     const referrer = await storage.getUser(referrerId);
     if (!referrer) {
       console.error(`[Referral] Referrer not found: ${referrerId}`);
       return;
     }
     
+    // Check if referrer qualifies for free plan based on their current subscription
+    // Solo/Family: 5 active referrals, Family-Plus: 10 active referrals
+    const requiredReferrals = getRequiredReferralsForPlan(referrer.subscriptionPlan || 'solo');
+    const qualifiesForFree = activeCount >= requiredReferrals;
+    
     // Update referrer's bonus
     await storage.updateUserReferralBonus(referrerId, bonusGB, qualifiesForFree);
     
     // Handle free plan eligibility
     if (qualifiesForFree && !referrer.freeFromReferrals) {
-      console.log(`[Referral] User ${referrerId} now qualifies for FREE Family plan (${activeCount} active referrals)`);
-      // Note: The actual free subscription logic would be handled by checking freeFromReferrals
-      // in the billing/limits system, not by changing Stripe subscription here
+      console.log(`[Referral] User ${referrerId} now qualifies for FREE ${referrer.subscriptionPlan} plan (${activeCount}/${requiredReferrals} active referrals)`);
     } else if (!qualifiesForFree && referrer.freeFromReferrals) {
-      console.log(`[Referral] User ${referrerId} no longer qualifies for FREE plan (${activeCount} active referrals)`);
+      console.log(`[Referral] User ${referrerId} no longer qualifies for FREE plan (${activeCount}/${requiredReferrals} active referrals)`);
     }
     
     // Send email notification when referral becomes active (paying customer)
@@ -188,12 +196,13 @@ async function updateReferralStatusAndRecalculateBonus(
         referrer.email,
         referrer.firstName || 'Nutzer',
         activeCount,
-        isFreeNow
+        isFreeNow,
+        requiredReferrals
       ).catch(err => console.error('[Referral] Failed to send activation notification:', err));
-      console.log(`[Referral] Activation notification sent to ${referrer.email} (${activeCount}/5 active, isFreeNow=${isFreeNow})`);
+      console.log(`[Referral] Activation notification sent to ${referrer.email} (${activeCount}/${requiredReferrals} active, isFreeNow=${isFreeNow})`);
     }
     
-    console.log(`[Referral] Updated referrer ${referrerId}: ${bonusGB}GB bonus, freeEligible=${qualifiesForFree}, activeReferrals=${activeCount}`);
+    console.log(`[Referral] Updated referrer ${referrerId}: ${bonusGB}GB bonus, freeEligible=${qualifiesForFree}, activeReferrals=${activeCount}/${requiredReferrals}`);
   } catch (error) {
     console.error('[Referral] Error updating referral status:', error);
   }
@@ -4675,8 +4684,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const allReferrals = await storage.getReferralsByReferrer(userId);
       const activeCount = await storage.getActiveReferralCount(userId);
       
-      // Get user for bonus info
+      // Get user for bonus info and current plan
       const user = await storage.getUser(userId);
+      const currentPlan = user?.subscriptionPlan || 'solo';
+      
+      // Calculate required referrals based on plan (5 for Solo/Family, 10 for Family-Plus)
+      const requiredReferrals = getRequiredReferralsForPlan(currentPlan);
       
       // Build referral link
       const baseUrl = process.env.APP_URL || `https://${process.env.REPLIT_DOMAINS?.split(',')[0]}`;
@@ -4690,6 +4703,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         pendingReferrals: allReferrals.filter(r => r.status === 'pending').length,
         bonusStorageGB: user?.referralBonusGB || 0,
         isFreeFromReferrals: user?.freeFromReferrals || false,
+        currentPlan,
+        requiredReferrals,
         referrals: allReferrals.map(r => ({
           id: r.id,
           status: r.status,
