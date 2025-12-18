@@ -9,14 +9,6 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import logoImage from "@assets/meinedokbox_1760966015056.png";
 
 export default function DigitalArchivieren() {
-  useEffect(() => {
-    document.title = "Digital archivieren | Digitale Dokumentenablage | MeineDokBox";
-    const metaDescription = document.querySelector('meta[name="description"]');
-    if (metaDescription) {
-      metaDescription.setAttribute("content", "Digital archivieren mit MeineDokBox: Ihre digitale Dokumentenablage für private Dokumente. Archivierung digital, sicher und DSGVO-konform in Deutschland. Dokumente digital archivieren war noch nie so einfach.");
-    }
-  }, []);
-
   const faqs = [
     {
       question: "Wie funktioniert digitale Archivierung mit MeineDokBox?",
@@ -43,6 +35,49 @@ export default function DigitalArchivieren() {
       answer: "Ja! Mit unseren Family-Tarifen können bis zu 5 Familienmitglieder die digitale Dokumentenablage nutzen. Jedes Mitglied hat einen privaten Bereich, und Sie können Dokumente gezielt teilen – ideal für die gemeinsame Archivierung von Ordnern."
     }
   ];
+
+  useEffect(() => {
+    document.title = "Digital archivieren | Digitale Dokumentenablage | MeineDokBox";
+    const metaDescription = document.querySelector('meta[name="description"]');
+    if (metaDescription) {
+      metaDescription.setAttribute("content", "Digital archivieren mit MeineDokBox: Ihre digitale Dokumentenablage für private Dokumente. Archivierung digital, sicher und DSGVO-konform in Deutschland. Dokumente digital archivieren war noch nie so einfach.");
+    }
+
+    let canonicalLink = document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
+    if (!canonicalLink) {
+      canonicalLink = document.createElement('link');
+      canonicalLink.rel = 'canonical';
+      document.head.appendChild(canonicalLink);
+    }
+    canonicalLink.href = 'https://meinedokbox.de/digital-archivieren';
+
+    const faqSchema = {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": faqs.map(faq => ({
+        "@type": "Question",
+        "name": faq.question,
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": faq.answer
+        }
+      }))
+    };
+
+    let scriptTag = document.getElementById('faq-schema') as HTMLScriptElement;
+    if (!scriptTag) {
+      scriptTag = document.createElement('script');
+      scriptTag.id = 'faq-schema';
+      scriptTag.type = 'application/ld+json';
+      document.head.appendChild(scriptTag);
+    }
+    scriptTag.textContent = JSON.stringify(faqSchema);
+
+    return () => {
+      const script = document.getElementById('faq-schema');
+      if (script) script.remove();
+    };
+  }, []);
 
   const testimonials = [
     {

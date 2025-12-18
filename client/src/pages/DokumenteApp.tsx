@@ -9,27 +9,6 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import logoImage from "@assets/meinedokbox_1760966015056.png";
 
 export default function DokumenteApp() {
-  useEffect(() => {
-    document.title = "Dokumente digitalisieren App | Software für private Dokumente | MeineDokBox";
-    const metaDescription = document.querySelector('meta[name="description"]');
-    if (metaDescription) {
-      metaDescription.setAttribute("content", "Dokumente digitalisieren mit der MeineDokBox App: Die Software für private Dokumente. Kostenlos testen, einfach scannen, automatisch organisieren. Dokumente digitalisieren software privat.");
-    }
-  }, []);
-
-  const comparisonFeatures = [
-    { feature: "KI-Kategorisierung", meinedokbox: true, free: false },
-    { feature: "Deutsche Server (DSGVO)", meinedokbox: true, free: false },
-    { feature: "Keine Werbung", meinedokbox: true, free: false },
-    { feature: "Familien-Sharing", meinedokbox: true, free: false },
-    { feature: "Volltextsuche", meinedokbox: true, free: "teilweise" },
-    { feature: "E-Mail-Import", meinedokbox: true, free: false },
-    { feature: "Zahlungserinnerungen", meinedokbox: true, free: false },
-    { feature: "Offline-Zugriff", meinedokbox: true, free: "teilweise" },
-    { feature: "Automatische Backups", meinedokbox: true, free: false },
-    { feature: "Support auf Deutsch", meinedokbox: true, free: false },
-  ];
-
   const faqs = [
     {
       question: "Ist MeineDokBox wirklich kostenlos testbar?",
@@ -55,6 +34,62 @@ export default function DokumenteApp() {
       question: "Kann meine Familie die App mitnutzen?",
       answer: "Mit unseren Family-Tarifen können bis zu 5 Familienmitglieder die App nutzen. Jeder hat seinen eigenen privaten Bereich, und Sie können Dokumente gezielt teilen – perfekt für Haushalte, die gemeinsam Dokumente digitalisieren möchten."
     }
+  ];
+
+  useEffect(() => {
+    document.title = "Dokumente digitalisieren App | Software für private Dokumente | MeineDokBox";
+    const metaDescription = document.querySelector('meta[name="description"]');
+    if (metaDescription) {
+      metaDescription.setAttribute("content", "Dokumente digitalisieren mit der MeineDokBox App: Die Software für private Dokumente. Kostenlos testen, einfach scannen, automatisch organisieren. Dokumente digitalisieren software privat.");
+    }
+
+    let canonicalLink = document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
+    if (!canonicalLink) {
+      canonicalLink = document.createElement('link');
+      canonicalLink.rel = 'canonical';
+      document.head.appendChild(canonicalLink);
+    }
+    canonicalLink.href = 'https://meinedokbox.de/dokumente-digitalisieren-app';
+
+    const faqSchema = {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": faqs.map(faq => ({
+        "@type": "Question",
+        "name": faq.question,
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": faq.answer
+        }
+      }))
+    };
+
+    let scriptTag = document.getElementById('faq-schema') as HTMLScriptElement;
+    if (!scriptTag) {
+      scriptTag = document.createElement('script');
+      scriptTag.id = 'faq-schema';
+      scriptTag.type = 'application/ld+json';
+      document.head.appendChild(scriptTag);
+    }
+    scriptTag.textContent = JSON.stringify(faqSchema);
+
+    return () => {
+      const script = document.getElementById('faq-schema');
+      if (script) script.remove();
+    };
+  }, []);
+
+  const comparisonFeatures = [
+    { feature: "KI-Kategorisierung", meinedokbox: true, free: false },
+    { feature: "Deutsche Server (DSGVO)", meinedokbox: true, free: false },
+    { feature: "Keine Werbung", meinedokbox: true, free: false },
+    { feature: "Familien-Sharing", meinedokbox: true, free: false },
+    { feature: "Volltextsuche", meinedokbox: true, free: "teilweise" },
+    { feature: "E-Mail-Import", meinedokbox: true, free: false },
+    { feature: "Zahlungserinnerungen", meinedokbox: true, free: false },
+    { feature: "Offline-Zugriff", meinedokbox: true, free: "teilweise" },
+    { feature: "Automatische Backups", meinedokbox: true, free: false },
+    { feature: "Support auf Deutsch", meinedokbox: true, free: false },
   ];
 
   const testimonials = [

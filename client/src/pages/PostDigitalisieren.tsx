@@ -9,37 +9,6 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import logoImage from "@assets/meinedokbox_1760966015056.png";
 
 export default function PostDigitalisieren() {
-  useEffect(() => {
-    document.title = "Post digitalisieren privat | Digitaler Briefkasten | MeineDokBox";
-    const metaDescription = document.querySelector('meta[name="description"]');
-    if (metaDescription) {
-      metaDescription.setAttribute("content", "Post digitalisieren privat: Ihr digitaler Briefkasten mit MeineDokBox. Briefe scannen, automatisch einsortieren und sicher archivieren. Der smarte Weg, Briefpost zu verwalten.");
-    }
-  }, []);
-
-  const useCases = [
-    {
-      title: "Rechnungen & Mahnungen",
-      description: "Nie wieder Zahlungsfristen verpassen. Post digitalisieren und automatische Erinnerungen erhalten.",
-      icon: AlertTriangle
-    },
-    {
-      title: "Versicherungsschreiben",
-      description: "Alle Policen und Schreiben Ihrer Versicherungen an einem Ort. Schnell finden, wenn Sie sie brauchen.",
-      icon: Shield
-    },
-    {
-      title: "Behördenpost",
-      description: "Steuerbescheide, Rentenbescheide, Meldebescheinigungen – alles sicher archiviert.",
-      icon: FileText
-    },
-    {
-      title: "Vertragsunterlagen",
-      description: "Mietverträge, Arbeitsverträge, Handyverträge – nie wieder nach dem Kleingedruckten suchen.",
-      icon: Calendar
-    }
-  ];
-
   const faqs = [
     {
       question: "Was ist ein digitaler Briefkasten?",
@@ -64,6 +33,72 @@ export default function PostDigitalisieren() {
     {
       question: "Kann ich digitale Rechnungen per E-Mail empfangen?",
       answer: "Ja! Sie erhalten eine persönliche MeineDokBox-E-Mail-Adresse. Leiten Sie digitale Rechnungen einfach dorthin weiter – sie werden automatisch verarbeitet und in Ihren digitalen Briefkasten einsortiert."
+    }
+  ];
+
+  useEffect(() => {
+    document.title = "Post digitalisieren privat | Digitaler Briefkasten | MeineDokBox";
+    const metaDescription = document.querySelector('meta[name="description"]');
+    if (metaDescription) {
+      metaDescription.setAttribute("content", "Post digitalisieren privat: Ihr digitaler Briefkasten mit MeineDokBox. Briefe scannen, automatisch einsortieren und sicher archivieren. Der smarte Weg, Briefpost zu verwalten.");
+    }
+
+    let canonicalLink = document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
+    if (!canonicalLink) {
+      canonicalLink = document.createElement('link');
+      canonicalLink.rel = 'canonical';
+      document.head.appendChild(canonicalLink);
+    }
+    canonicalLink.href = 'https://meinedokbox.de/post-digitalisieren';
+
+    const faqSchema = {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": faqs.map(faq => ({
+        "@type": "Question",
+        "name": faq.question,
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": faq.answer
+        }
+      }))
+    };
+
+    let scriptTag = document.getElementById('faq-schema') as HTMLScriptElement;
+    if (!scriptTag) {
+      scriptTag = document.createElement('script');
+      scriptTag.id = 'faq-schema';
+      scriptTag.type = 'application/ld+json';
+      document.head.appendChild(scriptTag);
+    }
+    scriptTag.textContent = JSON.stringify(faqSchema);
+
+    return () => {
+      const script = document.getElementById('faq-schema');
+      if (script) script.remove();
+    };
+  }, []);
+
+  const useCases = [
+    {
+      title: "Rechnungen & Mahnungen",
+      description: "Nie wieder Zahlungsfristen verpassen. Post digitalisieren und automatische Erinnerungen erhalten.",
+      icon: AlertTriangle
+    },
+    {
+      title: "Versicherungsschreiben",
+      description: "Alle Policen und Schreiben Ihrer Versicherungen an einem Ort. Schnell finden, wenn Sie sie brauchen.",
+      icon: Shield
+    },
+    {
+      title: "Behördenpost",
+      description: "Steuerbescheide, Rentenbescheide, Meldebescheinigungen – alles sicher archiviert.",
+      icon: FileText
+    },
+    {
+      title: "Vertragsunterlagen",
+      description: "Mietverträge, Arbeitsverträge, Handyverträge – nie wieder nach dem Kleingedruckten suchen.",
+      icon: Calendar
     }
   ];
 
