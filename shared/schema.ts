@@ -143,6 +143,7 @@ export const users = pgTable("users", {
   referredBy: varchar("referred_by"), // User ID who referred this user
   referralBonusGB: real("referral_bonus_gb").notNull().default(0), // +1GB per active referral
   freeFromReferrals: boolean("free_from_referrals").notNull().default(false), // True if 5+ active referrals
+  referralEmailSentAt: timestamp("referral_email_sent_at"), // When the day-8 referral info email was sent
 });
 
 // Referral tracking table

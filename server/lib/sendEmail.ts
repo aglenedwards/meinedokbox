@@ -1208,3 +1208,116 @@ Dein MeineDokBox Team
   return sendEmail({ to, subject, text, html });
 }
 
+/**
+ * Send day-8 referral program info email to all users
+ * This introduces users to the referral program after they've had time to explore the app
+ */
+export async function sendReferralProgramInfoEmail(
+  to: string,
+  userName: string,
+  referralCode: string
+): Promise<boolean> {
+  const baseUrl = getAppUrl();
+  const referralLink = `${baseUrl}/register?ref=${referralCode}`;
+  const referralDashboardLink = `${baseUrl}/referral`;
+  
+  const subject = `🎁 Teile MeineDokBox und erhalte kostenlos mehr Speicherplatz!`;
+  
+  const text = `
+Hallo ${userName}!
+
+Du nutzt MeineDokBox jetzt seit einer Woche - toll, dass du dabei bist!
+
+Wir möchten dir heute unser Empfehlungsprogramm vorstellen:
+
+🎁 FÜR JEDE EMPFEHLUNG:
++1 GB zusätzlicher Speicherplatz - sofort nach der Registrierung!
+
+👑 BEI 5 AKTIVEN EMPFEHLUNGEN:
+Dein Family-Plan wird DAUERHAFT KOSTENLOS!
+
+Dein persönlicher Empfehlungslink:
+${referralLink}
+
+Teile diesen Link mit Freunden, Familie oder Kollegen. Du erhältst sofort +1 GB für jede Anmeldung!
+
+Schau dir dein Empfehlungs-Dashboard an: ${referralDashboardLink}
+
+Viele Grüße,
+Dein MeineDokBox Team
+  `.trim();
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+    .header { background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); color: #ffffff; padding: 30px; border-radius: 8px 8px 0 0; text-align: center; }
+    .content { background: #f8f9fa; padding: 30px; border-radius: 0 0 8px 8px; }
+    .reward-box { background: white; padding: 25px; border-radius: 8px; margin: 20px 0; border: 2px solid #e9d5ff; }
+    .reward-item { display: flex; align-items: center; padding: 15px 0; border-bottom: 1px solid #f3e8ff; }
+    .reward-item:last-child { border-bottom: none; }
+    .reward-icon { font-size: 28px; margin-right: 15px; }
+    .reward-text h4 { margin: 0 0 5px 0; color: #6d28d9; }
+    .reward-text p { margin: 0; color: #666; font-size: 14px; }
+    .link-box { background: #faf5ff; padding: 20px; border-radius: 8px; margin: 25px 0; text-align: center; border: 1px dashed #c4b5fd; }
+    .link-url { font-family: monospace; font-size: 12px; word-break: break-all; color: #7c3aed; background: white; padding: 10px; border-radius: 4px; display: block; margin-top: 10px; }
+    .button { display: inline-block; background: #667eea; color: white; padding: 14px 35px; text-decoration: none; border-radius: 6px; margin: 10px 5px; font-weight: 500; }
+    .button-secondary { background: #e9d5ff; color: #6d28d9; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1 style="color: #ffffff !important; margin: 0 0 10px 0; font-size: 26px;">🎁 Empfehlungsprogramm</h1>
+    <p style="color: #ffffff !important; margin: 0; font-size: 16px;">Teile MeineDokBox und werde belohnt!</p>
+  </div>
+  <div class="content">
+    <p>Hallo ${userName}!</p>
+    <p>Du nutzt MeineDokBox jetzt seit einer Woche - toll, dass du dabei bist! Wir möchten dir heute unser <strong>Empfehlungsprogramm</strong> vorstellen:</p>
+    
+    <div class="reward-box">
+      <div class="reward-item">
+        <span class="reward-icon">🎁</span>
+        <div class="reward-text">
+          <h4>+1 GB pro Empfehlung</h4>
+          <p>Für jede Person, die sich über deinen Link registriert, erhältst du sofort 1 GB zusätzlichen Speicherplatz!</p>
+        </div>
+      </div>
+      <div class="reward-item">
+        <span class="reward-icon">👑</span>
+        <div class="reward-text">
+          <h4>Family-Plan dauerhaft kostenlos</h4>
+          <p>Sobald 5 deiner Empfehlungen zahlende Kunden werden, ist dein Family-Plan für immer kostenlos!</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="link-box">
+      <p style="margin: 0 0 5px 0; font-weight: 500; color: #6d28d9;">Dein persönlicher Empfehlungslink:</p>
+      <span class="link-url">${referralLink}</span>
+    </div>
+
+    <center style="margin: 30px 0;">
+      <a href="${referralDashboardLink}" class="button" style="display: inline-block; background: #667eea; color: #ffffff !important; padding: 14px 35px; text-decoration: none; border-radius: 6px; margin: 10px 5px; font-weight: 500;">
+        Empfehlungs-Dashboard öffnen
+      </a>
+    </center>
+
+    <p style="font-size: 14px; color: #666; text-align: center; margin-top: 30px;">
+      Teile den Link mit Freunden, Familie oder Kollegen und sammle Bonusspeicher!
+    </p>
+    
+    <p style="margin-top: 30px; font-size: 14px; color: #666; text-align: center;">
+      Viele Grüße,<br>
+      Dein MeineDokBox Team
+    </p>
+  </div>
+</body>
+</html>
+  `.trim();
+
+  return sendEmail({ to, subject, text, html });
+}
+
