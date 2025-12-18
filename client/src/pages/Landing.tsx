@@ -230,12 +230,15 @@ export default function Landing() {
     const utmSource = urlParams.get('utm_source') || undefined;
     const utmMedium = urlParams.get('utm_medium') || undefined;
     const utmCampaign = urlParams.get('utm_campaign') || undefined;
+    // Capture referral code from URL
+    const referralCode = urlParams.get('ref') || undefined;
     
     registerMutation.mutate({
       ...data,
       utmSource,
       utmMedium,
       utmCampaign,
+      referralCode,
     });
   };
 

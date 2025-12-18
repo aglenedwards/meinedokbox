@@ -414,6 +414,8 @@ export interface RegisterData {
   utmSource?: string;
   utmMedium?: string;
   utmCampaign?: string;
+  // Referral program (optional)
+  referralCode?: string;
 }
 
 export interface LoginData {

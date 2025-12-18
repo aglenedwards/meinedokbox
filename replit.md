@@ -6,6 +6,37 @@ PaperEase is a web and mobile application designed to digitize paper documents u
 
 ## Recent Changes
 
+### December 18, 2025 - Referral Program Implementation
+
+**Referral Tracking System:**
+- Added `referralCode` field to users table (auto-generated 8-char code)
+- Added `referredBy` field to track who referred each user
+- Added `referralBonusGB` and `freeFromReferrals` fields for reward tracking
+- Created `referrals` table to track referral status (pending, active, churned)
+
+**Referral Rewards:**
+- +1GB storage bonus per referral signup (all signups, not just paying)
+- Free Family plan eligibility when maintaining 5+ active paying referrals
+- Slaves refer for Master's benefit (Master gets credit)
+- Bonus storage is added to base plan limit in upload/storage checks
+
+**Stripe Webhook Integration:**
+- Referral status updated to 'active' when referred user becomes paying customer
+- Referral status updated to 'churned' when referred user cancels subscription
+- Automatic recalculation of referrer's bonus and free plan eligibility
+
+**Frontend Referral Dashboard (/referral):**
+- Personal referral link with copy/share functionality
+- Progress bar showing X/5 active referrals towards free Family plan
+- Stats cards: total referrals, active customers, bonus storage
+- List of all referrals with status badges
+- Navigation button added to Dashboard header
+
+**Registration Integration:**
+- Referral code captured from URL (?ref=CODE) during registration
+- Validated via /api/referral/validate/:code endpoint
+- Referral tracking record created on successful registration
+
 ### December 17, 2025 - SmartFolder Partner Sharing & Slave Protection
 
 **Steuererklärung Tab Auto-Sharing:**
