@@ -3,6 +3,7 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { startTrialNotificationCron } from "./trialNotificationCron";
 import { startPaymentReminderCron } from "./paymentReminderCron";
+import { startReferralEmailCron } from "./referralEmailCron";
 import { runAutoMigrations } from "./migrations/autoMigrate";
 
 const app = express();
@@ -105,5 +106,8 @@ app.use((req, res, next) => {
     
     // Start payment reminder cron job
     startPaymentReminderCron();
+    
+    // Start day-8 referral program email cron job
+    startReferralEmailCron();
   });
 })();

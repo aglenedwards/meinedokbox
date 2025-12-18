@@ -1,7 +1,7 @@
 import { type User, type UpsertUser, type Document, type InsertDocument, type UpdateDocument, type Tag, type InsertTag, type DocumentTag, type InsertDocumentTag, type SharedAccess, type InsertSharedAccess, type Folder, type InsertFolder, type TrialNotification, type InsertTrialNotification, type EmailWhitelist, type EmailJob, type InsertEmailJob, type SmartFolder, type InsertSmartFolder, type FeatureRequest, type InsertFeatureRequest, type FeatureRequestVote, type InsertFeatureRequestVote, type VideoTutorial, type InsertVideoTutorial, type Changelog, type InsertChangelog, type Referral, type InsertReferral } from "@shared/schema";
 import { db } from "./db";
 import { users, documents, tags, documentTags, sharedAccess, folders, trialNotifications, emailWhitelist, emailJobs, smartFolders, featureRequests, featureRequestVotes, videoTutorials, changelog, referrals } from "@shared/schema";
-import { eq, and, or, like, ilike, desc, asc, isNull, isNotNull, inArray, sql, getTableColumns } from "drizzle-orm";
+import { eq, and, or, like, ilike, desc, asc, isNull, isNotNull, inArray, sql, getTableColumns, lte } from "drizzle-orm";
 import { generateInboundEmail } from "./lib/emailInbound";
 import crypto from "crypto";
 
@@ -170,6 +170,10 @@ export interface IStorage {
   updateReferralStatus(referredUserId: string, status: 'pending' | 'active' | 'churned'): Promise<Referral | undefined>;
   updateUserReferralBonus(userId: string, bonusGB: number, freeFromReferrals: boolean): Promise<User | undefined>;
   ensureUserHasReferralCode(userId: string): Promise<string>;
+  
+  // Day-8 referral info email
+  getUsersNeedingReferralEmail(): Promise<User[]>; // Users registered 8+ days ago without referral email
+  markReferralEmailSent(userId: string): Promise<void>;
 }
 
 export class DbStorage implements IStorage {
@@ -2123,6 +2127,36 @@ export class DbStorage implements IStorage {
       .where(eq(users.id, userId));
     
     return code;
+  }
+  
+  // ===== Day-8 Referral Email =====
+  
+  async getUsersNeedingReferralEmail(): Promise<User[]> {
+    const eightDaysAgo = new Date();
+    eightDaysAgo.setDate(eightDaysAgo.getDate() - 8);
+    
+    // Find users who:
+    // 1. Registered 8+ days ago
+    // 2. Haven't received the referral email yet
+    // 3. Are verified (so they can actually use the app)
+    return await db.select()
+      .from(users)
+      .where(
+        and(
+          lte(users.createdAt, eightDaysAgo),
+          isNull(users.referralEmailSentAt),
+          eq(users.isVerified, true)
+        )
+      );
+  }
+  
+  async markReferralEmailSent(userId: string): Promise<void> {
+    await db.update(users)
+      .set({ 
+        referralEmailSentAt: new Date(),
+        updatedAt: new Date()
+      })
+      .where(eq(users.id, userId));
   }
 }
 
