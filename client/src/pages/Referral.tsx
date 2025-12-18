@@ -19,6 +19,8 @@ interface ReferralData {
   pendingReferrals: number;
   bonusStorageGB: number;
   isFreeFromReferrals: boolean;
+  currentPlan: string;
+  requiredReferrals: number;
   referrals: {
     id: number;
     status: string;
@@ -26,6 +28,15 @@ interface ReferralData {
     activatedAt: string | null;
   }[];
 }
+
+const getPlanDisplayName = (plan: string): string => {
+  switch (plan) {
+    case 'family-plus': return 'Family-Plus-Plan';
+    case 'family': return 'Family-Plan';
+    case 'solo': return 'Solo-Plan';
+    default: return 'Plan';
+  }
+};
 
 export default function Referral() {
   const { toast } = useToast();
@@ -73,8 +84,10 @@ export default function Referral() {
     }
   };
 
-  const progressToFree = referralData ? Math.min((referralData.activeReferrals / 5) * 100, 100) : 0;
-  const remainingForFree = referralData ? Math.max(5 - referralData.activeReferrals, 0) : 5;
+  const requiredReferrals = referralData?.requiredReferrals || 5;
+  const progressToFree = referralData ? Math.min((referralData.activeReferrals / requiredReferrals) * 100, 100) : 0;
+  const remainingForFree = referralData ? Math.max(requiredReferrals - referralData.activeReferrals, 0) : requiredReferrals;
+  const planName = referralData ? getPlanDisplayName(referralData.currentPlan) : 'Plan';
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -143,8 +156,8 @@ export default function Referral() {
                     <div className="flex-1">
                       <h3 className="font-bold text-lg">MeineDokBox dauerhaft kostenlos nutzen!</h3>
                       <p className="text-muted-foreground">
-                        Empfiehl 5 Freunde, die zahlende Kunden werden - und dein Family-Plan wird <span className="font-semibold text-primary">dauerhaft kostenlos</span>.
-                        Aktuell: <span className="font-bold">{referralData?.activeReferrals || 0}/5</span> aktive Empfehlungen.
+                        Empfiehl {requiredReferrals} Freunde, die zahlende Kunden werden - und dein {planName} wird <span className="font-semibold text-primary">dauerhaft kostenlos</span>.
+                        Aktuell: <span className="font-bold">{referralData?.activeReferrals || 0}/{requiredReferrals}</span> aktive Empfehlungen.
                       </p>
                     </div>
                   </div>
@@ -162,7 +175,7 @@ export default function Referral() {
                     <div>
                       <h3 className="font-bold text-lg">Glückwunsch! Du nutzt MeineDokBox kostenlos</h3>
                       <p className="text-muted-foreground">
-                        Dank deiner {referralData.activeReferrals} aktiven Empfehlungen ist dein Family-Plan dauerhaft kostenlos!
+                        Dank deiner {referralData.activeReferrals} aktiven Empfehlungen ist dein {planName} dauerhaft kostenlos!
                       </p>
                     </div>
                   </div>
@@ -257,7 +270,7 @@ export default function Referral() {
                   <ul className="text-sm text-muted-foreground space-y-1">
                     <li>1. Teile deinen Link mit Freunden und Familie</li>
                     <li>2. Für jede Registrierung bekommst du +1 GB Bonus-Speicher</li>
-                    <li>3. Bei 5 zahlenden Kunden: Dein Family-Plan wird dauerhaft kostenlos!</li>
+                    <li>3. Bei {requiredReferrals} zahlenden Kunden: Dein {planName} wird dauerhaft kostenlos!</li>
                   </ul>
                 </div>
               </CardContent>
@@ -268,23 +281,23 @@ export default function Referral() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Gift className="h-5 w-5" />
-                    Fortschritt zum kostenlosen Family-Plan
+                    Fortschritt zum kostenlosen {planName}
                   </CardTitle>
                   <CardDescription>
-                    Noch {remainingForFree} zahlende{remainingForFree === 1 ? "r" : ""} Kunde{remainingForFree === 1 ? "" : "n"} bis zum dauerhaft kostenlosen Family-Plan
+                    Noch {remainingForFree} zahlende{remainingForFree === 1 ? "r" : ""} Kunde{remainingForFree === 1 ? "" : "n"} bis zum dauerhaft kostenlosen {planName}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
-                      <span>{referralData?.activeReferrals || 0} von 5 aktiven Kunden</span>
+                      <span>{referralData?.activeReferrals || 0} von {requiredReferrals} aktiven Kunden</span>
                       <span className="text-muted-foreground">{Math.round(progressToFree)}%</span>
                     </div>
                     <Progress value={progressToFree} className="h-3" />
                   </div>
 
-                  <div className="mt-4 grid grid-cols-5 gap-2">
-                    {[0, 1, 2, 3, 4].map((index) => {
+                  <div className="mt-4 grid gap-2" style={{ gridTemplateColumns: `repeat(${Math.min(requiredReferrals, 5)}, 1fr)` }}>
+                    {Array.from({ length: requiredReferrals }).map((_, index) => {
                       const referral = referralData?.referrals[index];
                       let bgClass = "bg-muted text-muted-foreground";
                       let statusText = "Frei";
