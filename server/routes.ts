@@ -283,12 +283,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         utmSource: z.string().optional(),
         utmMedium: z.string().optional(),
         utmCampaign: z.string().optional(),
+        // Referral program (optional)
+        referralCode: z.string().optional(),
       }).refine(data => data.password === data.passwordConfirm, {
         message: "Passwörter stimmen nicht überein",
         path: ["passwordConfirm"],
       });
 
-      const { email, password, firstName, lastName, utmSource, utmMedium, utmCampaign } = registerSchema.parse(req.body);
+      const { email, password, firstName, lastName, utmSource, utmMedium, utmCampaign, referralCode } = registerSchema.parse(req.body);
       const normalizedEmail = email.toLowerCase();
 
       // Check if user already exists
@@ -311,6 +313,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { generateInboundEmail } = await import('./lib/emailInbound');
       const inboundEmail = await generateInboundEmail(firstName, lastName);
 
+      // Handle referral tracking
+      let referrerId: string | null = null;
+      let referrerMasterId: string | null = null; // Master gets credit even if Slave referred
+      
+      if (referralCode) {
+        const referrer = await storage.getUserByReferralCode(referralCode);
+        if (referrer) {
+          // Check if referrer is a Slave (invited user) - credit goes to their Master
+          const [invitation] = await db.select()
+            .from(sharedAccess)
+            .where(
+              and(
+                eq(sharedAccess.sharedWithUserId, referrer.id),
+                eq(sharedAccess.status, 'active')
+              )
+            );
+          
+          if (invitation) {
+            // Slave referred - Master gets credit
+            referrerMasterId = invitation.ownerId;
+            referrerId = referrer.id; // Track who actually made the referral
+          } else {
+            // Master referred directly
+            referrerMasterId = referrer.id;
+            referrerId = referrer.id;
+          }
+          
+          console.log(`[Register] User referred by code ${referralCode}, credit goes to ${referrerMasterId}`);
+        } else {
+          console.log(`[Register] Invalid referral code: ${referralCode}`);
+        }
+      }
+
+      // Generate referral code for new user
+      const newUserReferralCode = storage.generateReferralCode();
+
       // Create user (NOT verified yet)
       await db.insert(users).values({
         id: userId,
@@ -328,7 +366,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         utmSource: utmSource || null,
         utmMedium: utmMedium || null,
         utmCampaign: utmCampaign || null,
+        // Referral program
+        referralCode: newUserReferralCode,
+        referredBy: referrerMasterId,
       });
+
+      // Create referral record if user was referred
+      if (referrerMasterId) {
+        await storage.createReferral({
+          referrerId: referrerMasterId,
+          referredUserId: userId,
+          referredBySlaveId: referrerId !== referrerMasterId ? referrerId : null,
+          status: 'pending', // Will become 'active' when user becomes paying customer
+        });
+        
+        // Give +1GB bonus storage to referrer immediately (even for trial signups)
+        const referrerUser = await storage.getUser(referrerMasterId);
+        if (referrerUser) {
+          const newBonusGB = (referrerUser.referralBonusGB || 0) + 1;
+          await storage.updateUserReferralBonus(referrerMasterId, newBonusGB, referrerUser.freeFromReferrals);
+          console.log(`[Register] Gave +1GB bonus to referrer ${referrerMasterId}, total bonus: ${newBonusGB}GB`);
+        }
+      }
 
       // Add user's own email to whitelist (allows forwarding from their own address)
       await storage.addEmailToWhitelist(userId, normalizedEmail);
@@ -4483,6 +4542,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('[Admin] Error deleting video tutorial:', error);
       res.status(500).json({ message: "Fehler beim Löschen des Video-Tutorials" });
+    }
+  });
+
+  // ===== Referral Program API =====
+  
+  // Get user's referral info
+  app.get("/api/referral", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // Get or generate referral code
+      const referralCode = await storage.ensureUserHasReferralCode(userId);
+      
+      // Get user's referral stats
+      const allReferrals = await storage.getReferralsByReferrer(userId);
+      const activeCount = await storage.getActiveReferralCount(userId);
+      
+      // Get user for bonus info
+      const user = await storage.getUser(userId);
+      
+      // Build referral link
+      const baseUrl = process.env.APP_URL || `https://${process.env.REPLIT_DOMAINS?.split(',')[0]}`;
+      const referralLink = `${baseUrl}/registrieren?ref=${referralCode}`;
+      
+      res.json({
+        referralCode,
+        referralLink,
+        totalReferrals: allReferrals.length,
+        activeReferrals: activeCount,
+        pendingReferrals: allReferrals.filter(r => r.status === 'pending').length,
+        bonusStorageGB: user?.referralBonusGB || 0,
+        isFreeFromReferrals: user?.freeFromReferrals || false,
+        referrals: allReferrals.map(r => ({
+          id: r.id,
+          status: r.status,
+          createdAt: r.createdAt,
+          activatedAt: r.activatedAt,
+        })),
+      });
+    } catch (error) {
+      console.error('[Referral] Error getting referral info:', error);
+      res.status(500).json({ message: "Fehler beim Laden der Empfehlungsdaten" });
+    }
+  });
+  
+  // Validate referral code (public - used during registration)
+  app.get("/api/referral/validate/:code", async (req, res) => {
+    try {
+      const { code } = req.params;
+      
+      const referrer = await storage.getUserByReferralCode(code);
+      
+      if (referrer) {
+        res.json({ 
+          valid: true,
+          referrerFirstName: referrer.firstName,
+        });
+      } else {
+        res.json({ valid: false });
+      }
+    } catch (error) {
+      console.error('[Referral] Error validating code:', error);
+      res.json({ valid: false });
     }
   });
 

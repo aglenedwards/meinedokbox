@@ -1,6 +1,6 @@
-import { type User, type UpsertUser, type Document, type InsertDocument, type UpdateDocument, type Tag, type InsertTag, type DocumentTag, type InsertDocumentTag, type SharedAccess, type InsertSharedAccess, type Folder, type InsertFolder, type TrialNotification, type InsertTrialNotification, type EmailWhitelist, type EmailJob, type InsertEmailJob, type SmartFolder, type InsertSmartFolder, type FeatureRequest, type InsertFeatureRequest, type FeatureRequestVote, type InsertFeatureRequestVote, type VideoTutorial, type InsertVideoTutorial, type Changelog, type InsertChangelog } from "@shared/schema";
+import { type User, type UpsertUser, type Document, type InsertDocument, type UpdateDocument, type Tag, type InsertTag, type DocumentTag, type InsertDocumentTag, type SharedAccess, type InsertSharedAccess, type Folder, type InsertFolder, type TrialNotification, type InsertTrialNotification, type EmailWhitelist, type EmailJob, type InsertEmailJob, type SmartFolder, type InsertSmartFolder, type FeatureRequest, type InsertFeatureRequest, type FeatureRequestVote, type InsertFeatureRequestVote, type VideoTutorial, type InsertVideoTutorial, type Changelog, type InsertChangelog, type Referral, type InsertReferral } from "@shared/schema";
 import { db } from "./db";
-import { users, documents, tags, documentTags, sharedAccess, folders, trialNotifications, emailWhitelist, emailJobs, smartFolders, featureRequests, featureRequestVotes, videoTutorials, changelog } from "@shared/schema";
+import { users, documents, tags, documentTags, sharedAccess, folders, trialNotifications, emailWhitelist, emailJobs, smartFolders, featureRequests, featureRequestVotes, videoTutorials, changelog, referrals } from "@shared/schema";
 import { eq, and, or, like, ilike, desc, asc, isNull, isNotNull, inArray, sql, getTableColumns } from "drizzle-orm";
 import { generateInboundEmail } from "./lib/emailInbound";
 import crypto from "crypto";
@@ -159,6 +159,16 @@ export interface IStorage {
   getChangelogById(id: string): Promise<Changelog | undefined>;
   updateChangelog(id: string, data: Partial<InsertChangelog>): Promise<Changelog | undefined>;
   deleteChangelog(id: string): Promise<boolean>;
+  
+  // Referral program management
+  generateReferralCode(): string;
+  getUserByReferralCode(code: string): Promise<User | undefined>;
+  createReferral(data: InsertReferral): Promise<Referral>;
+  getReferralsByReferrer(referrerId: string): Promise<Referral[]>;
+  getActiveReferralCount(referrerId: string): Promise<number>;
+  updateReferralStatus(referredUserId: string, status: 'pending' | 'active' | 'churned'): Promise<Referral | undefined>;
+  updateUserReferralBonus(userId: string, bonusGB: number, freeFromReferrals: boolean): Promise<User | undefined>;
+  ensureUserHasReferralCode(userId: string): Promise<string>;
 }
 
 export class DbStorage implements IStorage {
@@ -2014,6 +2024,98 @@ export class DbStorage implements IStorage {
     const result = await db.delete(changelog)
       .where(eq(changelog.id, id));
     return result.rowCount !== null && result.rowCount > 0;
+  }
+  
+  // ===== Referral Program =====
+  
+  generateReferralCode(): string {
+    // Generate a short, URL-safe referral code (8 chars)
+    return crypto.randomBytes(4).toString('hex').toUpperCase();
+  }
+  
+  async getUserByReferralCode(code: string): Promise<User | undefined> {
+    const [user] = await db.select()
+      .from(users)
+      .where(eq(users.referralCode, code.toUpperCase()));
+    return user;
+  }
+  
+  async createReferral(data: InsertReferral): Promise<Referral> {
+    const [referral] = await db.insert(referrals)
+      .values(data)
+      .returning();
+    return referral;
+  }
+  
+  async getReferralsByReferrer(referrerId: string): Promise<Referral[]> {
+    return await db.select()
+      .from(referrals)
+      .where(eq(referrals.referrerId, referrerId))
+      .orderBy(desc(referrals.createdAt));
+  }
+  
+  async getActiveReferralCount(referrerId: string): Promise<number> {
+    const result = await db.select({ count: sql<number>`count(*)` })
+      .from(referrals)
+      .where(
+        and(
+          eq(referrals.referrerId, referrerId),
+          eq(referrals.status, 'active')
+        )
+      );
+    return Number(result[0]?.count || 0);
+  }
+  
+  async updateReferralStatus(referredUserId: string, status: 'pending' | 'active' | 'churned'): Promise<Referral | undefined> {
+    const updateData: any = { status };
+    if (status === 'active') {
+      updateData.activatedAt = new Date();
+    } else if (status === 'churned') {
+      updateData.churnedAt = new Date();
+    }
+    
+    const [updated] = await db.update(referrals)
+      .set(updateData)
+      .where(eq(referrals.referredUserId, referredUserId))
+      .returning();
+    return updated;
+  }
+  
+  async updateUserReferralBonus(userId: string, bonusGB: number, freeFromReferrals: boolean): Promise<User | undefined> {
+    const [updated] = await db.update(users)
+      .set({ 
+        referralBonusGB: bonusGB,
+        freeFromReferrals,
+        updatedAt: new Date()
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    return updated;
+  }
+  
+  async ensureUserHasReferralCode(userId: string): Promise<string> {
+    const user = await this.getUser(userId);
+    if (user?.referralCode) {
+      return user.referralCode;
+    }
+    
+    // Generate and assign new referral code
+    let code = this.generateReferralCode();
+    let attempts = 0;
+    
+    // Ensure uniqueness
+    while (attempts < 5) {
+      const existing = await this.getUserByReferralCode(code);
+      if (!existing) break;
+      code = this.generateReferralCode();
+      attempts++;
+    }
+    
+    await db.update(users)
+      .set({ referralCode: code, updatedAt: new Date() })
+      .where(eq(users.id, userId));
+    
+    return code;
   }
 }
 
