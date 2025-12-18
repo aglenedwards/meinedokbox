@@ -97,7 +97,9 @@ export const checkDocumentLimit: RequestHandler = async (req: any, res, next) =>
     }
 
     const totalStorageGB = totalStorageBytes / (1024 * 1024 * 1024);
-    const maxStorageGB = limits.maxStorageGB;
+    // Add referral bonus storage to base plan limit
+    const referralBonusGB = effectiveUser.referralBonusGB || 0;
+    const maxStorageGB = limits.maxStorageGB + referralBonusGB;
 
     if (totalStorageGB >= maxStorageGB) {
       return res.status(403).json({

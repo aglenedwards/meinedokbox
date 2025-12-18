@@ -359,6 +359,8 @@ export interface SubscriptionStatus {
   maxUploadsPerMonth: number;
   uploadsThisMonth: number;
   maxStorageGB: number;
+  baseStorageGB?: number;
+  referralBonusGB?: number;
   storageUsedGB: number;
   // User count (for family plans)
   currentUsers?: number;
@@ -379,6 +381,8 @@ export interface SubscriptionStatus {
   subscriptionEndsAt?: Date;
   // Stripe subscription status
   hasActiveSubscription?: boolean;
+  // Referral program
+  freeFromReferrals?: boolean;
 }
 
 /**

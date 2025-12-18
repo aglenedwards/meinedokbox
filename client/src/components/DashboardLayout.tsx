@@ -1,6 +1,6 @@
 import { ReactNode, useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
-import { Plus, ChevronDown, Camera, Settings, LogOut, Trash2, Shield, Download } from "lucide-react";
+import { Plus, ChevronDown, Camera, Settings, LogOut, Trash2, Shield, Download, Gift } from "lucide-react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import {
@@ -106,6 +106,15 @@ export function DashboardLayout({
                     </Button>
                   </Link>
                 )}
+                <Link href="/referral">
+                  <Button 
+                    variant={location === "/referral" ? "default" : "ghost"} 
+                    size="sm" 
+                    data-testid="button-referral-mobile"
+                  >
+                    <Gift className="h-4 w-4" />
+                  </Button>
+                </Link>
                 <Link href="/settings">
                   <Button 
                     variant={location === "/settings" ? "default" : "ghost"} 
@@ -168,6 +177,16 @@ export function DashboardLayout({
                   </Button>
                 </Link>
               )}
+              <Link href="/referral">
+                <Button 
+                  variant={location === "/referral" ? "default" : "outline"} 
+                  size="sm" 
+                  data-testid="button-referral"
+                >
+                  <Gift className="h-4 w-4 mr-2" />
+                  Einladen
+                </Button>
+              </Link>
               <Link href="/settings">
                 <Button 
                   variant={location === "/settings" ? "default" : "outline"} 

@@ -859,13 +859,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const currentUsers = allUserIds.length; // Includes Master + all partner users
       const maxUsers = limits.maxUsers;
 
+      // Add referral bonus storage to max storage
+      const referralBonusGB = effectiveUser.referralBonusGB || 0;
+      const totalMaxStorageGB = limits.maxStorageGB + referralBonusGB;
+
       res.json({
         plan: effectiveUser.subscriptionPlan,
         displayName: limits.displayName,
         // NEW: Hybrid limit system
         maxUploadsPerMonth: limits.maxUploadsPerMonth,
         uploadsThisMonth,
-        maxStorageGB: limits.maxStorageGB,
+        maxStorageGB: totalMaxStorageGB,
+        baseStorageGB: limits.maxStorageGB,
+        referralBonusGB,
         storageUsedGB,
         // User count (for family plans)
         currentUsers,
@@ -886,6 +892,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         subscriptionEndsAt: effectiveUser.subscriptionEndsAt,
         // Stripe subscription status
         hasActiveSubscription: !!effectiveUser.stripeSubscriptionId,
+        // Referral program status
+        freeFromReferrals: effectiveUser.freeFromReferrals || false,
       });
     } catch (error) {
       console.error("Error fetching subscription status:", error);
