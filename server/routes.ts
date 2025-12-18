@@ -131,6 +131,62 @@ function calculateFileHash(buffer: Buffer): string {
   return crypto.createHash('sha256').update(buffer).digest('hex');
 }
 
+/**
+ * Updates referral status and recalculates the referrer's bonus (storage + free plan eligibility)
+ * @param referredUserId - The user who was referred
+ * @param newStatus - New status ('active' when they pay, 'churned' when they cancel)
+ */
+async function updateReferralStatusAndRecalculateBonus(
+  referredUserId: string,
+  newStatus: 'active' | 'churned'
+): Promise<void> {
+  try {
+    // Update the referral status
+    const updatedReferral = await storage.updateReferralStatus(referredUserId, newStatus);
+    
+    if (!updatedReferral) {
+      console.log(`[Referral] No referral found for user ${referredUserId}`);
+      return;
+    }
+    
+    const referrerId = updatedReferral.referrerId;
+    console.log(`[Referral] Updated status for ${referredUserId} to ${newStatus}, referrer: ${referrerId}`);
+    
+    // Get all referrals for this referrer
+    const allReferrals = await storage.getReferralsByReferrer(referrerId);
+    const activeCount = allReferrals.filter(r => r.status === 'active').length;
+    
+    // Calculate bonus: +1GB per referral (including pending ones that signed up)
+    const bonusGB = allReferrals.length; // All signups give +1GB
+    
+    // Check if referrer qualifies for free Family plan (5+ active paying referrals)
+    const qualifiesForFree = activeCount >= 5;
+    
+    // Get referrer's current plan
+    const referrer = await storage.getUser(referrerId);
+    if (!referrer) {
+      console.error(`[Referral] Referrer not found: ${referrerId}`);
+      return;
+    }
+    
+    // Update referrer's bonus
+    await storage.updateUserReferralBonus(referrerId, bonusGB, qualifiesForFree);
+    
+    // Handle free plan eligibility
+    if (qualifiesForFree && !referrer.freeFromReferrals) {
+      console.log(`[Referral] User ${referrerId} now qualifies for FREE Family plan (${activeCount} active referrals)`);
+      // Note: The actual free subscription logic would be handled by checking freeFromReferrals
+      // in the billing/limits system, not by changing Stripe subscription here
+    } else if (!qualifiesForFree && referrer.freeFromReferrals) {
+      console.log(`[Referral] User ${referrerId} no longer qualifies for FREE plan (${activeCount} active referrals)`);
+    }
+    
+    console.log(`[Referral] Updated referrer ${referrerId}: ${bonusGB}GB bonus, freeEligible=${qualifiesForFree}, activeReferrals=${activeCount}`);
+  } catch (error) {
+    console.error('[Referral] Error updating referral status:', error);
+  }
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
@@ -4032,6 +4088,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
               }).catch(err => console.error('[StripeWebhook] Meta Subscribe event failed:', err));
               console.log(`[StripeWebhook] Meta Subscribe event queued for ${user.email} - ${plan}`);
             }
+            
+            // Update referral status to 'active' if user was referred
+            if (userId) {
+              await updateReferralStatusAndRecalculateBonus(userId, 'active');
+            }
           }
           break;
         }
@@ -4083,6 +4144,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
               ).catch(err => console.error('[StripeWebhook] Failed to send cancellation notification:', err));
               console.log(`[StripeWebhook] Admin notification sent for subscription cancellation: ${user.email} - ${previousPlan}`);
             }
+            
+            // Update referral status to 'churned' if user was referred
+            await updateReferralStatusAndRecalculateBonus(userId, 'churned');
           }
           break;
         }
