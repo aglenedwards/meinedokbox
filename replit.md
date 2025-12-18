@@ -29,13 +29,34 @@ PaperEase is a web and mobile application designed to digitize paper documents u
 - Personal referral link with copy/share functionality
 - Progress bar showing X/5 active referrals towards free Family plan
 - Stats cards: total referrals, active customers, bonus storage
-- List of all referrals with status badges
+- List of all referrals with status badges (Yellow=Trial, Green=Active, Gray=Churned)
 - Navigation button added to Dashboard header
 
 **Registration Integration:**
 - Referral code captured from URL (?ref=CODE) during registration
 - Validated via /api/referral/validate/:code endpoint
 - Referral tracking record created on successful registration
+
+**Email Notifications:**
+- `sendReferralSignupNotification()`: Sent to referrer when someone signs up via their link (+1GB bonus)
+- `sendReferralActivationNotification()`: Sent to referrer when their referral becomes a paying customer
+- `sendReferralProgramInfoEmail()`: Day-8 email introducing the referral program to all verified users
+- All referral emails are async/non-blocking to prevent delays
+
+**Day-8 Referral Info Email (Cron Job):**
+- Added `referralEmailSentAt` field to users table
+- Daily cron job checks for users registered 8+ days ago without referral email
+- Automatically sends referral program introduction email
+- Includes personal referral link and explains +1GB per referral and free Family plan rewards
+
+**Admin Dashboard Referral Statistics:**
+- Total/Active/Pending/Churned referral counts
+- Total bonus storage given (GB)
+- Users with free plan from referrals (Crown icon)
+- Top 10 referrers leaderboard with medal rankings
+
+**Changelog Entry:**
+- Added "Was ist neu" entry announcing the referral program
 
 ### December 17, 2025 - SmartFolder Partner Sharing & Slave Protection
 
