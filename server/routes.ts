@@ -1576,16 +1576,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const verificationToken = crypto.randomBytes(32).toString('hex');
       const verificationTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
       
-      // Create Slave user
-      // NOTE: Slave gets 'free' plan in database, but will inherit Master's plan dynamically
-      // via getEffectiveUser() function for all subscription checks
+      // Create Slave user with 7-day trial
+      // NOTE: Slave inherits Master's plan dynamically via getEffectiveUser() for subscription checks,
+      // but they also get their own trial period in case they become independent later
+      const trialEndsAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days trial
       const newUser = await storage.upsertUser({
         id: `local_${crypto.randomBytes(16).toString('hex')}`,
         email: invitedEmail,
         firstName,
         lastName,
         passwordHash: hashedPassword,
-        subscriptionPlan: 'free', // Slave default plan (actual plan comes from Master via getEffectiveUser)
+        subscriptionPlan: 'trial', // Start with trial, inherits Master's plan via getEffectiveUser
+        trialEndsAt,
         isVerified: false,
         verificationToken,
         verificationTokenExpiry,
