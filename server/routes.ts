@@ -20,7 +20,7 @@ import { ObjectPermission } from "./objectAcl";
 import { insertDocumentSchema, updateDocumentSchema, DOCUMENT_CATEGORIES, PLAN_LIMITS } from "@shared/schema";
 import { combineImagesToPDF, type PageBuffer } from "./lib/pdfGenerator";
 import { parseMailgunWebhook, isSupportedAttachment, isValidDocumentAttachment, isEmailWhitelisted, verifyMailgunWebhook, extractEmailAddress } from "./lib/emailInbound";
-import { sendSharedAccessInvitation, sendVerificationEmail, sendPasswordResetEmail, sendContactFormEmail, sendAdminNewUserNotification, sendAdminNewSubscriptionNotification, sendAdminSubscriptionCancelledNotification, sendAccountSeparatedEmail } from "./lib/sendEmail";
+import { sendSharedAccessInvitation, sendVerificationEmail, sendPasswordResetEmail, sendContactFormEmail, sendAdminNewUserNotification, sendAdminNewSubscriptionNotification, sendAdminSubscriptionCancelledNotification, sendAccountSeparatedEmail, sendReferralSignupNotification, sendReferralActivationNotification } from "./lib/sendEmail";
 import { emailQueue } from "./lib/emailQueue";
 import bcrypt from 'bcrypt';
 import { checkDocumentLimit, checkEmailFeature, checkAndDowngradeTrial, getEffectiveUserId, isSharedUser } from "./middleware/subscriptionLimits";
@@ -179,6 +179,18 @@ async function updateReferralStatusAndRecalculateBonus(
       // in the billing/limits system, not by changing Stripe subscription here
     } else if (!qualifiesForFree && referrer.freeFromReferrals) {
       console.log(`[Referral] User ${referrerId} no longer qualifies for FREE plan (${activeCount} active referrals)`);
+    }
+    
+    // Send email notification when referral becomes active (paying customer)
+    if (newStatus === 'active' && referrer.email) {
+      const isFreeNow = qualifiesForFree && !referrer.freeFromReferrals;
+      sendReferralActivationNotification(
+        referrer.email,
+        referrer.firstName || 'Nutzer',
+        activeCount,
+        isFreeNow
+      ).catch(err => console.error('[Referral] Failed to send activation notification:', err));
+      console.log(`[Referral] Activation notification sent to ${referrer.email} (${activeCount}/5 active, isFreeNow=${isFreeNow})`);
     }
     
     console.log(`[Referral] Updated referrer ${referrerId}: ${bonusGB}GB bonus, freeEligible=${qualifiesForFree}, activeReferrals=${activeCount}`);
@@ -442,6 +454,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const newBonusGB = (referrerUser.referralBonusGB || 0) + 1;
           await storage.updateUserReferralBonus(referrerMasterId, newBonusGB, referrerUser.freeFromReferrals);
           console.log(`[Register] Gave +1GB bonus to referrer ${referrerMasterId}, total bonus: ${newBonusGB}GB`);
+          
+          // Send email notification to referrer (async, non-blocking)
+          if (referrerUser.email) {
+            sendReferralSignupNotification(referrerUser.email, referrerUser.firstName || 'Nutzer')
+              .catch(err => console.error('[Register] Failed to send referral signup notification:', err));
+            console.log(`[Register] Referral signup notification sent to ${referrerUser.email}`);
+          }
         }
       }
 

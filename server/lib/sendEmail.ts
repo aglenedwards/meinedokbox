@@ -1007,3 +1007,204 @@ Dein MeineDokBox Team
   return sendEmail({ to, subject, text, html });
 }
 
+/**
+ * Send notification to referrer when someone signs up via their referral link
+ */
+export async function sendReferralSignupNotification(
+  to: string,
+  referrerName: string
+): Promise<boolean> {
+  const baseUrl = getAppUrl();
+  const referralLink = `${baseUrl}/referral`;
+  const subject = `🎉 Neue Empfehlung: +1 GB Bonus-Speicher für dich!`;
+  
+  const text = `
+Hallo ${referrerName}!
+
+Tolle Neuigkeiten! Jemand hat sich über deinen Empfehlungslink registriert.
+
+Du erhältst sofort +1 GB zusätzlichen Speicherplatz!
+
+Dein nächstes Ziel: Sobald 5 deiner Empfehlungen zahlende Kunden werden, bekommst du den Family-Plan dauerhaft kostenlos!
+
+Schau dir deinen Fortschritt an: ${referralLink}
+
+Viele Grüße,
+Dein MeineDokBox Team
+  `.trim();
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+    .header { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; padding: 30px; border-radius: 8px 8px 0 0; text-align: center; }
+    .content { background: #f8f9fa; padding: 30px; border-radius: 0 0 8px 8px; }
+    .highlight { background: white; padding: 20px; border-radius: 6px; margin: 20px 0; border-left: 4px solid #10b981; text-align: center; }
+    .bonus { font-size: 32px; font-weight: bold; color: #10b981; }
+    .button { display: inline-block; background: #667eea; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; margin: 20px 0; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1 style="color: #ffffff !important; margin: 0 0 10px 0; font-size: 24px;">🎉 Neue Empfehlung!</h1>
+    <p style="color: #ffffff !important; margin: 0; font-size: 16px;">Jemand hat sich über deinen Link registriert</p>
+  </div>
+  <div class="content">
+    <p>Hallo ${referrerName}!</p>
+    <p>Tolle Neuigkeiten! Jemand hat sich über deinen Empfehlungslink registriert.</p>
+    <div class="highlight">
+      <p style="margin: 0; color: #666;">Du erhältst sofort</p>
+      <p class="bonus" style="margin: 10px 0;">+1 GB</p>
+      <p style="margin: 0; color: #666;">zusätzlichen Speicherplatz!</p>
+    </div>
+    <p><strong>Dein nächstes Ziel:</strong> Sobald 5 deiner Empfehlungen zahlende Kunden werden, bekommst du den Family-Plan dauerhaft kostenlos!</p>
+    <center>
+      <a href="${referralLink}" class="button" style="display: inline-block; background: #667eea; color: #ffffff !important; padding: 12px 30px; text-decoration: none; border-radius: 6px; margin: 20px 0;">
+        Fortschritt ansehen
+      </a>
+    </center>
+    <p style="margin-top: 30px; font-size: 14px; color: #666; text-align: center;">
+      Viele Grüße,<br>
+      Dein MeineDokBox Team
+    </p>
+  </div>
+</body>
+</html>
+  `.trim();
+
+  return sendEmail({ to, subject, text, html });
+}
+
+/**
+ * Send notification to referrer when their referred user becomes a paying customer
+ */
+export async function sendReferralActivationNotification(
+  to: string,
+  referrerName: string,
+  activeCount: number,
+  isFreeNow: boolean
+): Promise<boolean> {
+  const baseUrl = getAppUrl();
+  const referralLink = `${baseUrl}/referral`;
+  
+  const subject = isFreeNow 
+    ? `🎊 Glückwunsch! Dein MeineDokBox ist jetzt dauerhaft kostenlos!`
+    : `✅ Deine Empfehlung ist jetzt zahlender Kunde (${activeCount}/5)`;
+  
+  const text = isFreeNow
+    ? `
+Hallo ${referrerName}!
+
+🎊 HERZLICHEN GLÜCKWUNSCH! 🎊
+
+Du hast es geschafft! Mit 5 aktiven zahlenden Empfehlungen ist dein Family-Plan ab sofort DAUERHAFT KOSTENLOS!
+
+Schau dir deine Empfehlungen an: ${referralLink}
+
+Viele Grüße,
+Dein MeineDokBox Team
+    `.trim()
+    : `
+Hallo ${referrerName}!
+
+Tolle Neuigkeiten! Eine deiner Empfehlungen ist jetzt zahlender Kunde geworden.
+
+Dein Fortschritt: ${activeCount} von 5 aktiven Empfehlungen
+
+Bei 5 aktiven Empfehlungen wird dein Family-Plan dauerhaft kostenlos!
+
+Schau dir deinen Fortschritt an: ${referralLink}
+
+Viele Grüße,
+Dein MeineDokBox Team
+    `.trim();
+
+  const html = isFreeNow
+    ? `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+    .header { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #ffffff; padding: 30px; border-radius: 8px 8px 0 0; text-align: center; }
+    .content { background: #f8f9fa; padding: 30px; border-radius: 0 0 8px 8px; }
+    .celebration { background: white; padding: 30px; border-radius: 6px; margin: 20px 0; text-align: center; border: 2px solid #f59e0b; }
+    .free-text { font-size: 28px; font-weight: bold; color: #d97706; }
+    .button { display: inline-block; background: #667eea; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; margin: 20px 0; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1 style="color: #ffffff !important; margin: 0 0 10px 0; font-size: 28px;">🎊 GLÜCKWUNSCH! 🎊</h1>
+    <p style="color: #ffffff !important; margin: 0; font-size: 18px;">Du hast es geschafft!</p>
+  </div>
+  <div class="content">
+    <p>Hallo ${referrerName}!</p>
+    <div class="celebration">
+      <p style="font-size: 48px; margin: 0;">🎉</p>
+      <p class="free-text" style="margin: 15px 0;">DAUERHAFT KOSTENLOS!</p>
+      <p style="margin: 0; color: #666;">Mit 5 aktiven zahlenden Empfehlungen ist dein Family-Plan ab sofort kostenlos!</p>
+    </div>
+    <p>Danke, dass du MeineDokBox weiterempfiehlst!</p>
+    <center>
+      <a href="${referralLink}" class="button" style="display: inline-block; background: #667eea; color: #ffffff !important; padding: 12px 30px; text-decoration: none; border-radius: 6px; margin: 20px 0;">
+        Deine Empfehlungen ansehen
+      </a>
+    </center>
+    <p style="margin-top: 30px; font-size: 14px; color: #666; text-align: center;">
+      Viele Grüße,<br>
+      Dein MeineDokBox Team
+    </p>
+  </div>
+</body>
+</html>
+    `.trim()
+    : `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+    .header { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; padding: 30px; border-radius: 8px 8px 0 0; text-align: center; }
+    .content { background: #f8f9fa; padding: 30px; border-radius: 0 0 8px 8px; }
+    .progress-box { background: white; padding: 25px; border-radius: 6px; margin: 20px 0; text-align: center; border-left: 4px solid #10b981; }
+    .progress-count { font-size: 36px; font-weight: bold; color: #10b981; }
+    .button { display: inline-block; background: #667eea; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; margin: 20px 0; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1 style="color: #ffffff !important; margin: 0 0 10px 0; font-size: 24px;">✅ Empfehlung aktiviert!</h1>
+    <p style="color: #ffffff !important; margin: 0; font-size: 16px;">Eine deiner Empfehlungen ist jetzt zahlender Kunde</p>
+  </div>
+  <div class="content">
+    <p>Hallo ${referrerName}!</p>
+    <p>Tolle Neuigkeiten! Eine deiner Empfehlungen ist jetzt zahlender Kunde geworden.</p>
+    <div class="progress-box">
+      <p style="margin: 0; color: #666;">Dein Fortschritt</p>
+      <p class="progress-count" style="margin: 10px 0;">${activeCount} / 5</p>
+      <p style="margin: 0; color: #666;">aktive Empfehlungen</p>
+    </div>
+    <p><strong>Noch ${5 - activeCount} weitere</strong> und dein Family-Plan wird dauerhaft kostenlos!</p>
+    <center>
+      <a href="${referralLink}" class="button" style="display: inline-block; background: #667eea; color: #ffffff !important; padding: 12px 30px; text-decoration: none; border-radius: 6px; margin: 20px 0;">
+        Fortschritt ansehen
+      </a>
+    </center>
+    <p style="margin-top: 30px; font-size: 14px; color: #666; text-align: center;">
+      Viele Grüße,<br>
+      Dein MeineDokBox Team
+    </p>
+  </div>
+</body>
+</html>
+    `.trim();
+
+  return sendEmail({ to, subject, text, html });
+}
+
