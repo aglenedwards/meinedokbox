@@ -16,7 +16,9 @@ PaperEase is a web and mobile application designed to digitize paper documents u
 
 **Referral Rewards:**
 - +1GB storage bonus per referral signup (all signups, not just paying)
-- Free Family plan eligibility when maintaining 5+ active paying referrals
+- Plan-specific free tier eligibility:
+  - Solo/Family: 5 active paying referrals → Plan kostenlos
+  - Family-Plus: 10 active paying referrals → Plan kostenlos
 - Slaves refer for Master's benefit (Master gets credit)
 - Bonus storage is added to base plan limit in upload/storage checks
 

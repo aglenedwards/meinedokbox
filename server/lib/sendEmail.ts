@@ -1025,7 +1025,7 @@ Tolle Neuigkeiten! Jemand hat sich über deinen Empfehlungslink registriert.
 
 Du erhältst sofort +1 GB zusätzlichen Speicherplatz!
 
-Dein nächstes Ziel: Sobald 5 deiner Empfehlungen zahlende Kunden werden, bekommst du den Family-Plan dauerhaft kostenlos!
+Dein nächstes Ziel: Sobald genügend deiner Empfehlungen zahlende Kunden werden, wird dein Plan dauerhaft kostenlos! Die genaue Anzahl hängt von deinem gewählten Abo ab.
 
 Schau dir deinen Fortschritt an: ${referralLink}
 
@@ -1060,7 +1060,7 @@ Dein MeineDokBox Team
       <p class="bonus" style="margin: 10px 0;">+1 GB</p>
       <p style="margin: 0; color: #666;">zusätzlichen Speicherplatz!</p>
     </div>
-    <p><strong>Dein nächstes Ziel:</strong> Sobald 5 deiner Empfehlungen zahlende Kunden werden, bekommst du den Family-Plan dauerhaft kostenlos!</p>
+    <p><strong>Dein nächstes Ziel:</strong> Sobald genügend deiner Empfehlungen zahlende Kunden werden, wird dein Plan dauerhaft kostenlos! Schau in dein Empfehlungs-Dashboard für Details.</p>
     <center>
       <a href="${referralLink}" class="button" style="display: inline-block; background: #667eea; color: #ffffff !important; padding: 12px 30px; text-decoration: none; border-radius: 6px; margin: 20px 0;">
         Fortschritt ansehen
@@ -1235,8 +1235,8 @@ Wir möchten dir heute unser Empfehlungsprogramm vorstellen:
 🎁 FÜR JEDE EMPFEHLUNG:
 +1 GB zusätzlicher Speicherplatz - sofort nach der Registrierung!
 
-👑 BEI 5 AKTIVEN EMPFEHLUNGEN:
-Dein Family-Plan wird DAUERHAFT KOSTENLOS!
+👑 BEI GENÜGEND AKTIVEN EMPFEHLUNGEN:
+Dein Plan wird DAUERHAFT KOSTENLOS! (5 für Solo/Family, 10 für Family-Plus)
 
 Dein persönlicher Empfehlungslink:
 ${referralLink}
@@ -1290,8 +1290,8 @@ Dein MeineDokBox Team
       <div class="reward-item">
         <span class="reward-icon">👑</span>
         <div class="reward-text">
-          <h4>Family-Plan dauerhaft kostenlos</h4>
-          <p>Sobald 5 deiner Empfehlungen zahlende Kunden werden, ist dein Family-Plan für immer kostenlos!</p>
+          <h4>Dein Plan dauerhaft kostenlos</h4>
+          <p>Sobald genügend deiner Empfehlungen zahlende Kunden werden, ist dein Plan für immer kostenlos! (5 für Solo/Family, 10 für Family-Plus)</p>
         </div>
       </div>
     </div>
