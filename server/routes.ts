@@ -164,8 +164,8 @@ async function updateReferralStatusAndRecalculateBonus(
     const allReferrals = await storage.getReferralsByReferrer(referrerId);
     const activeCount = allReferrals.filter(r => r.status === 'active').length;
     
-    // Calculate bonus: +1GB per referral (including pending ones that signed up)
-    const bonusGB = allReferrals.length; // All signups give +1GB
+    // Calculate bonus: +1GB per ACTIVE referral (only paying customers)
+    const bonusGB = activeCount;
     
     // Get referrer's current plan to determine required threshold
     const referrer = await storage.getUser(referrerId);
@@ -448,29 +448,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         referredBy: referrerMasterId,
       });
 
-      // Create referral record if user was referred
+      // Create referral record if user was referred (bonus is given when they become paying customer)
       if (referrerMasterId) {
         await storage.createReferral({
           referrerId: referrerMasterId,
           referredUserId: userId,
           referredBySlaveId: referrerId !== referrerMasterId ? referrerId : null,
-          status: 'pending', // Will become 'active' when user becomes paying customer
+          status: 'pending', // Will become 'active' when user becomes paying customer, then +1GB bonus is given
         });
-        
-        // Give +1GB bonus storage to referrer immediately (even for trial signups)
-        const referrerUser = await storage.getUser(referrerMasterId);
-        if (referrerUser) {
-          const newBonusGB = (referrerUser.referralBonusGB || 0) + 1;
-          await storage.updateUserReferralBonus(referrerMasterId, newBonusGB, referrerUser.freeFromReferrals);
-          console.log(`[Register] Gave +1GB bonus to referrer ${referrerMasterId}, total bonus: ${newBonusGB}GB`);
-          
-          // Send email notification to referrer (async, non-blocking)
-          if (referrerUser.email) {
-            sendReferralSignupNotification(referrerUser.email, referrerUser.firstName || 'Nutzer')
-              .catch(err => console.error('[Register] Failed to send referral signup notification:', err));
-            console.log(`[Register] Referral signup notification sent to ${referrerUser.email}`);
-          }
-        }
+        console.log(`[Register] Created pending referral for user ${userId}, referrer: ${referrerMasterId}`);
       }
 
       // Add user's own email to whitelist (allows forwarding from their own address)
