@@ -1114,6 +1114,8 @@ Hallo ${referrerName}!
 
 Tolle Neuigkeiten! Eine deiner Empfehlungen ist jetzt zahlender Kunde geworden.
 
+Du erhältst +1 GB zusätzlichen Speicherplatz!
+
 Dein Fortschritt: ${activeCount} von ${requiredReferrals} aktiven Empfehlungen
 
 Bei ${requiredReferrals} aktiven Empfehlungen wird dein Plan dauerhaft kostenlos!
@@ -1187,6 +1189,9 @@ Dein MeineDokBox Team
   <div class="content">
     <p>Hallo ${referrerName}!</p>
     <p>Tolle Neuigkeiten! Eine deiner Empfehlungen ist jetzt zahlender Kunde geworden.</p>
+    <div style="background: #d1fae5; padding: 15px; border-radius: 6px; margin: 15px 0; text-align: center;">
+      <p style="margin: 0; font-size: 18px; color: #059669; font-weight: bold;">+1 GB Bonus-Speicher!</p>
+    </div>
     <div class="progress-box">
       <p style="margin: 0; color: #666;">Dein Fortschritt</p>
       <p class="progress-count" style="margin: 10px 0;">${activeCount} / ${requiredReferrals}</p>
@@ -1232,8 +1237,8 @@ Du nutzt MeineDokBox jetzt seit einer Woche - toll, dass du dabei bist!
 
 Wir möchten dir heute unser Empfehlungsprogramm vorstellen:
 
-🎁 FÜR JEDE EMPFEHLUNG:
-+1 GB zusätzlicher Speicherplatz - sofort nach der Registrierung!
+🎁 FÜR JEDE EMPFEHLUNG DIE ZAHLT:
++1 GB zusätzlicher Speicherplatz sobald deine Empfehlung zahlender Kunde wird!
 
 👑 BEI GENÜGEND AKTIVEN EMPFEHLUNGEN:
 Dein Plan wird DAUERHAFT KOSTENLOS! (5 für Solo/Family, 10 für Family-Plus)
@@ -1241,7 +1246,7 @@ Dein Plan wird DAUERHAFT KOSTENLOS! (5 für Solo/Family, 10 für Family-Plus)
 Dein persönlicher Empfehlungslink:
 ${referralLink}
 
-Teile diesen Link mit Freunden, Familie oder Kollegen. Du erhältst sofort +1 GB für jede Anmeldung!
+Teile diesen Link mit Freunden, Familie oder Kollegen. Du erhältst +1 GB sobald sie zahlende Kunden werden!
 
 Schau dir dein Empfehlungs-Dashboard an: ${referralDashboardLink}
 
@@ -1284,7 +1289,7 @@ Dein MeineDokBox Team
         <span class="reward-icon">🎁</span>
         <div class="reward-text">
           <h4>+1 GB pro Empfehlung</h4>
-          <p>Für jede Person, die sich über deinen Link registriert, erhältst du sofort 1 GB zusätzlichen Speicherplatz!</p>
+          <p>Für jede Person, die über deinen Link zahlender Kunde wird, erhältst du 1 GB zusätzlichen Speicherplatz!</p>
         </div>
       </div>
       <div class="reward-item">

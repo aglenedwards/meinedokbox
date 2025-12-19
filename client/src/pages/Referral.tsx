@@ -240,7 +240,7 @@ export default function Referral() {
                   Dein persönlicher Empfehlungslink
                 </CardTitle>
                 <CardDescription>
-                  Teile diesen Link mit Freunden und Familie. Für jede Registrierung erhältst du +1 GB Speicher!
+                  Teile diesen Link mit Freunden und Familie. Für jeden zahlenden Kunden erhältst du +1 GB Speicher!
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -269,7 +269,7 @@ export default function Referral() {
                   <p className="text-sm font-medium mb-1">So funktioniert es:</p>
                   <ul className="text-sm text-muted-foreground space-y-1">
                     <li>1. Teile deinen Link mit Freunden und Familie</li>
-                    <li>2. Für jede Registrierung bekommst du +1 GB Bonus-Speicher</li>
+                    <li>2. Sobald jemand zahlender Kunde wird: +1 GB Bonus-Speicher für dich!</li>
                     <li>3. Bei {requiredReferrals} zahlenden Kunden: Dein {planName} wird dauerhaft kostenlos!</li>
                   </ul>
                 </div>
@@ -399,9 +399,9 @@ export default function Referral() {
                       <Check className="h-4 w-4 text-green-500" />
                     </div>
                     <div>
-                      <p className="font-medium">+1 GB pro Empfehlung</p>
+                      <p className="font-medium">+1 GB pro zahlenden Kunden</p>
                       <p className="text-sm text-muted-foreground">
-                        Für jede Registrierung über deinen Link
+                        Sobald eine Empfehlung zahlender Kunde wird
                       </p>
                     </div>
                   </div>
