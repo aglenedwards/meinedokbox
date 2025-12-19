@@ -4691,8 +4691,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Calculate required referrals based on plan (5 for Solo/Family, 10 for Family-Plus)
       const requiredReferrals = getRequiredReferralsForPlan(currentPlan);
       
-      // Build referral link
-      const baseUrl = process.env.APP_URL || `https://${process.env.REPLIT_DOMAINS?.split(',')[0]}`;
+      // Build referral link - always use production domain
+      const baseUrl = process.env.APP_URL || 'https://meinedokbox.de';
       const referralLink = `${baseUrl}/registrieren?ref=${referralCode}`;
       
       res.json({
