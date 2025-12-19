@@ -457,6 +457,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           status: 'pending', // Will become 'active' when user becomes paying customer, then +1GB bonus is given
         });
         console.log(`[Register] Created pending referral for user ${userId}, referrer: ${referrerMasterId}`);
+        
+        // Send info notification to referrer (no bonus yet - just info that someone signed up)
+        const referrerUser = await storage.getUser(referrerMasterId);
+        if (referrerUser?.email) {
+          sendReferralSignupNotification(referrerUser.email, referrerUser.firstName || 'Nutzer')
+            .catch(err => console.error('[Register] Failed to send referral signup notification:', err));
+          console.log(`[Register] Referral signup info notification sent to ${referrerUser.email}`);
+        }
       }
 
       // Add user's own email to whitelist (allows forwarding from their own address)

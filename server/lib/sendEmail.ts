@@ -1009,6 +1009,7 @@ Dein MeineDokBox Team
 
 /**
  * Send notification to referrer when someone signs up via their referral link
+ * Note: No +1GB bonus at signup - bonus is given when referral becomes paying customer
  */
 export async function sendReferralSignupNotification(
   to: string,
@@ -1016,16 +1017,16 @@ export async function sendReferralSignupNotification(
 ): Promise<boolean> {
   const baseUrl = getAppUrl();
   const referralLink = `${baseUrl}/referral`;
-  const subject = `🎉 Neue Empfehlung: +1 GB Bonus-Speicher für dich!`;
+  const subject = `🎉 Neue Empfehlung: Jemand hat sich über deinen Link registriert!`;
   
   const text = `
 Hallo ${referrerName}!
 
-Tolle Neuigkeiten! Jemand hat sich über deinen Empfehlungslink registriert.
+Tolle Neuigkeiten! Jemand hat sich über deinen Empfehlungslink registriert und testet jetzt MeineDokBox.
 
-Du erhältst sofort +1 GB zusätzlichen Speicherplatz!
+Sobald diese Person zahlender Kunde wird, erhältst du +1 GB Bonus-Speicher!
 
-Dein nächstes Ziel: Sobald genügend deiner Empfehlungen zahlende Kunden werden, wird dein Plan dauerhaft kostenlos! Die genaue Anzahl hängt von deinem gewählten Abo ab.
+Und nicht vergessen: Bei genügend zahlenden Empfehlungen wird dein Plan dauerhaft kostenlos!
 
 Schau dir deinen Fortschritt an: ${referralLink}
 
@@ -1040,27 +1041,25 @@ Dein MeineDokBox Team
   <meta charset="utf-8">
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
-    .header { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; padding: 30px; border-radius: 8px 8px 0 0; text-align: center; }
+    .header { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: #ffffff; padding: 30px; border-radius: 8px 8px 0 0; text-align: center; }
     .content { background: #f8f9fa; padding: 30px; border-radius: 0 0 8px 8px; }
-    .highlight { background: white; padding: 20px; border-radius: 6px; margin: 20px 0; border-left: 4px solid #10b981; text-align: center; }
-    .bonus { font-size: 32px; font-weight: bold; color: #10b981; }
+    .info-box { background: #dbeafe; padding: 20px; border-radius: 6px; margin: 20px 0; border-left: 4px solid #3b82f6; }
     .button { display: inline-block; background: #667eea; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; margin: 20px 0; }
   </style>
 </head>
 <body>
   <div class="header">
     <h1 style="color: #ffffff !important; margin: 0 0 10px 0; font-size: 24px;">🎉 Neue Empfehlung!</h1>
-    <p style="color: #ffffff !important; margin: 0; font-size: 16px;">Jemand hat sich über deinen Link registriert</p>
+    <p style="color: #ffffff !important; margin: 0; font-size: 16px;">Jemand testet MeineDokBox dank dir</p>
   </div>
   <div class="content">
     <p>Hallo ${referrerName}!</p>
-    <p>Tolle Neuigkeiten! Jemand hat sich über deinen Empfehlungslink registriert.</p>
-    <div class="highlight">
-      <p style="margin: 0; color: #666;">Du erhältst sofort</p>
-      <p class="bonus" style="margin: 10px 0;">+1 GB</p>
-      <p style="margin: 0; color: #666;">zusätzlichen Speicherplatz!</p>
+    <p>Tolle Neuigkeiten! Jemand hat sich über deinen Empfehlungslink registriert und testet jetzt MeineDokBox.</p>
+    <div class="info-box">
+      <p style="margin: 0; font-weight: 500;">Was passiert als nächstes?</p>
+      <p style="margin: 10px 0 0 0; color: #1e40af;">Sobald diese Person zahlender Kunde wird, erhältst du <strong>+1 GB Bonus-Speicher</strong>!</p>
     </div>
-    <p><strong>Dein nächstes Ziel:</strong> Sobald genügend deiner Empfehlungen zahlende Kunden werden, wird dein Plan dauerhaft kostenlos! Schau in dein Empfehlungs-Dashboard für Details.</p>
+    <p>Und nicht vergessen: Bei genügend zahlenden Empfehlungen wird dein Plan dauerhaft kostenlos!</p>
     <center>
       <a href="${referralLink}" class="button" style="display: inline-block; background: #667eea; color: #ffffff !important; padding: 12px 30px; text-decoration: none; border-radius: 6px; margin: 20px 0;">
         Fortschritt ansehen
