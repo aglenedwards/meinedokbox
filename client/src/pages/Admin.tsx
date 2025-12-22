@@ -96,6 +96,32 @@ interface UserWithStats extends UserType {
   storageUsed: number;
 }
 
+interface SubscriptionData {
+  userId: number;
+  email: string;
+  name: string;
+  plan: string;
+  interval: string;
+  amount: number;
+  currency: string;
+  status: string;
+  startDate: string;
+  currentPeriodEnd: string;
+  cancelAtPeriodEnd: boolean;
+}
+
+interface SubscriptionsResponse {
+  subscriptions: SubscriptionData[];
+  revenue: {
+    mrr: number;
+    arr: number;
+    totalActive: number;
+    totalCanceling: number;
+    paymentsNext7Days: { count: number; amount: number };
+    paymentsNext30Days: { count: number; amount: number };
+  };
+}
+
 const TUTORIAL_CATEGORIES = ["Upload", "Ordner", "Suche", "Einstellungen", "Tags", "E-Mail", "Teilen"] as const;
 const FEATURE_STATUS_OPTIONS = ["pending", "approved", "planned", "in_progress", "completed", "rejected"] as const;
 
@@ -182,6 +208,13 @@ export default function Admin() {
   // Fetch statistics
   const { data: statistics, isLoading: loadingStatistics } = useQuery<AdminStatistics>({
     queryKey: ["/api/admin/statistics"],
+    retry: false,
+    enabled: adminStatus?.isAdminAuthenticated === true,
+  });
+
+  // Fetch subscriptions from Stripe
+  const { data: subscriptionsData, isLoading: loadingSubscriptions } = useQuery<SubscriptionsResponse>({
+    queryKey: ["/api/admin/subscriptions"],
     retry: false,
     enabled: adminStatus?.isAdminAuthenticated === true,
   });
@@ -465,22 +498,26 @@ export default function Admin() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 md:px-6 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList className="grid w-full grid-cols-4" data-testid="admin-tabs">
+          <TabsList className="grid w-full grid-cols-5" data-testid="admin-tabs">
             <TabsTrigger value="statistics" className="flex items-center gap-2" data-testid="tab-statistics">
               <BarChart3 className="h-4 w-4" />
-              Statistiken
+              <span className="hidden sm:inline">Statistiken</span>
+            </TabsTrigger>
+            <TabsTrigger value="subscriptions" className="flex items-center gap-2" data-testid="tab-subscriptions">
+              <CreditCard className="h-4 w-4" />
+              <span className="hidden sm:inline">Abos & Umsatz</span>
             </TabsTrigger>
             <TabsTrigger value="users" className="flex items-center gap-2" data-testid="tab-users">
               <User className="h-4 w-4" />
-              Benutzer
+              <span className="hidden sm:inline">Benutzer</span>
             </TabsTrigger>
             <TabsTrigger value="features" className="flex items-center gap-2" data-testid="tab-features">
               <Lightbulb className="h-4 w-4" />
-              Feature Requests
+              <span className="hidden sm:inline">Features</span>
             </TabsTrigger>
             <TabsTrigger value="tutorials" className="flex items-center gap-2" data-testid="tab-tutorials">
               <PlayCircle className="h-4 w-4" />
-              Video Tutorials
+              <span className="hidden sm:inline">Tutorials</span>
             </TabsTrigger>
           </TabsList>
 
@@ -857,6 +894,179 @@ export default function Admin() {
                 </div>
               </div>
             ) : null}
+          </TabsContent>
+
+          {/* Subscriptions Tab */}
+          <TabsContent value="subscriptions">
+            {loadingSubscriptions ? (
+              <div className="text-center py-8 text-muted-foreground">Lädt Abonnement-Daten von Stripe...</div>
+            ) : subscriptionsData ? (
+              <div className="space-y-6">
+                {/* Revenue Metrics Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <Card>
+                    <CardContent className="p-6">
+                      <div className="flex items-center gap-4">
+                        <div className="p-3 rounded-full bg-green-500/10">
+                          <TrendingUp className="h-6 w-6 text-green-500" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground">MRR (monatl.)</p>
+                          <p className="text-3xl font-bold" data-testid="stat-mrr">
+                            {subscriptionsData.revenue.mrr.toFixed(2)} €
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {subscriptionsData.revenue.totalActive} aktive Abos
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardContent className="p-6">
+                      <div className="flex items-center gap-4">
+                        <div className="p-3 rounded-full bg-blue-500/10">
+                          <BarChart3 className="h-6 w-6 text-blue-500" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground">ARR (jährl.)</p>
+                          <p className="text-3xl font-bold" data-testid="stat-arr">
+                            {subscriptionsData.revenue.arr.toFixed(2)} €
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Hochrechnung auf 12 Monate
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardContent className="p-6">
+                      <div className="flex items-center gap-4">
+                        <div className="p-3 rounded-full bg-orange-500/10">
+                          <CreditCard className="h-6 w-6 text-orange-500" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground">Nächste 7 Tage</p>
+                          <p className="text-3xl font-bold" data-testid="stat-next7days">
+                            {subscriptionsData.revenue.paymentsNext7Days.amount.toFixed(2)} €
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {subscriptionsData.revenue.paymentsNext7Days.count} Zahlung(en) fällig
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardContent className="p-6">
+                      <div className="flex items-center gap-4">
+                        <div className="p-3 rounded-full bg-purple-500/10">
+                          <AlertTriangle className="h-6 w-6 text-purple-500" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground">Kündigungen</p>
+                          <p className="text-3xl font-bold" data-testid="stat-canceling">
+                            {subscriptionsData.revenue.totalCanceling}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            läuft zum Periodenende aus
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Subscriptions Table */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <CreditCard className="h-5 w-5" />
+                      Alle Abonnements ({subscriptionsData.subscriptions.length})
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {subscriptionsData.subscriptions.length === 0 ? (
+                      <p className="text-center py-8 text-muted-foreground">Keine aktiven Abonnements</p>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Kunde</TableHead>
+                              <TableHead>Plan</TableHead>
+                              <TableHead>Intervall</TableHead>
+                              <TableHead>Betrag</TableHead>
+                              <TableHead>Kaufdatum</TableHead>
+                              <TableHead>Nächste Zahlung</TableHead>
+                              <TableHead>Status</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {subscriptionsData.subscriptions.map((sub) => (
+                              <TableRow key={sub.userId} data-testid={`row-subscription-${sub.userId}`}>
+                                <TableCell>
+                                  <div>
+                                    <p className="font-medium">{sub.name}</p>
+                                    <p className="text-xs text-muted-foreground">{sub.email}</p>
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <Badge variant={
+                                    sub.plan === 'family-plus' ? 'default' : 
+                                    sub.plan === 'family' ? 'secondary' : 'outline'
+                                  }>
+                                    {sub.plan === 'solo' ? 'Solo' : 
+                                     sub.plan === 'family' ? 'Family' : 
+                                     sub.plan === 'family-plus' ? 'Family+' : sub.plan}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell>
+                                  <Badge variant={sub.interval === 'jährlich' ? 'default' : 'outline'}>
+                                    {sub.interval}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell className="font-medium">
+                                  {sub.amount.toFixed(2)} {sub.currency}
+                                </TableCell>
+                                <TableCell>
+                                  {format(new Date(sub.startDate), 'dd.MM.yyyy', { locale: de })}
+                                </TableCell>
+                                <TableCell>
+                                  <div className="flex items-center gap-2">
+                                    {format(new Date(sub.currentPeriodEnd), 'dd.MM.yyyy', { locale: de })}
+                                    {new Date(sub.currentPeriodEnd) <= new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) && (
+                                      <Badge variant="destructive" className="text-xs">bald</Badge>
+                                    )}
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  {sub.cancelAtPeriodEnd ? (
+                                    <Badge variant="destructive">Gekündigt</Badge>
+                                  ) : sub.status === 'active' ? (
+                                    <Badge className="bg-green-500">Aktiv</Badge>
+                                  ) : sub.status === 'trialing' ? (
+                                    <Badge variant="secondary">Trial</Badge>
+                                  ) : (
+                                    <Badge variant="outline">{sub.status}</Badge>
+                                  )}
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">Keine Daten verfügbar</div>
+            )}
           </TabsContent>
 
           {/* Users Tab */}
