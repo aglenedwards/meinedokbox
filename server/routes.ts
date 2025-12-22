@@ -4566,6 +4566,116 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Admin: Get subscription/revenue details from Stripe
+  app.get("/api/admin/subscriptions", isAuthenticated, isAdmin, async (_req: any, res) => {
+    try {
+      // Get all users with Stripe subscription IDs
+      const allUsers = await storage.getAllUsers();
+      const usersWithSubs = allUsers.filter(u => u.stripeSubscriptionId);
+      
+      const subscriptions: {
+        userId: number;
+        email: string;
+        name: string;
+        plan: string;
+        interval: string;
+        amount: number;
+        currency: string;
+        status: string;
+        startDate: string;
+        currentPeriodEnd: string;
+        cancelAtPeriodEnd: boolean;
+      }[] = [];
+      
+      let mrr = 0;
+      let arr = 0;
+      
+      // Fetch subscription details from Stripe
+      for (const user of usersWithSubs) {
+        try {
+          const subscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId!);
+          
+          if (subscription && subscription.status !== 'canceled') {
+            const interval = subscription.items.data[0]?.price?.recurring?.interval || 'month';
+            const amount = (subscription.items.data[0]?.price?.unit_amount || 0) / 100;
+            const currency = subscription.items.data[0]?.price?.currency || 'eur';
+            
+            subscriptions.push({
+              userId: user.id,
+              email: user.email || '',
+              name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email || 'Unbekannt',
+              plan: user.subscriptionPlan || 'unknown',
+              interval: interval === 'year' ? 'jährlich' : 'monatlich',
+              amount,
+              currency: currency.toUpperCase(),
+              status: subscription.status,
+              startDate: new Date(subscription.start_date * 1000).toISOString(),
+              currentPeriodEnd: new Date(subscription.current_period_end * 1000).toISOString(),
+              cancelAtPeriodEnd: subscription.cancel_at_period_end,
+            });
+            
+            // Calculate MRR (Monthly Recurring Revenue)
+            if (subscription.status === 'active' || subscription.status === 'trialing') {
+              if (interval === 'year') {
+                mrr += amount / 12;
+              } else {
+                mrr += amount;
+              }
+            }
+          }
+        } catch (stripeErr) {
+          console.error(`[Admin] Error fetching subscription for user ${user.id}:`, stripeErr);
+        }
+      }
+      
+      // Calculate ARR
+      arr = mrr * 12;
+      
+      // Sort by next payment date
+      subscriptions.sort((a, b) => 
+        new Date(a.currentPeriodEnd).getTime() - new Date(b.currentPeriodEnd).getTime()
+      );
+      
+      // Calculate upcoming payments (next 7 days and next 30 days)
+      const now = new Date();
+      const next7Days = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+      const next30Days = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+      
+      const paymentsNext7Days = subscriptions.filter(s => 
+        !s.cancelAtPeriodEnd && 
+        new Date(s.currentPeriodEnd) <= next7Days &&
+        (s.status === 'active' || s.status === 'trialing')
+      );
+      
+      const paymentsNext30Days = subscriptions.filter(s => 
+        !s.cancelAtPeriodEnd && 
+        new Date(s.currentPeriodEnd) <= next30Days &&
+        (s.status === 'active' || s.status === 'trialing')
+      );
+      
+      res.json({
+        subscriptions,
+        revenue: {
+          mrr: Math.round(mrr * 100) / 100,
+          arr: Math.round(arr * 100) / 100,
+          totalActive: subscriptions.filter(s => s.status === 'active' && !s.cancelAtPeriodEnd).length,
+          totalCanceling: subscriptions.filter(s => s.cancelAtPeriodEnd).length,
+          paymentsNext7Days: {
+            count: paymentsNext7Days.length,
+            amount: Math.round(paymentsNext7Days.reduce((sum, s) => sum + s.amount, 0) * 100) / 100,
+          },
+          paymentsNext30Days: {
+            count: paymentsNext30Days.length,
+            amount: Math.round(paymentsNext30Days.reduce((sum, s) => sum + s.amount, 0) * 100) / 100,
+          },
+        },
+      });
+    } catch (error) {
+      console.error('[Admin] Error fetching subscriptions:', error);
+      res.status(500).json({ message: "Fehler beim Laden der Abonnements" });
+    }
+  });
+  
   // ===== Video Tutorials API =====
   
   // Get published video tutorials (public)
