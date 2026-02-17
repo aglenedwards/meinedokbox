@@ -1,5 +1,6 @@
 import { storage } from "./storage";
 import { sendEmail } from "./emailService";
+import { sendTrackedEmail } from "./lib/sendEmail";
 import { db } from "./db";
 import { documents } from "@shared/schema";
 import { eq, and, isNull, sql } from "drizzle-orm";
@@ -144,11 +145,13 @@ export async function checkAndSendPaymentReminders(): Promise<void> {
           invoice.sender
         );
         
-        await sendEmail({
+        await sendTrackedEmail({
           to: partner.email,
           subject,
           html,
-          text
+          text,
+          userId: partner.id?.toString(),
+          emailType: 'payment_reminder'
         });
         
         // Mark reminder as sent

@@ -2,6 +2,7 @@
  * Send email using Mailgun API
  */
 import { getAppUrl } from '../emailService';
+import { storage } from '../storage';
 
 interface EmailOptions {
   to: string;
@@ -10,7 +11,17 @@ interface EmailOptions {
   html?: string;
 }
 
+interface TrackedEmailOptions extends EmailOptions {
+  userId?: string;
+  emailType: string;
+}
+
 export async function sendEmail(options: EmailOptions): Promise<boolean> {
+  const result = await sendEmailWithId(options);
+  return result.success;
+}
+
+export async function sendEmailWithId(options: EmailOptions): Promise<{ success: boolean; messageId?: string }> {
   const apiKey = process.env.MAILGUN_API_KEY;
   const domain = process.env.MAILGUN_DOMAIN;
 
@@ -20,7 +31,7 @@ export async function sendEmail(options: EmailOptions): Promise<boolean> {
 
   if (!apiKey || !domain) {
     console.error("[Mailgun] ERROR: Mailgun credentials not configured");
-    return false;
+    return { success: false };
   }
 
   try {
@@ -47,16 +58,35 @@ export async function sendEmail(options: EmailOptions): Promise<boolean> {
     if (!response.ok) {
       const errorText = await response.text();
       console.error('[Mailgun] Error response:', errorText);
-      return false;
+      return { success: false };
     }
 
     const result = await response.json();
-    console.log("[Mailgun] ✅ Email sent successfully:", result.id);
-    return true;
+    console.log("[Mailgun] Email sent successfully:", result.id);
+    return { success: true, messageId: result.id };
   } catch (error) {
-    console.error("[Mailgun] ❌ Failed to send email:", error);
-    return false;
+    console.error("[Mailgun] Failed to send email:", error);
+    return { success: false };
   }
+}
+
+export async function sendTrackedEmail(options: TrackedEmailOptions): Promise<boolean> {
+  const result = await sendEmailWithId(options);
+  
+  try {
+    await storage.createMarketingEmail({
+      userId: options.userId,
+      emailType: options.emailType,
+      subject: options.subject,
+      recipientEmail: options.to,
+      mailgunMessageId: result.messageId,
+      status: result.success ? 'sent' : 'failed',
+    });
+  } catch (err) {
+    console.error('[Mailgun] Failed to log email to tracking table:', err);
+  }
+
+  return result.success;
 }
 
 /**
@@ -1324,6 +1354,6 @@ Dein MeineDokBox Team
 </html>
   `.trim();
 
-  return sendEmail({ to, subject, text, html });
+  return sendTrackedEmail({ to, subject, text, html, emailType: 'referral_program_info' });
 }
 

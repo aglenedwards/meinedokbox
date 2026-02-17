@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
-import { User, Trash2, Search, Home, Shield, AlertTriangle, Lightbulb, PlayCircle, Plus, Edit2, Save, X, BarChart3, Users, CreditCard, TrendingUp, FileText, HardDrive, Gift, UserPlus, Crown } from "lucide-react";
+import { User, Trash2, Search, Home, Shield, AlertTriangle, Lightbulb, PlayCircle, Plus, Edit2, Save, X, BarChart3, Users, CreditCard, TrendingUp, FileText, HardDrive, Gift, UserPlus, Crown, Mail } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -216,6 +216,11 @@ export default function Admin() {
   const { data: subscriptionsData, isLoading: loadingSubscriptions } = useQuery<SubscriptionsResponse>({
     queryKey: ["/api/admin/subscriptions"],
     retry: false,
+    enabled: adminStatus?.isAdminAuthenticated === true,
+  });
+
+  const { data: marketingStats, isLoading: loadingMarketing } = useQuery<any>({
+    queryKey: ["/api/admin/marketing/stats"],
     enabled: adminStatus?.isAdminAuthenticated === true,
   });
 
@@ -498,7 +503,7 @@ export default function Admin() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 md:px-6 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList className="grid w-full grid-cols-5" data-testid="admin-tabs">
+          <TabsList className="grid w-full grid-cols-6" data-testid="admin-tabs">
             <TabsTrigger value="statistics" className="flex items-center gap-2" data-testid="tab-statistics">
               <BarChart3 className="h-4 w-4" />
               <span className="hidden sm:inline">Statistiken</span>
@@ -518,6 +523,10 @@ export default function Admin() {
             <TabsTrigger value="tutorials" className="flex items-center gap-2" data-testid="tab-tutorials">
               <PlayCircle className="h-4 w-4" />
               <span className="hidden sm:inline">Tutorials</span>
+            </TabsTrigger>
+            <TabsTrigger value="email" className="flex items-center gap-2" data-testid="tab-email">
+              <Mail className="h-4 w-4" />
+              <span className="hidden sm:inline">E-Mails</span>
             </TabsTrigger>
           </TabsList>
 
@@ -1445,6 +1454,149 @@ export default function Admin() {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Email Marketing Tab */}
+          <TabsContent value="email">
+            {loadingMarketing ? (
+              <div className="text-center py-8 text-muted-foreground">Lädt E-Mail-Statistiken...</div>
+            ) : marketingStats ? (
+              <div className="space-y-6">
+                {/* Overview Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                  <Card>
+                    <CardContent className="p-6">
+                      <p className="text-sm text-muted-foreground">Gesendet</p>
+                      <p className="text-3xl font-bold" data-testid="stat-emails-total">{marketingStats.total}</p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-6">
+                      <p className="text-sm text-muted-foreground">Zugestellt</p>
+                      <p className="text-3xl font-bold text-green-600" data-testid="stat-emails-delivered">{marketingStats.delivered}</p>
+                      <p className="text-xs text-muted-foreground">{marketingStats.total > 0 ? Math.round(marketingStats.delivered / marketingStats.total * 100) : 0}% Rate</p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-6">
+                      <p className="text-sm text-muted-foreground">Geöffnet</p>
+                      <p className="text-3xl font-bold text-blue-600" data-testid="stat-emails-opened">{marketingStats.opened}</p>
+                      <p className="text-xs text-muted-foreground">{marketingStats.delivered > 0 ? Math.round(marketingStats.opened / marketingStats.delivered * 100) : 0}% Open Rate</p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-6">
+                      <p className="text-sm text-muted-foreground">Geklickt</p>
+                      <p className="text-3xl font-bold text-purple-600" data-testid="stat-emails-clicked">{marketingStats.clicked}</p>
+                      <p className="text-xs text-muted-foreground">{marketingStats.opened > 0 ? Math.round(marketingStats.clicked / marketingStats.opened * 100) : 0}% Click Rate</p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-6">
+                      <p className="text-sm text-muted-foreground">Fehlgeschlagen</p>
+                      <p className="text-3xl font-bold text-red-600" data-testid="stat-emails-failed">{marketingStats.failed}</p>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* By Type Breakdown */}
+                {marketingStats.byType && Object.keys(marketingStats.byType).length > 0 && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Nach E-Mail-Typ</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Typ</TableHead>
+                            <TableHead className="text-right">Gesendet</TableHead>
+                            <TableHead className="text-right">Zugestellt</TableHead>
+                            <TableHead className="text-right">Geöffnet</TableHead>
+                            <TableHead className="text-right">Geklickt</TableHead>
+                            <TableHead className="text-right">Open Rate</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {Object.entries(marketingStats.byType).map(([type, data]: [string, any]) => (
+                            <TableRow key={type}>
+                              <TableCell className="font-medium">{type.replace(/_/g, ' ')}</TableCell>
+                              <TableCell className="text-right">{data.total}</TableCell>
+                              <TableCell className="text-right">{data.delivered}</TableCell>
+                              <TableCell className="text-right">{data.opened}</TableCell>
+                              <TableCell className="text-right">{data.clicked}</TableCell>
+                              <TableCell className="text-right">
+                                {data.delivered > 0 ? Math.round(data.opened / data.delivered * 100) : 0}%
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Recent Emails */}
+                {marketingStats.recentEmails && marketingStats.recentEmails.length > 0 && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Letzte E-Mails</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="overflow-x-auto">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Datum</TableHead>
+                              <TableHead>Empfänger</TableHead>
+                              <TableHead>Typ</TableHead>
+                              <TableHead>Betreff</TableHead>
+                              <TableHead>Status</TableHead>
+                              <TableHead className="text-right">Opens</TableHead>
+                              <TableHead className="text-right">Clicks</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {marketingStats.recentEmails.map((email: any) => (
+                              <TableRow key={email.id}>
+                                <TableCell className="whitespace-nowrap text-sm">
+                                  {email.sentAt ? format(new Date(email.sentAt), "dd.MM.yy HH:mm", { locale: de }) : "-"}
+                                </TableCell>
+                                <TableCell className="text-sm max-w-[180px] truncate">{email.recipientEmail}</TableCell>
+                                <TableCell>
+                                  <Badge variant="outline" className="text-xs whitespace-nowrap">{email.emailType?.replace(/_/g, ' ') || '-'}</Badge>
+                                </TableCell>
+                                <TableCell className="text-sm max-w-[250px] truncate">{email.subject}</TableCell>
+                                <TableCell>
+                                  <Badge 
+                                    variant={
+                                      email.status === 'delivered' ? 'default' :
+                                      email.status === 'opened' || email.status === 'clicked' ? 'default' :
+                                      email.status === 'failed' || email.status === 'bounced' ? 'destructive' :
+                                      'secondary'
+                                    }
+                                    className={`text-xs ${
+                                      email.status === 'opened' || email.status === 'clicked' ? 'bg-green-600' :
+                                      email.status === 'delivered' ? 'bg-blue-600' : ''
+                                    }`}
+                                  >
+                                    {email.status}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell className="text-right text-sm">{email.openCount || 0}</TableCell>
+                                <TableCell className="text-right text-sm">{email.clickCount || 0}</TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">Keine E-Mail-Statistiken verfügbar</div>
+            )}
           </TabsContent>
         </Tabs>
       </main>

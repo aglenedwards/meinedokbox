@@ -1,5 +1,6 @@
 import { storage } from "./storage";
 import { sendEmail, getDay3Email, getDay6Email } from "./emailService";
+import { sendTrackedEmail } from "./lib/sendEmail";
 
 export async function checkAndSendTrialNotifications(): Promise<void> {
   try {
@@ -26,7 +27,7 @@ export async function checkAndSendTrialNotifications(): Promise<void> {
         if (!alreadySent) {
           const userName = user.firstName ? `${user.firstName}${user.lastName ? ' ' + user.lastName : ''}` : '';
           const { subject, html, text } = getDay3Email(userName);
-          await sendEmail({ to: user.email, subject, html, text });
+          await sendTrackedEmail({ to: user.email, subject, html, text, userId: user.id, emailType: 'trial_day3' });
           await storage.createTrialNotification({
             userId: user.id,
             notificationType: 'day_3',
@@ -42,7 +43,7 @@ export async function checkAndSendTrialNotifications(): Promise<void> {
         if (!alreadySent) {
           const userName = user.firstName ? `${user.firstName}${user.lastName ? ' ' + user.lastName : ''}` : '';
           const { subject, html, text } = getDay6Email(userName);
-          await sendEmail({ to: user.email, subject, html, text });
+          await sendTrackedEmail({ to: user.email, subject, html, text, userId: user.id, emailType: 'trial_day6' });
           await storage.createTrialNotification({
             userId: user.id,
             notificationType: 'day_6',
