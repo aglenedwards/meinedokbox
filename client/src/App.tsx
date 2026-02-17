@@ -31,6 +31,7 @@ import WunschFeatures from "@/pages/WunschFeatures";
 import VideoTutorials from "@/pages/VideoTutorials";
 import Changelog from "@/pages/Changelog";
 import Referral from "@/pages/Referral";
+import Unsubscribe from "@/pages/Unsubscribe";
 import NotFound from "@/pages/not-found";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { PWAUpdatePrompt } from "@/components/PWAUpdatePrompt";
@@ -91,6 +92,7 @@ function Router() {
       <Route path="/digital-archivieren" component={DigitalArchivieren} />
       <Route path="/dokumente-digitalisieren-app" component={DokumenteApp} />
       <Route path="/post-digitalisieren" component={PostDigitalisieren} />
+      <Route path="/unsubscribe" component={Unsubscribe} />
       <Route path="/dashboard">
         {() => <ProtectedRoute component={Dashboard} />}
       </Route>

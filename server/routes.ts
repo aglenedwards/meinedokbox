@@ -4937,6 +4937,79 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ===== Marketing Email Unsubscribe =====
+  
+  app.get('/api/unsubscribe', async (req, res) => {
+    try {
+      const { uid } = req.query;
+      if (!uid || typeof uid !== 'string') {
+        return res.status(400).json({ message: 'Ungültiger Link' });
+      }
+      
+      const user = await storage.getUser(uid);
+      if (!user) {
+        return res.status(404).json({ message: 'Benutzer nicht gefunden' });
+      }
+      
+      await storage.updateUserUnsubscribe(uid, true);
+      console.log(`[Unsubscribe] User ${uid} unsubscribed from marketing emails`);
+      res.json({ success: true, email: user.email ? user.email.replace(/(.{2}).*(@.*)/, '$1***$2') : '' });
+    } catch (error) {
+      console.error('[Unsubscribe] Error:', error);
+      res.status(500).json({ message: 'Fehler beim Abmelden' });
+    }
+  });
+
+  app.post('/api/resubscribe', async (req, res) => {
+    try {
+      const { uid } = req.body;
+      if (!uid || typeof uid !== 'string') {
+        return res.status(400).json({ message: 'Ungültiger Link' });
+      }
+      
+      await storage.updateUserUnsubscribe(uid, false);
+      console.log(`[Resubscribe] User ${uid} resubscribed to marketing emails`);
+      res.json({ success: true });
+    } catch (error) {
+      console.error('[Resubscribe] Error:', error);
+      res.status(500).json({ message: 'Fehler beim Anmelden' });
+    }
+  });
+
+  // ===== Admin Marketing Email API =====
+  
+  app.get('/api/admin/marketing/stats', isAuthenticated, isAdmin, async (_req: any, res) => {
+    try {
+      const stats = await storage.getMarketingEmailStats();
+      res.json(stats);
+    } catch (error) {
+      console.error('[Admin Marketing] Error fetching stats:', error);
+      res.status(500).json({ message: 'Fehler beim Laden der Statistiken' });
+    }
+  });
+
+  app.get('/api/admin/marketing/emails', isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 100;
+      const emails = await storage.getAllMarketingEmails(limit);
+      res.json(emails);
+    } catch (error) {
+      console.error('[Admin Marketing] Error fetching emails:', error);
+      res.status(500).json({ message: 'Fehler beim Laden der E-Mails' });
+    }
+  });
+
+  app.get('/api/admin/marketing/user/:userId', isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const { userId } = req.params;
+      const emails = await storage.getMarketingEmailsByUser(userId);
+      res.json(emails);
+    } catch (error) {
+      console.error('[Admin Marketing] Error fetching user emails:', error);
+      res.status(500).json({ message: 'Fehler beim Laden der Benutzer-E-Mails' });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
