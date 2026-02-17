@@ -144,6 +144,9 @@ export const users = pgTable("users", {
   referralBonusGB: real("referral_bonus_gb").notNull().default(0), // +1GB per active referral
   freeFromReferrals: boolean("free_from_referrals").notNull().default(false), // True if 5+ active referrals
   referralEmailSentAt: timestamp("referral_email_sent_at"), // When the day-8 referral info email was sent
+  unsubscribedFromMarketing: boolean("unsubscribed_from_marketing").notNull().default(false),
+  reactivationStep: real("reactivation_step").notNull().default(0), // 0=none, 1/2/3=which reactivation email was sent
+  reactivationLastSentAt: timestamp("reactivation_last_sent_at"),
 });
 
 // Referral tracking table
@@ -293,6 +296,23 @@ export const trialNotifications = pgTable("trial_notifications", {
   emailStatus: varchar("email_status", { length: 20 }).notNull().default("sent"), // sent, failed, bounced
 });
 
+// Marketing/system emails tracking for admin statistics
+export const marketingEmails = pgTable("marketing_emails", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
+  emailType: varchar("email_type", { length: 50 }).notNull(), // trial_day3, trial_day6, referral_info, reactivation_1, reactivation_2, reactivation_3, manual_sleeper, manual_power_user, payment_reminder
+  subject: text("subject").notNull(),
+  recipientEmail: varchar("recipient_email").notNull(),
+  mailgunMessageId: varchar("mailgun_message_id"),
+  status: varchar("status", { length: 20 }).notNull().default("sent"), // sent, delivered, opened, clicked, failed, bounced
+  sentAt: timestamp("sent_at").notNull().default(sql`now()`),
+  deliveredAt: timestamp("delivered_at"),
+  openedAt: timestamp("opened_at"),
+  clickedAt: timestamp("clicked_at"),
+  openCount: real("open_count").notNull().default(0),
+  clickCount: real("click_count").notNull().default(0),
+});
+
 // Email queue jobs for reliable email delivery with PostgreSQL persistence
 export const emailJobs = pgTable("email_jobs", {
   id: varchar("id").primaryKey(),
@@ -365,6 +385,11 @@ export const insertSharedAccessSchema = createInsertSchema(sharedAccess).omit({
 });
 
 export const insertTrialNotificationSchema = createInsertSchema(trialNotifications).omit({
+  id: true,
+  sentAt: true,
+});
+
+export const insertMarketingEmailSchema = createInsertSchema(marketingEmails).omit({
   id: true,
   sentAt: true,
 });
@@ -511,3 +536,5 @@ export type InsertChangelog = z.infer<typeof insertChangelogSchema>;
 export type Changelog = typeof changelog.$inferSelect;
 export type InsertReferral = z.infer<typeof insertReferralSchema>;
 export type Referral = typeof referrals.$inferSelect;
+export type InsertMarketingEmail = z.infer<typeof insertMarketingEmailSchema>;
+export type MarketingEmail = typeof marketingEmails.$inferSelect;
