@@ -4,6 +4,8 @@ import { setupVite, serveStatic, log } from "./vite";
 import { startTrialNotificationCron } from "./trialNotificationCron";
 import { startPaymentReminderCron } from "./paymentReminderCron";
 import { startReferralEmailCron } from "./referralEmailCron";
+import { startReactivationCron } from "./reactivationEmailCron";
+import { setupMailgunWebhooks } from "./mailgunWebhook";
 import { runAutoMigrations } from "./migrations/autoMigrate";
 
 const app = express();
@@ -70,6 +72,9 @@ app.use((req, res, next) => {
   // This ensures the database schema is up-to-date in both Dev and Production
   await runAutoMigrations();
   
+  // Setup Mailgun webhooks (before routes to ensure it's registered)
+  setupMailgunWebhooks(app);
+  
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
@@ -109,5 +114,8 @@ app.use((req, res, next) => {
     
     // Start day-8 referral program email cron job
     startReferralEmailCron();
+    
+    // Start post-trial reactivation email cron job
+    startReactivationCron();
   });
 })();

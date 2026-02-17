@@ -1,6 +1,6 @@
-import { type User, type UpsertUser, type Document, type InsertDocument, type UpdateDocument, type Tag, type InsertTag, type DocumentTag, type InsertDocumentTag, type SharedAccess, type InsertSharedAccess, type Folder, type InsertFolder, type TrialNotification, type InsertTrialNotification, type EmailWhitelist, type EmailJob, type InsertEmailJob, type SmartFolder, type InsertSmartFolder, type FeatureRequest, type InsertFeatureRequest, type FeatureRequestVote, type InsertFeatureRequestVote, type VideoTutorial, type InsertVideoTutorial, type Changelog, type InsertChangelog, type Referral, type InsertReferral } from "@shared/schema";
+import { type User, type UpsertUser, type Document, type InsertDocument, type UpdateDocument, type Tag, type InsertTag, type DocumentTag, type InsertDocumentTag, type SharedAccess, type InsertSharedAccess, type Folder, type InsertFolder, type TrialNotification, type InsertTrialNotification, type EmailWhitelist, type EmailJob, type InsertEmailJob, type SmartFolder, type InsertSmartFolder, type FeatureRequest, type InsertFeatureRequest, type FeatureRequestVote, type InsertFeatureRequestVote, type VideoTutorial, type InsertVideoTutorial, type Changelog, type InsertChangelog, type Referral, type InsertReferral, type MarketingEmail, type InsertMarketingEmail } from "@shared/schema";
 import { db } from "./db";
-import { users, documents, tags, documentTags, sharedAccess, folders, trialNotifications, emailWhitelist, emailJobs, smartFolders, featureRequests, featureRequestVotes, videoTutorials, changelog, referrals } from "@shared/schema";
+import { users, documents, tags, documentTags, sharedAccess, folders, trialNotifications, emailWhitelist, emailJobs, smartFolders, featureRequests, featureRequestVotes, videoTutorials, changelog, referrals, marketingEmails } from "@shared/schema";
 import { eq, and, or, like, ilike, desc, asc, isNull, isNotNull, inArray, sql, getTableColumns, lte } from "drizzle-orm";
 import { generateInboundEmail } from "./lib/emailInbound";
 import crypto from "crypto";
@@ -96,6 +96,17 @@ export interface IStorage {
   createTrialNotification(data: InsertTrialNotification): Promise<TrialNotification>;
   getTrialNotification(userId: string, notificationType: string): Promise<TrialNotification | undefined>;
   getUsersNeedingTrialNotifications(): Promise<User[]>;
+  
+  // Marketing email tracking
+  createMarketingEmail(data: InsertMarketingEmail): Promise<MarketingEmail>;
+  getMarketingEmailByMailgunId(mailgunId: string): Promise<MarketingEmail | undefined>;
+  updateMarketingEmailStatus(id: string, status: string, extra?: Partial<MarketingEmail>): Promise<void>;
+  getMarketingEmailStats(): Promise<any>;
+  getMarketingEmailsByUser(userId: string): Promise<MarketingEmail[]>;
+  getAllMarketingEmails(limit?: number): Promise<MarketingEmail[]>;
+  getUsersForReactivation(): Promise<User[]>;
+  updateUserReactivationStep(userId: string, step: number): Promise<void>;
+  updateUserUnsubscribe(userId: string, unsubscribed: boolean): Promise<void>;
   
   // Email whitelist management (Security feature for inbound email)
   getEmailWhitelist(userId: string): Promise<EmailWhitelist[]>;
@@ -1496,6 +1507,82 @@ export class DbStorage implements IStorage {
       );
 
     return allTrialUsers;
+  }
+
+  // Marketing email tracking implementations
+  async createMarketingEmail(data: InsertMarketingEmail): Promise<MarketingEmail> {
+    const [email] = await db.insert(marketingEmails).values(data).returning();
+    return email;
+  }
+
+  async getMarketingEmailByMailgunId(mailgunId: string): Promise<MarketingEmail | undefined> {
+    const [email] = await db.select().from(marketingEmails).where(eq(marketingEmails.mailgunMessageId, mailgunId)).limit(1);
+    return email;
+  }
+
+  async updateMarketingEmailStatus(id: string, status: string, extra?: Partial<MarketingEmail>): Promise<void> {
+    const updateData: any = { status };
+    if (extra) Object.assign(updateData, extra);
+    await db.update(marketingEmails).set(updateData).where(eq(marketingEmails.id, id));
+  }
+
+  async getMarketingEmailStats(): Promise<any> {
+    const allEmails = await db.select().from(marketingEmails).orderBy(desc(marketingEmails.sentAt));
+    
+    const stats = {
+      total: allEmails.length,
+      delivered: allEmails.filter(e => ['delivered', 'opened', 'clicked'].includes(e.status)).length,
+      opened: allEmails.filter(e => ['opened', 'clicked'].includes(e.status) || e.openCount > 0).length,
+      clicked: allEmails.filter(e => e.status === 'clicked' || e.clickCount > 0).length,
+      failed: allEmails.filter(e => e.status === 'failed' || e.status === 'bounced').length,
+      byType: {} as Record<string, { total: number; delivered: number; opened: number; clicked: number }>,
+      recentEmails: allEmails.slice(0, 50),
+    };
+
+    for (const email of allEmails) {
+      if (!stats.byType[email.emailType]) {
+        stats.byType[email.emailType] = { total: 0, delivered: 0, opened: 0, clicked: 0 };
+      }
+      stats.byType[email.emailType].total++;
+      if (['delivered', 'opened', 'clicked'].includes(email.status)) stats.byType[email.emailType].delivered++;
+      if (['opened', 'clicked'].includes(email.status) || email.openCount > 0) stats.byType[email.emailType].opened++;
+      if (email.status === 'clicked' || email.clickCount > 0) stats.byType[email.emailType].clicked++;
+    }
+
+    return stats;
+  }
+
+  async getMarketingEmailsByUser(userId: string): Promise<MarketingEmail[]> {
+    return db.select().from(marketingEmails).where(eq(marketingEmails.userId, userId)).orderBy(desc(marketingEmails.sentAt));
+  }
+
+  async getAllMarketingEmails(limit: number = 100): Promise<MarketingEmail[]> {
+    return db.select().from(marketingEmails).orderBy(desc(marketingEmails.sentAt)).limit(limit);
+  }
+
+  async getUsersForReactivation(): Promise<User[]> {
+    return db.select().from(users).where(
+      and(
+        eq(users.subscriptionPlan, 'trial'),
+        eq(users.isVerified, true),
+        eq(users.unsubscribedFromMarketing, false),
+        lte(users.reactivationStep, 2),
+        isNotNull(users.trialEndsAt),
+        lte(users.trialEndsAt, new Date()),
+        isNotNull(users.email)
+      )
+    );
+  }
+
+  async updateUserReactivationStep(userId: string, step: number): Promise<void> {
+    await db.update(users).set({ 
+      reactivationStep: step, 
+      reactivationLastSentAt: new Date() 
+    }).where(eq(users.id, userId));
+  }
+
+  async updateUserUnsubscribe(userId: string, unsubscribed: boolean): Promise<void> {
+    await db.update(users).set({ unsubscribedFromMarketing: unsubscribed }).where(eq(users.id, userId));
   }
 
   // Email whitelist implementations
