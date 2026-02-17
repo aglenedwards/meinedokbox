@@ -6,6 +6,41 @@ PaperEase is a web and mobile application designed to digitize paper documents u
 
 ## Recent Changes
 
+### February 17, 2026 - Email Marketing & Reactivation System
+
+**Marketing Email Tracking:**
+- Created `marketingEmails` table for tracking all sent emails (Mailgun message ID, status, open/click counts, timestamps)
+- All email types (trial notifications, payment reminders, referral info, reactivation) now logged to tracking table via `sendTrackedEmail()`
+- `sendEmail()` updated to return Mailgun message ID for tracking
+
+**Mailgun Webhook Integration (`server/mailgunWebhook.ts`):**
+- Endpoint at `/api/webhooks/mailgun` with HMAC-SHA256 signature verification
+- Tracks events: delivered, opened, clicked, unsubscribed, failed, bounced
+- Updates `marketingEmails` table with delivery/open/click timestamps and counters
+- Auto-unsubscribes users on unsubscribe webhook events
+
+**Post-Trial Reactivation Email Cron (`server/reactivationEmailCron.ts`):**
+- Runs every 6 hours targeting users with expired trials
+- 3-step sequence: Day 1, Day 7, Day 14 after trial end
+- Two user segments with different templates:
+  - "Schläfer" (0 documents): encouragement to try first upload
+  - "Power-User" (1+ documents): urgency about existing documents
+- Anti-spam: max 3 emails, 5-day minimum gaps, unsubscribe tracking
+- Fields: `reactivationStep` (0-3), `unsubscribedFromMarketing`, `reactivationLastSentAt`
+
+**Unsubscribe System:**
+- Unsubscribe landing page at `/unsubscribe?uid=xxx`
+- Public API endpoints: GET `/api/unsubscribe`, POST `/api/resubscribe`
+- One-click resubscribe option on unsubscribe page
+- All marketing emails include unsubscribe footer links
+
+**Admin E-Mail Marketing Tab:**
+- 6th tab in admin dashboard showing email statistics
+- Overview cards: total sent, delivered, opened, clicked, failed with rates
+- Breakdown by email type (trial_day3, reactivation_1_sleeper, etc.)
+- Recent emails table with recipient, type, status badges, open/click counts
+- API endpoints: `/api/admin/marketing/stats`, `/api/admin/marketing/emails`
+
 ### December 18, 2025 - Referral Program Implementation
 
 **Referral Tracking System:**
