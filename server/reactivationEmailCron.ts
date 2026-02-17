@@ -57,7 +57,52 @@ function getUnsubscribeUrl(userId: string): string {
 function getReactivationEmail1Sleeper(userName: string, userId: string) {
   const unsubUrl = getUnsubscribeUrl(userId);
   const subject = "Dein digitaler Aktenschrank wartet auf dich!";
-  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{font-family:Arial,sans-serif;line-height:1.6;color:#333}.container{max-width:600px;margin:0 auto;padding:20px}.header{background:#244e7e;color:white;padding:25px;border-radius:8px 8px 0 0;text-align:center}.content{background:#f9fafb;padding:30px;border-radius:0 0 8px 8px}.button{display:inline-block;background:#244e7e;color:white;padding:14px 28px;text-decoration:none;border-radius:6px;margin:20px 0;font-weight:bold}.footer{margin-top:30px;padding-top:20px;border-top:1px solid #e5e7eb;color:#6b7280;font-size:13px}</style></head><body><div class="container"><div class="header"><h1 style="margin:0;font-size:22px">Dein Aktenschrank wartet!</h1></div><div class="content"><p>Hey${userName ? ` ${userName}` : ''},</p><p>du hast dich bei MeineDokBox registriert, aber noch kein einziges Dokument hochgeladen. Dabei geht's so einfach:</p><ol><li><strong>Foto machen</strong> - Dokument abfotografieren</li><li><strong>Hochladen</strong> - Bild in die App ziehen</li><li><strong>Fertig!</strong> - Unsere KI sortiert alles automatisch</li></ol><p>Probier's doch einfach mal aus - dein erster Upload dauert keine 30 Sekunden!</p><a href="https://meinedokbox.de" class="button" style="color:white">Jetzt erstes Dokument hochladen</a><p style="color:#6b7280;font-size:14px;margin-top:25px">PS: Du hast eine Rechnung, einen Vertrag oder ein Attest rumliegen? Perfekt zum Testen!</p><div class="footer"><p><strong>MeineDokBox</strong> - Intelligente Dokumentenverwaltung</p><p style="font-size:11px"><a href="${unsubUrl}" style="color:#9ca3af">Keine weiteren E-Mails erhalten</a></p></div></div></div></body></html>`;
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body style="margin:0;padding:0;background-color:#f0f2f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;line-height:1.6;color:#333333;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f0f2f5;padding:30px 0;">
+<tr><td align="center">
+<table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+<tr><td style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);padding:40px 30px;text-align:center;">
+<p style="margin:0 0 8px 0;font-size:28px;color:#ffffff !important;">&#128194; MeineDokBox</p>
+<h1 style="margin:0;font-size:22px;color:#ffffff !important;font-weight:600;">Dein Aktenschrank wartet!</h1>
+</td></tr>
+<tr><td style="padding:40px 36px 20px 36px;">
+<p style="margin:0 0 20px 0;font-size:16px;color:#333333;">Hey${userName ? ` ${userName}` : ''},</p>
+<p style="margin:0 0 24px 0;font-size:16px;color:#555555;">du hast dich bei MeineDokBox registriert, aber noch kein einziges Dokument hochgeladen. Dabei geht's so einfach:</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 28px 0;">
+<tr><td style="padding:14px 18px;background-color:#f8f9ff;border-radius:8px;margin-bottom:8px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+<tr><td width="36" style="vertical-align:top;padding-top:2px;"><span style="display:inline-block;width:28px;height:28px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#ffffff;border-radius:50%;text-align:center;line-height:28px;font-size:14px;font-weight:700;">1</span></td><td style="padding-left:12px;font-size:15px;color:#333333;"><strong>Foto machen</strong> &#8211; Dokument abfotografieren</td></tr>
+</table>
+</td></tr>
+<tr><td style="height:8px;"></td></tr>
+<tr><td style="padding:14px 18px;background-color:#f8f9ff;border-radius:8px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+<tr><td width="36" style="vertical-align:top;padding-top:2px;"><span style="display:inline-block;width:28px;height:28px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#ffffff;border-radius:50%;text-align:center;line-height:28px;font-size:14px;font-weight:700;">2</span></td><td style="padding-left:12px;font-size:15px;color:#333333;"><strong>Hochladen</strong> &#8211; Bild in die App ziehen</td></tr>
+</table>
+</td></tr>
+<tr><td style="height:8px;"></td></tr>
+<tr><td style="padding:14px 18px;background-color:#f8f9ff;border-radius:8px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+<tr><td width="36" style="vertical-align:top;padding-top:2px;"><span style="display:inline-block;width:28px;height:28px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#ffffff;border-radius:50%;text-align:center;line-height:28px;font-size:14px;font-weight:700;">3</span></td><td style="padding-left:12px;font-size:15px;color:#333333;"><strong>Fertig!</strong> &#8211; Unsere KI sortiert alles automatisch</td></tr>
+</table>
+</td></tr>
+</table>
+<p style="margin:0 0 30px 0;font-size:16px;color:#555555;">Probier's doch einfach mal aus &#8211; dein erster Upload dauert keine 30 Sekunden!</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center">
+<a href="https://meinedokbox.de" style="display:inline-block;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#ffffff !important;padding:16px 40px;text-decoration:none;border-radius:8px;font-size:16px;font-weight:600;">Jetzt erstes Dokument hochladen</a>
+</td></tr></table>
+<p style="margin:28px 0 0 0;padding:18px;background-color:#fef9e7;border-radius:8px;font-size:14px;color:#7c6f2a;border-left:4px solid #f5c518;">&#128161; <strong>Tipp:</strong> Du hast eine Rechnung, einen Vertrag oder ein Attest rumliegen? Perfekt zum Testen!</p>
+</td></tr>
+<tr><td style="padding:0 36px 36px 36px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #e5e7eb;padding-top:24px;margin-top:16px;">
+<tr><td style="text-align:center;">
+<p style="margin:0 0 6px 0;font-size:13px;color:#9ca3af;"><strong>MeineDokBox</strong> &#8211; Intelligente Dokumentenverwaltung</p>
+<p style="margin:0;font-size:11px;"><a href="${unsubUrl}" style="color:#9ca3af;text-decoration:underline;">Keine weiteren E-Mails erhalten</a></p>
+</td></tr></table>
+</td></tr>
+</table>
+</td></tr></table>
+</body></html>`;
   const text = `Hey${userName ? ` ${userName}` : ''},\n\ndu hast dich bei MeineDokBox registriert, aber noch kein Dokument hochgeladen.\n\nSo einfach geht's:\n1. Foto machen\n2. Hochladen\n3. Fertig - die KI sortiert alles!\n\nProbier's aus: https://meinedokbox.de\n\nKeine weiteren E-Mails: ${unsubUrl}`;
   return { subject, html, text };
 }
@@ -65,7 +110,43 @@ function getReactivationEmail1Sleeper(userName: string, userId: string) {
 function getReactivationEmail1PowerUser(userName: string, docCount: number, userId: string) {
   const unsubUrl = getUnsubscribeUrl(userId);
   const subject = `Dein Zugang ist abgelaufen - ${docCount} Dokument${docCount > 1 ? 'e' : ''} warten auf dich!`;
-  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{font-family:Arial,sans-serif;line-height:1.6;color:#333}.container{max-width:600px;margin:0 auto;padding:20px}.header{background:#244e7e;color:white;padding:25px;border-radius:8px 8px 0 0;text-align:center}.content{background:#f9fafb;padding:30px;border-radius:0 0 8px 8px}.highlight{background:#fef3c7;padding:15px;border-radius:6px;margin:20px 0;text-align:center;font-size:18px}.button{display:inline-block;background:#244e7e;color:white;padding:14px 28px;text-decoration:none;border-radius:6px;margin:20px 0;font-weight:bold}.footer{margin-top:30px;padding-top:20px;border-top:1px solid #e5e7eb;color:#6b7280;font-size:13px}</style></head><body><div class="container"><div class="header"><h1 style="margin:0;font-size:22px">Deine Dokumente vermissen dich!</h1></div><div class="content"><p>Hey${userName ? ` ${userName}` : ''},</p><p>deine Testphase bei MeineDokBox ist abgelaufen.</p><div class="highlight"><strong>${docCount} Dokument${docCount > 1 ? 'e' : ''}</strong> warten auf dich in deinem Archiv</div><p>Die gute Nachricht: Deine Dokumente sind sicher gespeichert und gehen nicht verloren. Mit einem Abo hast du sofort wieder vollen Zugriff.</p><p>Schon ab <strong>4,99 EUR/Monat</strong> sicherst du dir:</p><ul><li>Unbegrenzten Zugriff auf alle deine Dokumente</li><li>KI-gesteuerte Kategorisierung</li><li>Dokumente mit dem Partner teilen</li></ul><a href="https://meinedokbox.de" class="button" style="color:white">Jetzt Zugang sichern</a><div class="footer"><p><strong>MeineDokBox</strong> - Intelligente Dokumentenverwaltung</p><p style="font-size:11px"><a href="${unsubUrl}" style="color:#9ca3af">Keine weiteren E-Mails erhalten</a></p></div></div></div></body></html>`;
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body style="margin:0;padding:0;background-color:#f0f2f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;line-height:1.6;color:#333333;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f0f2f5;padding:30px 0;">
+<tr><td align="center">
+<table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+<tr><td style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);padding:40px 30px;text-align:center;">
+<p style="margin:0 0 8px 0;font-size:28px;color:#ffffff !important;">&#128194; MeineDokBox</p>
+<h1 style="margin:0;font-size:22px;color:#ffffff !important;font-weight:600;">Deine Dokumente vermissen dich!</h1>
+</td></tr>
+<tr><td style="padding:40px 36px 20px 36px;">
+<p style="margin:0 0 20px 0;font-size:16px;color:#333333;">Hey${userName ? ` ${userName}` : ''},</p>
+<p style="margin:0 0 24px 0;font-size:16px;color:#555555;">deine Testphase bei MeineDokBox ist abgelaufen.</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 28px 0;">
+<tr><td style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);padding:24px;border-radius:10px;text-align:center;">
+<p style="margin:0 0 4px 0;font-size:36px;color:#ffffff !important;font-weight:700;">${docCount}</p>
+<p style="margin:0;font-size:16px;color:#ffffff !important;">Dokument${docCount > 1 ? 'e' : ''} warten auf dich in deinem Archiv</p>
+</td></tr></table>
+<p style="margin:0 0 20px 0;font-size:16px;color:#555555;">Die gute Nachricht: Deine Dokumente sind sicher gespeichert und gehen nicht verloren. Mit einem Abo hast du sofort wieder vollen Zugriff.</p>
+<p style="margin:0 0 16px 0;font-size:16px;color:#333333;">Schon ab <strong>4,99 EUR/Monat</strong> sicherst du dir:</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 28px 0;">
+<tr><td style="padding:10px 0;font-size:15px;color:#333333;"><span style="color:#667eea;font-size:18px;margin-right:10px;">&#10003;</span> Unbegrenzten Zugriff auf alle deine Dokumente</td></tr>
+<tr><td style="padding:10px 0;font-size:15px;color:#333333;border-top:1px solid #f0f0f0;"><span style="color:#667eea;font-size:18px;margin-right:10px;">&#10003;</span> KI-gesteuerte Kategorisierung</td></tr>
+<tr><td style="padding:10px 0;font-size:15px;color:#333333;border-top:1px solid #f0f0f0;"><span style="color:#667eea;font-size:18px;margin-right:10px;">&#10003;</span> Dokumente mit dem Partner teilen</td></tr>
+</table>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center">
+<a href="https://meinedokbox.de" style="display:inline-block;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#ffffff !important;padding:16px 40px;text-decoration:none;border-radius:8px;font-size:16px;font-weight:600;">Jetzt Zugang sichern</a>
+</td></tr></table>
+</td></tr>
+<tr><td style="padding:0 36px 36px 36px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #e5e7eb;padding-top:24px;margin-top:16px;">
+<tr><td style="text-align:center;">
+<p style="margin:0 0 6px 0;font-size:13px;color:#9ca3af;"><strong>MeineDokBox</strong> &#8211; Intelligente Dokumentenverwaltung</p>
+<p style="margin:0;font-size:11px;"><a href="${unsubUrl}" style="color:#9ca3af;text-decoration:underline;">Keine weiteren E-Mails erhalten</a></p>
+</td></tr></table>
+</td></tr>
+</table>
+</td></tr></table>
+</body></html>`;
   const text = `Hey${userName ? ` ${userName}` : ''},\n\ndeine Testphase ist abgelaufen. ${docCount} Dokument${docCount > 1 ? 'e' : ''} warten auf dich!\n\nSchon ab 4,99 EUR/Monat: https://meinedokbox.de\n\nKeine weiteren E-Mails: ${unsubUrl}`;
   return { subject, html, text };
 }
@@ -73,7 +154,53 @@ function getReactivationEmail1PowerUser(userName: string, docCount: number, user
 function getReactivationEmail2Sleeper(userName: string, userId: string) {
   const unsubUrl = getUnsubscribeUrl(userId);
   const subject = "Noch unsicher? So einfach geht Dokumenten-Management";
-  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{font-family:Arial,sans-serif;line-height:1.6;color:#333}.container{max-width:600px;margin:0 auto;padding:20px}.header{background:#244e7e;color:white;padding:25px;border-radius:8px 8px 0 0;text-align:center}.content{background:#f9fafb;padding:30px;border-radius:0 0 8px 8px}.button{display:inline-block;background:#244e7e;color:white;padding:14px 28px;text-decoration:none;border-radius:6px;margin:20px 0;font-weight:bold}.feature-box{background:white;padding:15px;border-radius:6px;margin:10px 0;border-left:3px solid #244e7e}.footer{margin-top:30px;padding-top:20px;border-top:1px solid #e5e7eb;color:#6b7280;font-size:13px}</style></head><body><div class="container"><div class="header"><h1 style="margin:0;font-size:22px">Warum Papierkram digital besser ist</h1></div><div class="content"><p>Hey${userName ? ` ${userName}` : ''},</p><p>vielleicht hattest du noch keine Zeit zum Testen. Kein Problem! Hier sind 3 Situationen, in denen MeineDokBox Gold wert ist:</p><div class="feature-box"><strong>Steuererklaerung:</strong> Alle Belege sofort finden statt stundenlang suchen</div><div class="feature-box"><strong>Versicherungsfall:</strong> Police in Sekunden parat, nicht in Ordnern wuehlen</div><div class="feature-box"><strong>Umzug/Arztwechsel:</strong> Alle Unterlagen digital dabei, nichts vergessen</div><p>Der Clou: Unsere KI erkennt automatisch, was auf dem Dokument steht und sortiert es fuer dich ein.</p><a href="https://meinedokbox.de" class="button" style="color:white">Kostenlos ausprobieren</a><div class="footer"><p><strong>MeineDokBox</strong> - Intelligente Dokumentenverwaltung</p><p style="font-size:11px"><a href="${unsubUrl}" style="color:#9ca3af">Keine weiteren E-Mails erhalten</a></p></div></div></div></body></html>`;
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body style="margin:0;padding:0;background-color:#f0f2f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;line-height:1.6;color:#333333;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f0f2f5;padding:30px 0;">
+<tr><td align="center">
+<table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+<tr><td style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);padding:40px 30px;text-align:center;">
+<p style="margin:0 0 8px 0;font-size:28px;color:#ffffff !important;">&#128194; MeineDokBox</p>
+<h1 style="margin:0;font-size:22px;color:#ffffff !important;font-weight:600;">Warum Papierkram digital besser ist</h1>
+</td></tr>
+<tr><td style="padding:40px 36px 20px 36px;">
+<p style="margin:0 0 20px 0;font-size:16px;color:#333333;">Hey${userName ? ` ${userName}` : ''},</p>
+<p style="margin:0 0 28px 0;font-size:16px;color:#555555;">vielleicht hattest du noch keine Zeit zum Testen. Kein Problem! Hier sind 3 Situationen, in denen MeineDokBox Gold wert ist:</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 12px 0;">
+<tr><td style="background-color:#f8f9ff;border-radius:10px;padding:20px;border:1px solid #e8ebf7;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+<tr><td width="44" style="vertical-align:top;"><span style="font-size:32px;">&#128203;</span></td>
+<td style="padding-left:14px;"><p style="margin:0 0 4px 0;font-size:16px;font-weight:700;color:#333333;">Steuererkl&#228;rung</p><p style="margin:0;font-size:14px;color:#666666;">Alle Belege sofort finden statt stundenlang suchen</p></td></tr>
+</table>
+</td></tr></table>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 12px 0;">
+<tr><td style="background-color:#f8f9ff;border-radius:10px;padding:20px;border:1px solid #e8ebf7;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+<tr><td width="44" style="vertical-align:top;"><span style="font-size:32px;">&#128737;</span></td>
+<td style="padding-left:14px;"><p style="margin:0 0 4px 0;font-size:16px;font-weight:700;color:#333333;">Versicherungsfall</p><p style="margin:0;font-size:14px;color:#666666;">Police in Sekunden parat, nicht in Ordnern w&#252;hlen</p></td></tr>
+</table>
+</td></tr></table>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 28px 0;">
+<tr><td style="background-color:#f8f9ff;border-radius:10px;padding:20px;border:1px solid #e8ebf7;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+<tr><td width="44" style="vertical-align:top;"><span style="font-size:32px;">&#127968;</span></td>
+<td style="padding-left:14px;"><p style="margin:0 0 4px 0;font-size:16px;font-weight:700;color:#333333;">Umzug / Arztwechsel</p><p style="margin:0;font-size:14px;color:#666666;">Alle Unterlagen digital dabei, nichts vergessen</p></td></tr>
+</table>
+</td></tr></table>
+<p style="margin:0 0 30px 0;padding:16px 20px;background-color:#f0f2f5;border-radius:8px;font-size:15px;color:#555555;">&#10024; <strong>Der Clou:</strong> Unsere KI erkennt automatisch, was auf dem Dokument steht und sortiert es f&#252;r dich ein.</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center">
+<a href="https://meinedokbox.de" style="display:inline-block;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#ffffff !important;padding:16px 40px;text-decoration:none;border-radius:8px;font-size:16px;font-weight:600;">Kostenlos ausprobieren</a>
+</td></tr></table>
+</td></tr>
+<tr><td style="padding:0 36px 36px 36px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #e5e7eb;padding-top:24px;margin-top:16px;">
+<tr><td style="text-align:center;">
+<p style="margin:0 0 6px 0;font-size:13px;color:#9ca3af;"><strong>MeineDokBox</strong> &#8211; Intelligente Dokumentenverwaltung</p>
+<p style="margin:0;font-size:11px;"><a href="${unsubUrl}" style="color:#9ca3af;text-decoration:underline;">Keine weiteren E-Mails erhalten</a></p>
+</td></tr></table>
+</td></tr>
+</table>
+</td></tr></table>
+</body></html>`;
   const text = `Hey${userName ? ` ${userName}` : ''},\n\nWarum Papierkram digital besser ist:\n- Steuererklaerung: Belege sofort finden\n- Versicherungsfall: Police in Sekunden parat\n- Umzug: Alle Unterlagen digital dabei\n\nJetzt testen: https://meinedokbox.de\n\nKeine weiteren E-Mails: ${unsubUrl}`;
   return { subject, html, text };
 }
@@ -81,7 +208,41 @@ function getReactivationEmail2Sleeper(userName: string, userId: string) {
 function getReactivationEmail2PowerUser(userName: string, docCount: number, userId: string) {
   const unsubUrl = getUnsubscribeUrl(userId);
   const subject = `Vermisst du deine ${docCount} Dokumente?`;
-  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{font-family:Arial,sans-serif;line-height:1.6;color:#333}.container{max-width:600px;margin:0 auto;padding:20px}.header{background:#244e7e;color:white;padding:25px;border-radius:8px 8px 0 0;text-align:center}.content{background:#f9fafb;padding:30px;border-radius:0 0 8px 8px}.button{display:inline-block;background:#244e7e;color:white;padding:14px 28px;text-decoration:none;border-radius:6px;margin:20px 0;font-weight:bold}.footer{margin-top:30px;padding-top:20px;border-top:1px solid #e5e7eb;color:#6b7280;font-size:13px}</style></head><body><div class="container"><div class="header"><h1 style="margin:0;font-size:22px">Deine Dokumente warten immer noch</h1></div><div class="content"><p>Hey${userName ? ` ${userName}` : ''},</p><p>du hast <strong>${docCount} Dokument${docCount > 1 ? 'e' : ''}</strong> in deiner DokBox gespeichert. Die sind weiterhin sicher bei uns - aber ohne aktives Abo kannst du keine neuen hinzufuegen.</p><p>Wusstest du schon? Mit dem Empfehlungsprogramm kannst du dir dein Abo sogar <strong>komplett kostenlos</strong> sichern! Einfach 5 Freunde einladen.</p><a href="https://meinedokbox.de" class="button" style="color:white">Zugang wiederherstellen</a><p style="color:#6b7280;font-size:14px">Schon ab 4,99 EUR/Monat - weniger als ein Kaffee!</p><div class="footer"><p><strong>MeineDokBox</strong> - Intelligente Dokumentenverwaltung</p><p style="font-size:11px"><a href="${unsubUrl}" style="color:#9ca3af">Keine weiteren E-Mails erhalten</a></p></div></div></div></body></html>`;
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body style="margin:0;padding:0;background-color:#f0f2f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;line-height:1.6;color:#333333;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f0f2f5;padding:30px 0;">
+<tr><td align="center">
+<table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+<tr><td style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);padding:40px 30px;text-align:center;">
+<p style="margin:0 0 8px 0;font-size:28px;color:#ffffff !important;">&#128194; MeineDokBox</p>
+<h1 style="margin:0;font-size:22px;color:#ffffff !important;font-weight:600;">Deine Dokumente warten immer noch</h1>
+</td></tr>
+<tr><td style="padding:40px 36px 20px 36px;">
+<p style="margin:0 0 20px 0;font-size:16px;color:#333333;">Hey${userName ? ` ${userName}` : ''},</p>
+<p style="margin:0 0 24px 0;font-size:16px;color:#555555;">du hast <strong>${docCount} Dokument${docCount > 1 ? 'e' : ''}</strong> in deiner DokBox gespeichert. Die sind weiterhin sicher bei uns &#8211; aber ohne aktives Abo kannst du keine neuen hinzuf&#252;gen.</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 28px 0;">
+<tr><td style="background-color:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:22px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+<tr><td width="44" style="vertical-align:top;"><span style="font-size:32px;">&#127873;</span></td>
+<td style="padding-left:14px;">
+<p style="margin:0 0 6px 0;font-size:16px;font-weight:700;color:#166534;">Wusstest du schon?</p>
+<p style="margin:0;font-size:15px;color:#333333;">Mit dem Empfehlungsprogramm kannst du dir dein Abo sogar <strong>komplett kostenlos</strong> sichern! Einfach 5 Freunde einladen.</p>
+</td></tr></table>
+</td></tr></table>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px 0;"><tr><td align="center">
+<a href="https://meinedokbox.de" style="display:inline-block;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#ffffff !important;padding:16px 40px;text-decoration:none;border-radius:8px;font-size:16px;font-weight:600;">Zugang wiederherstellen</a>
+</td></tr></table>
+<p style="margin:0;text-align:center;font-size:14px;color:#888888;">Schon ab <strong style="color:#667eea;">4,99 EUR/Monat</strong> &#8211; weniger als ein Kaffee!</p>
+</td></tr>
+<tr><td style="padding:0 36px 36px 36px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #e5e7eb;padding-top:24px;margin-top:16px;">
+<tr><td style="text-align:center;">
+<p style="margin:0 0 6px 0;font-size:13px;color:#9ca3af;"><strong>MeineDokBox</strong> &#8211; Intelligente Dokumentenverwaltung</p>
+<p style="margin:0;font-size:11px;"><a href="${unsubUrl}" style="color:#9ca3af;text-decoration:underline;">Keine weiteren E-Mails erhalten</a></p>
+</td></tr></table>
+</td></tr>
+</table>
+</td></tr></table>
+</body></html>`;
   const text = `Hey${userName ? ` ${userName}` : ''},\n\n${docCount} Dokumente warten in deiner DokBox. Ohne Abo kannst du keine neuen hinzufuegen.\n\nTipp: Mit 5 Empfehlungen wird dein Abo kostenlos!\n\nZugang wiederherstellen: https://meinedokbox.de\n\nKeine weiteren E-Mails: ${unsubUrl}`;
   return { subject, html, text };
 }
@@ -89,7 +250,38 @@ function getReactivationEmail2PowerUser(userName: string, docCount: number, user
 function getReactivationEmail3(userName: string, docCount: number, userId: string) {
   const unsubUrl = getUnsubscribeUrl(userId);
   const subject = "Letzte Erinnerung: Sichere dir deinen Zugang";
-  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{font-family:Arial,sans-serif;line-height:1.6;color:#333}.container{max-width:600px;margin:0 auto;padding:20px}.header{background:#244e7e;color:white;padding:25px;border-radius:8px 8px 0 0;text-align:center}.content{background:#f9fafb;padding:30px;border-radius:0 0 8px 8px}.button{display:inline-block;background:#244e7e;color:white;padding:14px 28px;text-decoration:none;border-radius:6px;margin:20px 0;font-weight:bold}.footer{margin-top:30px;padding-top:20px;border-top:1px solid #e5e7eb;color:#6b7280;font-size:13px}</style></head><body><div class="container"><div class="header"><h1 style="margin:0;font-size:22px">Wir vermissen dich!</h1></div><div class="content"><p>Hey${userName ? ` ${userName}` : ''},</p><p>dies ist unsere letzte Erinnerung - versprochen! Wir moechten dich nicht nerven.</p>${docCount > 0 ? `<p>Deine <strong>${docCount} gespeicherten Dokumente</strong> bleiben natuerlich erhalten.</p>` : ''}<p>Falls MeineDokBox nichts fuer dich ist, verstehen wir das. Aber falls du es dir anders ueberlegst - wir sind jederzeit fuer dich da!</p><a href="https://meinedokbox.de" class="button" style="color:white">Nochmal reinschauen</a><p style="color:#6b7280;font-size:14px">Du erhaeltst nach dieser E-Mail keine weiteren Erinnerungen von uns.</p><div class="footer"><p><strong>MeineDokBox</strong> - Intelligente Dokumentenverwaltung</p><p style="font-size:11px"><a href="${unsubUrl}" style="color:#9ca3af">Keine weiteren E-Mails erhalten</a></p></div></div></div></body></html>`;
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body style="margin:0;padding:0;background-color:#f0f2f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;line-height:1.6;color:#333333;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f0f2f5;padding:30px 0;">
+<tr><td align="center">
+<table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+<tr><td style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);padding:40px 30px;text-align:center;">
+<p style="margin:0 0 8px 0;font-size:28px;color:#ffffff !important;">&#128194; MeineDokBox</p>
+<h1 style="margin:0;font-size:22px;color:#ffffff !important;font-weight:600;">Wir vermissen dich!</h1>
+</td></tr>
+<tr><td style="padding:40px 36px 20px 36px;">
+<p style="margin:0 0 20px 0;font-size:16px;color:#333333;">Hey${userName ? ` ${userName}` : ''},</p>
+<p style="margin:0 0 24px 0;font-size:16px;color:#555555;">dies ist unsere letzte Erinnerung &#8211; versprochen! Wir m&#246;chten dich nicht nerven.</p>
+${docCount > 0 ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 24px 0;">
+<tr><td style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);padding:22px;border-radius:10px;text-align:center;">
+<p style="margin:0 0 4px 0;font-size:32px;color:#ffffff !important;font-weight:700;">${docCount}</p>
+<p style="margin:0;font-size:15px;color:#ffffff !important;">gespeicherte Dokumente bleiben nat&#252;rlich erhalten</p>
+</td></tr></table>` : ''}
+<p style="margin:0 0 28px 0;font-size:16px;color:#555555;">Falls MeineDokBox nichts f&#252;r dich ist, verstehen wir das. Aber falls du es dir anders &#252;berlegst &#8211; wir sind jederzeit f&#252;r dich da!</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px 0;"><tr><td align="center">
+<a href="https://meinedokbox.de" style="display:inline-block;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#ffffff !important;padding:16px 40px;text-decoration:none;border-radius:8px;font-size:16px;font-weight:600;">Nochmal reinschauen</a>
+</td></tr></table>
+<p style="margin:0;text-align:center;padding:14px 18px;background-color:#f8f9ff;border-radius:8px;font-size:13px;color:#888888;">Du erh&#228;ltst nach dieser E-Mail keine weiteren Erinnerungen von uns.</p>
+</td></tr>
+<tr><td style="padding:0 36px 36px 36px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #e5e7eb;padding-top:24px;margin-top:16px;">
+<tr><td style="text-align:center;">
+<p style="margin:0 0 6px 0;font-size:13px;color:#9ca3af;"><strong>MeineDokBox</strong> &#8211; Intelligente Dokumentenverwaltung</p>
+<p style="margin:0;font-size:11px;"><a href="${unsubUrl}" style="color:#9ca3af;text-decoration:underline;">Keine weiteren E-Mails erhalten</a></p>
+</td></tr></table>
+</td></tr>
+</table>
+</td></tr></table>
+</body></html>`;
   const text = `Hey${userName ? ` ${userName}` : ''},\n\ndies ist unsere letzte Erinnerung - versprochen!\n\n${docCount > 0 ? `Deine ${docCount} Dokumente bleiben erhalten.` : ''}\n\nNochmal reinschauen: https://meinedokbox.de\n\nKeine weiteren E-Mails: ${unsubUrl}`;
   return { subject, html, text };
 }
