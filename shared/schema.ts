@@ -311,6 +311,7 @@ export const marketingEmails = pgTable("marketing_emails", {
   clickedAt: timestamp("clicked_at"),
   openCount: real("open_count").notNull().default(0),
   clickCount: real("click_count").notNull().default(0),
+  convertedAt: timestamp("converted_at"),
 });
 
 // Email queue jobs for reliable email delivery with PostgreSQL persistence
