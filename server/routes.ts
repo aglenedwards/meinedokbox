@@ -5018,43 +5018,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const { sendEmailWithId } = await import('./lib/sendEmail');
+      const { getReactivationEmail1Sleeper, getReactivationEmail1PowerUser, getReactivationEmail2Sleeper, getReactivationEmail2PowerUser, getReactivationEmail3 } = await import('./reactivationEmailCron');
       const testName = 'Max Mustermann';
       const testUserId = 'test-user-123';
-      const baseUrl = process.env.REPLIT_DEPLOYMENT_URL || 'https://meinedokbox.de';
-      const unsubUrl = `${baseUrl}/unsubscribe?uid=${testUserId}`;
+      const testDocCount = 12;
       const results: Array<{ type: string; success: boolean; subject: string }> = [];
 
       const templates = [
-        {
-          type: 'reactivation_1_sleeper',
-          label: 'Reaktivierung Tag 1 - Schläfer (0 Dokumente)',
-          subject: 'Dein digitaler Aktenschrank wartet auf dich!',
-          html: `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{font-family:Arial,sans-serif;line-height:1.6;color:#333}.container{max-width:600px;margin:0 auto;padding:20px}.header{background:#244e7e;color:white;padding:25px;border-radius:8px 8px 0 0;text-align:center}.content{background:#f9fafb;padding:30px;border-radius:0 0 8px 8px}.button{display:inline-block;background:#244e7e;color:white;padding:14px 28px;text-decoration:none;border-radius:6px;margin:20px 0;font-weight:bold}.footer{margin-top:30px;padding-top:20px;border-top:1px solid #e5e7eb;color:#6b7280;font-size:13px}</style></head><body><div class="container"><div class="header"><h1 style="margin:0;font-size:22px">Dein Aktenschrank wartet!</h1></div><div class="content"><p>Hey ${testName},</p><p>du hast dich bei MeineDokBox registriert, aber noch kein einziges Dokument hochgeladen. Dabei geht's so einfach:</p><ol><li><strong>Foto machen</strong> - Dokument abfotografieren</li><li><strong>Hochladen</strong> - Bild in die App ziehen</li><li><strong>Fertig!</strong> - Unsere KI sortiert alles automatisch</li></ol><p>Probier's doch einfach mal aus - dein erster Upload dauert keine 30 Sekunden!</p><a href="https://meinedokbox.de" class="button" style="color:white">Jetzt erstes Dokument hochladen</a><p style="color:#6b7280;font-size:14px;margin-top:25px">PS: Du hast eine Rechnung, einen Vertrag oder ein Attest rumliegen? Perfekt zum Testen!</p><div class="footer"><p><strong>MeineDokBox</strong> - Intelligente Dokumentenverwaltung</p><p style="font-size:11px"><a href="${unsubUrl}" style="color:#9ca3af">Keine weiteren E-Mails erhalten</a></p></div></div></div></body></html>`,
-        },
-        {
-          type: 'reactivation_1_power',
-          label: 'Reaktivierung Tag 1 - Power-User (12 Dokumente)',
-          subject: 'Dein Zugang ist abgelaufen - 12 Dokumente warten auf dich!',
-          html: `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{font-family:Arial,sans-serif;line-height:1.6;color:#333}.container{max-width:600px;margin:0 auto;padding:20px}.header{background:#244e7e;color:white;padding:25px;border-radius:8px 8px 0 0;text-align:center}.content{background:#f9fafb;padding:30px;border-radius:0 0 8px 8px}.highlight{background:#fef3c7;padding:15px;border-radius:6px;margin:20px 0;text-align:center;font-size:18px}.button{display:inline-block;background:#244e7e;color:white;padding:14px 28px;text-decoration:none;border-radius:6px;margin:20px 0;font-weight:bold}.footer{margin-top:30px;padding-top:20px;border-top:1px solid #e5e7eb;color:#6b7280;font-size:13px}</style></head><body><div class="container"><div class="header"><h1 style="margin:0;font-size:22px">Deine Dokumente vermissen dich!</h1></div><div class="content"><p>Hey ${testName},</p><p>deine Testphase bei MeineDokBox ist abgelaufen.</p><div class="highlight"><strong>12 Dokumente</strong> warten auf dich in deinem Archiv</div><p>Die gute Nachricht: Deine Dokumente sind sicher gespeichert und gehen nicht verloren. Mit einem Abo hast du sofort wieder vollen Zugriff.</p><p>Schon ab <strong>4,99 EUR/Monat</strong> sicherst du dir:</p><ul><li>Unbegrenzten Zugriff auf alle deine Dokumente</li><li>KI-gesteuerte Kategorisierung</li><li>Dokumente mit dem Partner teilen</li></ul><a href="https://meinedokbox.de" class="button" style="color:white">Jetzt Zugang sichern</a><div class="footer"><p><strong>MeineDokBox</strong> - Intelligente Dokumentenverwaltung</p><p style="font-size:11px"><a href="${unsubUrl}" style="color:#9ca3af">Keine weiteren E-Mails erhalten</a></p></div></div></div></body></html>`,
-        },
-        {
-          type: 'reactivation_2_sleeper',
-          label: 'Reaktivierung Tag 7 - Schläfer',
-          subject: 'Noch unsicher? So einfach geht Dokumenten-Management',
-          html: `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{font-family:Arial,sans-serif;line-height:1.6;color:#333}.container{max-width:600px;margin:0 auto;padding:20px}.header{background:#244e7e;color:white;padding:25px;border-radius:8px 8px 0 0;text-align:center}.content{background:#f9fafb;padding:30px;border-radius:0 0 8px 8px}.button{display:inline-block;background:#244e7e;color:white;padding:14px 28px;text-decoration:none;border-radius:6px;margin:20px 0;font-weight:bold}.feature-box{background:white;padding:15px;border-radius:6px;margin:10px 0;border-left:3px solid #244e7e}.footer{margin-top:30px;padding-top:20px;border-top:1px solid #e5e7eb;color:#6b7280;font-size:13px}</style></head><body><div class="container"><div class="header"><h1 style="margin:0;font-size:22px">Warum Papierkram digital besser ist</h1></div><div class="content"><p>Hey ${testName},</p><p>vielleicht hattest du noch keine Zeit zum Testen. Kein Problem! Hier sind 3 Situationen, in denen MeineDokBox Gold wert ist:</p><div class="feature-box"><strong>Steuererklaerung:</strong> Alle Belege sofort finden statt stundenlang suchen</div><div class="feature-box"><strong>Versicherungsfall:</strong> Police in Sekunden parat, nicht in Ordnern wuehlen</div><div class="feature-box"><strong>Umzug/Arztwechsel:</strong> Alle Unterlagen digital dabei, nichts vergessen</div><p>Der Clou: Unsere KI erkennt automatisch, was auf dem Dokument steht und sortiert es fuer dich ein.</p><a href="https://meinedokbox.de" class="button" style="color:white">Kostenlos ausprobieren</a><div class="footer"><p><strong>MeineDokBox</strong> - Intelligente Dokumentenverwaltung</p><p style="font-size:11px"><a href="${unsubUrl}" style="color:#9ca3af">Keine weiteren E-Mails erhalten</a></p></div></div></div></body></html>`,
-        },
-        {
-          type: 'reactivation_2_power',
-          label: 'Reaktivierung Tag 7 - Power-User (12 Dokumente)',
-          subject: 'Vermisst du deine 12 Dokumente?',
-          html: `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{font-family:Arial,sans-serif;line-height:1.6;color:#333}.container{max-width:600px;margin:0 auto;padding:20px}.header{background:#244e7e;color:white;padding:25px;border-radius:8px 8px 0 0;text-align:center}.content{background:#f9fafb;padding:30px;border-radius:0 0 8px 8px}.button{display:inline-block;background:#244e7e;color:white;padding:14px 28px;text-decoration:none;border-radius:6px;margin:20px 0;font-weight:bold}.footer{margin-top:30px;padding-top:20px;border-top:1px solid #e5e7eb;color:#6b7280;font-size:13px}</style></head><body><div class="container"><div class="header"><h1 style="margin:0;font-size:22px">Deine Dokumente warten immer noch</h1></div><div class="content"><p>Hey ${testName},</p><p>du hast <strong>12 Dokumente</strong> in deiner DokBox gespeichert. Die sind weiterhin sicher bei uns - aber ohne aktives Abo kannst du keine neuen hinzufuegen.</p><p>Wusstest du schon? Mit dem Empfehlungsprogramm kannst du dir dein Abo sogar <strong>komplett kostenlos</strong> sichern! Einfach 5 Freunde einladen.</p><a href="https://meinedokbox.de" class="button" style="color:white">Zugang wiederherstellen</a><p style="color:#6b7280;font-size:14px">Schon ab 4,99 EUR/Monat - weniger als ein Kaffee!</p><div class="footer"><p><strong>MeineDokBox</strong> - Intelligente Dokumentenverwaltung</p><p style="font-size:11px"><a href="${unsubUrl}" style="color:#9ca3af">Keine weiteren E-Mails erhalten</a></p></div></div></div></body></html>`,
-        },
-        {
-          type: 'reactivation_3',
-          label: 'Reaktivierung Tag 14 - Letzte Erinnerung',
-          subject: 'Letzte Erinnerung: Sichere dir deinen Zugang',
-          html: `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{font-family:Arial,sans-serif;line-height:1.6;color:#333}.container{max-width:600px;margin:0 auto;padding:20px}.header{background:#244e7e;color:white;padding:25px;border-radius:8px 8px 0 0;text-align:center}.content{background:#f9fafb;padding:30px;border-radius:0 0 8px 8px}.button{display:inline-block;background:#244e7e;color:white;padding:14px 28px;text-decoration:none;border-radius:6px;margin:20px 0;font-weight:bold}.footer{margin-top:30px;padding-top:20px;border-top:1px solid #e5e7eb;color:#6b7280;font-size:13px}</style></head><body><div class="container"><div class="header"><h1 style="margin:0;font-size:22px">Wir vermissen dich!</h1></div><div class="content"><p>Hey ${testName},</p><p>dies ist unsere letzte Erinnerung - versprochen! Wir moechten dich nicht nerven.</p><p>Deine <strong>12 gespeicherten Dokumente</strong> bleiben natuerlich erhalten.</p><p>Falls MeineDokBox nichts fuer dich ist, verstehen wir das. Aber falls du es dir anders ueberlegst - wir sind jederzeit fuer dich da!</p><a href="https://meinedokbox.de" class="button" style="color:white">Nochmal reinschauen</a><p style="color:#6b7280;font-size:14px">Du erhaeltst nach dieser E-Mail keine weiteren Erinnerungen von uns.</p><div class="footer"><p><strong>MeineDokBox</strong> - Intelligente Dokumentenverwaltung</p><p style="font-size:11px"><a href="${unsubUrl}" style="color:#9ca3af">Keine weiteren E-Mails erhalten</a></p></div></div></div></body></html>`,
-        },
+        { type: 'reactivation_1_sleeper', label: 'Reaktivierung Tag 1 - Schläfer', ...getReactivationEmail1Sleeper(testName, testUserId) },
+        { type: 'reactivation_1_power', label: 'Reaktivierung Tag 1 - Power-User', ...getReactivationEmail1PowerUser(testName, testDocCount, testUserId) },
+        { type: 'reactivation_2_sleeper', label: 'Reaktivierung Tag 7 - Schläfer', ...getReactivationEmail2Sleeper(testName, testUserId) },
+        { type: 'reactivation_2_power', label: 'Reaktivierung Tag 7 - Power-User', ...getReactivationEmail2PowerUser(testName, testDocCount, testUserId) },
+        { type: 'reactivation_3', label: 'Reaktivierung Tag 14 - Letzte Erinnerung', ...getReactivationEmail3(testName, testDocCount, testUserId) },
       ];
 
       for (const tpl of templates) {
@@ -5062,7 +5037,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           to: email,
           subject: `[TEST: ${tpl.label}] ${tpl.subject}`,
           html: tpl.html,
-          text: `Test-E-Mail: ${tpl.label}`,
+          text: tpl.text,
         });
         results.push({ type: tpl.type, success: result.success, subject: tpl.subject });
         await new Promise(r => setTimeout(r, 1000));

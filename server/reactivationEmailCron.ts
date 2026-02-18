@@ -54,7 +54,7 @@ function getUnsubscribeUrl(userId: string): string {
   return `${baseUrl}/unsubscribe?uid=${userId}`;
 }
 
-function getReactivationEmail1Sleeper(userName: string, userId: string) {
+export function getReactivationEmail1Sleeper(userName: string, userId: string) {
   const unsubUrl = getUnsubscribeUrl(userId);
   const subject = "Dein digitaler Aktenschrank wartet auf dich!";
   const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body style="margin:0;padding:0;background-color:#f0f2f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;line-height:1.6;color:#333333;">
@@ -107,7 +107,7 @@ function getReactivationEmail1Sleeper(userName: string, userId: string) {
   return { subject, html, text };
 }
 
-function getReactivationEmail1PowerUser(userName: string, docCount: number, userId: string) {
+export function getReactivationEmail1PowerUser(userName: string, docCount: number, userId: string) {
   const unsubUrl = getUnsubscribeUrl(userId);
   const subject = `Dein Zugang ist abgelaufen - ${docCount} Dokument${docCount > 1 ? 'e' : ''} warten auf dich!`;
   const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body style="margin:0;padding:0;background-color:#f0f2f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;line-height:1.6;color:#333333;">
@@ -151,7 +151,7 @@ function getReactivationEmail1PowerUser(userName: string, docCount: number, user
   return { subject, html, text };
 }
 
-function getReactivationEmail2Sleeper(userName: string, userId: string) {
+export function getReactivationEmail2Sleeper(userName: string, userId: string) {
   const unsubUrl = getUnsubscribeUrl(userId);
   const subject = "Noch unsicher? So einfach geht Dokumenten-Management";
   const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body style="margin:0;padding:0;background-color:#f0f2f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;line-height:1.6;color:#333333;">
@@ -205,7 +205,7 @@ function getReactivationEmail2Sleeper(userName: string, userId: string) {
   return { subject, html, text };
 }
 
-function getReactivationEmail2PowerUser(userName: string, docCount: number, userId: string) {
+export function getReactivationEmail2PowerUser(userName: string, docCount: number, userId: string) {
   const unsubUrl = getUnsubscribeUrl(userId);
   const subject = `Vermisst du deine ${docCount} Dokumente?`;
   const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body style="margin:0;padding:0;background-color:#f0f2f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;line-height:1.6;color:#333333;">
@@ -247,7 +247,7 @@ function getReactivationEmail2PowerUser(userName: string, docCount: number, user
   return { subject, html, text };
 }
 
-function getReactivationEmail3(userName: string, docCount: number, userId: string) {
+export function getReactivationEmail3(userName: string, docCount: number, userId: string) {
   const unsubUrl = getUnsubscribeUrl(userId);
   const subject = "Letzte Erinnerung: Sichere dir deinen Zugang";
   const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body style="margin:0;padding:0;background-color:#f0f2f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;line-height:1.6;color:#333333;">
