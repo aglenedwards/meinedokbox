@@ -1463,7 +1463,7 @@ export default function Admin() {
             ) : marketingStats ? (
               <div className="space-y-6">
                 {/* Overview Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
                   <Card>
                     <CardContent className="p-6">
                       <p className="text-sm text-muted-foreground">Gesendet</p>
@@ -1493,6 +1493,13 @@ export default function Admin() {
                   </Card>
                   <Card>
                     <CardContent className="p-6">
+                      <p className="text-sm text-muted-foreground">Abo abgeschlossen</p>
+                      <p className="text-3xl font-bold text-emerald-600" data-testid="stat-emails-converted">{marketingStats.converted || 0}</p>
+                      <p className="text-xs text-muted-foreground">{marketingStats.total > 0 ? Math.round((marketingStats.converted || 0) / marketingStats.total * 100) : 0}% Conversion</p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-6">
                       <p className="text-sm text-muted-foreground">Fehlgeschlagen</p>
                       <p className="text-3xl font-bold text-red-600" data-testid="stat-emails-failed">{marketingStats.failed}</p>
                     </CardContent>
@@ -1514,7 +1521,9 @@ export default function Admin() {
                             <TableHead className="text-right">Zugestellt</TableHead>
                             <TableHead className="text-right">Geöffnet</TableHead>
                             <TableHead className="text-right">Geklickt</TableHead>
+                            <TableHead className="text-right">Abo</TableHead>
                             <TableHead className="text-right">Open Rate</TableHead>
+                            <TableHead className="text-right">Conversion</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -1525,8 +1534,12 @@ export default function Admin() {
                               <TableCell className="text-right">{data.delivered}</TableCell>
                               <TableCell className="text-right">{data.opened}</TableCell>
                               <TableCell className="text-right">{data.clicked}</TableCell>
+                              <TableCell className="text-right font-semibold text-emerald-600">{data.converted || 0}</TableCell>
                               <TableCell className="text-right">
                                 {data.delivered > 0 ? Math.round(data.opened / data.delivered * 100) : 0}%
+                              </TableCell>
+                              <TableCell className="text-right font-semibold">
+                                {data.total > 0 ? Math.round((data.converted || 0) / data.total * 100) : 0}%
                               </TableCell>
                             </TableRow>
                           ))}
@@ -1554,6 +1567,7 @@ export default function Admin() {
                               <TableHead>Status</TableHead>
                               <TableHead className="text-right">Opens</TableHead>
                               <TableHead className="text-right">Clicks</TableHead>
+                              <TableHead className="text-right">Abo</TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
@@ -1585,6 +1599,13 @@ export default function Admin() {
                                 </TableCell>
                                 <TableCell className="text-right text-sm">{email.openCount || 0}</TableCell>
                                 <TableCell className="text-right text-sm">{email.clickCount || 0}</TableCell>
+                                <TableCell className="text-right">
+                                  {email.convertedAt ? (
+                                    <Badge className="text-xs bg-emerald-600">Abo</Badge>
+                                  ) : (
+                                    <span className="text-muted-foreground text-xs">-</span>
+                                  )}
+                                </TableCell>
                               </TableRow>
                             ))}
                           </TableBody>
