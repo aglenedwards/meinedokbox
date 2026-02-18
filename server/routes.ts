@@ -4125,6 +4125,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
             if (userId) {
               await updateReferralStatusAndRecalculateBonus(userId, 'active');
             }
+            
+            // Mark reactivation emails as converted (within 30 days)
+            if (userId) {
+              const conversions = await storage.markReactivationConversion(userId);
+              if (conversions > 0) {
+                console.log(`[StripeWebhook] Marked ${conversions} reactivation email(s) as converted for user ${userId}`);
+              }
+            }
           }
           break;
         }

@@ -104,6 +104,7 @@ export interface IStorage {
   getMarketingEmailStats(): Promise<any>;
   getMarketingEmailsByUser(userId: string): Promise<MarketingEmail[]>;
   getAllMarketingEmails(limit?: number): Promise<MarketingEmail[]>;
+  markReactivationConversion(userId: string): Promise<number>;
   getUsersForReactivation(): Promise<User[]>;
   updateUserReactivationStep(userId: string, step: number): Promise<void>;
   updateUserUnsubscribe(userId: string, unsubscribed: boolean): Promise<void>;
@@ -1535,18 +1536,20 @@ export class DbStorage implements IStorage {
       opened: allEmails.filter(e => ['opened', 'clicked'].includes(e.status) || e.openCount > 0).length,
       clicked: allEmails.filter(e => e.status === 'clicked' || e.clickCount > 0).length,
       failed: allEmails.filter(e => e.status === 'failed' || e.status === 'bounced').length,
-      byType: {} as Record<string, { total: number; delivered: number; opened: number; clicked: number }>,
+      converted: allEmails.filter(e => e.convertedAt != null).length,
+      byType: {} as Record<string, { total: number; delivered: number; opened: number; clicked: number; converted: number }>,
       recentEmails: allEmails.slice(0, 50),
     };
 
     for (const email of allEmails) {
       if (!stats.byType[email.emailType]) {
-        stats.byType[email.emailType] = { total: 0, delivered: 0, opened: 0, clicked: 0 };
+        stats.byType[email.emailType] = { total: 0, delivered: 0, opened: 0, clicked: 0, converted: 0 };
       }
       stats.byType[email.emailType].total++;
       if (['delivered', 'opened', 'clicked'].includes(email.status)) stats.byType[email.emailType].delivered++;
       if (['opened', 'clicked'].includes(email.status) || email.openCount > 0) stats.byType[email.emailType].opened++;
       if (email.status === 'clicked' || email.clickCount > 0) stats.byType[email.emailType].clicked++;
+      if (email.convertedAt != null) stats.byType[email.emailType].converted++;
     }
 
     return stats;
@@ -1558,6 +1561,25 @@ export class DbStorage implements IStorage {
 
   async getAllMarketingEmails(limit: number = 100): Promise<MarketingEmail[]> {
     return db.select().from(marketingEmails).orderBy(desc(marketingEmails.sentAt)).limit(limit);
+  }
+
+  async markReactivationConversion(userId: string): Promise<number> {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    
+    const result = await db.update(marketingEmails)
+      .set({ convertedAt: new Date() })
+      .where(
+        and(
+          eq(marketingEmails.userId, userId),
+          sql`${marketingEmails.emailType} LIKE 'reactivation%'`,
+          isNull(marketingEmails.convertedAt),
+          sql`${marketingEmails.sentAt} > ${thirtyDaysAgo}`
+        )
+      )
+      .returning({ id: marketingEmails.id });
+    
+    return result.length;
   }
 
   async getUsersForReactivation(): Promise<User[]> {
