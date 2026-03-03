@@ -82,7 +82,7 @@ export function DashboardLayout({
 
   return (
     <div className="min-h-screen w-full bg-background flex flex-col">
-      <header className="sticky top-0 z-50 w-full bg-background border-b shrink-0">
+      <header className="sticky top-0 z-50 w-full bg-background border-b shrink-0 pwa-header-safe">
         <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-3 md:py-4">
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-4 w-full">
             <div className="flex items-center justify-between md:justify-start gap-3 min-w-0">

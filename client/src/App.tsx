@@ -36,7 +36,15 @@ import NotFound from "@/pages/not-found";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { PWAUpdatePrompt } from "@/components/PWAUpdatePrompt";
 import { CookieConsent } from "@/components/CookieConsent";
-import { useEffect } from "react";
+import { PWALoginScreen } from "@/components/PWALoginScreen";
+import { useEffect, useMemo } from "react";
+
+function isPWAStandalone(): boolean {
+  return (
+    window.matchMedia('(display-mode: standalone)').matches ||
+    (navigator as any).standalone === true
+  );
+}
 
 function ProtectedRoute({ component: Component }: { component: () => JSX.Element | null }) {
   const [location, setLocation] = useLocation();
@@ -67,6 +75,36 @@ function ProtectedRoute({ component: Component }: { component: () => JSX.Element
   return <Component />;
 }
 
+function HomeRoute() {
+  const isStandalone = useMemo(() => isPWAStandalone(), []);
+  const { data: user, isLoading } = useQuery<User | null>({
+    queryKey: ["/api/auth/user"],
+    queryFn: getCurrentUser,
+    retry: false,
+  });
+  const [, setLocation] = useLocation();
+
+  useEffect(() => {
+    if (!isLoading && user) {
+      setLocation("/dashboard");
+    }
+  }, [user, isLoading, setLocation]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <p className="text-muted-foreground">Laden...</p>
+      </div>
+    );
+  }
+
+  if (isStandalone && !user) {
+    return <PWALoginScreen />;
+  }
+
+  return <Landing />;
+}
+
 function Router() {
   const [location] = useLocation();
 
@@ -77,7 +115,7 @@ function Router() {
 
   return (
     <Switch>
-      <Route path="/" component={Landing} />
+      <Route path="/" component={HomeRoute} />
       <Route path="/funktionen" component={Funktionen} />
       <Route path="/sicherheit" component={Sicherheit} />
       <Route path="/preise" component={Preise} />

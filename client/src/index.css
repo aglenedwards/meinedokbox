@@ -538,4 +538,28 @@ html, body {
     background: rgb(22, 163, 74);
     animation: none;
   }
+
+  /* PWA Safe Area Insets for iOS Standalone Mode */
+  .pwa-safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .pwa-safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .pwa-safe-left {
+    padding-left: env(safe-area-inset-left);
+  }
+
+  .pwa-safe-right {
+    padding-right: env(safe-area-inset-right);
+  }
+
+  /* For sticky headers in standalone PWA mode - combine with existing padding */
+  .pwa-header-safe {
+    padding-top: calc(env(safe-area-inset-top) + 0px);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
 }

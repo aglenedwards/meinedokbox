@@ -2,161 +2,7 @@
 
 ## Overview
 
-PaperEase is a web and mobile application designed to digitize paper documents using smartphone cameras or file uploads. It utilizes AI-powered OCR and semantic analysis for automatic document categorization and organization into digital folders. The application aims to provide a modern, productivity-focused interface for efficient document capture, storage, and retrieval, minimizing friction and maximizing clarity through AI assistance. The project ambitions include GDPR compliance with data stored in Germany and robust anti-abuse and family quota systems.
-
-## Recent Changes
-
-### February 17, 2026 - Email Marketing & Reactivation System
-
-**Marketing Email Tracking:**
-- Created `marketingEmails` table for tracking all sent emails (Mailgun message ID, status, open/click counts, timestamps)
-- All email types (trial notifications, payment reminders, referral info, reactivation) now logged to tracking table via `sendTrackedEmail()`
-- `sendEmail()` updated to return Mailgun message ID for tracking
-
-**Mailgun Webhook Integration (`server/mailgunWebhook.ts`):**
-- Endpoint at `/api/webhooks/mailgun` with HMAC-SHA256 signature verification
-- Tracks events: delivered, opened, clicked, unsubscribed, failed, bounced
-- Updates `marketingEmails` table with delivery/open/click timestamps and counters
-- Auto-unsubscribes users on unsubscribe webhook events
-
-**Post-Trial Reactivation Email Cron (`server/reactivationEmailCron.ts`):**
-- Runs every 6 hours targeting users with expired trials
-- 3-step sequence: Day 1, Day 7, Day 14 after trial end
-- Two user segments with different templates:
-  - "Schläfer" (0 documents): encouragement to try first upload
-  - "Power-User" (1+ documents): urgency about existing documents
-- Anti-spam: max 3 emails, 5-day minimum gaps, unsubscribe tracking
-- Fields: `reactivationStep` (0-3), `unsubscribedFromMarketing`, `reactivationLastSentAt`
-
-**Unsubscribe System:**
-- Unsubscribe landing page at `/unsubscribe?uid=xxx`
-- Public API endpoints: GET `/api/unsubscribe`, POST `/api/resubscribe`
-- One-click resubscribe option on unsubscribe page
-- All marketing emails include unsubscribe footer links
-
-**Admin E-Mail Marketing Tab:**
-- 6th tab in admin dashboard showing email statistics
-- Overview cards: total sent, delivered, opened, clicked, failed with rates
-- Breakdown by email type (trial_day3, reactivation_1_sleeper, etc.)
-- Recent emails table with recipient, type, status badges, open/click counts
-- API endpoints: `/api/admin/marketing/stats`, `/api/admin/marketing/emails`
-
-### December 18, 2025 - Referral Program Implementation
-
-**Referral Tracking System:**
-- Added `referralCode` field to users table (auto-generated 8-char code)
-- Added `referredBy` field to track who referred each user
-- Added `referralBonusGB` and `freeFromReferrals` fields for reward tracking
-- Created `referrals` table to track referral status (pending, active, churned)
-
-**Referral Rewards:**
-- +1GB storage bonus per referral signup (all signups, not just paying)
-- Plan-specific free tier eligibility:
-  - Solo/Family: 5 active paying referrals → Plan kostenlos
-  - Family-Plus: 10 active paying referrals → Plan kostenlos
-- Slaves refer for Master's benefit (Master gets credit)
-- Bonus storage is added to base plan limit in upload/storage checks
-
-**Stripe Webhook Integration:**
-- Referral status updated to 'active' when referred user becomes paying customer
-- Referral status updated to 'churned' when referred user cancels subscription
-- Automatic recalculation of referrer's bonus and free plan eligibility
-
-**Frontend Referral Dashboard (/referral):**
-- Personal referral link with copy/share functionality
-- Progress bar showing X/5 active referrals towards free Family plan
-- Stats cards: total referrals, active customers, bonus storage
-- List of all referrals with status badges (Yellow=Trial, Green=Active, Gray=Churned)
-- Navigation button added to Dashboard header
-
-**Registration Integration:**
-- Referral code captured from URL (?ref=CODE) during registration
-- Validated via /api/referral/validate/:code endpoint
-- Referral tracking record created on successful registration
-
-**Email Notifications:**
-- `sendReferralSignupNotification()`: Sent to referrer when someone signs up via their link (+1GB bonus)
-- `sendReferralActivationNotification()`: Sent to referrer when their referral becomes a paying customer
-- `sendReferralProgramInfoEmail()`: Day-8 email introducing the referral program to all verified users
-- All referral emails are async/non-blocking to prevent delays
-
-**Day-8 Referral Info Email (Cron Job):**
-- Added `referralEmailSentAt` field to users table
-- Daily cron job checks for users registered 8+ days ago without referral email
-- Automatically sends referral program introduction email
-- Includes personal referral link and explains +1GB per referral and free Family plan rewards
-
-**Admin Dashboard Referral Statistics:**
-- Total/Active/Pending/Churned referral counts
-- Total bonus storage given (GB)
-- Users with free plan from referrals (Crown icon)
-- Top 10 referrers leaderboard with medal rankings
-
-**Changelog Entry:**
-- Added "Was ist neu" entry announcing the referral program
-
-### December 17, 2025 - SmartFolder Partner Sharing & Slave Protection
-
-**Steuererklärung Tab Auto-Sharing:**
-- Added `shareWithPartner` boolean field to SmartFolders schema
-- When enabled, all documents in the SmartFolder are automatically visible to partners
-- No need to manually toggle `isShared` on each individual document
-- Partners bypass the `isShared` filter when viewing SmartFolders with shareWithPartner=true
-- Toggle only visible to users who have linked partners (Master/Slave accounts)
-- Green Users icon indicates documents shared via folder setting (vs blue for manually shared)
-- Disabled manual sharing toggle on documents when shareWithPartner is active
-
-**Slave Protection on Removal:**
-- When a Master revokes/removes a Slave from their family account, the Slave is not deleted
-- Slave automatically becomes an independent Master with their own account
-- Slave receives a 7-day trial period to choose their own subscription plan
-- All documents belonging to the Slave are preserved
-- Email notification sent to the Slave explaining the change and their options
-- Same protection applies during plan downgrade (when max users is reduced)
-
-### December 15, 2025 - Image Compression, Rate Limiting & Code Optimization
-
-**OpenAI API Rate Limiting:**
-- Implemented Semaphore-based concurrency limiter (max 5 parallel API calls)
-- Added retry logic with exponential backoff for 429/503 errors (3 retries, starting at 1s)
-- Request throttling with 200ms minimum interval between API calls
-- Wrapped all OpenAI API calls: analyzeDocument(), analyzeDocumentFromText(), searchDocuments()
-- Prevents API quota exhaustion during high-concurrency scenarios
-
-**Image Compression on Upload:**
-- Implemented automatic WebP conversion for all uploaded images (JPEG, PNG, WEBP)
-- Max dimension limit: 2000px (maintains aspect ratio)
-- Quality setting: 85% (optimal balance between size and quality)
-- PDFs remain unchanged (no compression needed)
-- Significantly reduces storage costs and improves loading times
-
-**Code Quality Improvements:**
-- Centralized category configuration in `shared/categories.ts`
-- Removed duplicate categoryConfig from DocumentCard.tsx and CategoryFilter.tsx
-- Added helper functions: `getCategoryConfig()`, `getCategoryBadgeClasses()`, `getCategoryBorderColor()`
-- Verified all useEffect hooks have proper cleanup functions (no memory leaks)
-
-### October 26, 2025 - AI Classification Improvements & Multi-Upload Enhancement
-
-**AI Document Categorization Overhaul:**
-- Completely revised all 15 category descriptions with comprehensive keywords and examples
-- Added explicit medical invoice recognition: "Gesundheit & Arzt" now includes Arztrechnungen, Krankenhausrechnung, Zahnarztrechnung, Apothekenrechnung, Dermatologie, Physiotherapie
-- Implemented priority-based categorization rules to prevent misclassification:
-  1. Medical invoices (with terms like Behandlung, Diagnose, Arzt, Therapie) → "Gesundheit & Arzt"
-  2. Government invoices → "Behörden & Amtliches"
-  3. Tax-related invoices → "Steuern & Buchhaltung"
-  4. Utility bills → "Wohnen & Immobilien"
-  5. Retail purchases → "Einkäufe & Online-Bestellungen"
-- Enhanced all categories with German and English keywords for improved recognition
-- Added specific document types: insurance renewal letters, parking tickets, student certificates, daycare invoices, etc.
-
-**Multi-Upload Enhancements:**
-- Increased upload limit from 5 to 10 files per batch
-- Added file counter display (x/10 files selected)
-- Implemented "merge into one document" checkbox for combining multiple PDFs/images
-- Added automatic PDF merging capability using pdf-lib
-- Enhanced progress indicator showing current file being processed
-- Improved user feedback with specific merge confirmation messages
+PaperEase is a web and mobile application designed to digitize paper documents using smartphone cameras or file uploads. It leverages AI-powered OCR and semantic analysis for automatic document categorization and organization into digital folders. The application aims to provide a modern, productivity-focused interface for efficient document capture, storage, and retrieval, minimizing friction and maximizing clarity through AI assistance. The project's ambitions include GDPR compliance with data stored in Germany and robust anti-abuse and family quota systems.
 
 ## User Preferences
 
@@ -168,15 +14,19 @@ Preferred communication style: Simple, everyday language.
 
 **Frameworks & Libraries:** React with TypeScript, Vite, shadcn/ui (Radix UI + Tailwind CSS), Wouter for routing, TanStack Query for state management.
 
-**Design System:** Material Design principles combined with modern productivity app patterns, focusing on clean information hierarchy, efficient workflows, and mobile-first interactions. Features include a mobile-first responsive design, HSL-based color system with CSS custom properties, consistent spacing, and the Inter font family.
+**Design System:** Material Design principles combined with modern productivity app patterns, focusing on clean information hierarchy, efficient workflows, and mobile-first interactions. This includes a mobile-first responsive design, HSL-based color system with CSS custom properties, consistent spacing, and the Inter font family.
 
 **Key Features:**
-- Full PWA support with offline capabilities and intelligent caching.
+- Full PWA support with offline capabilities and intelligent caching, including dedicated PWA login screen and iOS safe area handling.
 - Dynamic theme support with light/dark mode.
 - Document viewer with full-screen display for images and PDFs.
 - Enhanced document cards with clickable previews and download functionality.
 - Kamera-Multi-Shot-Modus for continuous document capture.
 - Auto-Bildoptimierung for image enhancement.
+- Image compression on upload with WebP conversion and dimension limits.
+- Multi-upload enhancements including increased file limits, file counters, and automatic PDF merging.
+- Referral dashboard for users to track their referrals and rewards.
+- Unsubscribe landing page and resubscribe option for marketing emails.
 
 ### Backend Architecture
 
@@ -188,18 +38,18 @@ Preferred communication style: Simple, everyday language.
 
 **Document Processing Pipeline:**
 1. File upload via Multer (multipart/form-data, memory storage, type validation: JPEG, PNG, WEBP, PDF, 10MB limit, max 10 files per upload).
-2. OpenAI GPT-5 Vision API for OCR and intelligent categorization across 15 categories with priority-based rules:
-   - Categories: Finanzen & Banken, Versicherungen, Steuern & Buchhaltung, Arbeit & Gehalt, Verträge & Abos, Behörden & Amtliches, Gesundheit & Arzt, Wohnen & Immobilien, Auto & Mobilität, Schule & Ausbildung, Familie & Kinder, Rente & Vorsorge, Einkäufe & Online-Bestellungen, Reisen & Freizeit, Sonstiges / Privat
-   - Enhanced with comprehensive German/English keywords and priority rules for medical invoices, government documents, utility bills
-3. Optional: Multiple files can be merged into a single PDF document using pdf-lib before processing
+2. OpenAI GPT-5 Vision API for OCR and intelligent categorization across 15 categories with priority-based rules. Categories are enhanced with comprehensive German/English keywords and specific rules for medical invoices, government documents, and utility bills. Rate limiting and retry logic are implemented for OpenAI API calls.
+3. Optional: Multiple files can be merged into a single PDF document using pdf-lib before processing.
 4. File and optional thumbnail stored in IONOS S3 Object Storage.
 5. Document metadata saved to PostgreSQL with extracted data (title, date, amount, sender, tags).
 
 **Data Management:**
 - **Hybrid Limit System:** Monthly upload quotas and total storage limits per user, shared across family members.
-- **Dynamic Slave Plan Synchronization:** Slave accounts dynamically inherit the Master's subscription plan and limits.
+- **Dynamic Slave Plan Synchronization:** Slave accounts dynamically inherit the Master's subscription plan and limits. Protection ensures Slaves become independent Masters with a trial period upon removal.
 - **Token-Based Invitation System:** Secure token generation for inviting new users, facilitating automatic linking to master accounts upon registration.
-- **Folder-Based Privacy System:** Granular control over document visibility with shared/private folder options.
+- **Folder-Based Privacy System:** Granular control over document visibility with shared/private folder options, including automatic sharing for "Steuererklärung" folders with partners.
+- **Referral Tracking System:** Tracks referral codes, referred users, bonus storage, and eligibility for free plans based on active paying referrals.
+- **Email Marketing & Reactivation System:** Tracks all sent marketing emails, integrates with Mailgun webhooks for event tracking (delivered, opened, clicked, unsubscribed), and includes a post-trial reactivation email cron job with a 3-step sequence.
 
 **Error Handling:** Centralized middleware for robust error management.
 
@@ -207,7 +57,7 @@ Preferred communication style: Simple, everyday language.
 
 **Primary Database:** PostgreSQL (Neon serverless driver) managed with Drizzle ORM for type-safe queries.
 
-**Database Schema:** Includes `sessions`, `users`, `folders`, `documents`, and `sharedAccess` tables.
+**Database Schema:** Includes `sessions`, `users`, `folders`, `documents`, `sharedAccess`, `referrals`, and `marketingEmails` tables.
 
 **Object Storage:** IONOS S3 Object Storage (Frankfurt, Germany) for files and thumbnails. Features include presigned URL generation, path normalization, Sharp for thumbnail generation (400x300 JPEG), and an ACL system using S3 metadata.
 
@@ -227,9 +77,13 @@ Preferred communication style: Simple, everyday language.
 **Cloud Infrastructure:**
 - **IONOS S3 Object Storage:** Primary storage for documents and thumbnails.
 - **Neon Database:** Serverless PostgreSQL hosting.
+- **Mailgun:** Email sending and tracking.
 
 **Authentication:**
 - **Replit Auth:** OIDC provider for user authentication.
+
+**Payment Processing:**
+- **Stripe:** For subscription management and webhook integration to track referral activation and churn.
 
 **Third-Party Libraries:**
 - **@aws-sdk/client-s3 & @aws-sdk/s3-request-presigner:** IONOS S3 integration.
@@ -241,9 +95,4 @@ Preferred communication style: Simple, everyday language.
 - **TanStack Query:** Server state management.
 - **Tailwind CSS:** Utility-first styling.
 - **bcrypt:** Password hashing.
-
-**Development Tools:**
-- **Vite:** Build tool.
-- **TypeScript:** Language.
-- **Drizzle Kit:** Database migrations.
-- **ESBuild:** Server bundling.
+- **pdf-lib:** PDF manipulation (merging).
