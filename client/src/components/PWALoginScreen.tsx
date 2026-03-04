@@ -201,7 +201,7 @@ export function PWALoginScreen() {
   return (
     <div
       className="flex flex-col bg-background"
-      style={{ height: "100dvh", overflow: "hidden" }}
+      style={{ position: "fixed", inset: 0, overflow: "hidden" }}
     >
       {/* Top brand area */}
       <div
