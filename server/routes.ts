@@ -800,6 +800,188 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // WebAuthn / Passkeys (Face ID, fingerprint)
+  app.post('/api/auth/webauthn/register/start', isAuthenticated, async (req: any, res) => {
+    try {
+      const { generateRegistrationOptions } = await import('@simplewebauthn/server');
+      const { isoBase64URL } = await import('@simplewebauthn/server/helpers');
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      if (!user) return res.status(404).json({ message: 'Nutzer nicht gefunden' });
+
+      const rpID = req.hostname;
+      const existingCreds = ((user as any).webauthnCredentials as any[] | null) || [];
+
+      const options = await generateRegistrationOptions({
+        rpName: 'MeineDokBox',
+        rpID,
+        userID: isoBase64URL.fromBuffer(Buffer.from(userId)),
+        userName: user.email || userId,
+        userDisplayName: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email || userId,
+        attestationType: 'none',
+        excludeCredentials: existingCreds.map((c: any) => ({ id: c.id, transports: c.transports })),
+        authenticatorSelection: { residentKey: 'preferred', userVerification: 'preferred' },
+      });
+
+      (req.session as any).webauthnChallenge = options.challenge;
+      await new Promise<void>((resolve, reject) =>
+        req.session.save((err: any) => err ? reject(err) : resolve())
+      );
+      res.json(options);
+    } catch (error) {
+      console.error('WebAuthn register/start error:', error);
+      res.status(500).json({ message: 'Registrierung fehlgeschlagen' });
+    }
+  });
+
+  app.post('/api/auth/webauthn/register/verify', isAuthenticated, async (req: any, res) => {
+    try {
+      const { verifyRegistrationResponse } = await import('@simplewebauthn/server');
+      const { isoBase64URL } = await import('@simplewebauthn/server/helpers');
+      const userId = req.user.claims.sub;
+      const expectedChallenge = (req.session as any).webauthnChallenge;
+      if (!expectedChallenge) return res.status(400).json({ message: 'Keine Challenge gefunden' });
+
+      const rpID = req.hostname;
+      const expectedOrigin = `${req.protocol}://${req.get('host')}`;
+
+      const { verified, registrationInfo } = await verifyRegistrationResponse({
+        response: req.body,
+        expectedChallenge,
+        expectedOrigin,
+        expectedRPID: rpID,
+      });
+
+      if (!verified || !registrationInfo) return res.status(400).json({ message: 'Verifizierung fehlgeschlagen' });
+
+      const { credential } = registrationInfo;
+      await storage.saveWebAuthnCredential(userId, {
+        id: isoBase64URL.fromBuffer(credential.id),
+        publicKey: isoBase64URL.fromBuffer(credential.publicKey),
+        counter: credential.counter,
+        transports: req.body.response?.transports,
+      });
+
+      delete (req.session as any).webauthnChallenge;
+      res.json({ verified: true });
+    } catch (error) {
+      console.error('WebAuthn register/verify error:', error);
+      res.status(500).json({ message: 'Verifizierung fehlgeschlagen' });
+    }
+  });
+
+  app.post('/api/auth/webauthn/login/start', async (req: any, res) => {
+    try {
+      const { generateAuthenticationOptions } = await import('@simplewebauthn/server');
+      const { email } = req.body;
+      if (!email) return res.status(400).json({ message: 'E-Mail-Adresse erforderlich' });
+
+      const user = await storage.getUserByEmail(email);
+      const existingCreds = (user?.webauthnCredentials as any[] | null) || [];
+      if (!user || existingCreds.length === 0) {
+        return res.status(404).json({ message: 'Keine biometrischen Daten gefunden' });
+      }
+
+      const rpID = req.hostname;
+      const options = await generateAuthenticationOptions({
+        rpID,
+        allowCredentials: existingCreds.map((c: any) => ({ id: c.id, transports: c.transports })),
+        userVerification: 'preferred',
+      });
+
+      (req.session as any).webauthnChallenge = options.challenge;
+      (req.session as any).webauthnUserId = user.id;
+      await new Promise<void>((resolve, reject) =>
+        req.session.save((err: any) => err ? reject(err) : resolve())
+      );
+      res.json(options);
+    } catch (error) {
+      console.error('WebAuthn login/start error:', error);
+      res.status(500).json({ message: 'Anmeldung fehlgeschlagen' });
+    }
+  });
+
+  app.post('/api/auth/webauthn/login/verify', async (req: any, res) => {
+    try {
+      const { verifyAuthenticationResponse } = await import('@simplewebauthn/server');
+      const { isoBase64URL } = await import('@simplewebauthn/server/helpers');
+
+      const expectedChallenge = (req.session as any).webauthnChallenge;
+      const userId = (req.session as any).webauthnUserId;
+      if (!expectedChallenge || !userId) return res.status(400).json({ message: 'Keine aktive Sitzung' });
+
+      const user = await storage.getUser(userId);
+      if (!user) return res.status(404).json({ message: 'Nutzer nicht gefunden' });
+
+      const existingCreds = ((user as any).webauthnCredentials as any[]) || [];
+      const credentialID = req.body.id;
+      const storedCred = existingCreds.find((c: any) => c.id === credentialID);
+      if (!storedCred) return res.status(400).json({ message: 'Credential nicht gefunden' });
+
+      const rpID = req.hostname;
+      const expectedOrigin = `${req.protocol}://${req.get('host')}`;
+
+      const { verified, authenticationInfo } = await verifyAuthenticationResponse({
+        response: req.body,
+        expectedChallenge,
+        expectedOrigin,
+        expectedRPID: rpID,
+        credential: {
+          id: isoBase64URL.toBuffer(storedCred.id),
+          publicKey: isoBase64URL.toBuffer(storedCred.publicKey),
+          counter: storedCred.counter,
+          transports: storedCred.transports,
+        },
+      });
+
+      if (!verified) return res.status(400).json({ message: 'Biometrische Verifizierung fehlgeschlagen' });
+
+      await storage.updateWebAuthnCounter(userId, credentialID, authenticationInfo.newCounter);
+
+      delete (req.session as any).webauthnChallenge;
+      delete (req.session as any).webauthnUserId;
+
+      const sessionUser = {
+        claims: {
+          sub: user.id,
+          email: user.email,
+          first_name: user.firstName,
+          last_name: user.lastName,
+          profile_image_url: user.profileImageUrl,
+        },
+        isLocal: true,
+      };
+
+      req.login(sessionUser, (loginErr: any) => {
+        if (loginErr) {
+          console.error('WebAuthn session error:', loginErr);
+          return res.status(500).json({ message: 'Anmeldung fehlgeschlagen' });
+        }
+        req.session.save((saveErr: any) => {
+          if (saveErr) {
+            console.error('WebAuthn session save error:', saveErr);
+            return res.status(500).json({ message: 'Anmeldung fehlgeschlagen' });
+          }
+          res.json({ message: 'Anmeldung erfolgreich' });
+        });
+      });
+    } catch (error) {
+      console.error('WebAuthn login/verify error:', error);
+      res.status(500).json({ message: 'Anmeldung fehlgeschlagen' });
+    }
+  });
+
+  app.delete('/api/auth/webauthn/remove', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      await storage.updateWebAuthnCredentials(userId, []);
+      res.json({ message: 'Biometrische Anmeldung entfernt' });
+    } catch (error) {
+      console.error('WebAuthn remove error:', error);
+      res.status(500).json({ message: 'Fehler beim Entfernen' });
+    }
+  });
+
   // Logout (works for both local and OIDC auth)
   app.post('/api/auth/logout', (req, res) => {
     req.logout((err) => {

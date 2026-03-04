@@ -32,6 +32,9 @@ export interface IStorage {
   updateUserStripeInfo(id: string, data: { stripeCustomerId?: string | null; stripeSubscriptionId?: string | null; stripePriceId?: string | null }): Promise<User | undefined>;
   updateUserNotifications(id: string, notifyNewFeatures: boolean): Promise<User | undefined>;
   getUsersWithFeatureNotifications(): Promise<User[]>;
+  saveWebAuthnCredential(userId: string, credential: { id: string; publicKey: string; counter: number; transports?: string[] }): Promise<void>;
+  updateWebAuthnCounter(userId: string, credentialId: string, newCounter: number): Promise<void>;
+  updateWebAuthnCredentials(userId: string, credentials: any[]): Promise<void>;
   
   createDocument(document: InsertDocument): Promise<Document>;
   getDocument(id: string): Promise<Document | undefined>;
@@ -230,6 +233,27 @@ export class DbStorage implements IStorage {
   async getUserByEmail(email: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.email, email.toLowerCase()));
     return user;
+  }
+
+  async saveWebAuthnCredential(userId: string, credential: { id: string; publicKey: string; counter: number; transports?: string[] }): Promise<void> {
+    const user = await this.getUser(userId);
+    if (!user) throw new Error("User not found");
+    const existing = (user.webauthnCredentials as any[] | null) || [];
+    const updated = [...existing, credential];
+    await db.update(users).set({ webauthnCredentials: updated } as any).where(eq(users.id, userId));
+  }
+
+  async updateWebAuthnCounter(userId: string, credentialId: string, newCounter: number): Promise<void> {
+    const user = await this.getUser(userId);
+    if (!user) throw new Error("User not found");
+    const creds = ((user.webauthnCredentials as any[]) || []).map((c: any) =>
+      c.id === credentialId ? { ...c, counter: newCounter } : c
+    );
+    await db.update(users).set({ webauthnCredentials: creds } as any).where(eq(users.id, userId));
+  }
+
+  async updateWebAuthnCredentials(userId: string, credentials: any[]): Promise<void> {
+    await db.update(users).set({ webauthnCredentials: credentials } as any).where(eq(users.id, userId));
   }
 
   async upsertUser(userData: UpsertUser): Promise<User> {

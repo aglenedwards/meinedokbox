@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { User, Mail, UserPlus, X, Crown, Calendar, FileText, Settings as SettingsIcon, TrendingUp, HardDrive, ExternalLink, Download, Trash2 } from "lucide-react";
+import { User, Mail, UserPlus, X, Crown, Calendar, FileText, Settings as SettingsIcon, TrendingUp, HardDrive, ExternalLink, Download, Trash2, Fingerprint, ShieldCheck } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -63,6 +63,21 @@ export default function Settings() {
   const [checkoutDialogOpen, setCheckoutDialogOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<"solo" | "family" | "family-plus">("family");
   const [selectedPeriod, setSelectedPeriod] = useState<"monthly" | "yearly">("yearly");
+  const [webAuthnSupported, setWebAuthnSupported] = useState<boolean | null>(null);
+  const [webAuthnRegistered, setWebAuthnRegistered] = useState(false);
+  const [webAuthnPending, setWebAuthnPending] = useState(false);
+
+  const checkWebAuthn = useCallback(async () => {
+    try {
+      const { browserSupportsWebAuthn } = await import('@simplewebauthn/browser');
+      setWebAuthnSupported(browserSupportsWebAuthn());
+      setWebAuthnRegistered(localStorage.getItem('webauthn_registered') === 'true');
+    } catch {
+      setWebAuthnSupported(false);
+    }
+  }, []);
+
+  useEffect(() => { checkWebAuthn(); }, [checkWebAuthn]);
 
   // Listen for checkout events from UpgradeModal
   useEffect(() => {
@@ -76,6 +91,50 @@ export default function Settings() {
     window.addEventListener('openCheckout' as any, handleOpenCheckout);
     return () => window.removeEventListener('openCheckout' as any, handleOpenCheckout);
   }, []);
+
+  const handleSetupBiometric = async () => {
+    if (!user) return;
+    setWebAuthnPending(true);
+    try {
+      const { startRegistration } = await import('@simplewebauthn/browser');
+      const startRes = await fetch('/api/auth/webauthn/register/start', {
+        method: 'POST',
+        credentials: 'include',
+      });
+      if (!startRes.ok) throw new Error((await startRes.json()).message || 'Fehler');
+      const options = await startRes.json();
+      const attestationResponse = await startRegistration({ optionsJSON: options });
+      const verifyRes = await fetch('/api/auth/webauthn/register/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(attestationResponse),
+      });
+      if (!verifyRes.ok) throw new Error((await verifyRes.json()).message || 'Verifizierung fehlgeschlagen');
+      localStorage.setItem('webauthn_registered', 'true');
+      localStorage.setItem('webauthn_email', user.email || '');
+      setWebAuthnRegistered(true);
+      toast({ title: 'Biometrische Anmeldung aktiviert', description: 'Sie können sich ab sofort mit Face ID / Fingerabdruck anmelden.' });
+    } catch (err: any) {
+      if (err?.name !== 'NotAllowedError') {
+        toast({ title: 'Einrichtung fehlgeschlagen', description: err.message || 'Bitte versuchen Sie es erneut.', variant: 'destructive' });
+      }
+    } finally {
+      setWebAuthnPending(false);
+    }
+  };
+
+  const handleRemoveBiometric = async () => {
+    setWebAuthnPending(true);
+    try {
+      await fetch('/api/auth/webauthn/remove', { method: 'DELETE', credentials: 'include' });
+    } catch { /* best effort */ }
+    localStorage.removeItem('webauthn_registered');
+    localStorage.removeItem('webauthn_email');
+    setWebAuthnRegistered(false);
+    setWebAuthnPending(false);
+    toast({ title: 'Biometrische Anmeldung entfernt', description: 'Face ID / Fingerabdruck wurde deaktiviert.' });
+  };
 
   // Fetch user data
   const { data: user } = useQuery<UserType | null>({
@@ -407,6 +466,68 @@ export default function Settings() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Biometric Auth Card */}
+          {webAuthnSupported !== null && (
+            <Card data-testid="section-biometric">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Fingerprint className="h-5 w-5" />
+                  Biometrische Anmeldung
+                </CardTitle>
+                <CardDescription>
+                  Melden Sie sich mit Face ID, Touch ID oder Fingerabdruck an – ohne Passwort
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {!webAuthnSupported ? (
+                  <p className="text-sm text-muted-foreground">
+                    Ihr Gerät oder Browser unterstützt keine biometrische Anmeldung.
+                  </p>
+                ) : (
+                  <div className="flex items-center justify-between gap-4 flex-wrap">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-9 h-9 rounded-full flex items-center justify-center ${webAuthnRegistered ? 'bg-green-100 dark:bg-green-900/30' : 'bg-muted'}`}>
+                        <ShieldCheck className={`h-5 w-5 ${webAuthnRegistered ? 'text-green-600 dark:text-green-400' : 'text-muted-foreground'}`} />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium" data-testid="text-biometric-status">
+                          {webAuthnRegistered ? 'Aktiv' : 'Nicht eingerichtet'}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {webAuthnRegistered
+                            ? 'Sie können sich mit Face ID / Fingerabdruck anmelden'
+                            : 'Richten Sie die biometrische Anmeldung ein'}
+                        </p>
+                      </div>
+                    </div>
+                    {webAuthnRegistered ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleRemoveBiometric}
+                        disabled={webAuthnPending}
+                        data-testid="button-biometric-remove"
+                      >
+                        <Fingerprint className="h-4 w-4 mr-2" />
+                        {webAuthnPending ? 'Wird entfernt...' : 'Entfernen'}
+                      </Button>
+                    ) : (
+                      <Button
+                        size="sm"
+                        onClick={handleSetupBiometric}
+                        disabled={webAuthnPending || !user}
+                        data-testid="button-biometric-setup"
+                      >
+                        <Fingerprint className="h-4 w-4 mr-2" />
+                        {webAuthnPending ? 'Einrichten...' : 'Face ID einrichten'}
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
           {/* Export Card */}
           <Card data-testid="section-export">

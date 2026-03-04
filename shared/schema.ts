@@ -147,6 +147,13 @@ export const users = pgTable("users", {
   unsubscribedFromMarketing: boolean("unsubscribed_from_marketing").notNull().default(false),
   reactivationStep: real("reactivation_step").notNull().default(0), // 0=none, 1/2/3=which reactivation email was sent
   reactivationLastSentAt: timestamp("reactivation_last_sent_at"),
+  // WebAuthn / Passkeys (Face ID, fingerprint)
+  webauthnCredentials: jsonb("webauthn_credentials").$type<Array<{
+    id: string;
+    publicKey: string;
+    counter: number;
+    transports?: string[];
+  }>>(),
 });
 
 // Referral tracking table

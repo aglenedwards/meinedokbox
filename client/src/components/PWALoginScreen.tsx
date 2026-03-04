@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Eye, EyeOff, ArrowLeft, FileText } from "lucide-react";
+import { Eye, EyeOff, ArrowLeft, FileText, Fingerprint } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -79,6 +79,70 @@ export function PWALoginScreen() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [screen, setScreen] = useState<Screen>("login");
+  const [webAuthnAvailable, setWebAuthnAvailable] = useState(false);
+  const [webAuthnEmail, setWebAuthnEmail] = useState<string | null>(null);
+  const [webAuthnPending, setWebAuthnPending] = useState(false);
+
+  useEffect(() => {
+    const check = async () => {
+      try {
+        const { browserSupportsWebAuthn } = await import('@simplewebauthn/browser');
+        const supported = browserSupportsWebAuthn();
+        const storedEmail = localStorage.getItem('webauthn_email');
+        const registered = localStorage.getItem('webauthn_registered') === 'true';
+        if (supported && registered && storedEmail) {
+          setWebAuthnAvailable(true);
+          setWebAuthnEmail(storedEmail);
+        }
+      } catch {
+        // WebAuthn not supported
+      }
+    };
+    check();
+  }, []);
+
+  const handleFaceIDLogin = async () => {
+    if (!webAuthnEmail) return;
+    setWebAuthnPending(true);
+    try {
+      const { startAuthentication } = await import('@simplewebauthn/browser');
+      const startRes = await fetch('/api/auth/webauthn/login/start', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ email: webAuthnEmail }),
+      });
+      if (!startRes.ok) {
+        const err = await startRes.json();
+        throw new Error(err.message || 'Fehler beim Starten');
+      }
+      const options = await startRes.json();
+      const assertionResponse = await startAuthentication({ optionsJSON: options });
+      const verifyRes = await fetch('/api/auth/webauthn/login/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(assertionResponse),
+      });
+      if (!verifyRes.ok) {
+        const err = await verifyRes.json();
+        throw new Error(err.message || 'Verifizierung fehlgeschlagen');
+      }
+      await queryClient.refetchQueries({ queryKey: ['/api/auth/user'] });
+      toast({ title: 'Willkommen zurück!', description: 'Biometrische Anmeldung erfolgreich.' });
+      setLocation('/dashboard');
+    } catch (err: any) {
+      if (err?.name !== 'NotAllowedError') {
+        toast({
+          title: 'Face ID fehlgeschlagen',
+          description: err.message || 'Bitte melden Sie sich mit E-Mail und Passwort an.',
+          variant: 'destructive',
+        });
+      }
+    } finally {
+      setWebAuthnPending(false);
+    }
+  };
 
   const loginForm = useForm<LoginData>({
     resolver: zodResolver(loginSchema),
@@ -255,6 +319,30 @@ export function PWALoginScreen() {
           <div className="max-w-sm mx-auto">
             <h2 className="text-2xl font-semibold mb-1">Willkommen zurück</h2>
             <p className="text-sm text-muted-foreground mb-6">Melden Sie sich an, um fortzufahren.</p>
+
+            {webAuthnAvailable && (
+              <div className="mb-6">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full gap-3 py-6 text-base"
+                  onClick={handleFaceIDLogin}
+                  disabled={webAuthnPending}
+                  data-testid="button-pwa-faceid-login"
+                >
+                  <Fingerprint className="h-6 w-6 text-primary" />
+                  {webAuthnPending ? "Warte auf Bestätigung..." : "Mit Face ID / Fingerabdruck anmelden"}
+                </Button>
+                <div className="relative my-5">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t" />
+                  </div>
+                  <div className="relative flex justify-center text-xs">
+                    <span className="bg-background px-3 text-muted-foreground">oder mit E-Mail anmelden</span>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <Form {...loginForm}>
               <form onSubmit={loginForm.handleSubmit(onLogin)} className="space-y-4">
