@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { User, Mail, UserPlus, X, Crown, Calendar, FileText, Settings as SettingsIcon, TrendingUp, HardDrive, ExternalLink, Download, Trash2, Fingerprint, ShieldCheck } from "lucide-react";
+import { User, Mail, UserPlus, X, Crown, Calendar, FileText, Settings as SettingsIcon, TrendingUp, HardDrive, ExternalLink, Download, Trash2, Fingerprint, ShieldCheck, Smartphone, CheckCircle2, AlertCircle } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -67,6 +67,13 @@ export default function Settings() {
   const [webAuthnRegistered, setWebAuthnRegistered] = useState(false);
   const [webAuthnPending, setWebAuthnPending] = useState(false);
 
+  const [isPWA, setIsPWA] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
+  const [isIOSChrome, setIsIOSChrome] = useState(false);
+  const [isAndroid, setIsAndroid] = useState(false);
+  const [deferredInstallPrompt, setDeferredInstallPrompt] = useState<any>(null);
+  const [installAccepted, setInstallAccepted] = useState(false);
+
   const checkWebAuthn = useCallback(async () => {
     try {
       const { browserSupportsWebAuthn } = await import('@simplewebauthn/browser');
@@ -78,6 +85,31 @@ export default function Settings() {
   }, []);
 
   useEffect(() => { checkWebAuthn(); }, [checkWebAuthn]);
+
+  useEffect(() => {
+    const ua = navigator.userAgent;
+    setIsPWA(window.matchMedia('(display-mode: standalone)').matches);
+    setIsIOS(/iPad|iPhone|iPod/.test(ua) && !('MSStream' in window));
+    setIsIOSChrome(/CriOS/.test(ua));
+    setIsAndroid(/Android/.test(ua));
+
+    const handler = (e: any) => {
+      e.preventDefault();
+      setDeferredInstallPrompt(e);
+    };
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  const handleAndroidInstall = async () => {
+    if (!deferredInstallPrompt) return;
+    deferredInstallPrompt.prompt();
+    const { outcome } = await deferredInstallPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setInstallAccepted(true);
+      setDeferredInstallPrompt(null);
+    }
+  };
 
   // Listen for checkout events from UpgradeModal
   useEffect(() => {
@@ -351,6 +383,118 @@ export default function Settings() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Left Column */}
           <div className="space-y-6">
+            {/* App Install Card */}
+            {!isPWA && (
+              <Card data-testid="section-app-install">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Smartphone className="h-5 w-5" />
+                    Als App installieren
+                  </CardTitle>
+                  <CardDescription>
+                    Schneller Zugriff direkt vom Home-Bildschirm – ohne Browser
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {installAccepted ? (
+                    <div className="flex items-center gap-3 text-green-600 dark:text-green-400" data-testid="status-install-accepted">
+                      <CheckCircle2 className="h-5 w-5 shrink-0" />
+                      <p className="text-sm font-medium">App wird installiert – prüfen Sie Ihren Home-Bildschirm.</p>
+                    </div>
+                  ) : isIOSChrome ? (
+                    <div className="flex items-start gap-3 p-3 rounded-md bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800" data-testid="notice-ios-chrome">
+                      <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-medium text-amber-800 dark:text-amber-200">Bitte Safari verwenden</p>
+                        <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">
+                          iOS erlaubt die App-Installation nur über Safari. Öffnen Sie <strong>meinedokbox.de</strong> in Safari und kehren Sie dann zu den Einstellungen zurück.
+                        </p>
+                      </div>
+                    </div>
+                  ) : isIOS ? (
+                    <div data-testid="guide-ios">
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Folgen Sie diesen 4 Schritten in Safari:
+                      </p>
+                      <div
+                        className="flex gap-3 overflow-x-auto pb-3"
+                        style={{ scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch' }}
+                      >
+                        {[
+                          { img: '/install-guide/step1.png', num: 1, label: 'Tippen Sie auf das \u00bb\u00b7\u00b7\u00b7\u00ab\u2011Menü unten rechts in Safari' },
+                          { img: '/install-guide/step2.png', num: 2, label: 'Tippen Sie auf \u00bbTeilen\u00ab im Menü' },
+                          { img: '/install-guide/step3.png', num: 3, label: 'Tippen Sie auf \u00bbZum Home-Bildschirm\u00ab' },
+                          { img: '/install-guide/step4.png', num: 4, label: 'Lassen Sie \u00bbAls Web-App öffnen\u00ab aktiviert und tippen Sie oben rechts auf \u00bbHinzufügen\u00ab' },
+                        ].map((step) => (
+                          <div
+                            key={step.num}
+                            className="shrink-0 flex flex-col items-center gap-2"
+                            style={{ scrollSnapAlign: 'start', width: '148px' }}
+                            data-testid={`card-install-step-${step.num}`}
+                          >
+                            <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center shrink-0">
+                              <span className="text-xs font-bold text-primary-foreground">{step.num}</span>
+                            </div>
+                            <img
+                              src={step.img}
+                              alt={`Schritt ${step.num}`}
+                              className="rounded-md border border-border"
+                              style={{ width: '148px', height: '260px', objectFit: 'cover', objectPosition: 'top' }}
+                            />
+                            <p className="text-xs text-muted-foreground text-center leading-snug">{step.label}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ) : isAndroid ? (
+                    <div data-testid="guide-android">
+                      {deferredInstallPrompt ? (
+                        <div className="flex items-center justify-between gap-4 flex-wrap">
+                          <div>
+                            <p className="text-sm font-medium">App installieren</p>
+                            <p className="text-xs text-muted-foreground mt-0.5">Zum Home-Bildschirm hinzufügen für schnellen Zugriff</p>
+                          </div>
+                          <Button
+                            size="sm"
+                            onClick={handleAndroidInstall}
+                            data-testid="button-android-install"
+                          >
+                            <Smartphone className="h-4 w-4 mr-2" />
+                            Installieren
+                          </Button>
+                        </div>
+                      ) : (
+                        <p className="text-sm text-muted-foreground">
+                          Tippen Sie im Browser-Menü (drei Punkte oben rechts) auf <strong>"App installieren"</strong> oder <strong>"Zum Startbildschirm hinzufügen"</strong>.
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground" data-testid="notice-desktop">
+                      Öffnen Sie <strong>meinedokbox.de</strong> auf Ihrem Smartphone und installieren Sie die App von dort über die Einstellungen.
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            {isPWA && (
+              <Card data-testid="section-app-installed">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Smartphone className="h-5 w-5" />
+                    Als App installieren
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center gap-3 text-green-600 dark:text-green-400" data-testid="status-app-installed">
+                    <CheckCircle2 className="h-5 w-5 shrink-0" />
+                    <p className="text-sm font-medium">App ist installiert – Sie nutzen MeineDokBox bereits als App.</p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Profile Card */}
             <Card data-testid="card-profile">
             <CardHeader>
