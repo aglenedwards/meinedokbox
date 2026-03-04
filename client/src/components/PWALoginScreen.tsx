@@ -3,9 +3,8 @@ import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, ArrowLeft, FileText } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -39,15 +38,47 @@ const registerSchema = z.object({
   path: ["passwordConfirm"],
 });
 
+function PasswordInput({
+  placeholder,
+  autoComplete,
+  testId,
+  field,
+}: {
+  placeholder: string;
+  autoComplete: string;
+  testId: string;
+  field: any;
+}) {
+  const [show, setShow] = useState(false);
+  return (
+    <div className="relative">
+      <Input
+        type={show ? "text" : "password"}
+        placeholder={placeholder}
+        autoComplete={autoComplete}
+        data-testid={testId}
+        className="pr-10"
+        {...field}
+      />
+      <button
+        type="button"
+        tabIndex={-1}
+        onClick={() => setShow(s => !s)}
+        className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground transition-colors"
+        data-testid={`${testId}-toggle`}
+      >
+        {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+      </button>
+    </div>
+  );
+}
+
+type Screen = "login" | "register" | "forgot";
+
 export function PWALoginScreen() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState<"login" | "signup">("login");
-  const [showLoginPassword, setShowLoginPassword] = useState(false);
-  const [showSignupPassword, setShowSignupPassword] = useState(false);
-  const [showSignupPasswordConfirm, setShowSignupPasswordConfirm] = useState(false);
-  const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
-  const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
+  const [screen, setScreen] = useState<Screen>("login");
 
   const loginForm = useForm<LoginData>({
     resolver: zodResolver(loginSchema),
@@ -66,14 +97,13 @@ export function PWALoginScreen() {
     },
   });
 
+  const [forgotEmail, setForgotEmail] = useState("");
+
   const loginMutation = useMutation({
     mutationFn: login,
     onSuccess: async () => {
       await queryClient.refetchQueries({ queryKey: ["/api/auth/user"] });
-      toast({
-        title: "Willkommen zurück!",
-        description: "Sie wurden erfolgreich angemeldet.",
-      });
+      toast({ title: "Willkommen zurück!", description: "Sie wurden erfolgreich angemeldet." });
       setLocation("/dashboard");
     },
     onError: (error: any) => {
@@ -94,16 +124,9 @@ export function PWALoginScreen() {
                     body: JSON.stringify({ email }),
                     credentials: "include",
                   });
-                  toast({
-                    title: "E-Mail gesendet",
-                    description: "Bitte überprüfen Sie Ihr Postfach.",
-                  });
+                  toast({ title: "E-Mail gesendet", description: "Bitte überprüfen Sie Ihr Postfach." });
                 } catch {
-                  toast({
-                    title: "Fehler",
-                    description: "E-Mail konnte nicht gesendet werden.",
-                    variant: "destructive",
-                  });
+                  toast({ title: "Fehler", description: "E-Mail konnte nicht gesendet werden.", variant: "destructive" });
                 }
               }}
             >
@@ -128,35 +151,29 @@ export function PWALoginScreen() {
         title: "Registrierung erfolgreich!",
         description: "Bitte bestätigen Sie Ihre E-Mail-Adresse. Wir haben Ihnen eine Bestätigungs-E-Mail gesendet.",
       });
-      setActiveTab("login");
+      setScreen("login");
       registerForm.reset();
     },
     onError: (error: any) => {
-      let userMessage = "Ein Fehler ist aufgetreten.";
+      let msg = "Ein Fehler ist aufgetreten.";
       if (error.message?.includes("bereits registriert")) {
-        userMessage = "Diese E-Mail-Adresse wird bereits verwendet. Bitte melden Sie sich an oder verwenden Sie eine andere E-Mail-Adresse.";
+        msg = "Diese E-Mail-Adresse wird bereits verwendet.";
       } else if (error.message) {
-        userMessage = error.message;
+        msg = error.message;
       }
-      toast({
-        title: "Registrierung fehlgeschlagen",
-        description: userMessage,
-        variant: "destructive",
-      });
+      toast({ title: "Registrierung fehlgeschlagen", description: msg, variant: "destructive" });
     },
   });
 
-  const onLogin = (data: LoginData) => {
-    loginMutation.mutate(data);
-  };
+  const onLogin = (data: LoginData) => loginMutation.mutate(data);
 
   const onRegister = (data: RegisterData) => {
-    const urlParams = new URLSearchParams(window.location.search);
+    const p = new URLSearchParams(window.location.search);
     registerMutation.mutate({
       ...data,
-      utmSource: urlParams.get('utm_source') || undefined,
-      utmMedium: urlParams.get('utm_medium') || undefined,
-      utmCampaign: urlParams.get('utm_campaign') || undefined,
+      utmSource: p.get('utm_source') || undefined,
+      utmMedium: p.get('utm_medium') || undefined,
+      utmCampaign: p.get('utm_campaign') || undefined,
     });
   };
 
@@ -166,208 +183,182 @@ export function PWALoginScreen() {
       const res = await fetch("/api/auth/forgot-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: forgotPasswordEmail }),
+        body: JSON.stringify({ email: forgotEmail }),
         credentials: "include",
       });
-      if (!res.ok) throw new Error("Fehler");
+      if (!res.ok) throw new Error();
       toast({
         title: "E-Mail gesendet",
-        description: "Wenn ein Account mit dieser E-Mail-Adresse existiert, erhalten Sie eine E-Mail zum Zurücksetzen Ihres Passworts.",
+        description: "Falls ein Konto existiert, erhalten Sie einen Link zum Zurücksetzen.",
       });
-      setForgotPasswordOpen(false);
-      setForgotPasswordEmail("");
+      setScreen("login");
+      setForgotEmail("");
     } catch {
-      toast({
-        title: "Fehler",
-        description: "E-Mail konnte nicht gesendet werden. Bitte versuchen Sie es später erneut.",
-        variant: "destructive",
-      });
+      toast({ title: "Fehler", description: "Bitte versuchen Sie es später erneut.", variant: "destructive" });
     }
   };
 
-  if (forgotPasswordOpen) {
-    return (
-      <div className="min-h-screen bg-background flex flex-col pwa-safe-top">
-        <div className="flex-1 flex flex-col items-center justify-center px-6 py-8">
-          <img src={logoImage} alt="MeineDokBox" className="h-16 mb-8" />
-          <div className="w-full max-w-sm">
-            <h2 className="text-xl font-semibold text-center mb-2">Passwort zurücksetzen</h2>
-            <p className="text-sm text-muted-foreground text-center mb-6">
-              Geben Sie Ihre E-Mail-Adresse ein und wir senden Ihnen einen Link.
+  return (
+    <div
+      className="flex flex-col bg-background"
+      style={{ height: "100dvh", overflow: "hidden" }}
+    >
+      {/* Top brand area */}
+      <div
+        className="flex-none flex flex-col items-center justify-end pb-6 px-6"
+        style={{
+          paddingTop: "calc(env(safe-area-inset-top) + 2.5rem)",
+          background: "linear-gradient(160deg, hsl(var(--primary) / 0.08) 0%, transparent 100%)",
+          minHeight: "220px",
+        }}
+      >
+        <div className="flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 mb-4">
+          <FileText className="w-8 h-8 text-primary" />
+        </div>
+        <img src={logoImage} alt="MeineDokBox" className="h-10 mb-1" data-testid="img-pwa-logo" />
+        <p className="text-sm text-muted-foreground">Ihr digitales Dokumentenarchiv</p>
+      </div>
+
+      {/* Form area – scrollable internally */}
+      <div className="flex-1 overflow-y-auto px-6 py-6">
+        {screen === "forgot" && (
+          <div className="max-w-sm mx-auto">
+            <button
+              className="flex items-center gap-1.5 text-sm text-muted-foreground mb-6 hover:text-foreground transition-colors"
+              onClick={() => setScreen("login")}
+              data-testid="button-forgot-back-pwa"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Zurück zur Anmeldung
+            </button>
+            <h2 className="text-xl font-semibold mb-1">Passwort zurücksetzen</h2>
+            <p className="text-sm text-muted-foreground mb-6">
+              Geben Sie Ihre E-Mail-Adresse ein – wir senden Ihnen einen Link.
             </p>
             <form onSubmit={handleForgotPassword} className="space-y-4">
               <Input
                 type="email"
                 placeholder="ihre@email.de"
-                value={forgotPasswordEmail}
-                onChange={(e) => setForgotPasswordEmail(e.target.value)}
+                value={forgotEmail}
+                onChange={e => setForgotEmail(e.target.value)}
                 required
                 data-testid="input-forgot-email-pwa"
               />
               <Button type="submit" className="w-full" data-testid="button-forgot-submit-pwa">
                 Link senden
               </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                className="w-full"
-                onClick={() => setForgotPasswordOpen(false)}
-                data-testid="button-forgot-back-pwa"
-              >
-                Zurück zur Anmeldung
-              </Button>
             </form>
           </div>
-        </div>
-      </div>
-    );
-  }
+        )}
 
-  return (
-    <div className="min-h-screen bg-background flex flex-col pwa-safe-top">
-      <div className="flex-1 flex flex-col items-center justify-center px-6 py-8">
-        <img src={logoImage} alt="MeineDokBox" className="h-16 mb-8" data-testid="img-pwa-logo" />
+        {screen === "login" && (
+          <div className="max-w-sm mx-auto">
+            <h2 className="text-2xl font-semibold mb-1">Willkommen zurück</h2>
+            <p className="text-sm text-muted-foreground mb-6">Melden Sie sich an, um fortzufahren.</p>
 
-        <div className="w-full max-w-sm">
-          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "login" | "signup")}>
-            <TabsList className="w-full mb-6" data-testid="tabs-pwa-auth">
-              <TabsTrigger value="login" className="flex-1" data-testid="tab-pwa-login">
-                Anmelden
-              </TabsTrigger>
-              <TabsTrigger value="signup" className="flex-1" data-testid="tab-pwa-signup">
-                Registrieren
-              </TabsTrigger>
-            </TabsList>
+            <Form {...loginForm}>
+              <form onSubmit={loginForm.handleSubmit(onLogin)} className="space-y-4">
+                <FormField
+                  control={loginForm.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>E-Mail-Adresse</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="email"
+                          placeholder="ihre@email.de"
+                          autoComplete="email"
+                          data-testid="input-pwa-login-email"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={loginForm.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Passwort</FormLabel>
+                      <FormControl>
+                        <PasswordInput
+                          placeholder="Ihr Passwort"
+                          autoComplete="current-password"
+                          testId="input-pwa-login-password"
+                          field={field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={loginMutation.isPending}
+                  data-testid="button-pwa-login-submit"
+                >
+                  {loginMutation.isPending ? "Anmelden..." : "Anmelden"}
+                </Button>
+              </form>
+            </Form>
 
-            <TabsContent value="login">
-              <Form {...loginForm}>
-                <form onSubmit={loginForm.handleSubmit(onLogin)} className="space-y-4">
-                  <FormField
-                    control={loginForm.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>E-Mail-Adresse</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="email"
-                            placeholder="ihre@email.de"
-                            autoComplete="email"
-                            data-testid="input-pwa-login-email"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={loginForm.control}
-                    name="password"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Passwort</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <Input
-                              type={showLoginPassword ? "text" : "password"}
-                              placeholder="Ihr Passwort"
-                              autoComplete="current-password"
-                              data-testid="input-pwa-login-password"
-                              {...field}
-                            />
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              className="absolute right-0 top-0 h-full"
-                              onClick={() => setShowLoginPassword(!showLoginPassword)}
-                              data-testid="button-pwa-toggle-login-password"
-                            >
-                              {showLoginPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                            </Button>
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <Button
-                    type="submit"
-                    className="w-full"
-                    disabled={loginMutation.isPending}
-                    data-testid="button-pwa-login-submit"
-                  >
-                    {loginMutation.isPending ? "Anmelden..." : "Anmelden"}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    className="w-full text-sm text-muted-foreground"
-                    onClick={() => setForgotPasswordOpen(true)}
-                    data-testid="button-pwa-forgot-password"
-                  >
-                    Passwort vergessen?
-                  </Button>
-                </form>
-              </Form>
-            </TabsContent>
+            <button
+              type="button"
+              className="w-full mt-3 text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
+              onClick={() => setScreen("forgot")}
+              data-testid="button-pwa-forgot-password"
+            >
+              Passwort vergessen?
+            </button>
 
-            <TabsContent value="signup">
-              <Form {...registerForm}>
-                <form onSubmit={registerForm.handleSubmit(onRegister)} className="space-y-4">
-                  <div className="grid grid-cols-2 gap-3">
-                    <FormField
-                      control={registerForm.control}
-                      name="firstName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Vorname</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="Max"
-                              autoComplete="given-name"
-                              data-testid="input-pwa-register-firstname"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={registerForm.control}
-                      name="lastName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Nachname</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="Mustermann"
-                              autoComplete="family-name"
-                              data-testid="input-pwa-register-lastname"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+            <div className="relative my-5">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs">
+                <span className="bg-background px-3 text-muted-foreground">Noch kein Konto?</span>
+              </div>
+            </div>
+
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => setScreen("register")}
+              data-testid="button-pwa-goto-register"
+            >
+              Kostenlos registrieren
+            </Button>
+          </div>
+        )}
+
+        {screen === "register" && (
+          <div className="max-w-sm mx-auto">
+            <button
+              className="flex items-center gap-1.5 text-sm text-muted-foreground mb-6 hover:text-foreground transition-colors"
+              onClick={() => setScreen("login")}
+              data-testid="button-register-back-pwa"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Zurück zur Anmeldung
+            </button>
+            <h2 className="text-2xl font-semibold mb-1">Konto erstellen</h2>
+            <p className="text-sm text-muted-foreground mb-6">7 Tage kostenlos – keine Kreditkarte nötig.</p>
+
+            <Form {...registerForm}>
+              <form onSubmit={registerForm.handleSubmit(onRegister)} className="space-y-4">
+                <div className="grid grid-cols-2 gap-3">
                   <FormField
                     control={registerForm.control}
-                    name="email"
+                    name="firstName"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>E-Mail-Adresse</FormLabel>
+                        <FormLabel>Vorname</FormLabel>
                         <FormControl>
-                          <Input
-                            type="email"
-                            placeholder="ihre@email.de"
-                            autoComplete="email"
-                            data-testid="input-pwa-register-email"
-                            {...field}
-                          />
+                          <Input placeholder="Max" autoComplete="given-name" data-testid="input-pwa-register-firstname" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -375,110 +366,106 @@ export function PWALoginScreen() {
                   />
                   <FormField
                     control={registerForm.control}
-                    name="password"
+                    name="lastName"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Passwort</FormLabel>
+                        <FormLabel>Nachname</FormLabel>
                         <FormControl>
-                          <div className="relative">
-                            <Input
-                              type={showSignupPassword ? "text" : "password"}
-                              placeholder="Sicheres Passwort"
-                              autoComplete="new-password"
-                              data-testid="input-pwa-register-password"
-                              {...field}
-                            />
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              className="absolute right-0 top-0 h-full"
-                              onClick={() => setShowSignupPassword(!showSignupPassword)}
-                              data-testid="button-pwa-toggle-register-password"
-                            >
-                              {showSignupPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                            </Button>
-                          </div>
+                          <Input placeholder="Mustermann" autoComplete="family-name" data-testid="input-pwa-register-lastname" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                  <FormField
-                    control={registerForm.control}
-                    name="passwordConfirm"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Passwort wiederholen</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <Input
-                              type={showSignupPasswordConfirm ? "text" : "password"}
-                              placeholder="Passwort bestätigen"
-                              autoComplete="new-password"
-                              data-testid="input-pwa-register-password-confirm"
-                              {...field}
-                            />
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              className="absolute right-0 top-0 h-full"
-                              onClick={() => setShowSignupPasswordConfirm(!showSignupPasswordConfirm)}
-                              data-testid="button-pwa-toggle-register-password-confirm"
-                            >
-                              {showSignupPasswordConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                            </Button>
-                          </div>
-                        </FormControl>
+                </div>
+                <FormField
+                  control={registerForm.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>E-Mail-Adresse</FormLabel>
+                      <FormControl>
+                        <Input type="email" placeholder="ihre@email.de" autoComplete="email" data-testid="input-pwa-register-email" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={registerForm.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Passwort</FormLabel>
+                      <FormControl>
+                        <PasswordInput
+                          placeholder="Mind. 8 Zeichen"
+                          autoComplete="new-password"
+                          testId="input-pwa-register-password"
+                          field={field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={registerForm.control}
+                  name="passwordConfirm"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Passwort wiederholen</FormLabel>
+                      <FormControl>
+                        <PasswordInput
+                          placeholder="Passwort bestätigen"
+                          autoComplete="new-password"
+                          testId="input-pwa-register-password-confirm"
+                          field={field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={registerForm.control}
+                  name="acceptPrivacy"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-start gap-3">
+                      <FormControl>
+                        <Checkbox checked={field.value} onCheckedChange={field.onChange} data-testid="checkbox-pwa-accept-privacy" />
+                      </FormControl>
+                      <div className="leading-none pt-0.5">
+                        <FormLabel className="text-sm font-normal leading-relaxed">
+                          Ich akzeptiere die{" "}
+                          <a href="/datenschutz" className="text-primary underline underline-offset-2" target="_blank">
+                            Datenschutzbestimmungen
+                          </a>
+                        </FormLabel>
                         <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={registerForm.control}
-                    name="acceptPrivacy"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-start gap-3">
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                            data-testid="checkbox-pwa-accept-privacy"
-                          />
-                        </FormControl>
-                        <div className="leading-none">
-                          <FormLabel className="text-sm font-normal leading-relaxed">
-                            Ich akzeptiere die{" "}
-                            <a href="/datenschutz" className="text-primary underline" target="_blank">
-                              Datenschutzbestimmungen
-                            </a>
-                          </FormLabel>
-                          <FormMessage />
-                        </div>
-                      </FormItem>
-                    )}
-                  />
-                  <Button
-                    type="submit"
-                    className="w-full"
-                    disabled={registerMutation.isPending}
-                    data-testid="button-pwa-register-submit"
-                  >
-                    {registerMutation.isPending ? "Registrieren..." : "Kostenlos registrieren"}
-                  </Button>
-                </form>
-              </Form>
-            </TabsContent>
-          </Tabs>
-
-          <p className="text-xs text-muted-foreground text-center mt-6">
-            7 Tage kostenlos testen – keine Kreditkarte nötig
-          </p>
-        </div>
+                      </div>
+                    </FormItem>
+                  )}
+                />
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={registerMutation.isPending}
+                  data-testid="button-pwa-register-submit"
+                >
+                  {registerMutation.isPending ? "Registrieren..." : "Konto erstellen"}
+                </Button>
+              </form>
+            </Form>
+          </div>
+        )}
       </div>
 
-      <div className="pb-6 pwa-safe-bottom text-center">
+      {/* Footer */}
+      <div
+        className="flex-none py-4 px-6 text-center"
+        style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 1rem)" }}
+      >
         <p className="text-xs text-muted-foreground">
           <a href="/datenschutz" className="hover:underline">Datenschutz</a>
           {" · "}
