@@ -88,8 +88,13 @@ export default function Settings() {
 
   useEffect(() => {
     const ua = navigator.userAgent;
-    setIsPWA(window.matchMedia('(display-mode: standalone)').matches);
-    setIsIOS(/iPad|iPhone|iPod/.test(ua) && !('MSStream' in window));
+    setIsPWA(
+      window.matchMedia('(display-mode: standalone)').matches ||
+      (window.navigator as any).standalone === true
+    );
+    const isIOSDevice = (/iPad|iPhone|iPod/.test(ua) && !('MSStream' in window))
+      || (/Mac/.test(ua) && navigator.maxTouchPoints > 1);
+    setIsIOS(isIOSDevice);
     setIsIOSChrome(/CriOS/.test(ua));
     setIsAndroid(/Android/.test(ua));
 
@@ -383,8 +388,8 @@ export default function Settings() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Left Column */}
           <div className="space-y-6">
-            {/* App Install Card */}
-            {!isPWA && (
+            {/* App Install Card — only shown on mobile (iOS or Android) */}
+            {(isIOS || isAndroid) && (
               <Card data-testid="section-app-install">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -392,27 +397,33 @@ export default function Settings() {
                     Als App installieren
                   </CardTitle>
                   <CardDescription>
-                    Schneller Zugriff direkt vom Home-Bildschirm – ohne Browser
+                    Schneller Zugriff direkt vom Home-Bildschirm Ihres Smartphones
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {installAccepted ? (
+                  {isPWA ? (
+                    <div className="flex items-center gap-3 text-green-600 dark:text-green-400" data-testid="status-app-installed">
+                      <CheckCircle2 className="h-5 w-5 shrink-0" />
+                      <p className="text-sm font-medium">App ist installiert – Sie nutzen MeineDokBox bereits als App.</p>
+                    </div>
+                  ) : installAccepted ? (
                     <div className="flex items-center gap-3 text-green-600 dark:text-green-400" data-testid="status-install-accepted">
                       <CheckCircle2 className="h-5 w-5 shrink-0" />
                       <p className="text-sm font-medium">App wird installiert – prüfen Sie Ihren Home-Bildschirm.</p>
                     </div>
-                  ) : isIOSChrome ? (
-                    <div className="flex items-start gap-3 p-3 rounded-md bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800" data-testid="notice-ios-chrome">
-                      <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
-                      <div>
-                        <p className="text-sm font-medium text-amber-800 dark:text-amber-200">Bitte Safari verwenden</p>
-                        <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">
-                          iOS erlaubt die App-Installation nur über Safari. Öffnen Sie <strong>meinedokbox.de</strong> in Safari und kehren Sie dann zu den Einstellungen zurück.
-                        </p>
-                      </div>
-                    </div>
                   ) : isIOS ? (
                     <div data-testid="guide-ios">
+                      {isIOSChrome && (
+                        <div className="flex items-start gap-3 p-3 rounded-md bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 mb-4" data-testid="notice-ios-chrome">
+                          <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                          <div>
+                            <p className="text-sm font-medium text-amber-800 dark:text-amber-200">Bitte Safari verwenden</p>
+                            <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">
+                              iOS erlaubt die App-Installation nur über Safari. Öffnen Sie <strong>meinedokbox.de</strong> in Safari und folgen Sie den Schritten unten.
+                            </p>
+                          </div>
+                        </div>
+                      )}
                       <p className="text-sm text-muted-foreground mb-4">
                         Folgen Sie diesen 4 Schritten in Safari:
                       </p>
@@ -446,7 +457,7 @@ export default function Settings() {
                         ))}
                       </div>
                     </div>
-                  ) : isAndroid ? (
+                  ) : (
                     <div data-testid="guide-android">
                       {deferredInstallPrompt ? (
                         <div className="flex items-center justify-between gap-4 flex-wrap">
@@ -469,28 +480,7 @@ export default function Settings() {
                         </p>
                       )}
                     </div>
-                  ) : (
-                    <p className="text-sm text-muted-foreground" data-testid="notice-desktop">
-                      Öffnen Sie <strong>meinedokbox.de</strong> auf Ihrem Smartphone und installieren Sie die App von dort über die Einstellungen.
-                    </p>
                   )}
-                </CardContent>
-              </Card>
-            )}
-
-            {isPWA && (
-              <Card data-testid="section-app-installed">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Smartphone className="h-5 w-5" />
-                    Als App installieren
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center gap-3 text-green-600 dark:text-green-400" data-testid="status-app-installed">
-                    <CheckCircle2 className="h-5 w-5 shrink-0" />
-                    <p className="text-sm font-medium">App ist installiert – Sie nutzen MeineDokBox bereits als App.</p>
-                  </div>
                 </CardContent>
               </Card>
             )}
