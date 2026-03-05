@@ -493,6 +493,11 @@ html, body {
     border-color: hsl(var(--primary) / 0.4);
   }
 
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
   /* Shimmer Animation for Upload Button */
   @keyframes shimmer {
     0% {

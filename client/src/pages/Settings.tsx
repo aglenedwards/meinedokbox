@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { User, Mail, UserPlus, X, Crown, Calendar, FileText, Settings as SettingsIcon, TrendingUp, HardDrive, ExternalLink, Download, Trash2, Fingerprint, ShieldCheck, Smartphone, CheckCircle2, AlertCircle } from "lucide-react";
+import { User, Mail, UserPlus, X, Crown, Calendar, FileText, Settings as SettingsIcon, TrendingUp, HardDrive, ExternalLink, Download, Trash2, Fingerprint, ShieldCheck, Smartphone, CheckCircle2, AlertCircle, ChevronLeft, ChevronRight, ZoomIn } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -73,6 +73,18 @@ export default function Settings() {
   const [isAndroid, setIsAndroid] = useState(false);
   const [deferredInstallPrompt, setDeferredInstallPrompt] = useState<any>(null);
   const [installAccepted, setInstallAccepted] = useState(false);
+  const [galleryOpen, setGalleryOpen] = useState(false);
+  const [galleryIndex, setGalleryIndex] = useState(0);
+  const [activeCarouselStep, setActiveCarouselStep] = useState(0);
+  const carouselRef = useRef<HTMLDivElement>(null);
+  const touchStartX = useRef<number | null>(null);
+
+  const IOS_STEPS = [
+    { img: '/install-guide/step1.png', num: 1, label: 'Tippen Sie auf das \u00bb\u00b7\u00b7\u00b7\u00ab\u2011Menü unten rechts in Safari' },
+    { img: '/install-guide/step2.png', num: 2, label: 'Tippen Sie auf \u00bbTeilen\u00ab im Menü' },
+    { img: '/install-guide/step3.png', num: 3, label: 'Tippen Sie auf \u00bbZum Home-Bildschirm\u00ab' },
+    { img: '/install-guide/step4.png', num: 4, label: 'Lassen Sie \u00bbAls Web-App öffnen\u00ab aktiviert und tippen Sie oben rechts auf \u00bbHinzufügen\u00ab' },
+  ];
 
   const checkWebAuthn = useCallback(async () => {
     try {
@@ -115,6 +127,47 @@ export default function Settings() {
       setDeferredInstallPrompt(null);
     }
   };
+
+  const openGallery = (index: number) => {
+    setGalleryIndex(index);
+    setGalleryOpen(true);
+  };
+
+  const galleryPrev = () => setGalleryIndex(i => Math.max(0, i - 1));
+  const galleryNext = () => setGalleryIndex(i => Math.min(IOS_STEPS.length - 1, i + 1));
+
+  const handleGalleryTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleGalleryTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current === null) return;
+    const diff = touchStartX.current - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 50) {
+      if (diff > 0) galleryNext();
+      else galleryPrev();
+    }
+    touchStartX.current = null;
+  };
+
+  const handleCarouselScroll = () => {
+    if (!carouselRef.current) return;
+    const scrollLeft = carouselRef.current.scrollLeft;
+    const cardWidth = 148 + 12; // width + gap
+    const index = Math.round(scrollLeft / cardWidth);
+    setActiveCarouselStep(Math.min(index, IOS_STEPS.length - 1));
+  };
+
+  useEffect(() => {
+    if (!galleryOpen) return;
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowRight') galleryNext();
+      else if (e.key === 'ArrowLeft') galleryPrev();
+      else if (e.key === 'Escape') setGalleryOpen(false);
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [galleryOpen]);
 
   // Listen for checkout events from UpgradeModal
   useEffect(() => {
@@ -412,6 +465,7 @@ export default function Settings() {
                       <p className="text-sm font-medium">App wird installiert – prüfen Sie Ihren Home-Bildschirm.</p>
                     </div>
                   ) : isIOS ? (
+                    <>
                     <div data-testid="guide-ios">
                       {isIOSChrome && (
                         <div className="flex items-start gap-3 p-3 rounded-md bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 mb-4" data-testid="notice-ios-chrome">
@@ -428,15 +482,12 @@ export default function Settings() {
                         Folgen Sie diesen 4 Schritten in Safari:
                       </p>
                       <div
+                        ref={carouselRef}
+                        onScroll={handleCarouselScroll}
                         className="flex gap-3 overflow-x-auto pb-3"
-                        style={{ scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch' }}
+                        style={{ scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}
                       >
-                        {[
-                          { img: '/install-guide/step1.png', num: 1, label: 'Tippen Sie auf das \u00bb\u00b7\u00b7\u00b7\u00ab\u2011Menü unten rechts in Safari' },
-                          { img: '/install-guide/step2.png', num: 2, label: 'Tippen Sie auf \u00bbTeilen\u00ab im Menü' },
-                          { img: '/install-guide/step3.png', num: 3, label: 'Tippen Sie auf \u00bbZum Home-Bildschirm\u00ab' },
-                          { img: '/install-guide/step4.png', num: 4, label: 'Lassen Sie \u00bbAls Web-App öffnen\u00ab aktiviert und tippen Sie oben rechts auf \u00bbHinzufügen\u00ab' },
-                        ].map((step) => (
+                        {IOS_STEPS.map((step) => (
                           <div
                             key={step.num}
                             className="shrink-0 flex flex-col items-center gap-2"
@@ -446,17 +497,115 @@ export default function Settings() {
                             <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center shrink-0">
                               <span className="text-xs font-bold text-primary-foreground">{step.num}</span>
                             </div>
-                            <img
-                              src={step.img}
-                              alt={`Schritt ${step.num}`}
-                              className="rounded-md border border-border"
-                              style={{ width: '148px', height: '260px', objectFit: 'cover', objectPosition: 'top' }}
-                            />
+                            <div className="relative group cursor-pointer" onClick={() => openGallery(step.num - 1)}>
+                              <img
+                                src={step.img}
+                                alt={`Schritt ${step.num}`}
+                                className="rounded-md border border-border"
+                                style={{ width: '148px', height: '260px', objectFit: 'cover', objectPosition: 'top' }}
+                              />
+                              <div className="absolute inset-0 rounded-md bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center" style={{ visibility: 'visible' }}>
+                                <ZoomIn className="h-6 w-6 text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-md" />
+                              </div>
+                            </div>
                             <p className="text-xs text-muted-foreground text-center leading-snug">{step.label}</p>
                           </div>
                         ))}
                       </div>
+                      {/* Dot indicators */}
+                      <div className="flex justify-center gap-2 mt-2">
+                        {IOS_STEPS.map((_, i) => (
+                          <button
+                            key={i}
+                            onClick={() => {
+                              carouselRef.current?.scrollTo({ left: i * (148 + 12), behavior: 'smooth' });
+                              setActiveCarouselStep(i);
+                            }}
+                            data-testid={`dot-step-${i + 1}`}
+                            className={`rounded-full transition-all duration-200 ${
+                              i === activeCarouselStep
+                                ? 'w-4 h-2 bg-primary'
+                                : 'w-2 h-2 bg-muted-foreground/30'
+                            }`}
+                          />
+                        ))}
+                      </div>
                     </div>
+
+                    {/* Lightbox Gallery */}
+                    {galleryOpen && (
+                      <div
+                        className="fixed inset-0 z-50 flex flex-col bg-black/95"
+                        onTouchStart={handleGalleryTouchStart}
+                        onTouchEnd={handleGalleryTouchEnd}
+                        data-testid="gallery-overlay"
+                      >
+                        {/* Header */}
+                        <div className="flex items-center justify-between px-4 pt-4 pb-2 shrink-0">
+                          <span className="text-white/70 text-sm font-medium" data-testid="gallery-counter">
+                            {galleryIndex + 1} / {IOS_STEPS.length}
+                          </span>
+                          <button
+                            onClick={() => setGalleryOpen(false)}
+                            className="w-8 h-8 flex items-center justify-center rounded-full bg-white/10 text-white"
+                            data-testid="button-gallery-close"
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                        </div>
+
+                        {/* Image */}
+                        <div className="flex-1 flex items-center justify-center px-4 relative min-h-0">
+                          <button
+                            onClick={galleryPrev}
+                            disabled={galleryIndex === 0}
+                            className="absolute left-2 z-10 w-9 h-9 flex items-center justify-center rounded-full bg-white/10 text-white disabled:opacity-20 transition-opacity"
+                            data-testid="button-gallery-prev"
+                          >
+                            <ChevronLeft className="h-5 w-5" />
+                          </button>
+
+                          <img
+                            key={galleryIndex}
+                            src={IOS_STEPS[galleryIndex].img}
+                            alt={`Schritt ${IOS_STEPS[galleryIndex].num}`}
+                            className="max-h-full max-w-full object-contain rounded-lg"
+                            style={{ animation: 'fadeIn 0.18s ease' }}
+                            data-testid="gallery-image"
+                          />
+
+                          <button
+                            onClick={galleryNext}
+                            disabled={galleryIndex === IOS_STEPS.length - 1}
+                            className="absolute right-2 z-10 w-9 h-9 flex items-center justify-center rounded-full bg-white/10 text-white disabled:opacity-20 transition-opacity"
+                            data-testid="button-gallery-next"
+                          >
+                            <ChevronRight className="h-5 w-5" />
+                          </button>
+                        </div>
+
+                        {/* Footer: label + dots */}
+                        <div className="shrink-0 px-6 pb-6 pt-3 flex flex-col items-center gap-3">
+                          <p className="text-white/80 text-sm text-center leading-snug">
+                            {IOS_STEPS[galleryIndex].label}
+                          </p>
+                          <div className="flex gap-2">
+                            {IOS_STEPS.map((_, i) => (
+                              <button
+                                key={i}
+                                onClick={() => setGalleryIndex(i)}
+                                className={`rounded-full transition-all duration-200 ${
+                                  i === galleryIndex
+                                    ? 'w-4 h-2 bg-white'
+                                    : 'w-2 h-2 bg-white/30'
+                                }`}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    </>
                   ) : (
                     <div data-testid="guide-android">
                       {deferredInstallPrompt ? (
