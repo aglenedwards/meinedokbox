@@ -2206,10 +2206,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
               analysisResult = await analyzeDocumentFromText(extractedText);
             }
           } else {
-            // Handle single image: Use Vision API
+            // Handle single image: Compress and normalize to JPEG before Vision API
+            // Mobile uploads often arrive as WebP (after client-side compression).
+            // Normalizing to JPEG ensures consistent, reliable AI text/date extraction
+            // (same approach as the multi-file path which always converts to JPEG first).
+            const compressedBuffer = await sharp(file.buffer)
+              .resize(1920, 1920, { fit: 'inside', withoutEnlargement: true })
+              .jpeg({ quality: 85 })
+              .toBuffer();
             const imageForAnalysis = [{
-              base64: file.buffer.toString('base64'),
-              mimeType: file.mimetype,
+              base64: compressedBuffer.toString('base64'),
+              mimeType: 'image/jpeg' as const,
             }];
             analysisResult = await analyzeDocument(imageForAnalysis);
           }

@@ -3,6 +3,27 @@ import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query";
 import { FileText, HardDrive, TrendingUp, Plus, Trash2, ArrowUpDown, Download, MoreVertical } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
+
+// Safari-safe date parser: normalizes PostgreSQL and ISO-without-Z formats
+// that Safari's Date constructor rejects (Chrome/Node.js accept them, Safari doesn't)
+const safeParseDate = (dateStr: string): Date | null => {
+  if (!dateStr) return null;
+  try {
+    let normalized = dateStr;
+    // PostgreSQL: "2026-01-02 00:00:00..." → "2026-01-02T00:00:00Z"
+    if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/.test(normalized)) {
+      normalized = normalized.replace(' ', 'T') + (normalized.endsWith('Z') ? '' : 'Z');
+    }
+    // ISO without timezone: "2026-01-02T00:00:00.000" → append Z
+    if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(normalized) && !/[Z+\-]\d*$/.test(normalized.slice(10))) {
+      normalized = normalized + 'Z';
+    }
+    const d = new Date(normalized);
+    return isNaN(d.getTime()) ? null : d;
+  } catch {
+    return null;
+  }
+};
 import { Link } from "wouter";
 import type { Document, DocumentWithFolder, User } from "@shared/schema";
 import { UploadZone } from "@/components/UploadZone";

@@ -28,27 +28,42 @@ import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { Document } from "@shared/schema";
 
+// Normalize date strings that Safari cannot parse:
+// - ISO without timezone: "2026-01-02T00:00:00.000" → "2026-01-02T00:00:00.000Z"
+// - PostgreSQL format:    "2026-01-02 00:00:00"     → "2026-01-02T00:00:00Z"
+const normalizeDateString = (dateStr: string): string => {
+  // PostgreSQL native format: "YYYY-MM-DD HH:MM:SS[.ffffff]"
+  if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/.test(dateStr)) {
+    return dateStr.replace(' ', 'T') + (dateStr.endsWith('Z') ? '' : 'Z');
+  }
+  // ISO without timezone: "YYYY-MM-DDTHH:MM:SS[.mmm]" (no Z or offset at end)
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(dateStr) && !/[Z+\-]\d*$/.test(dateStr.slice(10))) {
+    return dateStr + 'Z';
+  }
+  return dateStr;
+};
+
 // Helper to parse German date format (DD.MM.YYYY) or ISO (YYYY-MM-DD)
+// Safari-safe: normalizes all date formats before new Date() call
 const parseDateString = (dateStr: string): Date | null => {
   if (!dateStr || dateStr.trim() === "") return null;
   
   try {
     // Try German format DD.MM.YYYY
-    if (dateStr.includes('.')) {
+    if (/^\d{2}\.\d{2}\.\d{4}$/.test(dateStr.trim())) {
       const parts = dateStr.split('.');
-      if (parts.length === 3) {
-        const day = parseInt(parts[0], 10);
-        const month = parseInt(parts[1], 10) - 1; // months are 0-indexed
-        const year = parseInt(parts[2], 10);
-        if (!isNaN(day) && !isNaN(month) && !isNaN(year)) {
-          const date = new Date(year, month, day);
-          if (!isNaN(date.getTime())) return date;
-        }
+      const day = parseInt(parts[0], 10);
+      const month = parseInt(parts[1], 10) - 1;
+      const year = parseInt(parts[2], 10);
+      if (!isNaN(day) && !isNaN(month) && !isNaN(year)) {
+        const date = new Date(year, month, day);
+        if (!isNaN(date.getTime())) return date;
       }
     }
     
-    // Try ISO format or other standard formats
-    const date = new Date(dateStr);
+    // Normalize then parse (handles Safari-incompatible ISO formats and PostgreSQL format)
+    const normalized = normalizeDateString(dateStr);
+    const date = new Date(normalized);
     return !isNaN(date.getTime()) ? date : null;
   } catch (error) {
     console.error("Error parsing date:", dateStr, error);
@@ -135,7 +150,8 @@ export function EditDocumentDialog({ document, trigger, open: controlledOpen, on
         const parsedDate = parseDateString(data.documentDate);
         if (parsedDate) {
           const dateValue = parsedDate.toISOString();
-          const currentDateStr = document.documentDate ? new Date(document.documentDate).toISOString() : null;
+          const currentDate = document.documentDate ? parseDateString(String(document.documentDate)) : null;
+          const currentDateStr = currentDate ? currentDate.toISOString() : null;
           if (dateValue !== currentDateStr) {
             updateData.documentDate = dateValue;
           }
