@@ -164,9 +164,10 @@
         window.clarityInitialized = true;
       };
       
-      // Check if consent was already given
+      // Check if consent was already given (read from cookie, shared across Safari + PWA)
       try {
-        var consent = JSON.parse(localStorage.getItem('meinedokbox_cookie_consent') || '{}');
+        var cookieMatch = document.cookie.match(/(?:^|; )meinedokbox_cookie_consent=([^;]*)/);
+        var consent = cookieMatch ? JSON.parse(decodeURIComponent(cookieMatch[1])) : {};
         if (consent.analytics) {
           window.initClarity();
         }

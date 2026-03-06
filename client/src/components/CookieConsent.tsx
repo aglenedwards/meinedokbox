@@ -11,7 +11,17 @@ type ConsentSettings = {
   marketing: boolean;
 };
 
-const CONSENT_STORAGE_KEY = "meinedokbox_cookie_consent";
+const CONSENT_COOKIE_NAME = "meinedokbox_cookie_consent";
+
+function setCookieConsent(value: string): void {
+  const maxAge = 365 * 24 * 60 * 60; // 1 year in seconds
+  document.cookie = `${CONSENT_COOKIE_NAME}=${encodeURIComponent(value)}; max-age=${maxAge}; path=/; SameSite=Lax`;
+}
+
+function getCookieConsent(): string | null {
+  const match = document.cookie.match(new RegExp(`(?:^|; )${CONSENT_COOKIE_NAME}=([^;]*)`));
+  return match ? decodeURIComponent(match[1]) : null;
+}
 
 declare global {
   interface Window {
@@ -39,7 +49,7 @@ function updateGoogleConsent(settings: ConsentSettings) {
 
 export function getConsentSettings(): ConsentSettings | null {
   try {
-    const stored = localStorage.getItem(CONSENT_STORAGE_KEY);
+    const stored = getCookieConsent();
     if (stored) {
       return JSON.parse(stored);
     }
@@ -80,7 +90,7 @@ export function CookieConsent() {
   }, []);
 
   const saveSettings = (newSettings: ConsentSettings) => {
-    localStorage.setItem(CONSENT_STORAGE_KEY, JSON.stringify(newSettings));
+    setCookieConsent(JSON.stringify(newSettings));
     setSettings(newSettings);
     updateGoogleConsent(newSettings);
     setShowBanner(false);
