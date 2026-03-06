@@ -1804,6 +1804,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Link invitation to new user
       await storage.acceptSharedInvitationByToken(token, newUser.id);
+
+      // Auto-whitelist slave's own email address (so they can forward from their own address immediately)
+      await storage.addEmailToWhitelist(newUser.id, invitedEmail.toLowerCase());
       
       // Queue email verification (async, with auto-retry)
       await emailQueue.enqueueVerificationEmail(invitedEmail, firstName, verificationToken);
@@ -3307,8 +3310,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Import email service functions
       const { sendEmail, getDocumentProcessingFeedbackEmail, ProcessedDocument, DocumentProcessingResult } = await import('./emailService');
       
-      // Check whitelist (security feature)
-      const isWhitelisted = await storage.isEmailWhitelisted(user.id, cleanFrom);
+      // Check whitelist (security feature) — also check master's whitelist for slave accounts
+      let isWhitelisted = await storage.isEmailWhitelisted(user.id, cleanFrom);
+      if (!isWhitelisted) {
+        // If user is a slave (linked to a master), also check master's whitelist
+        const effectiveId = await getEffectiveUserId(user.id);
+        if (effectiveId !== user.id) {
+          isWhitelisted = await storage.isEmailWhitelisted(effectiveId, cleanFrom);
+          if (isWhitelisted) {
+            console.log('[Email Webhook] Sender allowed via master whitelist for slave user:', user.id);
+          }
+        }
+      }
       if (!isWhitelisted) {
         console.log('[Email Webhook] Sender not whitelisted:', cleanFrom, 'for user:', user.id);
         await db.insert(emailLogs).values({
