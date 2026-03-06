@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { index, jsonb, pgTable, text, varchar, timestamp, real, boolean } from "drizzle-orm/pg-core";
+import { index, jsonb, pgTable, text, varchar, timestamp, real, boolean, integer } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -469,6 +469,25 @@ export const changelog = pgTable("changelog", {
   createdAt: timestamp("created_at").notNull().default(sql`now()`),
 });
 
+export const errorLogs = pgTable("error_logs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  level: varchar("level", { length: 10 }).notNull().default("error"),
+  message: text("message").notNull(),
+  stack: text("stack"),
+  url: text("url"),
+  method: varchar("method", { length: 10 }),
+  userId: varchar("user_id"),
+  statusCode: integer("status_code"),
+  durationMs: integer("duration_ms"),
+  metadata: jsonb("metadata"),
+  createdAt: timestamp("created_at").notNull().default(sql`now()`),
+});
+
+export const insertErrorLogSchema = createInsertSchema(errorLogs).omit({
+  id: true,
+  createdAt: true,
+});
+
 export const insertChangelogSchema = createInsertSchema(changelog).omit({
   id: true,
   createdAt: true,
@@ -546,3 +565,5 @@ export type InsertReferral = z.infer<typeof insertReferralSchema>;
 export type Referral = typeof referrals.$inferSelect;
 export type InsertMarketingEmail = z.infer<typeof insertMarketingEmailSchema>;
 export type MarketingEmail = typeof marketingEmails.$inferSelect;
+export type InsertErrorLog = z.infer<typeof insertErrorLogSchema>;
+export type ErrorLog = typeof errorLogs.$inferSelect;

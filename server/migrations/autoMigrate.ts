@@ -52,6 +52,28 @@ export async function runAutoMigrations() {
       END $$;
     `;
 
+    // Migration 3: error_logs Tabelle erstellen
+    await sql`
+      CREATE TABLE IF NOT EXISTS "error_logs" (
+        id varchar PRIMARY KEY DEFAULT gen_random_uuid(),
+        level varchar(10) NOT NULL DEFAULT 'error',
+        message text NOT NULL,
+        stack text,
+        url text,
+        method varchar(10),
+        user_id varchar,
+        status_code integer,
+        duration_ms integer,
+        metadata jsonb,
+        created_at timestamp NOT NULL DEFAULT now()
+      );
+    `;
+
+    // Migration 4: Index auf error_logs.created_at für schnelle Zeitfilter
+    await sql`
+      CREATE INDEX IF NOT EXISTS error_logs_created_at_idx ON error_logs(created_at DESC);
+    `;
+
     console.log("✅ Auto-migrations completed successfully");
   } catch (error) {
     console.error("❌ Auto-migration failed:", error);

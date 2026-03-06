@@ -72,14 +72,51 @@ app.use((req, res, next) => {
   // This ensures the database schema is up-to-date in both Dev and Production
   await runAutoMigrations();
   
+  // Request timing middleware – must be registered BEFORE routes to capture all requests
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    const start = Date.now();
+    res.on("finish", () => {
+      const durationMs = Date.now() - start;
+      if (durationMs > 3000 && req.path.startsWith("/api")) {
+        import("./lib/errorLogger").then(({ logError }) => {
+          logError({
+            level: "warn",
+            message: `Slow request: ${req.method} ${req.path} took ${durationMs}ms`,
+            url: req.path,
+            method: req.method,
+            userId: (req as any).user?.id,
+            statusCode: res.statusCode,
+            durationMs,
+          });
+        }).catch(() => {});
+      }
+    });
+    next();
+  });
+
   // Setup Mailgun webhooks (before routes to ensure it's registered)
   setupMailgunWebhooks(app);
   
   const server = await registerRoutes(app);
 
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+  app.use((err: any, req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
+
+    // Log server errors to DB, fire-and-forget, never blocks response
+    if (status >= 500) {
+      import("./lib/errorLogger").then(({ logError }) => {
+        logError({
+          level: "error",
+          message,
+          stack: err.stack,
+          url: req.path,
+          method: req.method,
+          userId: (req as any).user?.id,
+          statusCode: status,
+        });
+      }).catch(() => {});
+    }
 
     res.status(status).json({ message });
     throw err;

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
-import { User, Trash2, Search, Home, Shield, AlertTriangle, Lightbulb, PlayCircle, Plus, Edit2, Save, X, BarChart3, Users, CreditCard, TrendingUp, FileText, HardDrive, Gift, UserPlus, Crown, Mail } from "lucide-react";
+import { User, Trash2, Search, Home, Shield, AlertTriangle, Lightbulb, PlayCircle, Plus, Edit2, Save, X, BarChart3, Users, CreditCard, TrendingUp, FileText, HardDrive, Gift, UserPlus, Crown, Mail, AlertCircle, ChevronDown, ChevronUp, Clock } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,7 +40,7 @@ import { Link } from "wouter";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import logoImage from "@assets/meinedokbox_1760966015056.png";
-import type { User as UserType, FeatureRequest, VideoTutorial } from "@shared/schema";
+import type { User as UserType, FeatureRequest, VideoTutorial, ErrorLog } from "@shared/schema";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 
 interface MarketingChannel {
@@ -222,6 +222,40 @@ export default function Admin() {
   const { data: marketingStats, isLoading: loadingMarketing } = useQuery<any>({
     queryKey: ["/api/admin/marketing/stats"],
     enabled: adminStatus?.isAdminAuthenticated === true,
+  });
+
+  // Error Log state
+  const [errorLogLevel, setErrorLogLevel] = useState("all");
+  const [errorLogPeriod, setErrorLogPeriod] = useState("7d");
+  const [errorLogPage, setErrorLogPage] = useState(1);
+  const [expandedErrorId, setExpandedErrorId] = useState<string | null>(null);
+
+  const { data: errorLogStats, refetch: refetchErrorStats } = useQuery<{
+    today: number; week: number; month: number; total: number; byLevel: Record<string, number>;
+  }>({
+    queryKey: ["/api/admin/error-logs/stats"],
+    enabled: adminStatus?.isAdminAuthenticated === true && activeTab === "errors",
+    refetchInterval: activeTab === "errors" ? 60000 : false,
+  });
+
+  const { data: errorLogsData, isLoading: loadingErrorLogs, refetch: refetchErrorLogs } = useQuery<{
+    logs: ErrorLog[]; total: number; page: number; limit: number;
+  }>({
+    queryKey: ["/api/admin/error-logs", errorLogLevel, errorLogPeriod, errorLogPage],
+    enabled: adminStatus?.isAdminAuthenticated === true && activeTab === "errors",
+  });
+
+  const clearErrorLogsMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch("/api/admin/error-logs", { method: "DELETE", credentials: "include" });
+      if (!response.ok) throw new Error("Fehler beim Leeren");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/error-logs"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/error-logs/stats"] });
+      toast({ title: "Protokoll geleert", description: "Alle Fehlereinträge wurden gelöscht." });
+    },
   });
 
   // Delete user mutation
@@ -503,7 +537,7 @@ export default function Admin() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 md:px-6 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList className="grid w-full grid-cols-6" data-testid="admin-tabs">
+          <TabsList className="grid w-full grid-cols-7" data-testid="admin-tabs">
             <TabsTrigger value="statistics" className="flex items-center gap-2" data-testid="tab-statistics">
               <BarChart3 className="h-4 w-4" />
               <span className="hidden sm:inline">Statistiken</span>
@@ -527,6 +561,13 @@ export default function Admin() {
             <TabsTrigger value="email" className="flex items-center gap-2" data-testid="tab-email">
               <Mail className="h-4 w-4" />
               <span className="hidden sm:inline">E-Mails</span>
+            </TabsTrigger>
+            <TabsTrigger value="errors" className="flex items-center gap-2" data-testid="tab-errors">
+              <AlertCircle className="h-4 w-4" />
+              <span className="hidden sm:inline">Fehlerlog</span>
+              {errorLogStats && errorLogStats.today > 0 && (
+                <Badge variant="destructive" className="ml-1 text-xs px-1.5 py-0">{errorLogStats.today}</Badge>
+              )}
             </TabsTrigger>
           </TabsList>
 
@@ -1619,6 +1660,186 @@ export default function Admin() {
               <div className="text-center py-8 text-muted-foreground">Keine E-Mail-Statistiken verfügbar</div>
             )}
           </TabsContent>
+
+          {/* Error Log Tab */}
+          <TabsContent value="errors" className="space-y-4">
+            {/* Stats row */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <Card>
+                <CardContent className="pt-4">
+                  <div className="text-2xl font-bold text-destructive">{errorLogStats?.today ?? "–"}</div>
+                  <div className="text-sm text-muted-foreground">Fehler heute</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="pt-4">
+                  <div className="text-2xl font-bold">{errorLogStats?.week ?? "–"}</div>
+                  <div className="text-sm text-muted-foreground">Diese Woche</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="pt-4">
+                  <div className="text-2xl font-bold">{errorLogStats?.byLevel?.["warn"] ?? 0}</div>
+                  <div className="text-sm text-muted-foreground">Warnungen gesamt</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="pt-4">
+                  <div className="text-2xl font-bold">{errorLogStats?.total ?? "–"}</div>
+                  <div className="text-sm text-muted-foreground">Einträge gesamt</div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Filter bar */}
+            <Card>
+              <CardContent className="pt-4">
+                <div className="flex flex-wrap items-center gap-3">
+                  <div className="flex items-center gap-2">
+                    <label className="text-sm font-medium text-muted-foreground">Level:</label>
+                    <select
+                      value={errorLogLevel}
+                      onChange={(e) => { setErrorLogLevel(e.target.value); setErrorLogPage(1); }}
+                      className="text-sm border rounded-md px-2 py-1 bg-background"
+                      data-testid="select-error-level"
+                    >
+                      <option value="all">Alle</option>
+                      <option value="error">Fehler</option>
+                      <option value="warn">Warnungen</option>
+                      <option value="info">Info</option>
+                    </select>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <label className="text-sm font-medium text-muted-foreground">Zeitraum:</label>
+                    <select
+                      value={errorLogPeriod}
+                      onChange={(e) => { setErrorLogPeriod(e.target.value); setErrorLogPage(1); }}
+                      className="text-sm border rounded-md px-2 py-1 bg-background"
+                      data-testid="select-error-period"
+                    >
+                      <option value="24h">Letzte 24h</option>
+                      <option value="7d">Letzte 7 Tage</option>
+                      <option value="30d">Letzte 30 Tage</option>
+                      <option value="all">Alle</option>
+                    </select>
+                  </div>
+                  <div className="flex-1" />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => { refetchErrorLogs(); refetchErrorStats(); }}
+                    data-testid="button-refresh-errors"
+                  >
+                    Aktualisieren
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => { if (confirm("Alle Fehlereinträge löschen?")) clearErrorLogsMutation.mutate(); }}
+                    disabled={clearErrorLogsMutation.isPending}
+                    data-testid="button-clear-errors"
+                  >
+                    <Trash2 className="h-4 w-4 mr-1" />
+                    Protokoll leeren
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Error list */}
+            {loadingErrorLogs ? (
+              <div className="text-center py-8 text-muted-foreground">Lädt Fehlerprotokoll...</div>
+            ) : !errorLogsData?.logs.length ? (
+              <Card>
+                <CardContent className="py-12 text-center text-muted-foreground">
+                  <AlertCircle className="h-10 w-10 mx-auto mb-3 opacity-30" />
+                  <p>Keine Einträge im gewählten Zeitraum</p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-2">
+                {errorLogsData.logs.map((log) => (
+                  <Card key={log.id} className={log.level === "error" ? "border-destructive/30" : log.level === "warn" ? "border-yellow-500/30" : ""}>
+                    <CardContent className="pt-3 pb-3">
+                      <div
+                        className="flex flex-wrap items-start gap-2 cursor-pointer"
+                        onClick={() => setExpandedErrorId(expandedErrorId === log.id ? null : log.id)}
+                        data-testid={`row-error-${log.id}`}
+                      >
+                        <Badge
+                          variant={log.level === "error" ? "destructive" : "secondary"}
+                          className="shrink-0 text-xs"
+                        >
+                          {log.level === "error" ? "Fehler" : log.level === "warn" ? "Warnung" : "Info"}
+                        </Badge>
+                        {log.statusCode && (
+                          <Badge variant="outline" className="shrink-0 text-xs">{log.statusCode}</Badge>
+                        )}
+                        <span className="text-sm font-medium flex-1 min-w-0">{log.message}</span>
+                        <div className="flex items-center gap-2 shrink-0 text-muted-foreground">
+                          {log.durationMs && (
+                            <span className="text-xs flex items-center gap-1">
+                              <Clock className="h-3 w-3" />{log.durationMs}ms
+                            </span>
+                          )}
+                          <span className="text-xs">
+                            {format(new Date(log.createdAt), "dd.MM.yy HH:mm", { locale: de })}
+                          </span>
+                          {expandedErrorId === log.id ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                        </div>
+                      </div>
+
+                      {/* Meta info row */}
+                      <div className="flex flex-wrap gap-3 mt-1.5 text-xs text-muted-foreground">
+                        {(log.method || log.url) && (
+                          <span className="font-mono">{log.method} {log.url}</span>
+                        )}
+                        {log.userId && <span>User: {log.userId.substring(0, 20)}…</span>}
+                      </div>
+
+                      {/* Expanded stack trace */}
+                      {expandedErrorId === log.id && log.stack && (
+                        <pre className="mt-3 p-3 bg-muted rounded-md text-xs overflow-auto whitespace-pre-wrap max-h-64 font-mono">
+                          {log.stack}
+                        </pre>
+                      )}
+                      {expandedErrorId === log.id && !log.stack && (
+                        <p className="mt-2 text-xs text-muted-foreground">Kein Stack Trace verfügbar.</p>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
+
+                {/* Pagination */}
+                {errorLogsData.total > errorLogsData.limit && (
+                  <div className="flex items-center justify-center gap-2 pt-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={errorLogPage <= 1}
+                      onClick={() => setErrorLogPage(p => p - 1)}
+                      data-testid="button-error-prev"
+                    >
+                      Zurück
+                    </Button>
+                    <span className="text-sm text-muted-foreground">
+                      Seite {errorLogPage} · {errorLogsData.total} Einträge
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={errorLogPage * errorLogsData.limit >= errorLogsData.total}
+                      onClick={() => setErrorLogPage(p => p + 1)}
+                      data-testid="button-error-next"
+                    >
+                      Weiter
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
+          </TabsContent>
+
         </Tabs>
       </main>
 

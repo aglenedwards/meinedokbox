@@ -5247,6 +5247,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ADMIN: Error Log Routes
+  app.get('/api/admin/error-logs/stats', isAuthenticated, isAdmin, async (_req: any, res) => {
+    try {
+      const { getErrorLogStats } = await import('./lib/errorLogger');
+      const stats = await getErrorLogStats();
+      res.json(stats);
+    } catch (error) {
+      console.error('[Admin ErrorLogs] Error fetching stats:', error);
+      res.status(500).json({ message: 'Fehler beim Laden der Statistiken' });
+    }
+  });
+
+  app.get('/api/admin/error-logs', isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const level = req.query.level as string | undefined;
+      const period = req.query.period as string | undefined;
+      const page = parseInt(req.query.page as string || '1', 10);
+      const limit = 50;
+      const offset = (page - 1) * limit;
+
+      const periodHours = period === '24h' ? 24 : period === '7d' ? 168 : period === '30d' ? 720 : undefined;
+
+      const { getErrorLogsPage } = await import('./lib/errorLogger');
+      const result = await getErrorLogsPage({ level, periodHours, limit, offset });
+      res.json({ ...result, page, limit });
+    } catch (error) {
+      console.error('[Admin ErrorLogs] Error fetching logs:', error);
+      res.status(500).json({ message: 'Fehler beim Laden der Fehlerprotokolle' });
+    }
+  });
+
+  app.delete('/api/admin/error-logs', isAuthenticated, isAdmin, async (_req: any, res) => {
+    try {
+      const { clearErrorLogs } = await import('./lib/errorLogger');
+      await clearErrorLogs();
+      res.json({ message: 'Fehlerprotokoll geleert' });
+    } catch (error) {
+      console.error('[Admin ErrorLogs] Error clearing logs:', error);
+      res.status(500).json({ message: 'Fehler beim Leeren des Protokolls' });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
