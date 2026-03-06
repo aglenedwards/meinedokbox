@@ -132,27 +132,33 @@ export function DocumentCard({
     }).format(amt);
   };
 
-  // Helper function to validate and format date
+  // Helper function to validate and format date (Safari-safe)
   const formatDocumentDate = (dateStr?: string) => {
     if (!dateStr) return null;
-    
-    // Try to create a Date object
-    let date = new Date(dateStr);
-    
-    // If that fails, try parsing German format DD.MM.YYYY
-    if (isNaN(date.getTime()) && dateStr.includes('.')) {
-      const parts = dateStr.split('.');
-      if (parts.length === 3) {
-        const [day, month, year] = parts;
-        date = new Date(`${year}-${month}-${day}`);
-      }
+
+    let normalized = dateStr;
+
+    // PostgreSQL: "2026-01-02 00:00:00..." → "2026-01-02T00:00:00Z"
+    if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/.test(normalized)) {
+      normalized = normalized.replace(' ', 'T') + (normalized.endsWith('Z') ? '' : 'Z');
     }
-    
-    // Check if the date is valid
-    if (isNaN(date.getTime())) {
-      return null;
+    // ISO without timezone: "2026-01-02T00:00:00.000" → append Z
+    if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(normalized) && !/[Z+\-]\d*$/.test(normalized.slice(10))) {
+      normalized = normalized + 'Z';
     }
-    
+    // Date-only ISO "2026-01-02" → treat as UTC noon to avoid timezone day-shift on Safari
+    if (/^\d{4}-\d{2}-\d{2}$/.test(normalized)) {
+      normalized = normalized + 'T12:00:00Z';
+    }
+    // German format DD.MM.YYYY → ISO
+    if (/^\d{1,2}\.\d{1,2}\.\d{4}$/.test(normalized)) {
+      const [day, month, year] = normalized.split('.');
+      normalized = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T12:00:00Z`;
+    }
+
+    const date = new Date(normalized);
+    if (isNaN(date.getTime())) return null;
+
     return date.toLocaleDateString('de-DE');
   };
 
