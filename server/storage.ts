@@ -84,6 +84,7 @@ export interface IStorage {
   getSharedAccessByDocument(documentId: string): Promise<SharedAccess[]>;
   acceptSharedInvitation(email: string, userId: string): Promise<SharedAccess | undefined>;
   acceptSharedInvitationByToken(token: string, userId: string): Promise<SharedAccess | undefined>;
+  getAllSharedAccess(): Promise<SharedAccess[]>;
   revokeSharedAccess(ownerId: string): Promise<boolean>;
   revokeSharedAccessById(invitationId: string): Promise<SharedAccess | undefined>;
   resendInvitation(invitationId: string, ownerId: string): Promise<SharedAccess | undefined>;
@@ -1162,6 +1163,10 @@ export class DbStorage implements IStorage {
       .where(eq(sharedAccess.ownerId, ownerId))
       .orderBy(desc(sharedAccess.invitedAt));
     return accesses;
+  }
+
+  async getAllSharedAccess(): Promise<SharedAccess[]> {
+    return await db.select().from(sharedAccess);
   }
 
   async getSharedAccessByEmail(email: string): Promise<SharedAccess | undefined> {

@@ -94,6 +94,10 @@ interface AdminStatistics {
 interface UserWithStats extends UserType {
   documentCount: number;
   storageUsed: number;
+  masterUserId: string | null;
+  masterName: string | null;
+  masterEmail: string | null;
+  slaveCount: number;
 }
 
 interface SubscriptionData {
@@ -1167,6 +1171,7 @@ export default function Admin() {
                           <TableHead>Name</TableHead>
                           <TableHead>E-Mail</TableHead>
                           <TableHead>Plan</TableHead>
+                          <TableHead>Familie</TableHead>
                           <TableHead className="text-right">Dokumente</TableHead>
                           <TableHead className="text-right">Speicher</TableHead>
                           <TableHead>Registriert</TableHead>
@@ -1206,6 +1211,23 @@ export default function Admin() {
                                   <SelectItem value="family-plus">Family Plus</SelectItem>
                                 </SelectContent>
                               </Select>
+                            </TableCell>
+                            <TableCell>
+                              {user.masterUserId ? (
+                                <div className="flex flex-col gap-1">
+                                  <Badge variant="secondary" className="w-fit text-xs">Slave</Badge>
+                                  <span className="text-xs text-muted-foreground">
+                                    {user.masterName || user.masterEmail || user.masterUserId}
+                                  </span>
+                                </div>
+                              ) : user.slaveCount > 0 ? (
+                                <div className="flex flex-col gap-1">
+                                  <Badge variant="default" className="w-fit text-xs">Master</Badge>
+                                  <span className="text-xs text-muted-foreground">
+                                    {user.slaveCount} {user.slaveCount === 1 ? "Eingeladene/r" : "Eingeladene"}
+                                  </span>
+                                </div>
+                              ) : null}
                             </TableCell>
                             <TableCell className="text-right">{user.documentCount}</TableCell>
                             <TableCell className="text-right">{user.storageUsed.toFixed(2)} MB</TableCell>

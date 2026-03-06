@@ -3745,18 +3745,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get all users (Admin only)
   app.get('/api/admin/users', isAuthenticated, isAdmin, async (_req: any, res) => {
     try {
-      const allUsers = await storage.getAllUsers();
-      
+      const [allUsers, allSharedAccess] = await Promise.all([
+        storage.getAllUsers(),
+        storage.getAllSharedAccess(),
+      ]);
+
+      // Build lookup maps for O(1) access
+      const userById = new Map(allUsers.map(u => [u.id, u]));
+      // Only consider active shared access entries for role detection
+      const activeAccess = allSharedAccess.filter(a => a.status === 'active');
+      // slave → master mapping: sharedWithUserId → ownerId
+      const slaveToMaster = new Map<string, string>();
+      // master → slave count mapping: ownerId → count
+      const masterSlaveCount = new Map<string, number>();
+      for (const access of activeAccess) {
+        if (access.sharedWithUserId) {
+          slaveToMaster.set(access.sharedWithUserId, access.ownerId);
+        }
+        masterSlaveCount.set(access.ownerId, (masterSlaveCount.get(access.ownerId) ?? 0) + 1);
+      }
+
       // Calculate document counts and storage stats for each user
       const usersWithStats = await Promise.all(
         allUsers.map(async (user) => {
           const docs = await storage.getDocumentsByUserId(user.id);
           const stats = await storage.getUserStorageStats(user.id);
-          
+
+          const masterUserId = slaveToMaster.get(user.id);
+          const masterUser = masterUserId ? userById.get(masterUserId) : undefined;
+          const slaveCount = masterSlaveCount.get(user.id) ?? 0;
+
           return {
             ...user,
             documentCount: docs.length,
             storageUsed: stats.usedMB,
+            masterUserId: masterUserId ?? null,
+            masterName: masterUser ? `${masterUser.firstName} ${masterUser.lastName}`.trim() : null,
+            masterEmail: masterUser?.email ?? null,
+            slaveCount,
           };
         })
       );
