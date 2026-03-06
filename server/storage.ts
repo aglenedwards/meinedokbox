@@ -1,7 +1,7 @@
 import { type User, type UpsertUser, type Document, type InsertDocument, type UpdateDocument, type Tag, type InsertTag, type DocumentTag, type InsertDocumentTag, type SharedAccess, type InsertSharedAccess, type Folder, type InsertFolder, type TrialNotification, type InsertTrialNotification, type EmailWhitelist, type EmailJob, type InsertEmailJob, type SmartFolder, type InsertSmartFolder, type FeatureRequest, type InsertFeatureRequest, type FeatureRequestVote, type InsertFeatureRequestVote, type VideoTutorial, type InsertVideoTutorial, type Changelog, type InsertChangelog, type Referral, type InsertReferral, type MarketingEmail, type InsertMarketingEmail } from "@shared/schema";
 import { db } from "./db";
 import { users, documents, tags, documentTags, sharedAccess, folders, trialNotifications, emailWhitelist, emailJobs, smartFolders, featureRequests, featureRequestVotes, videoTutorials, changelog, referrals, marketingEmails } from "@shared/schema";
-import { eq, and, or, like, ilike, desc, asc, isNull, isNotNull, inArray, sql, getTableColumns, lte } from "drizzle-orm";
+import { eq, and, or, like, ilike, desc, asc, isNull, isNotNull, inArray, sql, getTableColumns, lte, count, sum } from "drizzle-orm";
 import { generateInboundEmail } from "./lib/emailInbound";
 import crypto from "crypto";
 
@@ -54,6 +54,7 @@ export interface IStorage {
   restoreDocument(id: string, userId: string): Promise<Document | undefined>;
   permanentlyDeleteDocument(id: string, userId: string): Promise<boolean>;
   permanentlyDeleteAllTrashedDocuments(userId: string): Promise<number>;
+  getDocumentCount(userId: string): Promise<number>;
   getUserStorageStats(userId: string): Promise<StorageStats>;
   getUserLimits(userId: string): Promise<{
     canUpload: boolean;
@@ -902,101 +903,42 @@ export class DbStorage implements IStorage {
     return deletedCount;
   }
 
+  async getDocumentCount(userId: string): Promise<number> {
+    const result = await db
+      .select({ count: count() })
+      .from(documents)
+      .where(and(eq(documents.userId, userId), isNull(documents.deletedAt)));
+    return result[0]?.count ?? 0;
+  }
+
   async getUserStorageStats(userId: string): Promise<StorageStats> {
-    const { s3Client } = await import("./objectStorage");
-    const { HeadObjectCommand } = await import("@aws-sdk/client-s3");
-    
-    // Get bucket name from config
-    const S3_BUCKET_NAME = process.env.IONOS_S3_BUCKET || "meinedokbox-production";
-    
-    // Helper to parse S3 paths
-    const parseS3Path = (path: string) => {
-      if (!path.startsWith("/")) {
-        path = `/${path}`;
-      }
-      
-      let objectName: string;
-      
-      // Case 1: Logical path format from database: /objects/uploads/xyz
-      if (path.startsWith("/objects/uploads/")) {
-        // Maps to S3 key: .private/uploads/xyz
-        objectName = `.private/uploads/${path.substring("/objects/uploads/".length)}`;
-      }
-      // Case 2: Logical path format: /objects/.private/uploads/xyz (already has .private)
-      else if (path.startsWith("/objects/.private/")) {
-        objectName = path.substring("/objects/".length);
-      }
-      // Case 3: Full S3 path format: /bucket-name/.private/uploads/xyz
-      else if (path.startsWith(`/${S3_BUCKET_NAME}/`)) {
-        objectName = path.substring(`/${S3_BUCKET_NAME}/`.length);
-      }
-      // Case 4: Already just the object name (fallback)
-      else {
-        objectName = path.substring(1);
-      }
-      
-      // Always use the configured S3 bucket
-      const bucketName = S3_BUCKET_NAME;
-      
-      return { bucketName, objectName };
-    };
-    
-    // Get all user's documents
-    const userDocuments = await this.getDocumentsByUserId(userId);
-    
-    let totalBytes = 0;
-    
-    // Calculate total size from all document pages
-    for (const doc of userDocuments) {
-      const pageUrls = doc.pageUrls && doc.pageUrls.length > 0 
-        ? doc.pageUrls 
-        : doc.fileUrl 
-          ? [doc.fileUrl] 
-          : [];
-      
-      for (const pageUrl of pageUrls) {
-        try {
-          const { bucketName, objectName } = parseS3Path(pageUrl);
-          const headCommand = new HeadObjectCommand({
-            Bucket: bucketName,
-            Key: objectName,
-          });
-          const metadata = await s3Client.send(headCommand);
-          totalBytes += metadata.ContentLength || 0;
-        } catch (error) {
-          console.error(`Failed to get stats for ${pageUrl}:`, error);
-          // Continue with other files if one fails
-        }
-      }
-      
-      // Also count thumbnails if they exist
-      if (doc.thumbnailUrl) {
-        try {
-          const { bucketName, objectName } = parseS3Path(doc.thumbnailUrl);
-          const headCommand = new HeadObjectCommand({
-            Bucket: bucketName,
-            Key: objectName,
-          });
-          const metadata = await s3Client.send(headCommand);
-          totalBytes += metadata.ContentLength || 0;
-        } catch (error) {
-          console.error(`Failed to get stats for thumbnail ${doc.thumbnailUrl}:`, error);
-        }
-      }
-    }
-    
+    // Fast path: sum file_size_bytes from DB (no S3 calls needed)
+    const [sizeResult, countResult] = await Promise.all([
+      db
+        .select({ totalBytes: sum(documents.fileSizeBytes) })
+        .from(documents)
+        .where(and(eq(documents.userId, userId), isNull(documents.deletedAt))),
+      db
+        .select({ count: count() })
+        .from(documents)
+        .where(and(eq(documents.userId, userId), isNull(documents.deletedAt))),
+    ]);
+
+    const totalBytes = parseInt(sizeResult[0]?.totalBytes ?? '0', 10) || 0;
+    const documentCount = countResult[0]?.count ?? 0;
+
     const usedMB = totalBytes / (1024 * 1024);
     const usedGB = totalBytes / (1024 * 1024 * 1024);
-    const totalGB = 5; // Free tier: 5 GB
+    const totalGB = 5;
     const percentageUsed = (usedGB / totalGB) * 100;
-    
+
     return {
       usedBytes: totalBytes,
       usedMB: Math.round(usedMB * 100) / 100,
       usedGB: Math.round(usedGB * 100) / 100,
       totalGB,
       percentageUsed: Math.round(percentageUsed * 10) / 10,
-      documentCount: userDocuments.length,
+      documentCount,
     };
   }
 

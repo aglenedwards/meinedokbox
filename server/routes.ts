@@ -23,7 +23,7 @@ import { parseMailgunWebhook, isSupportedAttachment, isValidDocumentAttachment, 
 import { sendSharedAccessInvitation, sendVerificationEmail, sendPasswordResetEmail, sendContactFormEmail, sendAdminNewUserNotification, sendAdminNewSubscriptionNotification, sendAdminSubscriptionCancelledNotification, sendAccountSeparatedEmail, sendReferralSignupNotification, sendReferralActivationNotification } from "./lib/sendEmail";
 import { emailQueue } from "./lib/emailQueue";
 import bcrypt from 'bcrypt';
-import { checkDocumentLimit, checkEmailFeature, checkAndDowngradeTrial, getEffectiveUserId, isSharedUser } from "./middleware/subscriptionLimits";
+import { checkDocumentLimit, checkEmailFeature, checkAndDowngradeTrial, getEffectiveUserId, isSharedUser, getTrialStatus, getEffectiveUser } from "./middleware/subscriptionLimits";
 import { 
   loginLimiter, 
   registerLimiter, 
@@ -997,10 +997,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/subscription/status', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      
-      const { PLAN_LIMITS } = await import('@shared/schema');
-      const { getTrialStatus, getEffectiveUser, getEffectiveUserId } = await import('./middleware/subscriptionLimits');
-      
+
       // Get effective user (Master if this user is a Slave)
       const effectiveUser = await getEffectiveUser(userId);
       
@@ -1025,36 +1022,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
         graceDaysRemaining = trialStatus.graceDaysRemaining;
       }
 
-      // === NEW HYBRID LIMIT SYSTEM ===
-      // Calculate combined stats for Master + all Slaves
-
+      // === HYBRID LIMIT SYSTEM ===
       // Get all partner IDs (Master gets Slaves, Slave gets Master)
       const partnerIds = await storage.getPartnerUserIds(effectiveUser.id);
       const allUserIds = [effectiveUser.id, ...partnerIds];
 
-      // Auto-reset upload counters if new month
-      await Promise.all(allUserIds.map(id => storage.checkAndResetUploadCounter(id)));
+      // Run all parallel operations at once: reset counters + fetch user data + storage stats + doc count
+      const [userResults, storageResults, documentCount] = await Promise.all([
+        // Reset counters if new month, then fetch all users in parallel
+        Promise.all(allUserIds.map(id =>
+          storage.checkAndResetUploadCounter(id).then(() => storage.getUser(id))
+        )),
+        // Fetch storage stats for all users in parallel (now a fast DB query)
+        Promise.all(allUserIds.map(id => storage.getUserStorageStats(id))),
+        // Count documents via SQL COUNT (no full array fetch)
+        storage.getDocumentCount(userId),
+      ]);
 
       // 1. Sum up monthly uploads (Master + Slaves)
-      let uploadsThisMonth = 0;
-      for (const id of allUserIds) {
-        const user = await storage.getUser(id);
-        if (user) {
-          uploadsThisMonth += user.uploadedThisMonth || 0;
-        }
-      }
+      const uploadsThisMonth = userResults.reduce((sum, user) => sum + (user?.uploadedThisMonth || 0), 0);
 
       // 2. Sum up total storage (Master + Slaves)
-      let storageUsedBytes = 0;
-      for (const id of allUserIds) {
-        const stats = await storage.getUserStorageStats(id);
-        storageUsedBytes += stats.usedBytes;
-      }
+      const storageUsedBytes = storageResults.reduce((sum, stats) => sum + stats.usedBytes, 0);
       const storageUsedGB = parseFloat((storageUsedBytes / (1024 * 1024 * 1024)).toFixed(2));
-
-      // 3. Count documents (for backward compatibility)
-      const documents = await storage.getDocumentsByUserId(userId);
-      const documentCount = documents.length;
 
       // isUploadDisabled combines all upload restrictions
       const isUploadDisabled = !limits.canUpload || gracePeriod || isReadOnly;
@@ -2380,6 +2370,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       confidence: analysisResult.confidence,
       isShared: false, // Default: private documents
       fileHash, // Store file hash for duplicate detection
+      fileSizeBytes: file.buffer.byteLength, // Track size for fast storage stats
       // Phase 2: Smart metadata
       extractedDate: analysisResult.extractedDate ? new Date(analysisResult.extractedDate) : null,
       amount: analysisResult.amount ?? null,
@@ -2489,6 +2480,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       mimeType: files[0].mimetype, // Store original MIME type
       confidence: analysisResult.confidence,
       isShared: false, // Default: private documents (user must manually share)
+      fileSizeBytes: files.reduce((sum, f) => sum + f.buffer.byteLength, 0), // Track size for fast storage stats
       // Phase 2: Smart metadata
       extractedDate: analysisResult.extractedDate ? new Date(analysisResult.extractedDate) : null,
       amount: analysisResult.amount ?? null,

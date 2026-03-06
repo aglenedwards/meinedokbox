@@ -74,6 +74,23 @@ export async function runAutoMigrations() {
       CREATE INDEX IF NOT EXISTS error_logs_created_at_idx ON error_logs(created_at DESC);
     `;
 
+    // Migration 5: file_size_bytes für schnelle Storage-Berechnung (ersetzt S3 HEAD-Anfragen)
+    await sql`
+      DO $$
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1
+          FROM information_schema.columns
+          WHERE table_name = 'documents'
+          AND column_name = 'file_size_bytes'
+        ) THEN
+          ALTER TABLE documents
+          ADD COLUMN file_size_bytes integer DEFAULT 0;
+          RAISE NOTICE 'file_size_bytes Spalte hinzugefügt';
+        END IF;
+      END $$;
+    `;
+
     console.log("✅ Auto-migrations completed successfully");
   } catch (error) {
     console.error("❌ Auto-migration failed:", error);
