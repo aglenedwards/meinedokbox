@@ -56,7 +56,7 @@ const parseDateString = (dateStr: string): Date | null => {
       const month = parseInt(parts[1], 10) - 1;
       const year = parseInt(parts[2], 10);
       if (!isNaN(day) && !isNaN(month) && !isNaN(year)) {
-        const date = new Date(year, month, day);
+        const date = new Date(Date.UTC(year, month, day));
         if (!isNaN(date.getTime())) return date;
       }
     }
@@ -145,18 +145,13 @@ export function EditDocumentDialog({ document, trigger, open: controlledOpen, on
         updateData.title = data.title;
       }
 
-      // Handle documentDate
+      // Handle documentDate – always send, never compare (timezone-safe)
       if (data.documentDate && data.documentDate.trim() !== "") {
         const parsedDate = parseDateString(data.documentDate);
         if (parsedDate) {
-          const dateValue = parsedDate.toISOString();
-          const currentDate = document.documentDate ? parseDateString(String(document.documentDate)) : null;
-          const currentDateStr = currentDate ? currentDate.toISOString() : null;
-          if (dateValue !== currentDateStr) {
-            updateData.documentDate = dateValue;
-          }
+          updateData.documentDate = parsedDate.toISOString();
         }
-      } else if (document.documentDate) {
+      } else {
         // User cleared the date
         updateData.documentDate = null;
       }
