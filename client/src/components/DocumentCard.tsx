@@ -136,24 +136,28 @@ export function DocumentCard({
   const formatDocumentDate = (dateStr?: string) => {
     if (!dateStr) return null;
 
-    let normalized = dateStr;
+    let normalized = dateStr.trim();
 
-    // PostgreSQL: "2026-01-02 00:00:00..." → "2026-01-02T00:00:00Z"
-    if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/.test(normalized)) {
-      normalized = normalized.replace(' ', 'T') + (normalized.endsWith('Z') ? '' : 'Z');
-    }
-    // ISO without timezone: "2026-01-02T00:00:00.000" → append Z
-    if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(normalized) && !/[Z+\-]\d*$/.test(normalized.slice(10))) {
-      normalized = normalized + 'Z';
-    }
-    // Date-only ISO "2026-01-02" → treat as UTC noon to avoid timezone day-shift on Safari
-    if (/^\d{4}-\d{2}-\d{2}$/.test(normalized)) {
-      normalized = normalized + 'T12:00:00Z';
-    }
-    // German format DD.MM.YYYY → ISO
+    // German format DD.MM.YYYY → ISO UTC noon
     if (/^\d{1,2}\.\d{1,2}\.\d{4}$/.test(normalized)) {
       const [day, month, year] = normalized.split('.');
-      normalized = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T12:00:00Z`;
+      normalized = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T12:00:00.000Z`;
+    }
+    // PostgreSQL space-separated: "2026-01-02 00:00:00..." → replace space with T
+    else if (/^\d{4}-\d{2}-\d{2} /.test(normalized)) {
+      normalized = normalized.replace(' ', 'T');
+      // Add Z if no timezone info
+      if (!/[Z+\-]\d{0,2}$/.test(normalized)) {
+        normalized = normalized + 'Z';
+      }
+    }
+    // Date-only "2026-01-02" → UTC noon to avoid day-shift on Safari
+    else if (/^\d{4}-\d{2}-\d{2}$/.test(normalized)) {
+      normalized = normalized + 'T12:00:00.000Z';
+    }
+    // ISO without timezone "2026-01-02T00:00:00" or "2026-01-02T00:00:00.000"
+    else if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(normalized) && !normalized.endsWith('Z') && !/[+\-]\d{2}:\d{2}$/.test(normalized)) {
+      normalized = normalized + 'Z';
     }
 
     const date = new Date(normalized);
