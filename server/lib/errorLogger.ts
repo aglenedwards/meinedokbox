@@ -137,3 +137,16 @@ export async function getErrorLogsPage(options: {
 export async function clearErrorLogs(): Promise<void> {
   await db.delete(errorLogs);
 }
+
+async function deleteOldErrorLogs(): Promise<void> {
+  const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+  await db.delete(errorLogs).where(sql`${errorLogs.createdAt} < ${cutoff}`);
+}
+
+export function startErrorLogCleanupCron(): void {
+  console.log("[ErrorLogCleanup] Starting cron job (runs every 24 hours, keeps 30 days)");
+  deleteOldErrorLogs().catch(() => {});
+  setInterval(() => {
+    deleteOldErrorLogs().catch(() => {});
+  }, 24 * 60 * 60 * 1000);
+}

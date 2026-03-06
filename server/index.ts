@@ -5,6 +5,7 @@ import { startTrialNotificationCron } from "./trialNotificationCron";
 import { startPaymentReminderCron } from "./paymentReminderCron";
 import { startReferralEmailCron } from "./referralEmailCron";
 import { startReactivationCron } from "./reactivationEmailCron";
+import { startErrorLogCleanupCron } from "./lib/errorLogger";
 import { setupMailgunWebhooks } from "./mailgunWebhook";
 import { runAutoMigrations } from "./migrations/autoMigrate";
 
@@ -154,5 +155,8 @@ app.use((req, res, next) => {
     
     // Start post-trial reactivation email cron job
     startReactivationCron();
+
+    // Start error log cleanup cron job (deletes logs older than 30 days)
+    startErrorLogCleanupCron();
   });
 })();
