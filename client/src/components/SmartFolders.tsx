@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Download, FileText, Check, Users } from "lucide-react";
+import { DocumentViewer } from "@/components/DocumentViewer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -326,5 +327,11 @@ export function SmartFolders() {
         </Drawer>
       )}
     </div>
+
+    <DocumentViewer
+      document={viewerDocument}
+      open={viewerOpen}
+      onOpenChange={setViewerOpen}
+    />
   );
 }

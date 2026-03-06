@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { User, Mail, UserPlus, X, Crown, Calendar, FileText, Settings as SettingsIcon, TrendingUp, HardDrive, ExternalLink, Download, Trash2, Fingerprint, ShieldCheck, Smartphone, CheckCircle2, AlertCircle, ChevronLeft, ChevronRight, ZoomIn } from "lucide-react";
+import { User, Mail, UserPlus, X, Crown, Calendar, FileText, Settings as SettingsIcon, TrendingUp, HardDrive, ExternalLink, Download, Trash2, Fingerprint, ShieldCheck, Smartphone, CheckCircle2, AlertCircle, ChevronLeft, ChevronRight, ZoomIn, Pencil, Check } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -59,6 +59,9 @@ function ManageSubscriptionButton() {
 export default function Settings() {
   const { toast } = useToast();
   const [inviteEmail, setInviteEmail] = useState("");
+  const [editingName, setEditingName] = useState(false);
+  const [nameFirst, setNameFirst] = useState("");
+  const [nameLast, setNameLast] = useState("");
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
   const [checkoutDialogOpen, setCheckoutDialogOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<"solo" | "family" | "family-plus">("family");
@@ -259,6 +262,29 @@ export default function Settings() {
 
   // For backward compatibility, get the first active invitation
   const sharedAccess = allSharedAccess?.find(a => a.status === 'active' || a.status === 'pending') || null;
+
+  // Profile name update mutation
+  const profileMutation = useMutation({
+    mutationFn: async (data: { firstName: string; lastName: string }) => {
+      const res = await apiRequest("PATCH", "/api/user/profile", data);
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.message || "Fehler beim Speichern");
+      }
+      return res.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      setEditingName(false);
+      toast({
+        title: "Name aktualisiert",
+        description: `Neue Weiterleitungsadresse: ${data.inboundEmail}`,
+      });
+    },
+    onError: (err: any) => {
+      toast({ variant: "destructive", title: "Fehler", description: err.message });
+    },
+  });
 
   // Invite mutation
   const inviteMutation = useMutation({
@@ -652,13 +678,70 @@ export default function Settings() {
                     data-testid="img-profile"
                   />
                 )}
-                <div>
-                  <p className="font-medium" data-testid="text-user-name">
-                    {user?.firstName} {user?.lastName}
-                  </p>
-                  <p className="text-sm text-muted-foreground" data-testid="text-user-email">
-                    {user?.email}
-                  </p>
+                <div className="flex-1 min-w-0">
+                  {editingName ? (
+                    <div className="space-y-2">
+                      <div className="flex gap-2">
+                        <Input
+                          value={nameFirst}
+                          onChange={(e) => setNameFirst(e.target.value)}
+                          placeholder="Vorname"
+                          autoComplete="given-name"
+                          className="text-sm"
+                          data-testid="input-edit-firstName"
+                        />
+                        <Input
+                          value={nameLast}
+                          onChange={(e) => setNameLast(e.target.value)}
+                          placeholder="Nachname"
+                          autoComplete="family-name"
+                          className="text-sm"
+                          data-testid="input-edit-lastName"
+                        />
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          onClick={() => profileMutation.mutate({ firstName: nameFirst, lastName: nameLast })}
+                          disabled={profileMutation.isPending || !nameFirst.trim() || !nameLast.trim()}
+                          data-testid="button-save-name"
+                        >
+                          {profileMutation.isPending ? "Speichern..." : "Speichern"}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setEditingName(false)}
+                          data-testid="button-cancel-name"
+                        >
+                          Abbrechen
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <div>
+                        <p className="font-medium" data-testid="text-user-name">
+                          {user?.firstName} {user?.lastName}
+                        </p>
+                        <p className="text-sm text-muted-foreground" data-testid="text-user-email">
+                          {user?.email}
+                        </p>
+                      </div>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => {
+                          setNameFirst(user?.firstName || "");
+                          setNameLast(user?.lastName || "");
+                          setEditingName(true);
+                        }}
+                        data-testid="button-edit-name"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </div>
 

@@ -251,6 +251,7 @@ export default function Invite() {
                       <Input
                         {...field}
                         placeholder="Max"
+                        autoComplete="given-name"
                         data-testid="input-firstName"
                       />
                     </FormControl>
@@ -269,6 +270,7 @@ export default function Invite() {
                       <Input
                         {...field}
                         placeholder="Mustermann"
+                        autoComplete="family-name"
                         data-testid="input-lastName"
                       />
                     </FormControl>
@@ -289,6 +291,7 @@ export default function Invite() {
                           {...field}
                           type={showPassword ? "text" : "password"}
                           placeholder="Min. 8 Zeichen, Groß-/Kleinbuchstaben, Zahlen, Sonderzeichen"
+                          autoComplete="new-password"
                           data-testid="input-password"
                         />
                         <Button
@@ -323,6 +326,7 @@ export default function Invite() {
                           {...field}
                           type={showConfirmPassword ? "text" : "password"}
                           placeholder="Passwort wiederholen"
+                          autoComplete="new-password"
                           data-testid="input-confirmPassword"
                         />
                         <Button

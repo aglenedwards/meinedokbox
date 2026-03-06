@@ -370,6 +370,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { email, password, firstName, lastName, utmSource, utmMedium, utmCampaign, referralCode } = registerSchema.parse(req.body);
       const normalizedEmail = email.toLowerCase();
 
+      // Guard against autofill putting email addresses into name fields
+      if (firstName.includes('@') || lastName.includes('@')) {
+        return res.status(400).json({ message: "Bitte geben Sie einen echten Namen ein, keine E-Mail-Adresse" });
+      }
+
       // Check if user already exists
       const existingUser = await storage.getUserByEmail(normalizedEmail);
       if (existingUser) {
@@ -1720,6 +1725,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!token || !firstName || !lastName || !password) {
         return res.status(400).json({ message: "Alle Felder sind erforderlich" });
       }
+
+      // Guard against autofill putting email addresses into name fields
+      if (firstName.includes('@') || lastName.includes('@')) {
+        return res.status(400).json({ message: "Bitte geben Sie einen echten Namen ein, keine E-Mail-Adresse" });
+      }
       
       // Validate token and get invitation
       const invitation = await storage.getSharedAccessByToken(token);
@@ -1769,6 +1779,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Generate email verification token
       const verificationToken = crypto.randomBytes(32).toString('hex');
       const verificationTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+      // Generate inbound email address for document forwarding (firstname.lastname@in.meinedokbox.de)
+      const { generateInboundEmail } = await import('./lib/emailInbound');
+      const inviteInboundEmail = await generateInboundEmail(firstName, lastName);
       
       // Create Slave user with 7-day trial
       // NOTE: Slave inherits Master's plan dynamically via getEffectiveUser() for subscription checks,
@@ -1785,6 +1799,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         isVerified: false,
         verificationToken,
         verificationTokenExpiry,
+        inboundEmail: inviteInboundEmail,
       });
       
       // Link invitation to new user
@@ -4421,6 +4436,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('[UserSettings] Error updating notifications:', error);
       res.status(500).json({ message: "Fehler beim Aktualisieren der Einstellungen" });
+    }
+  });
+
+  // Update user profile (name) and regenerate inbound email
+  app.patch("/api/user/profile", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { firstName, lastName } = req.body;
+
+      if (!firstName || !lastName) {
+        return res.status(400).json({ message: "Vor- und Nachname sind erforderlich" });
+      }
+
+      if (firstName.includes('@') || lastName.includes('@')) {
+        return res.status(400).json({ message: "Bitte geben Sie einen echten Namen ein, keine E-Mail-Adresse" });
+      }
+
+      const trimmedFirst = firstName.trim();
+      const trimmedLast = lastName.trim();
+
+      if (trimmedFirst.length < 1 || trimmedLast.length < 1) {
+        return res.status(400).json({ message: "Vor- und Nachname dürfen nicht leer sein" });
+      }
+
+      // Generate new inbound email based on new name
+      const { generateInboundEmail } = await import('./lib/emailInbound');
+      const newInboundEmail = await generateInboundEmail(trimmedFirst, trimmedLast);
+
+      await db.update(users)
+        .set({ firstName: trimmedFirst, lastName: trimmedLast, inboundEmail: newInboundEmail, updatedAt: new Date() })
+        .where(eq(users.id, userId));
+
+      console.log(`[Profile] Updated name for user ${userId}: ${trimmedFirst} ${trimmedLast}, new inbound: ${newInboundEmail}`);
+
+      res.json({ success: true, firstName: trimmedFirst, lastName: trimmedLast, inboundEmail: newInboundEmail });
+    } catch (error) {
+      console.error('[Profile] Error updating profile:', error);
+      res.status(500).json({ message: "Fehler beim Aktualisieren des Profils" });
     }
   });
 
