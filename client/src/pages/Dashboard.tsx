@@ -759,8 +759,14 @@ export default function Dashboard() {
     isShared: doc.isShared, // Sharing status for share icon
     // Phase 2: Smart metadata
     confidence: doc.confidence,
-    extractedDate: doc.extractedDate ? format(new Date(doc.extractedDate), "d. MMM yyyy", { locale: de }) : undefined,
-    documentDate: doc.documentDate ? format(new Date(doc.documentDate), "d. MMM yyyy", { locale: de }) : undefined,
+    extractedDate: (() => {
+      const d = doc.extractedDate ? safeParseDate(String(doc.extractedDate)) : null;
+      return d ? format(d, "d. MMM yyyy", { locale: de }) : undefined;
+    })(),
+    documentDate: (() => {
+      const d = doc.documentDate ? safeParseDate(String(doc.documentDate)) : null;
+      return d ? format(d, "d. MMM yyyy", { locale: de }) : undefined;
+    })(),
     amount: doc.amount ?? undefined,
     sender: doc.sender ?? undefined,
     // Folder assignment

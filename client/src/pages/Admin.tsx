@@ -242,6 +242,16 @@ export default function Admin() {
     logs: ErrorLog[]; total: number; page: number; limit: number;
   }>({
     queryKey: ["/api/admin/error-logs", errorLogLevel, errorLogPeriod, errorLogPage],
+    queryFn: async () => {
+      const params = new URLSearchParams({
+        level: errorLogLevel,
+        period: errorLogPeriod,
+        page: String(errorLogPage),
+      });
+      const resp = await fetch(`/api/admin/error-logs?${params}`, { credentials: "include" });
+      if (!resp.ok) throw new Error("Fehler beim Laden der Fehlerprotokolle");
+      return resp.json();
+    },
     enabled: adminStatus?.isAdminAuthenticated === true && activeTab === "errors",
   });
 
