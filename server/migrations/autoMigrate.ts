@@ -91,6 +91,41 @@ export async function runAutoMigrations() {
       END $$;
     `;
 
+    // Migration 6: notify_new_features für alle bestehenden Nutzer auf true setzen (einmaliges Opt-in)
+    await sql`
+      DO $$
+      BEGIN
+        IF EXISTS (
+          SELECT 1
+          FROM information_schema.columns
+          WHERE table_name = 'users'
+          AND column_name = 'notify_new_features'
+        ) THEN
+          UPDATE users
+          SET notify_new_features = true
+          WHERE notify_new_features = false;
+          RAISE NOTICE 'notify_new_features für alle Nutzer auf true gesetzt';
+        END IF;
+      END $$;
+    `;
+
+    // Migration 6b: notify_new_features default auf true setzen (für neue Nutzer)
+    await sql`
+      DO $$
+      BEGIN
+        IF EXISTS (
+          SELECT 1
+          FROM information_schema.columns
+          WHERE table_name = 'users'
+          AND column_name = 'notify_new_features'
+        ) THEN
+          ALTER TABLE users
+          ALTER COLUMN notify_new_features SET DEFAULT true;
+          RAISE NOTICE 'notify_new_features default auf true gesetzt';
+        END IF;
+      END $$;
+    `;
+
     console.log("✅ Auto-migrations completed successfully");
   } catch (error) {
     console.error("❌ Auto-migration failed:", error);

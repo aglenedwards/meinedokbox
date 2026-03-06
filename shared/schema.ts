@@ -131,7 +131,7 @@ export const users = pgTable("users", {
   stripeSubscriptionId: varchar("stripe_subscription_id"),
   stripePriceId: varchar("stripe_price_id"),
   // Notification preferences
-  notifyNewFeatures: boolean("notify_new_features").notNull().default(false),
+  notifyNewFeatures: boolean("notify_new_features").notNull().default(true),
   // Marketing attribution (UTM tracking)
   utmSource: varchar("utm_source"),
   utmMedium: varchar("utm_medium"),
