@@ -154,6 +154,7 @@ export function SmartFolders() {
   }
 
   return (
+    <>
     <div className="space-y-6">
       {/* Documents View */}
       <Card>
@@ -333,5 +334,6 @@ export function SmartFolders() {
       open={viewerOpen}
       onOpenChange={setViewerOpen}
     />
+    </>
   );
 }
