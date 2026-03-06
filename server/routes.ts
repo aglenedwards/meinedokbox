@@ -4652,20 +4652,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const purchaseRate = verifiedUsers > 0 ? ((payingCustomers / verifiedUsers) * 100).toFixed(1) : "0";
       const overallConversionRate = totalUsers > 0 ? ((payingCustomers / totalUsers) * 100).toFixed(1) : "0";
       
-      // Calculate total storage used
-      let totalStorageUsedBytes = 0;
-      for (const user of allUsers) {
-        const stats = await storage.getUserStorageStats(user.id);
-        totalStorageUsedBytes += stats.usedBytes;
-      }
+      // Calculate total storage and document count via single SQL aggregates (no per-user loops)
+      const [totalStorageUsedBytes, totalDocuments] = await Promise.all([
+        storage.getTotalStorageBytes(),
+        storage.getTotalDocumentCount(),
+      ]);
       const totalStorageUsedGB = (totalStorageUsedBytes / (1024 * 1024 * 1024)).toFixed(2);
-      
-      // Total documents
-      let totalDocuments = 0;
-      for (const user of allUsers) {
-        const docs = await storage.getDocumentsByUserId(user.id);
-        totalDocuments += docs.length;
-      }
       
       // Daily registrations for last 30 days (for chart)
       const dailyRegistrations: { date: string; count: number }[] = [];

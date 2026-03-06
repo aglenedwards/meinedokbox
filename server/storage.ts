@@ -55,6 +55,8 @@ export interface IStorage {
   permanentlyDeleteDocument(id: string, userId: string): Promise<boolean>;
   permanentlyDeleteAllTrashedDocuments(userId: string): Promise<number>;
   getDocumentCount(userId: string): Promise<number>;
+  getTotalDocumentCount(): Promise<number>;
+  getTotalStorageBytes(): Promise<number>;
   getUserStorageStats(userId: string): Promise<StorageStats>;
   getUserLimits(userId: string): Promise<{
     canUpload: boolean;
@@ -940,6 +942,22 @@ export class DbStorage implements IStorage {
       percentageUsed: Math.round(percentageUsed * 10) / 10,
       documentCount,
     };
+  }
+
+  async getTotalDocumentCount(): Promise<number> {
+    const result = await db
+      .select({ count: count() })
+      .from(documents)
+      .where(isNull(documents.deletedAt));
+    return result[0]?.count ?? 0;
+  }
+
+  async getTotalStorageBytes(): Promise<number> {
+    const result = await db
+      .select({ totalBytes: sum(documents.fileSizeBytes) })
+      .from(documents)
+      .where(isNull(documents.deletedAt));
+    return parseInt(result[0]?.totalBytes ?? '0', 10) || 0;
   }
 
   async getUserLimits(userId: string): Promise<{
