@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query";
-import { FileText, HardDrive, TrendingUp, Plus, Trash2, ArrowUpDown, Download, MoreVertical } from "lucide-react";
+import { FileText, HardDrive, TrendingUp, Plus, Trash2, ArrowUpDown, Download, MoreVertical, RefreshCw } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 
@@ -158,6 +158,8 @@ export default function Dashboard() {
   const {
     data,
     isLoading,
+    isFetching,
+    refetch,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
@@ -167,9 +169,8 @@ export default function Dashboard() {
       getDocuments(searchQuery, selectedCategories, sortBy, DOCS_PER_PAGE, pageParam as string | undefined),
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
     initialPageParam: undefined,
-    refetchOnWindowFocus: false,
-    refetchOnMount: false,
-    staleTime: 0, // Always refetch when invalidated
+    staleTime: 0,
+    refetchInterval: 30000,
   });
 
   // Flatten pages to get all documents
@@ -1033,6 +1034,19 @@ export default function Dashboard() {
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <h2 className="text-2xl font-bold">Meine Dokumente</h2>
               <div className="flex items-center gap-3">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => {
+                    queryClient.invalidateQueries({ queryKey: ["/api/documents"] });
+                    refetch();
+                  }}
+                  disabled={isFetching}
+                  data-testid="button-refresh-documents"
+                  title="Dokumente aktualisieren"
+                >
+                  <RefreshCw className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
+                </Button>
                 <ArrowUpDown className="h-4 w-4 text-muted-foreground hidden sm:block" />
                 <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
                   <SelectTrigger className="w-[180px]" data-testid="select-sort">
