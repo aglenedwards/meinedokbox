@@ -51,7 +51,6 @@ export default function Landing() {
   const { toast } = useToast();
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authTab, setAuthTab] = useState<"login" | "signup">("login");
-  const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">("yearly");
   const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [showSignupPassword, setShowSignupPassword] = useState(false);
   const [showSignupPasswordConfirm, setShowSignupPasswordConfirm] = useState(false);
@@ -448,7 +447,7 @@ export default function Landing() {
             {/* Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border bg-background/80 backdrop-blur-sm mb-8 shadow-lg">
               <Sparkles className="h-4 w-4 text-primary" />
-              <span className="text-sm font-medium">Jetzt 7 Tage kostenlos testen – Abbuchung erst nach 7 Tagen</span>
+              <span className="text-sm font-medium">Jetzt 7 Tage kostenlos testen</span>
             </div>
             
             {/* Main Headline */}
@@ -964,9 +963,9 @@ export default function Landing() {
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 shadow-lg">
                 <TrendingUp className="h-8 w-8 text-primary" />
               </div>
-              <h3 className="text-2xl font-semibold">Wird immer besser</h3>
+              <h3 className="text-2xl font-semibold">Immer auf dem neuesten Stand</h3>
               <p className="text-muted-foreground">
-                Die KI lernt kontinuierlich dazu und wird mit jedem verarbeiteten Dokument präziser und schneller.
+                Wir nutzen stets das aktuellste KI-Modell von OpenAI. Ihre Dokumente werden dabei niemals für KI-Training verwendet.
               </p>
               <div className="p-4 rounded-lg bg-primary/5 border border-primary/10" ref={progressBarRef}>
                 <div className="flex items-center justify-between mb-2">
@@ -1183,34 +1182,6 @@ export default function Landing() {
             7 Tage kostenlos testen. Kreditkarte erforderlich – Abbuchung erst nach 7 Tagen. Jederzeit kündbar.
           </p>
 
-          {/* Billing Period Toggle */}
-          <div className="flex items-center justify-center gap-4 mb-12">
-            <button
-              onClick={() => setBillingPeriod("monthly")}
-              className={`px-6 py-2 rounded-lg font-medium transition-all ${
-                billingPeriod === "monthly"
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-muted text-muted-foreground hover-elevate"
-              }`}
-              data-testid="button-billing-monthly"
-            >
-              Monatlich
-            </button>
-            <button
-              onClick={() => setBillingPeriod("yearly")}
-              className={`px-6 py-2 rounded-lg font-medium transition-all ${
-                billingPeriod === "yearly"
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-muted text-muted-foreground hover-elevate"
-              }`}
-              data-testid="button-billing-yearly"
-            >
-              Jährlich
-              <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-primary-foreground/20">
-                Spare 20%
-              </span>
-            </button>
-          </div>
           
           <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {/* Solo Plan */}
@@ -1218,16 +1189,9 @@ export default function Landing() {
               <CardHeader className="text-center pb-6">
                 <CardTitle className="text-xl">Solo</CardTitle>
                 <div className="mt-4">
-                  <span className="text-4xl font-bold">
-                    €{billingPeriod === "monthly" ? "4,99" : "4,17"}
-                  </span>
-                  <span className="text-muted-foreground ml-2">/Monat</span>
+                  <span className="text-4xl font-bold">€59,99</span>
+                  <span className="text-muted-foreground ml-2">/Jahr</span>
                 </div>
-                {billingPeriod === "yearly" && (
-                  <p className="text-sm text-muted-foreground mt-2">
-                    Jährlich abgerechnet (€49,99/Jahr)
-                  </p>
-                )}
               </CardHeader>
               <CardContent className="space-y-4">
                 <ul className="space-y-3">
@@ -1258,12 +1222,12 @@ export default function Landing() {
                   }}
                   data-testid="button-pricing-solo"
                 >
-                  Kostenlos testen
+                  7 Tage kostenlos testen
                 </Button>
               </CardContent>
             </Card>
 
-            {/* Family Plan - Hervorgehoben */}
+            {/* Familie Plan - Hervorgehoben */}
             <Card className="border-2 border-primary shadow-2xl relative md:scale-105 hover-elevate" data-testid="card-pricing-family">
               <div className="absolute -top-4 left-1/2 -translate-x-1/2">
                 <span className="bg-primary text-primary-foreground px-4 py-1 rounded-full text-sm font-medium">
@@ -1271,18 +1235,11 @@ export default function Landing() {
                 </span>
               </div>
               <CardHeader className="text-center pb-6 pt-8">
-                <CardTitle className="text-2xl">Family</CardTitle>
+                <CardTitle className="text-2xl">Familie</CardTitle>
                 <div className="mt-4">
-                  <span className="text-5xl font-bold">
-                    €{billingPeriod === "monthly" ? "7,99" : "7,08"}
-                  </span>
-                  <span className="text-muted-foreground ml-2">/Monat</span>
+                  <span className="text-5xl font-bold">€99,99</span>
+                  <span className="text-muted-foreground ml-2">/Jahr</span>
                 </div>
-                {billingPeriod === "yearly" && (
-                  <p className="text-sm text-muted-foreground mt-2">
-                    Jährlich abgerechnet (€84,99/Jahr)
-                  </p>
-                )}
               </CardHeader>
               <CardContent className="space-y-4">
                 <ul className="space-y-3">
@@ -1317,21 +1274,14 @@ export default function Landing() {
               </CardContent>
             </Card>
 
-            {/* Family Plus Plan */}
+            {/* Familie Pro Plan */}
             <Card className="border-0 shadow-lg hover-elevate" data-testid="card-pricing-family-plus">
               <CardHeader className="text-center pb-6">
-                <CardTitle className="text-xl">Family Plus</CardTitle>
+                <CardTitle className="text-xl">Familie Pro</CardTitle>
                 <div className="mt-4">
-                  <span className="text-4xl font-bold">
-                    €{billingPeriod === "monthly" ? "11,99" : "10,00"}
-                  </span>
-                  <span className="text-muted-foreground ml-2">/Monat</span>
+                  <span className="text-4xl font-bold">€139,99</span>
+                  <span className="text-muted-foreground ml-2">/Jahr</span>
                 </div>
-                {billingPeriod === "yearly" && (
-                  <p className="text-sm text-muted-foreground mt-2">
-                    Jährlich abgerechnet (€119,99/Jahr)
-                  </p>
-                )}
               </CardHeader>
               <CardContent className="space-y-4">
                 <ul className="space-y-3">
@@ -1362,7 +1312,7 @@ export default function Landing() {
                   }}
                   data-testid="button-pricing-family-plus"
                 >
-                  Kostenlos testen
+                  7 Tage kostenlos testen
                 </Button>
               </CardContent>
             </Card>
@@ -1406,7 +1356,7 @@ export default function Landing() {
                     </div>
                   </summary>
                   <div className="px-6 pb-6 text-muted-foreground leading-relaxed">
-                    Mit MeineDokBox können Sie Ihre privaten Dokumente bereits ab 5,00 Euro pro Monat digitalisieren (bei jährlicher Zahlung, €59,99/Jahr). 
+                    Mit MeineDokBox können Sie Ihre privaten Dokumente bereits ab €59,99/Jahr digitalisieren. 
                     Sie starten mit einer kostenlosen 7-Tage-Testphase – Kreditkarte erforderlich, Abbuchung erst nach 7 Tagen. Im Solo-Tarif erhalten Sie 50 Dokumente pro Monat 
                     und 2 GB Speicherplatz – perfekt für den Einstieg in die Digitalisierung Ihrer Dokumente.
                   </div>

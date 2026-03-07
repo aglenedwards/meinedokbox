@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -9,7 +8,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, Zap } from "lucide-react";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface UpgradeModalProps {
   open: boolean;
@@ -20,7 +18,7 @@ interface UpgradeModalProps {
 
 interface PricingPlan {
   name: string;
-  monthlyPrice: number;
+  displayName: string;
   yearlyPrice: number;
   recommended?: boolean;
   features: string[];
@@ -30,8 +28,8 @@ interface PricingPlan {
 const pricingPlans: PricingPlan[] = [
   {
     name: "Solo",
-    monthlyPrice: 4.99,
-    yearlyPrice: 49.99,
+    displayName: "Solo",
+    yearlyPrice: 59.99,
     features: [
       "1 Benutzer",
       "50 Uploads/Monat",
@@ -43,8 +41,8 @@ const pricingPlans: PricingPlan[] = [
   },
   {
     name: "Family",
-    monthlyPrice: 7.99,
-    yearlyPrice: 84.99,
+    displayName: "Familie",
+    yearlyPrice: 99.99,
     recommended: true,
     trialAvailable: true,
     features: [
@@ -59,8 +57,8 @@ const pricingPlans: PricingPlan[] = [
   },
   {
     name: "Family Plus",
-    monthlyPrice: 11.99,
-    yearlyPrice: 119.99,
+    displayName: "Familie Pro",
+    yearlyPrice: 139.99,
     features: [
       "4 Benutzer",
       "500 Uploads/Monat",
@@ -75,8 +73,6 @@ const pricingPlans: PricingPlan[] = [
 ];
 
 export function UpgradeModal({ open, onClose, reason = "document_limit", daysRemaining }: UpgradeModalProps) {
-  const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">("yearly");
-
   const reasons = {
     document_limit: {
       title: "Limit erreicht",
@@ -92,20 +88,13 @@ export function UpgradeModal({ open, onClose, reason = "document_limit", daysRem
     },
     trial_active: {
       title: "Jetzt upgraden",
-      description: daysRemaining 
+      description: daysRemaining
         ? `Sie haben noch ${daysRemaining} ${daysRemaining === 1 ? 'Tag' : 'Tage'} Trial-Zeit. Wählen Sie jetzt Ihren passenden Tarif und sichern Sie sich alle Vorteile!`
         : "Wählen Sie jetzt Ihren passenden Tarif und sichern Sie sich alle Vorteile!",
     },
   };
 
   const selectedReason = reasons[reason];
-
-  const calculateSavings = (plan: PricingPlan) => {
-    const monthlyTotal = plan.monthlyPrice * 12;
-    const savings = monthlyTotal - plan.yearlyPrice;
-    const savingsPercent = Math.round((savings / monthlyTotal) * 100);
-    return { savings, savingsPercent };
-  };
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -120,27 +109,10 @@ export function UpgradeModal({ open, onClose, reason = "document_limit", daysRem
           </DialogDescription>
         </DialogHeader>
 
-        {/* Billing Period Toggle */}
-        <div className="flex justify-center my-4">
-          <Tabs value={billingPeriod} onValueChange={(v) => setBillingPeriod(v as "monthly" | "yearly")} className="w-auto">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="monthly" data-testid="tab-monthly">
-                Monatlich
-              </TabsTrigger>
-              <TabsTrigger value="yearly" data-testid="tab-yearly" className="relative">
-                Jährlich
-                <Badge variant="default" className="ml-2 text-xs">spare 20%</Badge>
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-        </div>
-
         {/* Pricing Cards */}
         <div className="grid md:grid-cols-3 gap-4 my-4 md:my-6">
           {pricingPlans.map((plan) => {
             const isRecommended = plan.recommended;
-            const price = billingPeriod === "monthly" ? plan.monthlyPrice : plan.yearlyPrice;
-            const { savingsPercent } = calculateSavings(plan);
 
             return (
               <div
@@ -161,18 +133,14 @@ export function UpgradeModal({ open, onClose, reason = "document_limit", daysRem
                 )}
 
                 <div className="text-center mb-4">
-                  <h3 className="text-lg font-semibold mb-2">{plan.name}</h3>
-                  <div className="mb-2">
-                    <span className="text-3xl font-bold">€{price.toFixed(2)}</span>
-                    <span className="text-sm text-muted-foreground">
-                      /{billingPeriod === "monthly" ? "Monat" : "Jahr"}
-                    </span>
+                  <h3 className="text-lg font-semibold mb-2">{plan.displayName}</h3>
+                  <div className="mb-1">
+                    <span className="text-3xl font-bold">€{plan.yearlyPrice.toFixed(2)}</span>
+                    <span className="text-sm text-muted-foreground">/Jahr</span>
                   </div>
-                  {billingPeriod === "yearly" && (
-                    <p className="text-xs text-muted-foreground">
-                      Jährlich abgerechnet (€{(plan.yearlyPrice / 12).toFixed(2)}/Monat)
-                    </p>
-                  )}
+                  <p className="text-xs text-muted-foreground">
+                    Jährliche Zahlung – 7 Tage kostenlos testen
+                  </p>
                 </div>
 
                 <ul className="space-y-2 mb-6 min-h-[240px]">
@@ -186,13 +154,12 @@ export function UpgradeModal({ open, onClose, reason = "document_limit", daysRem
 
                 <Button
                   onClick={() => {
-                    // Open checkout dialog with selected plan
                     onClose();
-                    window.dispatchEvent(new CustomEvent('openCheckout', { 
-                      detail: { 
+                    window.dispatchEvent(new CustomEvent('openCheckout', {
+                      detail: {
                         plan: plan.name.toLowerCase().replace(" ", "-"),
-                        period: billingPeriod 
-                      } 
+                        period: "yearly"
+                      }
                     }));
                   }}
                   variant={isRecommended ? "default" : "outline"}
@@ -201,7 +168,7 @@ export function UpgradeModal({ open, onClose, reason = "document_limit", daysRem
                 >
                   {plan.trialAvailable && reason !== "trial_expired" && reason !== "trial_active"
                     ? "Jetzt 7 Tage kostenlos testen"
-                    : `${plan.name} wählen`}
+                    : `${plan.displayName} wählen`}
                 </Button>
               </div>
             );
@@ -212,7 +179,7 @@ export function UpgradeModal({ open, onClose, reason = "document_limit", daysRem
         {reason === "trial_expired" && (
           <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mt-4">
             <p className="text-sm text-blue-900 dark:text-blue-100">
-              💡 <strong>Nach Trial-Ende:</strong> Ihr Account wechselt automatisch zu eingeschränkten Features. 
+              <strong>Nach Trial-Ende:</strong> Ihr Account wechselt automatisch zu eingeschränkten Features.
               Upgraden Sie jetzt und behalten Sie vollen Zugriff auf alle Ihre Dokumente!
             </p>
           </div>
