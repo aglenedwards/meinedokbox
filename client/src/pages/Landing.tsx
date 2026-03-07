@@ -448,7 +448,7 @@ export default function Landing() {
             {/* Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border bg-background/80 backdrop-blur-sm mb-8 shadow-lg">
               <Sparkles className="h-4 w-4 text-primary" />
-              <span className="text-sm font-medium">Jetzt 7 Tage kostenlos testen – keine Kreditkarte nötig</span>
+              <span className="text-sm font-medium">Jetzt 7 Tage kostenlos testen – Abbuchung erst nach 7 Tagen</span>
             </div>
             
             {/* Main Headline */}
@@ -1180,7 +1180,7 @@ export default function Landing() {
             Digitalisierung Dokumente – einfache, transparente Preise
           </h2>
           <p className="text-xl text-center text-muted-foreground mb-8 leading-relaxed">
-            7 Tage kostenlos testen. Keine Kreditkarte erforderlich.
+            7 Tage kostenlos testen. Kreditkarte erforderlich – Abbuchung erst nach 7 Tagen. Jederzeit kündbar.
           </p>
 
           {/* Billing Period Toggle */}
@@ -1406,9 +1406,9 @@ export default function Landing() {
                     </div>
                   </summary>
                   <div className="px-6 pb-6 text-muted-foreground leading-relaxed">
-                    Mit MeineDokBox können Sie Ihre privaten Dokumente bereits ab 4,17 Euro pro Monat digitalisieren (bei jährlicher Zahlung). 
-                    Sie starten mit einer kostenlosen 7-Tage-Testphase ohne Kreditkarte. Im Solo-Tarif erhalten Sie 50 Dokumente pro Monat 
-                    und 5 GB Speicherplatz – perfekt für den Einstieg in die Digitalisierung Ihrer Dokumente.
+                    Mit MeineDokBox können Sie Ihre privaten Dokumente bereits ab 5,00 Euro pro Monat digitalisieren (bei jährlicher Zahlung, €59,99/Jahr). 
+                    Sie starten mit einer kostenlosen 7-Tage-Testphase – Kreditkarte erforderlich, Abbuchung erst nach 7 Tagen. Im Solo-Tarif erhalten Sie 50 Dokumente pro Monat 
+                    und 2 GB Speicherplatz – perfekt für den Einstieg in die Digitalisierung Ihrer Dokumente.
                   </div>
                 </details>
               </Card>

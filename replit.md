@@ -27,6 +27,8 @@ Preferred communication style: Simple, everyday language.
 - Multi-upload enhancements including increased file limits, file counters, and automatic PDF merging.
 - Referral dashboard for users to track their referrals and rewards.
 - Unsubscribe landing page and resubscribe option for marketing emails.
+- Non-dismissible PaywallModal for new users: 3-plan tabs (Solo/Familie/Familie Pro), timeline visualization, annual-only pricing with 7-day trial, redirects to Stripe Checkout.
+- Dashboard auto-refresh every 30 seconds + manual refresh button for documents.
 
 ### Backend Architecture
 

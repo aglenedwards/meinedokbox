@@ -13,7 +13,7 @@ import { SearchBar } from "@/components/SearchBar";
 import { logout, getCurrentUser, getSubscriptionStatus, type SubscriptionStatus } from "@/lib/api";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { WelcomeModal } from "@/components/WelcomeModal";
+import { PaywallModal } from "@/components/PaywallModal";
 import { UpgradeModal } from "@/components/UpgradeModal";
 import type { User } from "@shared/schema";
 import logoImage from "@assets/meinedokbox_1760966015056.png";
@@ -35,7 +35,7 @@ export function DashboardLayout({
 }: DashboardLayoutProps) {
   const { toast } = useToast();
   const [location] = useLocation();
-  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
+  const [showPaywallModal, setShowPaywallModal] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   // Fetch user data
@@ -45,13 +45,13 @@ export function DashboardLayout({
     retry: false,
   });
 
-  // Show welcome modal if user hasn't seen it yet (only once per session)
+  // Show paywall modal if user hasn't seen it yet (only once per session)
   // BUT: Never show for invited family members (slave accounts)
   useEffect(() => {
     const hasShownThisSession = sessionStorage.getItem('hasShownWelcomeThisSession') === 'true';
     
     if (user && !user.hasSeenWelcomeModal && !hasShownThisSession && !(user as any).isInvitedUser) {
-      setShowWelcomeModal(true);
+      setShowPaywallModal(true);
       sessionStorage.setItem('hasShownWelcomeThisSession', 'true');
     }
   }, [user]);
@@ -245,17 +245,7 @@ export function DashboardLayout({
         {children}
       </main>
 
-      <WelcomeModal
-        open={showWelcomeModal}
-        onOpenChange={setShowWelcomeModal}
-        onStartTrial={() => {
-          setShowWelcomeModal(false);
-        }}
-        onDirectPayment={() => {
-          setShowWelcomeModal(false);
-          setShowUpgradeModal(true);
-        }}
-      />
+      <PaywallModal open={showPaywallModal} />
 
       <UpgradeModal
         open={showUpgradeModal}

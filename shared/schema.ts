@@ -21,15 +21,15 @@ export const SUBSCRIPTION_PLANS = ["free", "trial", "solo", "family", "family-pl
 export const STRIPE_PRICE_IDS = {
   solo: {
     monthly: "price_1SMvEJDu6qqEfVDmFKeAnn2g",
-    yearly: "price_1SMvEJDu6qqEfVDmnaSGZ9Cd",
+    yearly: "price_1T8QWKDu6qqEfVDm0BxhCtH2",
   },
   family: {
     monthly: "price_1SMvILDu6qqEfVDmQl7l6VaN",
-    yearly: "price_1SMvILDu6qqEfVDm6hzJDM6X",
+    yearly: "price_1T8QXbDu6qqEfVDmOWTBhG0y",
   },
   "family-plus": {
     monthly: "price_1SMvJUDu6qqEfVDmRleqxfKp",
-    yearly: "price_1SMvJqDu6qqEfVDmL1yBdXuy",
+    yearly: "price_1T8QYTDu6qqEfVDmoDYgRVc8",
   },
 } as const;
 
@@ -64,8 +64,8 @@ export const PLAN_LIMITS = {
     canUseEmailInbound: false,
     maxUsers: 1,
     displayName: "Solo",
-    priceMonthly: 4.99,      // inkl. 19% MwSt.
-    priceYearly: 47.88,      // 3,99€/Monat × 12 (20% discount)
+    priceMonthly: 5.00,      // inkl. 19% MwSt. (€59,99/Jahr ÷ 12)
+    priceYearly: 59.99,      // inkl. 19% MwSt.
   },
   family: {
     maxUploadsPerMonth: 200, // 200 new documents per month
@@ -74,9 +74,9 @@ export const PLAN_LIMITS = {
     canUseAI: true,
     canUseEmailInbound: true,
     maxUsers: 2,             // Master + 1 invited user
-    displayName: "Family",
-    priceMonthly: 7.99,      // inkl. 19% MwSt.
-    priceYearly: 83.88,      // 6,99€/Monat × 12 (12% discount)
+    displayName: "Familie",
+    priceMonthly: 8.33,      // inkl. 19% MwSt. (€99,99/Jahr ÷ 12)
+    priceYearly: 99.99,      // inkl. 19% MwSt.
   },
   "family-plus": {
     maxUploadsPerMonth: 500, // 500 new documents per month
@@ -85,9 +85,9 @@ export const PLAN_LIMITS = {
     canUseAI: true,
     canUseEmailInbound: true,
     maxUsers: 4,             // Master + 3 invited users
-    displayName: "Family Plus",
-    priceMonthly: 11.99,     // inkl. 19% MwSt.
-    priceYearly: 119.88,     // 9,99€/Monat × 12 (17% discount)
+    displayName: "Familie Pro",
+    priceMonthly: 11.67,     // inkl. 19% MwSt. (€139,99/Jahr ÷ 12)
+    priceYearly: 139.99,     // inkl. 19% MwSt.
   },
 } as const;
 

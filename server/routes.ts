@@ -4190,6 +4190,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           period,
         },
         subscription_data: {
+          trial_period_days: 7,
           metadata: {
             userId: user.id,
             plan,
