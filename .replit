@@ -50,3 +50,4 @@ defaultBucketID = "replit-objstore-20a95406-e158-4161-a33f-348e4be27c98"
 [userenv.shared]
 META_PIXEL_ID = "26210806808506184"
 META_ACCESS_TOKEN = "EAAbq2kNIt2kBQCiZAox9DTF4eibZA9ZAmLl3HAIgB4mAlaRn6cHucrjFnPe0w0lp1ixKGhXo9MTr3sWNn6KNbfeveZCy1pIwCUu8XOgltAsQJyr7YaifTbWMhKNFsg1YjYepZBvgwEUlrfMvgnaSnW1hAZAMnoyIlVlQYykKOVFwlokRZCGBDhImO4iZBTGhRQZDZD"
+APP_URL = "https://meinedokbox.de"
