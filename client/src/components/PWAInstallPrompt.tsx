@@ -8,15 +8,24 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
 }
 
+function isMobileDevice(): boolean {
+  const hasTouchscreen = navigator.maxTouchPoints > 0;
+  const isNarrowScreen = window.innerWidth < 1024;
+  const mobileUA = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+  return hasTouchscreen && (isNarrowScreen || mobileUA);
+}
+
 export function PWAInstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showPrompt, setShowPrompt] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
 
   useEffect(() => {
+    if (!isMobileDevice()) return;
+
     const hasDeclined = localStorage.getItem('pwa-install-declined');
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-    
+
     setIsInstalled(isStandalone);
 
     if (hasDeclined || isStandalone) {

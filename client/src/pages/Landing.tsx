@@ -524,7 +524,10 @@ export default function Landing() {
       <section className="py-24 bg-background">
         <div className="container mx-auto px-4">
           <h2 className="text-4xl md:text-5xl font-bold text-center mb-16" data-testid="text-features-title">
-            Private Dokumente digitalisieren – alles was Sie brauchen
+            Private Dokumente digitalisieren –{" "}
+            <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+              alles was Sie brauchen
+            </span>
           </h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-8">
             <Card className="border-0 shadow-lg hover-elevate" data-testid="card-feature-ai">
@@ -605,7 +608,10 @@ export default function Landing() {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-6" data-testid="text-howitworks-title">
-              Digitalisierung von Dokumenten – so einfach geht's
+              Digitalisierung von Dokumenten –{" "}
+              <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                so einfach geht's
+              </span>
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
               In nur 3 Schritten vom Papierstapel zum organisierten Archiv – vollautomatisch dank KI
@@ -675,7 +681,10 @@ export default function Landing() {
                 <span className="text-sm font-medium">Einzigartiges Feature</span>
               </div>
               <h2 className="text-4xl md:text-5xl font-bold mb-6" data-testid="text-email-magic-title">
-                Ihre persönliche Dokumenten-E-Mail
+                Ihre persönliche{" "}
+                <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                  Dokumenten-E-Mail
+                </span>
               </h2>
               <p className="text-xl text-muted-foreground leading-relaxed">
                 Jeder Nutzer erhält eine einzigartige E-Mail-Adresse. Einfach Rechnungen weiterleiten – automatisch verarbeitet und archiviert.
@@ -760,7 +769,10 @@ export default function Landing() {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-6" data-testid="text-problems-title">
-              Digitalisieren von Dokumenten – Schluss mit Papierchaos
+              Digitalisieren von Dokumenten –{" "}
+              <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                Schluss mit Papierchaos
+              </span>
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
               Diese alltäglichen Probleme gehören der Vergangenheit an
@@ -908,7 +920,10 @@ export default function Landing() {
               <span className="text-sm font-medium">Powered by AI</span>
             </div>
             <h2 className="text-4xl md:text-5xl font-bold mb-6" data-testid="text-ai-title">
-              KI-Magie im Detail
+              <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                KI-Magie
+              </span>{" "}
+              im Detail
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
               Modernste Künstliche Intelligenz macht die Arbeit für Sie
@@ -989,7 +1004,10 @@ export default function Landing() {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-6" data-testid="text-usecases-title">
-              Für wen ist MeineDokBox?
+              Für wen ist{" "}
+              <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                MeineDokBox?
+              </span>
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
               Perfekt geeignet für alle, die Ordnung in ihre Dokumente bringen wollen
@@ -1092,7 +1110,10 @@ export default function Landing() {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-6" data-testid="text-testimonials-title">
-              Das sagen unsere Nutzer
+              Das sagen{" "}
+              <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                unsere Nutzer
+              </span>
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
               Vertrauen Sie auf sichere, DSGVO-konforme Dokumentenverwaltung
@@ -1176,7 +1197,10 @@ export default function Landing() {
       <section className="py-24 bg-background">
         <div className="container mx-auto px-4">
           <h2 className="text-4xl md:text-5xl font-bold text-center mb-6" data-testid="text-pricing-title">
-            Digitalisierung Dokumente – einfache, transparente Preise
+            Digitalisierung Dokumente –{" "}
+            <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+              einfache, transparente Preise
+            </span>
           </h2>
           <p className="text-xl text-center text-muted-foreground mb-8 leading-relaxed">
             7 Tage kostenlos testen. Kreditkarte erforderlich – Abbuchung erst nach 7 Tagen. Jederzeit kündbar.
@@ -1336,7 +1360,10 @@ export default function Landing() {
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-16">
               <h2 className="text-4xl md:text-5xl font-bold mb-6" data-testid="text-faq-title">
-                Häufig gestellte Fragen
+                <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                  Häufig gestellte
+                </span>{" "}
+                Fragen
               </h2>
               <p className="text-xl text-muted-foreground leading-relaxed">
                 Alles Wichtige zur Digitalisierung Ihrer privaten Dokumente
