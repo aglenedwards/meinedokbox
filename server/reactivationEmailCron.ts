@@ -24,6 +24,9 @@ async function sendReactivationEmail(
     formData.append("subject", subject);
     formData.append("text", text);
     formData.append("html", html);
+    formData.append("o:tracking", "no");
+    formData.append("o:tracking-clicks", "no");
+    formData.append("o:tracking-opens", "no");
 
     const response = await fetch(`https://api.eu.mailgun.net/v3/${domain}/messages`, {
       method: "POST",

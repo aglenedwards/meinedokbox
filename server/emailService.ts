@@ -23,6 +23,9 @@ export async function sendEmail(options: EmailOptions): Promise<void> {
     formData.append('text', options.text);
   }
   formData.append('html', options.html);
+  formData.append('o:tracking', 'no');
+  formData.append('o:tracking-clicks', 'no');
+  formData.append('o:tracking-opens', 'no');
 
   const response = await fetch(`https://api.eu.mailgun.net/v3/${domain}/messages`, {
     method: 'POST',
