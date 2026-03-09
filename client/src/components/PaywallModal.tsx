@@ -20,7 +20,7 @@ const PLANS = [
     uploads: "50 Dokumente/Monat",
     storage: "2 GB Speicher",
     users: "1 Person",
-    emailInbound: false,
+    emailInbound: true,
   },
   {
     id: "family" as const,
@@ -140,7 +140,7 @@ export function PaywallModal({ open }: PaywallModalProps) {
 
           {/* Plan Features */}
           <div className="space-y-1.5 mb-4">
-            {[plan.users, plan.uploads, plan.storage, ...(plan.emailInbound ? ["E-Mail-Eingang"] : [])].map((feature) => (
+            {[plan.users, plan.uploads, plan.storage, ...(plan.emailInbound ? ["Dokumente per E-Mail"] : [])].map((feature) => (
               <div key={feature} className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Check className="h-3.5 w-3.5 text-primary flex-shrink-0" />
                 <span>{feature}</span>
@@ -178,7 +178,7 @@ export function PaywallModal({ open }: PaywallModalProps) {
             </div>
           </div>
           <p className="text-xs text-muted-foreground mt-3">
-            Entspricht ca. {plan.monthlyEquiv.toFixed(2).replace(".", ",")} €/Monat · inkl. 19% MwSt. · jederzeit kündbar
+            Entspricht ca. {plan.monthlyEquiv.toFixed(2).replace(".", ",")} €/Monat · inkl. 19% MwSt.
           </p>
         </div>
 
