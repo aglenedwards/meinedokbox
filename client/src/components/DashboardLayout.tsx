@@ -45,17 +45,6 @@ export function DashboardLayout({
     retry: false,
   });
 
-  // Show paywall modal if user hasn't seen it yet (only once per session)
-  // BUT: Never show for invited family members (slave accounts)
-  useEffect(() => {
-    const hasShownThisSession = sessionStorage.getItem('hasShownWelcomeThisSession') === 'true';
-    
-    if (user && !user.hasSeenWelcomeModal && !hasShownThisSession && !(user as any).isInvitedUser) {
-      setShowPaywallModal(true);
-      sessionStorage.setItem('hasShownWelcomeThisSession', 'true');
-    }
-  }, [user]);
-
   // Fetch subscription status
   const { data: subscriptionStatus } = useQuery<SubscriptionStatus>({
     queryKey: ["/api/subscription/status"],
@@ -63,6 +52,19 @@ export function DashboardLayout({
     refetchOnWindowFocus: false,
     staleTime: 1000 * 60,
   });
+
+  // Show paywall modal whenever user is on trial without an active Stripe subscription.
+  // This is robust: works after refresh, server restart, or if hasSeenWelcomeModal was set prematurely.
+  // Never show for invited family members (slave accounts).
+  useEffect(() => {
+    if (user && subscriptionStatus) {
+      const needsPayment = subscriptionStatus.plan === 'trial' && !subscriptionStatus.hasActiveSubscription;
+      const isInvited = (user as any).isInvitedUser;
+      if (needsPayment && !isInvited) {
+        setShowPaywallModal(true);
+      }
+    }
+  }, [user, subscriptionStatus]);
 
   const isReadOnly = subscriptionStatus?.isReadOnly ?? false;
   const isUploadDisabled = isReadOnly;
