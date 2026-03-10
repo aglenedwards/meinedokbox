@@ -26,6 +26,7 @@ import Datenschutz from "@/pages/Datenschutz";
 import AGB from "@/pages/AGB";
 import Ratgeber from "@/pages/Ratgeber";
 import RatgeberAufbewahrungsfristen from "@/pages/RatgeberAufbewahrungsfristen";
+import RechnungenDigitalisieren from "@/pages/RechnungenDigitalisieren";
 import Kontakt from "@/pages/Kontakt";
 import DigitalArchivieren from "@/pages/DigitalArchivieren";
 import DokumenteApp from "@/pages/DokumenteApp";
@@ -132,6 +133,7 @@ function Router() {
       <Route path="/agb" component={AGB} />
       <Route path="/ratgeber" component={Ratgeber} />
       <Route path="/ratgeber/aufbewahrungsfristen" component={RatgeberAufbewahrungsfristen} />
+      <Route path="/rechnungen-digitalisieren" component={RechnungenDigitalisieren} />
       <Route path="/kontakt" component={Kontakt} />
       <Route path="/digital-archivieren" component={DigitalArchivieren} />
       <Route path="/dokumente-digitalisieren-app" component={DokumenteApp} />
