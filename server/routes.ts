@@ -4377,6 +4377,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const subscription = event.data.object as Stripe.Subscription;
           const userId = subscription.metadata?.userId;
           const plan = subscription.metadata?.plan as "solo" | "family" | "family-plus";
+          const previousAttributes = event.data.previous_attributes as any;
 
           if (userId) {
             // Check subscription status
@@ -4391,6 +4392,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
               stripeSubscriptionId: subscription.id,
               stripePriceId: subscription.items.data[0]?.price.id,
             });
+
+            // Detect when user schedules cancellation via Stripe Billing Portal
+            // (cancel_at_period_end flips from false → true)
+            const cancelScheduled =
+              subscription.cancel_at_period_end === true &&
+              previousAttributes?.cancel_at_period_end === false;
+
+            if (cancelScheduled) {
+              const user = await storage.getUserById(userId);
+              if (user) {
+                const cancelDate = subscription.cancel_at
+                  ? new Date(subscription.cancel_at * 1000).toLocaleDateString("de-DE", { timeZone: "Europe/Berlin" })
+                  : "Ende des Abrechnungszeitraums";
+                sendAdminSubscriptionCancelledNotification(
+                  user.email,
+                  `${user.firstName} ${user.lastName}`,
+                  plan || "unknown",
+                  cancelDate
+                ).catch(err => console.error("[StripeWebhook] Failed to send cancellation notification:", err));
+                console.log(`[StripeWebhook] Admin notification sent: ${user.email} scheduled cancellation, access until ${cancelDate}`);
+              }
+            }
           }
           break;
         }

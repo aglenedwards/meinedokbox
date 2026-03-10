@@ -813,26 +813,35 @@ Automatische Benachrichtigung von MeineDokBox
 export async function sendAdminSubscriptionCancelledNotification(
   userEmail: string,
   userName: string,
-  plan: string
+  plan: string,
+  cancelDate?: string
 ): Promise<boolean> {
   const serviceEmail = "service@meinedokbox.de";
-  const subject = `⚠️ Abo gekündigt: ${plan} - ${userName}`;
-  
+  const isScheduled = !!cancelDate;
+  const subject = isScheduled
+    ? `⚠️ Kündigung zum ${cancelDate}: ${plan} - ${userName}`
+    : `⚠️ Abo sofort beendet: ${plan} - ${userName}`;
+
   const planNames: Record<string, string> = {
     'solo': 'Solo',
-    'family': 'Family',
-    'family-plus': 'Family Plus',
+    'family': 'Familie',
+    'family-plus': 'Familie Pro',
     'free': 'Kostenlos'
   };
-  
+
+  const statusLine = isScheduled
+    ? `Zugang bis: ${cancelDate} (danach Downgrade auf kostenlosen Plan)`
+    : `Der Kunde wurde sofort auf den kostenlosen Plan zurückgestuft.`;
+
   const text = `
 Abonnement gekündigt bei MeineDokBox:
 
 Kunde: ${userName} (${userEmail})
-Vorheriger Plan: ${planNames[plan] || plan}
-Zeitpunkt: ${new Date().toLocaleString('de-DE', { timeZone: 'Europe/Berlin' })}
+Plan: ${planNames[plan] || plan}
+Kündigungszeitpunkt: ${new Date().toLocaleString('de-DE', { timeZone: 'Europe/Berlin' })}
+${isScheduled ? `Zugang bis: ${cancelDate}` : 'Sofortige Beendigung'}
 
-Der Kunde wurde auf den kostenlosen Plan zurückgestuft.
+${statusLine}
 
 ---
 Automatische Benachrichtigung von MeineDokBox
@@ -873,10 +882,12 @@ Automatische Benachrichtigung von MeineDokBox
 </head>
 <body>
   <div style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: #ffffff; padding: 30px; border-radius: 8px 8px 0 0; text-align: center;">
-    <h1 style="color: #ffffff !important; margin: 0 0 10px 0; font-size: 28px;">⚠️ Abo gekündigt</h1>
-    <p style="color: #ffffff !important; margin: 0; font-size: 16px;">Ein Kunde hat sein Abonnement beendet</p>
+    <h1 style="color: #ffffff !important; margin: 0 0 10px 0; font-size: 28px;">&#9888;&#65039; Abo gekündigt</h1>
+    <p style="color: #ffffff !important; margin: 0; font-size: 16px;">
+      ${isScheduled ? `Kündigung zum ${cancelDate}` : 'Abonnement sofort beendet'}
+    </p>
   </div>
-  
+
   <div style="background: #f8f9fa; padding: 30px; border-radius: 0 0 8px 8px;">
     <div class="info-box">
       <div class="info-row">
@@ -888,19 +899,26 @@ Automatische Benachrichtigung von MeineDokBox
         <span><a href="mailto:${userEmail}">${userEmail}</a></span>
       </div>
       <div class="info-row">
-        <span class="info-label">Vorheriger Plan:</span>
+        <span class="info-label">Plan:</span>
         <span><strong>${planNames[plan] || plan}</strong></span>
       </div>
       <div class="info-row">
-        <span class="info-label">Zeitpunkt:</span>
+        <span class="info-label">Gekündigt am:</span>
         <span>${new Date().toLocaleString('de-DE', { timeZone: 'Europe/Berlin' })}</span>
       </div>
+      ${isScheduled ? `
+      <div class="info-row">
+        <span class="info-label">Zugang bis:</span>
+        <span><strong>${cancelDate}</strong></span>
+      </div>` : ''}
     </div>
-    
+
     <p style="margin-top: 20px;">
-      Der Kunde wurde auf den <strong>kostenlosen Plan</strong> zurückgestuft.
+      ${isScheduled
+        ? `Der Zugang bleibt bis <strong>${cancelDate}</strong> aktiv. Danach wird der Kunde automatisch auf den kostenlosen Plan zurückgestuft.`
+        : `Der Kunde wurde sofort auf den <strong>kostenlosen Plan</strong> zurückgestuft.`}
     </p>
-    
+
     <p style="margin-top: 30px; font-size: 14px; color: #999; text-align: center;">
       Automatische Benachrichtigung von MeineDokBox
     </p>
