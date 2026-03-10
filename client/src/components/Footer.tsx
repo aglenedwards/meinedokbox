@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { Shield, Server, Lock, FileText, CreditCard, Mail, Building2, Scale, FolderOpen, Smartphone, Mail as MailIcon, Cookie } from "lucide-react";
+import { Shield, Server, Lock, FileText, CreditCard, Mail, Building2, Scale, FolderOpen, Smartphone, Mail as MailIcon, Cookie, BookOpen, Clock } from "lucide-react";
 import logoImage from "@assets/meinedokbox_1760966015056.png";
 import { openCookieSettings } from "@/components/CookieConsent";
 
@@ -8,7 +8,7 @@ export function Footer() {
     <footer className="bg-muted/30 border-t">
       <div className="max-w-7xl mx-auto px-4 md:px-6">
         <div className="py-16">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10">
             <div className="lg:col-span-1">
               <Link href="/">
                 <img src={logoImage} alt="MeineDokBox" className="h-12 w-auto mb-4 cursor-pointer" data-testid="img-footer-logo" />
@@ -81,6 +81,24 @@ export function Footer() {
                   <span className="flex items-center gap-2.5 text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer group">
                     <MailIcon className="h-4 w-4 text-muted-foreground/60 group-hover:text-primary transition-colors" />
                     Post digitalisieren
+                  </span>
+                </Link>
+              </div>
+            </div>
+
+            <div>
+              <h3 className="font-semibold mb-5 text-sm uppercase tracking-wider text-foreground/80">Ratgeber</h3>
+              <div className="flex flex-col gap-3.5">
+                <Link href="/ratgeber" data-testid="link-ratgeber-uebersicht">
+                  <span className="flex items-center gap-2.5 text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer group">
+                    <BookOpen className="h-4 w-4 text-muted-foreground/60 group-hover:text-primary transition-colors" />
+                    Alle Ratgeber
+                  </span>
+                </Link>
+                <Link href="/ratgeber/aufbewahrungsfristen" data-testid="link-ratgeber-aufbewahrungsfristen">
+                  <span className="flex items-center gap-2.5 text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer group">
+                    <Clock className="h-4 w-4 text-muted-foreground/60 group-hover:text-primary transition-colors" />
+                    Aufbewahrungsfristen
                   </span>
                 </Link>
               </div>

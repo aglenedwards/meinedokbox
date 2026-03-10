@@ -590,6 +590,30 @@ export default function DigitalArchivieren() {
         </div>
       </section>
 
+      <section className="py-16 bg-background">
+        <div className="container mx-auto px-4 max-w-4xl">
+          <div className="rounded-xl bg-muted/40 border px-6 py-8 flex flex-col sm:flex-row items-start gap-5">
+            <div className="p-3 rounded-lg bg-primary/10 shrink-0">
+              <Clock className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Ratgeber</p>
+              <h3 className="text-lg font-semibold mb-2">Wie lange müssen Sie welche Dokumente aufbewahren?</h3>
+              <p className="text-sm text-muted-foreground mb-3">
+                Nicht jedes Dokument muss ewig aufbewahrt werden — aber manche Unterlagen sollten Sie niemals entsorgen.
+                Unsere Übersicht zeigt alle Aufbewahrungsfristen für Privatpersonen.
+              </p>
+              <Link href="/ratgeber/aufbewahrungsfristen">
+                <span className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline cursor-pointer">
+                  Zur vollständigen Übersicht
+                  <ArrowRight className="h-4 w-4" />
+                </span>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section className="py-24 bg-primary text-primary-foreground">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-6">
