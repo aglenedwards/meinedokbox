@@ -23,6 +23,7 @@ import Preise from "@/pages/Preise";
 import UeberUns from "@/pages/UeberUns";
 import Impressum from "@/pages/Impressum";
 import Datenschutz from "@/pages/Datenschutz";
+import AGB from "@/pages/AGB";
 import Kontakt from "@/pages/Kontakt";
 import DigitalArchivieren from "@/pages/DigitalArchivieren";
 import DokumenteApp from "@/pages/DokumenteApp";
@@ -126,6 +127,7 @@ function Router() {
       <Route path="/checkout/erfolg" component={CheckoutSuccess} />
       <Route path="/impressum" component={Impressum} />
       <Route path="/datenschutz" component={Datenschutz} />
+      <Route path="/agb" component={AGB} />
       <Route path="/kontakt" component={Kontakt} />
       <Route path="/digital-archivieren" component={DigitalArchivieren} />
       <Route path="/dokumente-digitalisieren-app" component={DokumenteApp} />

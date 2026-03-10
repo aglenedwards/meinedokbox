@@ -95,6 +95,12 @@ export function Footer() {
                     Impressum
                   </span>
                 </Link>
+                <Link href="/agb" data-testid="link-agb">
+                  <span className="flex items-center gap-2.5 text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer group">
+                    <FileText className="h-4 w-4 text-muted-foreground/60 group-hover:text-primary transition-colors" />
+                    AGB
+                  </span>
+                </Link>
                 <Link href="/datenschutz" data-testid="link-datenschutz">
                   <span className="flex items-center gap-2.5 text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer group">
                     <Lock className="h-4 w-4 text-muted-foreground/60 group-hover:text-primary transition-colors" />

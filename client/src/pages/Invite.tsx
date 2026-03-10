@@ -363,7 +363,14 @@ export default function Invite() {
                     </FormControl>
                     <div className="space-y-1 leading-none">
                       <FormLabel className="text-sm font-normal">
-                        Ich akzeptiere die Datenschutzbestimmungen und AGB
+                        Ich akzeptiere die{" "}
+                        <a href="/datenschutz" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground">
+                          Datenschutzbestimmungen
+                        </a>{" "}
+                        und{" "}
+                        <a href="/agb" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground">
+                          AGB
+                        </a>
                       </FormLabel>
                       <FormMessage />
                     </div>
