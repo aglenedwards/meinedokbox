@@ -17,7 +17,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { z } from "zod";
 import { login, register, getCurrentUser, type LoginData, type RegisterData } from "@/lib/api";
 import { queryClient } from "@/lib/queryClient";
-import { FileText, Zap, Users, Shield, Sparkles, Check, ArrowRight, Camera, Scan, FolderOpen, X, TrendingUp, Clock, Brain, Search, Mail, Home, Briefcase, Heart, Eye, EyeOff, MapPin, Menu, Euro, Info, Lock } from "lucide-react";
+import { FileText, Zap, Users, Shield, Sparkles, Check, ArrowRight, Camera, Scan, FolderOpen, X, TrendingUp, Clock, Brain, Search, Mail, Home, Briefcase, Heart, Eye, EyeOff, MapPin, Menu, Euro, Info, Lock, PackageOpen } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Link } from "wouter";
 import logoImage from "@assets/meinedokbox_1760966015056.png";
@@ -1235,6 +1235,10 @@ export default function Landing() {
                     <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
                     <span>KI-Kategorisierung & mehr</span>
                   </li>
+                  <li className="flex items-start gap-3">
+                    <PackageOpen className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
+                    <span><strong>500 Erstimport-Dokumente</strong> – einmalig zum Start</span>
+                  </li>
                 </ul>
                 <Button
                   className="w-full mt-6"
@@ -1283,6 +1287,10 @@ export default function Landing() {
                     <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
                     <span>Private & geteilte Ordner</span>
                   </li>
+                  <li className="flex items-start gap-3">
+                    <PackageOpen className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
+                    <span><strong>1.000 Erstimport-Dokumente</strong> – einmalig zum Start</span>
+                  </li>
                 </ul>
                 <Button
                   className="w-full mt-6"
@@ -1324,6 +1332,10 @@ export default function Landing() {
                   <li className="flex items-start gap-3">
                     <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
                     <span>Prioritäts-Support & mehr</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <PackageOpen className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
+                    <span><strong>2.000 Erstimport-Dokumente</strong> – einmalig zum Start</span>
                   </li>
                 </ul>
                 <Button

@@ -1,6 +1,6 @@
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { Check, Sparkles, ArrowRight, Users, Zap } from "lucide-react";
+import { Check, Sparkles, ArrowRight, Users, Zap, PackageOpen } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
@@ -102,6 +102,10 @@ export default function Preise() {
                     <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
                     <span>E-Mail-Eingang</span>
                   </li>
+                  <li className="flex items-start gap-3">
+                    <PackageOpen className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
+                    <span><strong>500 Erstimport-Dokumente</strong> – einmalig zum Start</span>
+                  </li>
                 </ul>
                 <Button
                   className="w-full mt-6"
@@ -159,6 +163,10 @@ export default function Preise() {
                     <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
                     <span>E-Mail-Eingang</span>
                   </li>
+                  <li className="flex items-start gap-3">
+                    <PackageOpen className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
+                    <span><strong>1.000 Erstimport-Dokumente</strong> – einmalig zum Start</span>
+                  </li>
                 </ul>
                 <Button
                   className="w-full mt-6"
@@ -213,6 +221,10 @@ export default function Preise() {
                   <li className="flex items-start gap-3">
                     <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
                     <span>Prioritäts-Support</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <PackageOpen className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
+                    <span><strong>2.000 Erstimport-Dokumente</strong> – einmalig zum Start</span>
                   </li>
                 </ul>
                 <Button
