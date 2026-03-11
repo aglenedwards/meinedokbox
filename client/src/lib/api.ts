@@ -383,6 +383,9 @@ export interface SubscriptionStatus {
   hasActiveSubscription?: boolean;
   // Referral program
   freeFromReferrals?: boolean;
+  // Migration / Umzugspaket
+  migrationUploadsTotal?: number;
+  migrationUploadsUsed?: number;
 }
 
 /**

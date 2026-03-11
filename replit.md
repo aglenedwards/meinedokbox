@@ -29,6 +29,7 @@ Preferred communication style: Simple, everyday language.
 - Unsubscribe landing page and resubscribe option for marketing emails.
 - Non-dismissible PaywallModal for new users: 3-plan tabs (Solo/Familie/Familie Pro), timeline visualization, annual-only pricing with 7-day trial, redirects to Stripe Checkout.
 - Dashboard auto-refresh every 30 seconds + manual refresh button for documents.
+- Umzugspaket (migration budget): one-time upload quota per plan (Solo: 500, Familie: 1.000, Familie Pro: 2.000) consumed before the monthly quota. Activated via Stripe webhook on first subscription. Shared across all family members (stored on master). Dashboard shows two separate cards — Erstimport and monthly. Displayed in PaywallModal per plan and in Settings usage section.
 
 ### Backend Architecture
 

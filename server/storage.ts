@@ -138,6 +138,7 @@ export interface IStorage {
   decrementUploadCounter(userId: string, decrementBy?: number): Promise<User | undefined>;
   resetUploadCounter(userId: string): Promise<User | undefined>;
   checkAndResetUploadCounter(userId: string): Promise<User | undefined>;
+  setMigrationUploads(userId: string, total: number): Promise<User | undefined>;
   
   // Admin functions
   getAllUsers(): Promise<User[]>;
@@ -1715,6 +1716,25 @@ export class DbStorage implements IStorage {
     // First check if we need to reset the counter (new month)
     await this.checkAndResetUploadCounter(userId);
 
+    // Resolve master user (slaves share master's migration budget)
+    const { getEffectiveUser } = await import("./middleware/subscriptionLimits");
+    const masterUser = await getEffectiveUser(userId);
+    const masterUserId = masterUser?.id ?? userId;
+
+    // Check if migration budget is still available on the master account
+    if (masterUser && (masterUser.migrationUploadsUsed ?? 0) < (masterUser.migrationUploadsTotal ?? 0)) {
+      // Consume from migration budget (don't touch monthly quota)
+      const [updated] = await db
+        .update(users)
+        .set({
+          migrationUploadsUsed: sql`LEAST(${users.migrationUploadsTotal}, ${users.migrationUploadsUsed} + ${incrementBy})`,
+        })
+        .where(eq(users.id, masterUserId))
+        .returning();
+      return updated;
+    }
+
+    // Migration exhausted or not applicable — use monthly quota on the uploading user's row
     const [updated] = await db
       .update(users)
       .set({
@@ -1723,6 +1743,22 @@ export class DbStorage implements IStorage {
       .where(eq(users.id, userId))
       .returning();
 
+    return updated;
+  }
+
+  /**
+   * Set migration upload budget for a user (called on first subscription activation)
+   * Resets used counter to 0 so the full budget is available.
+   */
+  async setMigrationUploads(userId: string, total: number): Promise<User | undefined> {
+    const [updated] = await db
+      .update(users)
+      .set({
+        migrationUploadsTotal: total,
+        migrationUploadsUsed: 0,
+      })
+      .where(eq(users.id, userId))
+      .returning();
     return updated;
   }
 

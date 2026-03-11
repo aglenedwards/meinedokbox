@@ -1093,6 +1093,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         hasActiveSubscription: !!effectiveUser.stripeSubscriptionId,
         // Referral program status
         freeFromReferrals: effectiveUser.freeFromReferrals || false,
+        // Migration / initial import budget (shared on master account)
+        migrationUploadsTotal: effectiveUser.migrationUploadsTotal ?? 0,
+        migrationUploadsUsed: effectiveUser.migrationUploadsUsed ?? 0,
       });
     } catch (error) {
       console.error("Error fetching subscription status:", error);
@@ -4331,6 +4334,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
             // Update subscription plan
             if (plan) {
               await storage.updateUserSubscription(userId, plan, null);
+              // Activate migration / Umzugspaket budget (only if not already set)
+              const existingUser = await storage.getUserById(userId);
+              if (existingUser && (existingUser.migrationUploadsTotal ?? 0) === 0) {
+                const migrationTotal = PLAN_LIMITS[plan]?.migrationUploadsTotal ?? 0;
+                if (migrationTotal > 0) {
+                  await storage.setMigrationUploads(userId, migrationTotal);
+                  console.log(`[StripeWebhook] Umzugspaket activated for ${userId}: ${migrationTotal} documents`);
+                }
+              }
             }
             
             // Send admin notification about new subscription (async, non-blocking)

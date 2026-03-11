@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Lock, Bell, ThumbsUp, Check, Loader2 } from "lucide-react";
+import { Lock, Bell, ThumbsUp, Check, Loader2, PackageOpen } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
@@ -21,6 +21,7 @@ const PLANS = [
     storage: "2 GB Speicher",
     users: "1 Person",
     emailInbound: true,
+    migrationUploads: "500 Dokumente Erstimport",
   },
   {
     id: "family" as const,
@@ -31,6 +32,7 @@ const PLANS = [
     storage: "10 GB Speicher",
     users: "Bis 2 Personen",
     emailInbound: true,
+    migrationUploads: "1.000 Dokumente Erstimport",
   },
   {
     id: "family-plus" as const,
@@ -41,6 +43,7 @@ const PLANS = [
     storage: "25 GB Speicher",
     users: "Bis 4 Personen",
     emailInbound: true,
+    migrationUploads: "2.000 Dokumente Erstimport",
   },
 ];
 
@@ -146,6 +149,11 @@ export function PaywallModal({ open }: PaywallModalProps) {
                 <span>{feature}</span>
               </div>
             ))}
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <PackageOpen className="h-3.5 w-3.5 text-blue-500 flex-shrink-0" />
+              <span className="font-medium text-foreground">{plan.migrationUploads}</span>
+              <span className="text-xs text-muted-foreground">— einmalig für Ihre bestehende Ablage</span>
+            </div>
           </div>
         </div>
 

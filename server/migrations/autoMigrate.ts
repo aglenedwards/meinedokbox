@@ -126,6 +126,14 @@ export async function runAutoMigrations() {
       END $$;
     `;
 
+    // Migration 7: migration_uploads_total + migration_uploads_used für Umzugspaket
+    await sql`
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS migration_uploads_total integer NOT NULL DEFAULT 0;
+    `;
+    await sql`
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS migration_uploads_used integer NOT NULL DEFAULT 0;
+    `;
+
     console.log("✅ Auto-migrations completed successfully");
   } catch (error) {
     console.error("❌ Auto-migration failed:", error);

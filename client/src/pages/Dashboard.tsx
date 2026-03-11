@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query";
-import { FileText, HardDrive, TrendingUp, Plus, Trash2, ArrowUpDown, Download, MoreVertical, RefreshCw } from "lucide-react";
+import { FileText, HardDrive, TrendingUp, Plus, Trash2, ArrowUpDown, Download, MoreVertical, RefreshCw, PackageOpen, CheckCircle2 } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 
@@ -884,6 +884,61 @@ export default function Dashboard() {
           <>
         {!isReadOnly && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6 mb-6 md:mb-8" data-testid="section-statistics">
+            {/* Migration / Erstimport Card — shown when migration budget is set */}
+            {(subscriptionStatus?.migrationUploadsTotal ?? 0) > 0 && (
+              <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5" data-testid="card-migration-limit">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium flex items-center gap-2">
+                    <PackageOpen className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                    Erstimport (Umzugspaket)
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {(subscriptionStatus?.migrationUploadsUsed ?? 0) < (subscriptionStatus?.migrationUploadsTotal ?? 0) ? (
+                    <>
+                      <div className="text-2xl font-bold tracking-tight">
+                        {subscriptionStatus?.migrationUploadsUsed ?? 0}
+                        <span className="text-sm font-normal text-muted-foreground ml-1">
+                          / {subscriptionStatus?.migrationUploadsTotal ?? 0}
+                        </span>
+                      </div>
+                      <div className="mt-3">
+                        <div className="h-3 bg-secondary/50 rounded-full overflow-hidden shadow-inner">
+                          <div
+                            className="h-full transition-all duration-500 ease-out rounded-full bg-gradient-to-r from-blue-400 to-blue-600"
+                            style={{
+                              width: `${Math.min(
+                                ((subscriptionStatus?.migrationUploadsUsed ?? 0) / (subscriptionStatus?.migrationUploadsTotal ?? 1)) * 100,
+                                100
+                              )}%`
+                            }}
+                          />
+                        </div>
+                        <div className="flex items-center justify-between mt-2">
+                          <p className="text-xs text-muted-foreground">
+                            <span className="font-medium text-foreground">{(subscriptionStatus?.migrationUploadsTotal ?? 0) - (subscriptionStatus?.migrationUploadsUsed ?? 0)}</span> verbleibend
+                          </p>
+                          <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
+                            Monatslimit unberührt
+                          </span>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="flex flex-col gap-2">
+                      <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
+                        <CheckCircle2 className="h-5 w-5" />
+                        <span className="font-semibold text-base">Erstimport abgeschlossen</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        {subscriptionStatus?.migrationUploadsTotal ?? 0} Dokumente importiert
+                      </p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
             {/* Monthly Upload Limit Card */}
             <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5" data-testid="card-upload-limit">
               <CardHeader className="pb-2">
@@ -893,34 +948,54 @@ export default function Dashboard() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold tracking-tight">
-                  {subscriptionStatus?.uploadsThisMonth ?? 0}
-                  <span className="text-sm font-normal text-muted-foreground ml-1">
-                    / {subscriptionStatus?.maxUploadsPerMonth ?? "..."}
-                  </span>
-                </div>
-                <div className="mt-3">
-                  <div className="h-3 bg-secondary/50 rounded-full overflow-hidden shadow-inner">
-                    <div 
-                      className={`h-full transition-all duration-500 ease-out rounded-full ${
-                        ((subscriptionStatus?.uploadsThisMonth ?? 0) / (subscriptionStatus?.maxUploadsPerMonth ?? 1)) >= 0.9 
-                          ? 'bg-gradient-to-r from-red-400 to-red-600' 
-                          : ((subscriptionStatus?.uploadsThisMonth ?? 0) / (subscriptionStatus?.maxUploadsPerMonth ?? 1)) >= 0.7 
-                            ? 'bg-gradient-to-r from-amber-400 to-amber-600' 
-                            : 'bg-gradient-to-r from-emerald-400 to-emerald-600'
-                      }`}
-                      style={{ 
-                        width: `${Math.min(
-                          ((subscriptionStatus?.uploadsThisMonth ?? 0) / (subscriptionStatus?.maxUploadsPerMonth ?? 1)) * 100,
-                          100
-                        )}%` 
-                      }}
-                    />
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    <span className="font-medium text-foreground">{(subscriptionStatus?.maxUploadsPerMonth ?? 0) - (subscriptionStatus?.uploadsThisMonth ?? 0)}</span> verfügbar
-                  </p>
-                </div>
+                {/* Show "starts after migration" note while migration is active */}
+                {(subscriptionStatus?.migrationUploadsTotal ?? 0) > 0 && (subscriptionStatus?.migrationUploadsUsed ?? 0) < (subscriptionStatus?.migrationUploadsTotal ?? 0) ? (
+                  <>
+                    <div className="text-2xl font-bold tracking-tight">
+                      0
+                      <span className="text-sm font-normal text-muted-foreground ml-1">
+                        / {subscriptionStatus?.maxUploadsPerMonth ?? "..."}
+                      </span>
+                    </div>
+                    <div className="mt-3">
+                      <div className="h-3 bg-secondary/50 rounded-full overflow-hidden shadow-inner">
+                        <div className="h-full w-0 rounded-full bg-gradient-to-r from-emerald-400 to-emerald-600" />
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-2">Startet nach dem Erstimport</p>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="text-2xl font-bold tracking-tight">
+                      {subscriptionStatus?.uploadsThisMonth ?? 0}
+                      <span className="text-sm font-normal text-muted-foreground ml-1">
+                        / {subscriptionStatus?.maxUploadsPerMonth ?? "..."}
+                      </span>
+                    </div>
+                    <div className="mt-3">
+                      <div className="h-3 bg-secondary/50 rounded-full overflow-hidden shadow-inner">
+                        <div
+                          className={`h-full transition-all duration-500 ease-out rounded-full ${
+                            ((subscriptionStatus?.uploadsThisMonth ?? 0) / (subscriptionStatus?.maxUploadsPerMonth ?? 1)) >= 0.9
+                              ? 'bg-gradient-to-r from-red-400 to-red-600'
+                              : ((subscriptionStatus?.uploadsThisMonth ?? 0) / (subscriptionStatus?.maxUploadsPerMonth ?? 1)) >= 0.7
+                                ? 'bg-gradient-to-r from-amber-400 to-amber-600'
+                                : 'bg-gradient-to-r from-emerald-400 to-emerald-600'
+                          }`}
+                          style={{
+                            width: `${Math.min(
+                              ((subscriptionStatus?.uploadsThisMonth ?? 0) / (subscriptionStatus?.maxUploadsPerMonth ?? 1)) * 100,
+                              100
+                            )}%`
+                          }}
+                        />
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-2">
+                        <span className="font-medium text-foreground">{(subscriptionStatus?.maxUploadsPerMonth ?? 0) - (subscriptionStatus?.uploadsThisMonth ?? 0)}</span> verfügbar
+                      </p>
+                    </div>
+                  </>
+                )}
               </CardContent>
             </Card>
 

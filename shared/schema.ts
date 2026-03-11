@@ -44,6 +44,7 @@ export const PLAN_LIMITS = {
     maxUsers: 1,
     displayName: "Free",
     price: 0,
+    migrationUploadsTotal: 0,
   },
   trial: {
     maxUploadsPerMonth: 200, // Same as Family plan
@@ -55,6 +56,7 @@ export const PLAN_LIMITS = {
     displayName: "Family-Trial",
     price: 0,
     trialDurationDays: 7,
+    migrationUploadsTotal: 0,
   },
   solo: {
     maxUploadsPerMonth: 50,  // 50 new documents per month
@@ -66,6 +68,7 @@ export const PLAN_LIMITS = {
     displayName: "Solo",
     priceMonthly: 5.00,      // inkl. 19% MwSt. (€59,99/Jahr ÷ 12)
     priceYearly: 59.99,      // inkl. 19% MwSt.
+    migrationUploadsTotal: 500,
   },
   family: {
     maxUploadsPerMonth: 200, // 200 new documents per month
@@ -77,6 +80,7 @@ export const PLAN_LIMITS = {
     displayName: "Familie",
     priceMonthly: 8.33,      // inkl. 19% MwSt. (€99,99/Jahr ÷ 12)
     priceYearly: 99.99,      // inkl. 19% MwSt.
+    migrationUploadsTotal: 1000,
   },
   "family-plus": {
     maxUploadsPerMonth: 500, // 500 new documents per month
@@ -88,6 +92,7 @@ export const PLAN_LIMITS = {
     displayName: "Familie Pro",
     priceMonthly: 11.67,     // inkl. 19% MwSt. (€139,99/Jahr ÷ 12)
     priceYearly: 139.99,     // inkl. 19% MwSt.
+    migrationUploadsTotal: 2000,
   },
 } as const;
 
@@ -120,6 +125,9 @@ export const users = pgTable("users", {
   // Upload tracking (monthly limit)
   uploadedThisMonth: real("uploaded_this_month").notNull().default(0),
   uploadCounterResetAt: timestamp("upload_counter_reset_at").defaultNow(),
+  // Migration / initial import budget (one-time, set on first subscription activation)
+  migrationUploadsTotal: integer("migration_uploads_total").notNull().default(0),
+  migrationUploadsUsed: integer("migration_uploads_used").notNull().default(0),
   // Billing address (collected only when upgrading to premium)
   billingCompany: varchar("billing_company"),
   billingStreet: varchar("billing_street"),

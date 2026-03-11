@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { User, Mail, UserPlus, X, Crown, Calendar, FileText, Settings as SettingsIcon, TrendingUp, HardDrive, ExternalLink, Download, Trash2, Fingerprint, ShieldCheck, Smartphone, CheckCircle2, AlertCircle, ChevronLeft, ChevronRight, ZoomIn, Pencil, Check } from "lucide-react";
+import { User, Mail, UserPlus, X, Crown, Calendar, FileText, Settings as SettingsIcon, TrendingUp, HardDrive, ExternalLink, Download, Trash2, Fingerprint, ShieldCheck, Smartphone, CheckCircle2, AlertCircle, ChevronLeft, ChevronRight, ZoomIn, Pencil, Check, PackageOpen } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -977,6 +977,39 @@ export default function Settings() {
                   <Separator />
 
                   <div className="space-y-4">
+                    {/* Migration / Erstimport Budget */}
+                    {(subscriptionStatus.migrationUploadsTotal ?? 0) > 0 && (
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="text-sm text-muted-foreground flex items-center gap-2">
+                            <PackageOpen className="h-4 w-4" />
+                            Erstimport-Budget
+                          </p>
+                          <p className="text-sm font-medium" data-testid="text-migration-count">
+                            {subscriptionStatus.migrationUploadsUsed ?? 0} / {subscriptionStatus.migrationUploadsTotal ?? 0}
+                          </p>
+                        </div>
+                        <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                          <div
+                            className="h-full transition-all bg-blue-500"
+                            style={{
+                              width: `${Math.min(
+                                ((subscriptionStatus.migrationUploadsUsed ?? 0) / (subscriptionStatus.migrationUploadsTotal ?? 1)) * 100,
+                                100
+                              )}%`
+                            }}
+                          />
+                        </div>
+                        {(subscriptionStatus.migrationUploadsUsed ?? 0) < (subscriptionStatus.migrationUploadsTotal ?? 0) ? (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {(subscriptionStatus.migrationUploadsTotal ?? 0) - (subscriptionStatus.migrationUploadsUsed ?? 0)} verbleibend — Monatskontingent bleibt unberührt
+                          </p>
+                        ) : (
+                          <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1">Erstimport abgeschlossen</p>
+                        )}
+                      </div>
+                    )}
+
                     {/* Monthly Upload Limit */}
                     <div>
                       <div className="flex items-center justify-between mb-2">
