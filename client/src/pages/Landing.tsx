@@ -243,6 +243,22 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
+      {/* Announcement Bar */}
+      <div className="w-full bg-amber-500 text-white py-2 px-4 text-center text-sm font-medium flex items-center justify-center gap-2" data-testid="bar-announcement">
+        <PackageOpen className="h-4 w-4 flex-shrink-0" />
+        <span><strong>Neu:</strong> Importieren Sie Ihre bestehende Ablage direkt beim Start – bis zu 2.000 Dokumente inklusive</span>
+        <button
+          onClick={() => {
+            setAuthTab("signup");
+            setAuthModalOpen(true);
+          }}
+          className="ml-2 underline underline-offset-2 font-semibold hover:opacity-80 transition-opacity flex-shrink-0"
+          data-testid="link-announcement-cta"
+        >
+          Jetzt testen →
+        </button>
+      </div>
+
       {/* Header */}
       <header className="border-b bg-background/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
         <div className="container mx-auto px-4 lg:px-6 py-4 md:py-5 flex items-center justify-between gap-6">
@@ -444,17 +460,6 @@ export default function Landing() {
         
         <div className="container relative mx-auto px-4">
           <div className="max-w-5xl mx-auto text-center">
-            {/* NEU Announcement */}
-            <div className="inline-flex items-center gap-2 mb-4" data-testid="badge-umzugspaket-neu">
-              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500 text-white shadow-lg shadow-amber-500/30">
-                <PackageOpen className="h-4 w-4" />
-                <span className="text-sm font-bold tracking-wide uppercase">Neu</span>
-                <span className="text-sm font-medium">·</span>
-                <span className="text-sm font-medium">Bis zu 2.000 Dokumente direkt beim Start importieren</span>
-                <ArrowRight className="h-3.5 w-3.5 opacity-80" />
-              </div>
-            </div>
-
             {/* Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border bg-background/80 backdrop-blur-sm mb-8 shadow-lg">
               <Sparkles className="h-4 w-4 text-primary" />
