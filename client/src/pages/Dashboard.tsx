@@ -883,7 +883,7 @@ export default function Dashboard() {
         ) : (
           <>
         {!isReadOnly && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6 mb-6 md:mb-8" data-testid="section-statistics">
+          <div className={`grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 md:gap-6 mb-6 md:mb-8 ${(subscriptionStatus?.migrationUploadsTotal ?? 0) > 0 ? 'lg:grid-cols-2 xl:grid-cols-4' : 'lg:grid-cols-3'}`} data-testid="section-statistics">
             {/* Migration / Erstimport Card — shown when migration budget is set */}
             {(subscriptionStatus?.migrationUploadsTotal ?? 0) > 0 && (
               <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5" data-testid="card-migration-limit">
