@@ -302,7 +302,21 @@ export default function RatgeberAufbewahrungsfristen() {
         {/* Weitere Ratgeber */}
         <section className="mt-14">
           <h2 className="text-xl font-semibold mb-5">Weitere Ratgeber</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <Link href="/ratgeber/welche-dokumente-aufbewahren">
+              <Card className="hover-elevate cursor-pointer h-full">
+                <CardContent className="pt-5 flex items-start gap-3">
+                  <div className="p-2 rounded-lg bg-muted shrink-0">
+                    <Shield className="h-4 w-4 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-sm mb-1">Welche Dokumente aufbewahren?</p>
+                    <p className="text-xs text-muted-foreground">Vollständige Checkliste – 7 Kategorien, 50+ Dokumente</p>
+                  </div>
+                  <ArrowRight className="h-4 w-4 text-muted-foreground ml-auto shrink-0 mt-0.5" />
+                </CardContent>
+              </Card>
+            </Link>
             <Link href="/digital-archivieren">
               <Card className="hover-elevate cursor-pointer h-full">
                 <CardContent className="pt-5 flex items-start gap-3">

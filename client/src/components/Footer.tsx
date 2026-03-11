@@ -107,6 +107,12 @@ export function Footer() {
                     Aufbewahrungsfristen
                   </span>
                 </Link>
+                <Link href="/ratgeber/welche-dokumente-aufbewahren" data-testid="link-ratgeber-welche-dokumente">
+                  <span className="flex items-center gap-2.5 text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer group">
+                    <Shield className="h-4 w-4 text-muted-foreground/60 group-hover:text-primary transition-colors" />
+                    Welche Dokumente aufbewahren
+                  </span>
+                </Link>
               </div>
             </div>
             

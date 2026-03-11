@@ -38,6 +38,14 @@ const ratgeber = [
     description: "Eingehende Post direkt digitalisieren: So bauen Sie ein papierloses Zuhause auf.",
     readTime: "5 Min.",
   },
+  {
+    href: "/ratgeber/welche-dokumente-aufbewahren",
+    icon: Shield,
+    category: "Organisation",
+    title: "Welche Dokumente aufbewahren? Checkliste 2026",
+    description: "Vollständige Übersicht: 7 Kategorien, 50+ Dokumenttypen — welche Unterlagen Sie wirklich brauchen.",
+    readTime: "10 Min.",
+  },
 ];
 
 export default function Ratgeber() {
