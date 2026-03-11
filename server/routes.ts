@@ -4027,6 +4027,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
+      // Generate CSV summary with all document metadata
+      const csvYear = year ? year : new Date().getFullYear();
+      const csvFilename = `steuerübersicht_${csvYear}.csv`;
+      const csvHeader = ['Datum', 'Titel', 'Absender', 'Betrag (€)', 'Kategorie', 'Dateiname'];
+      const csvRows = documents.map(doc => {
+        const safeTitle = (doc.title || 'Dokument').replace(/[^a-zA-Z0-9äöüÄÖÜß\s-]/g, '_');
+        const mimeTypeToExt: Record<string, string> = {
+          'application/pdf': 'pdf', 'image/jpeg': 'jpg', 'image/jpg': 'jpg',
+          'image/png': 'png', 'image/webp': 'webp', 'image/gif': 'gif',
+        };
+        const extension = doc.mimeType ? (mimeTypeToExt[doc.mimeType] || 'bin') : 'bin';
+        const docFilename = `${safeTitle}.${extension}`;
+        const date = doc.documentDate
+          ? new Date(doc.documentDate).toLocaleDateString('de-DE')
+          : doc.extractedDate || '';
+        const amount = doc.amount != null
+          ? String(doc.amount).replace('.', ',')
+          : '';
+        const escapeCsv = (val: string) => `"${String(val || '').replace(/"/g, '""')}"`;
+        return [
+          escapeCsv(date),
+          escapeCsv(doc.title || ''),
+          escapeCsv(doc.sender || ''),
+          escapeCsv(amount),
+          escapeCsv(doc.category || ''),
+          escapeCsv(docFilename),
+        ].join(';');
+      });
+      // Add totals row
+      const totalAmount = documents
+        .filter(d => d.amount != null)
+        .reduce((sum, d) => sum + Number(d.amount), 0);
+      const totalRow = [`"Gesamt"`, `""`, `""`, `"${totalAmount.toFixed(2).replace('.', ',')}"`, `""`, `""`].join(';');
+      const csvContent = '\uFEFF' + [csvHeader.map(h => `"${h}"`).join(';'), ...csvRows, totalRow].join('\r\n');
+      archive.append(Buffer.from(csvContent, 'utf-8'), { name: csvFilename });
+
       await archive.finalize();
       console.log(`[SmartFolderExport] Successfully exported ${documents.length} documents for folder: ${folder.name}`);
     } catch (error) {
