@@ -3995,15 +3995,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const sharp = (await import('sharp')).default;
       const imageMimeTypes = new Set(['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif']);
 
-      // Helper: wrap an image buffer into a single-page PDF
-      async function imageToPdf(imageBuffer: Buffer, mimeType: string): Promise<Buffer> {
+      // Detect whether a buffer is an image by magic bytes (fallback when mimeType is missing/wrong)
+      function bufferIsImage(buf: Buffer): boolean {
+        if (buf.length < 4) return false;
+        // JPEG: FF D8 FF
+        if (buf[0] === 0xFF && buf[1] === 0xD8 && buf[2] === 0xFF) return true;
+        // PNG: 89 50 4E 47
+        if (buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4E && buf[3] === 0x47) return true;
+        // WebP: RIFF....WEBP
+        if (buf[0] === 0x52 && buf[1] === 0x49 && buf[2] === 0x46 && buf[3] === 0x46) return true;
+        // GIF: GIF8
+        if (buf[0] === 0x47 && buf[1] === 0x49 && buf[2] === 0x46 && buf[3] === 0x38) return true;
+        return false;
+      }
+
+      // Helper: wrap an image buffer into a single-page PDF via sharp (A4 max, keep aspect)
+      async function imageToPdf(imageBuffer: Buffer): Promise<Buffer> {
         const pdfDoc = await PDFDocument.create();
-        let embeddedImage;
-        // Convert to PNG first via sharp (handles WebP, GIF, etc. uniformly)
         const pngBuffer = await sharp(imageBuffer).png().toBuffer();
-        embeddedImage = await pdfDoc.embedPng(pngBuffer);
-        const page = pdfDoc.addPage([embeddedImage.width, embeddedImage.height]);
-        page.drawImage(embeddedImage, { x: 0, y: 0, width: embeddedImage.width, height: embeddedImage.height });
+        const embeddedImage = await pdfDoc.embedPng(pngBuffer);
+        // Scale down to A4 if larger (595 x 842 pt at 72dpi)
+        const maxW = 595, maxH = 842;
+        const scale = Math.min(1, maxW / embeddedImage.width, maxH / embeddedImage.height);
+        const w = embeddedImage.width * scale;
+        const h = embeddedImage.height * scale;
+        const page = pdfDoc.addPage([w, h]);
+        page.drawImage(embeddedImage, { x: 0, y: 0, width: w, height: h });
         return Buffer.from(await pdfDoc.save());
       }
 
@@ -4019,53 +4036,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
             : [];
 
         const safeTitle = (doc.title || 'Dokument').replace(/[^a-zA-Z0-9äöüÄÖÜß\s-]/g, '_');
-        const isImage = doc.mimeType ? imageMimeTypes.has(doc.mimeType) : false;
+        // mimeType-based check — but we also verify via magic bytes below
+        const mimeIsImage = doc.mimeType ? imageMimeTypes.has(doc.mimeType) : false;
 
         // For CSV: always .pdf (images get converted, PDFs stay PDFs)
         const csvFilenameForDoc = `${safeTitle}.pdf`;
 
         if (pageUrls.length === 0) continue;
 
-        if (isImage && pageUrls.length === 1) {
-          // Single image → one-page PDF
+        if (pageUrls.length === 1) {
+          // Single file — fetch buffer, then decide: image → PDF, already PDF → pass through
           try {
             const objectFile = await objectStorageService.getObjectEntityFile(pageUrls[0]);
             const fileBuffer = await objectStorageService.getObjectBuffer(objectFile);
-            const pdfBuffer = await imageToPdf(fileBuffer, doc.mimeType || 'image/jpeg');
-            archive.append(pdfBuffer, { name: `${safeTitle}.pdf` });
-          } catch (error) {
-            console.error(`[SmartFolderExport] Failed to convert image ${doc.id} to PDF:`, error);
-          }
-        } else if (isImage && pageUrls.length > 1) {
-          // Multiple image pages → merge into one multi-page PDF
-          try {
-            const pdfDoc = await PDFDocument.create();
-            for (const pageUrl of pageUrls) {
-              const objectFile = await objectStorageService.getObjectEntityFile(pageUrl);
-              const fileBuffer = await objectStorageService.getObjectBuffer(objectFile);
-              const pngBuffer = await sharp(fileBuffer).png().toBuffer();
-              const embeddedImage = await pdfDoc.embedPng(pngBuffer);
-              const page = pdfDoc.addPage([embeddedImage.width, embeddedImage.height]);
-              page.drawImage(embeddedImage, { x: 0, y: 0, width: embeddedImage.width, height: embeddedImage.height });
+            const isImage = mimeIsImage || bufferIsImage(fileBuffer);
+            console.log(`[SmartFolderExport] doc "${doc.title}" mimeType=${doc.mimeType} isImage=${isImage}`);
+            if (isImage) {
+              const pdfBuffer = await imageToPdf(fileBuffer);
+              archive.append(pdfBuffer, { name: `${safeTitle}.pdf` });
+            } else {
+              archive.append(fileBuffer, { name: `${safeTitle}.pdf` });
             }
-            const mergedPdf = Buffer.from(await pdfDoc.save());
-            archive.append(mergedPdf, { name: `${safeTitle}.pdf` });
           } catch (error) {
-            console.error(`[SmartFolderExport] Failed to merge image pages for ${doc.id}:`, error);
+            console.error(`[SmartFolderExport] Failed to process doc ${doc.id}:`, error);
           }
         } else {
-          // Already PDF — add directly (multi-page: one file per page or single file)
-          for (let i = 0; i < pageUrls.length; i++) {
-            try {
-              const objectFile = await objectStorageService.getObjectEntityFile(pageUrls[i]);
-              const fileBuffer = await objectStorageService.getObjectBuffer(objectFile);
-              const docFilename = pageUrls.length > 1
-                ? `${safeTitle}_Seite_${i + 1}.pdf`
-                : `${safeTitle}.pdf`;
-              archive.append(fileBuffer, { name: docFilename });
-            } catch (error) {
-              console.error(`[SmartFolderExport] Failed to add PDF page ${i} of ${doc.id}:`, error);
+          // Multiple pages — fetch all, check each, merge images into single PDF
+          try {
+            const pdfDoc = await PDFDocument.create();
+            let hasImagePages = false;
+            const pageBuffers: Buffer[] = [];
+            for (const pageUrl of pageUrls) {
+              const objectFile = await objectStorageService.getObjectEntityFile(pageUrl);
+              const buf = await objectStorageService.getObjectBuffer(objectFile);
+              pageBuffers.push(buf);
+              if (bufferIsImage(buf)) hasImagePages = true;
             }
+            if (hasImagePages || mimeIsImage) {
+              // All pages are images → merge into one multi-page PDF
+              for (const buf of pageBuffers) {
+                const pngBuffer = await sharp(buf).png().toBuffer();
+                const embeddedImage = await pdfDoc.embedPng(pngBuffer);
+                const maxW = 595, maxH = 842;
+                const scale = Math.min(1, maxW / embeddedImage.width, maxH / embeddedImage.height);
+                const w = embeddedImage.width * scale;
+                const h = embeddedImage.height * scale;
+                const page = pdfDoc.addPage([w, h]);
+                page.drawImage(embeddedImage, { x: 0, y: 0, width: w, height: h });
+              }
+              archive.append(Buffer.from(await pdfDoc.save()), { name: `${safeTitle}.pdf` });
+            } else {
+              // Multiple PDF pages — add each as a separate file
+              for (let i = 0; i < pageBuffers.length; i++) {
+                archive.append(pageBuffers[i], { name: `${safeTitle}_Seite_${i + 1}.pdf` });
+              }
+            }
+          } catch (error) {
+            console.error(`[SmartFolderExport] Failed to merge pages for ${doc.id}:`, error);
           }
         }
 
