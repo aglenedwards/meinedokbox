@@ -444,6 +444,17 @@ export default function Landing() {
         
         <div className="container relative mx-auto px-4">
           <div className="max-w-5xl mx-auto text-center">
+            {/* NEU Announcement */}
+            <div className="inline-flex items-center gap-2 mb-4" data-testid="badge-umzugspaket-neu">
+              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500 text-white shadow-lg shadow-amber-500/30">
+                <PackageOpen className="h-4 w-4" />
+                <span className="text-sm font-bold tracking-wide uppercase">Neu</span>
+                <span className="text-sm font-medium">·</span>
+                <span className="text-sm font-medium">Bis zu 2.000 Dokumente direkt beim Start importieren</span>
+                <ArrowRight className="h-3.5 w-3.5 opacity-80" />
+              </div>
+            </div>
+
             {/* Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border bg-background/80 backdrop-blur-sm mb-8 shadow-lg">
               <Sparkles className="h-4 w-4 text-primary" />
