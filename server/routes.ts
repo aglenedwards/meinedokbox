@@ -3991,77 +3991,114 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       archive.pipe(res);
       
+      const { PDFDocument } = await import('pdf-lib');
+      const sharp = (await import('sharp')).default;
+      const imageMimeTypes = new Set(['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif']);
+
+      // Helper: wrap an image buffer into a single-page PDF
+      async function imageToPdf(imageBuffer: Buffer, mimeType: string): Promise<Buffer> {
+        const pdfDoc = await PDFDocument.create();
+        let embeddedImage;
+        // Convert to PNG first via sharp (handles WebP, GIF, etc. uniformly)
+        const pngBuffer = await sharp(imageBuffer).png().toBuffer();
+        embeddedImage = await pdfDoc.embedPng(pngBuffer);
+        const page = pdfDoc.addPage([embeddedImage.width, embeddedImage.height]);
+        page.drawImage(embeddedImage, { x: 0, y: 0, width: embeddedImage.width, height: embeddedImage.height });
+        return Buffer.from(await pdfDoc.save());
+      }
+
+      // Track filenames used in CSV (always .pdf for images converted on the fly)
+      const csvDocEntries: { date: string; title: string; sender: string; amount: string; category: string; filename: string }[] = [];
+
       // Add each document to the archive
       for (const doc of documents) {
-        const pageUrls = doc.pageUrls && doc.pageUrls.length > 0 
-          ? doc.pageUrls 
-          : doc.fileUrl 
-            ? [doc.fileUrl] 
+        const pageUrls = doc.pageUrls && doc.pageUrls.length > 0
+          ? doc.pageUrls
+          : doc.fileUrl
+            ? [doc.fileUrl]
             : [];
-        
-        for (let i = 0; i < pageUrls.length; i++) {
+
+        const safeTitle = (doc.title || 'Dokument').replace(/[^a-zA-Z0-9äöüÄÖÜß\s-]/g, '_');
+        const isImage = doc.mimeType ? imageMimeTypes.has(doc.mimeType) : false;
+
+        // For CSV: always .pdf (images get converted, PDFs stay PDFs)
+        const csvFilenameForDoc = `${safeTitle}.pdf`;
+
+        if (pageUrls.length === 0) continue;
+
+        if (isImage && pageUrls.length === 1) {
+          // Single image → one-page PDF
           try {
-            const pageUrl = pageUrls[i];
-            const objectFile = await objectStorageService.getObjectEntityFile(pageUrl);
+            const objectFile = await objectStorageService.getObjectEntityFile(pageUrls[0]);
             const fileBuffer = await objectStorageService.getObjectBuffer(objectFile);
-            
-            // Create safe filename with correct extension from MIME type
-            const safeTitle = (doc.title || 'Dokument').replace(/[^a-zA-Z0-9äöüÄÖÜß\s-]/g, '_');
-            const mimeTypeToExt: Record<string, string> = {
-              'application/pdf': 'pdf',
-              'image/jpeg': 'jpg',
-              'image/jpg': 'jpg',
-              'image/png': 'png',
-              'image/webp': 'webp',
-              'image/gif': 'gif',
-            };
-            const extension = doc.mimeType ? (mimeTypeToExt[doc.mimeType] || 'bin') : 'bin';
-            const docFilename = pageUrls.length > 1 
-              ? `${safeTitle}_page_${i + 1}.${extension}`
-              : `${safeTitle}.${extension}`;
-            
-            archive.append(fileBuffer, { name: docFilename });
+            const pdfBuffer = await imageToPdf(fileBuffer, doc.mimeType || 'image/jpeg');
+            archive.append(pdfBuffer, { name: `${safeTitle}.pdf` });
           } catch (error) {
-            console.error(`[SmartFolderExport] Failed to add document ${doc.id} to archive:`, error);
+            console.error(`[SmartFolderExport] Failed to convert image ${doc.id} to PDF:`, error);
+          }
+        } else if (isImage && pageUrls.length > 1) {
+          // Multiple image pages → merge into one multi-page PDF
+          try {
+            const pdfDoc = await PDFDocument.create();
+            for (const pageUrl of pageUrls) {
+              const objectFile = await objectStorageService.getObjectEntityFile(pageUrl);
+              const fileBuffer = await objectStorageService.getObjectBuffer(objectFile);
+              const pngBuffer = await sharp(fileBuffer).png().toBuffer();
+              const embeddedImage = await pdfDoc.embedPng(pngBuffer);
+              const page = pdfDoc.addPage([embeddedImage.width, embeddedImage.height]);
+              page.drawImage(embeddedImage, { x: 0, y: 0, width: embeddedImage.width, height: embeddedImage.height });
+            }
+            const mergedPdf = Buffer.from(await pdfDoc.save());
+            archive.append(mergedPdf, { name: `${safeTitle}.pdf` });
+          } catch (error) {
+            console.error(`[SmartFolderExport] Failed to merge image pages for ${doc.id}:`, error);
+          }
+        } else {
+          // Already PDF — add directly (multi-page: one file per page or single file)
+          for (let i = 0; i < pageUrls.length; i++) {
+            try {
+              const objectFile = await objectStorageService.getObjectEntityFile(pageUrls[i]);
+              const fileBuffer = await objectStorageService.getObjectBuffer(objectFile);
+              const docFilename = pageUrls.length > 1
+                ? `${safeTitle}_Seite_${i + 1}.pdf`
+                : `${safeTitle}.pdf`;
+              archive.append(fileBuffer, { name: docFilename });
+            } catch (error) {
+              console.error(`[SmartFolderExport] Failed to add PDF page ${i} of ${doc.id}:`, error);
+            }
           }
         }
-      }
-      
-      // Generate CSV summary with all document metadata
-      const csvYear = year ? year : new Date().getFullYear();
-      const csvFilename = `steuerübersicht_${csvYear}.csv`;
-      const csvHeader = ['Datum', 'Titel', 'Absender', 'Betrag (€)', 'Kategorie', 'Dateiname'];
-      const csvRows = documents.map(doc => {
-        const safeTitle = (doc.title || 'Dokument').replace(/[^a-zA-Z0-9äöüÄÖÜß\s-]/g, '_');
-        const mimeTypeToExt: Record<string, string> = {
-          'application/pdf': 'pdf', 'image/jpeg': 'jpg', 'image/jpg': 'jpg',
-          'image/png': 'png', 'image/webp': 'webp', 'image/gif': 'gif',
-        };
-        const extension = doc.mimeType ? (mimeTypeToExt[doc.mimeType] || 'bin') : 'bin';
-        const docFilename = `${safeTitle}.${extension}`;
+
+        // Collect metadata for CSV
         const date = doc.documentDate
           ? new Date(doc.documentDate).toLocaleDateString('de-DE')
-          : doc.extractedDate || '';
-        const amount = doc.amount != null
-          ? String(doc.amount).replace('.', ',')
-          : '';
-        const escapeCsv = (val: string) => `"${String(val || '').replace(/"/g, '""')}"`;
-        return [
-          escapeCsv(date),
-          escapeCsv(doc.title || ''),
-          escapeCsv(doc.sender || ''),
-          escapeCsv(amount),
-          escapeCsv(doc.category || ''),
-          escapeCsv(docFilename),
-        ].join(';');
-      });
-      // Add totals row
-      const totalAmount = documents
-        .filter(d => d.amount != null)
-        .reduce((sum, d) => sum + Number(d.amount), 0);
-      const totalRow = [`"Gesamt"`, `""`, `""`, `"${totalAmount.toFixed(2).replace('.', ',')}"`, `""`, `""`].join(';');
-      const csvContent = '\uFEFF' + [csvHeader.map(h => `"${h}"`).join(';'), ...csvRows, totalRow].join('\r\n');
-      archive.append(Buffer.from(csvContent, 'utf-8'), { name: csvFilename });
+          : doc.extractedDate
+            ? new Date(doc.extractedDate).toLocaleDateString('de-DE')
+            : '';
+        const amount = doc.amount != null ? String(doc.amount).replace('.', ',') : '';
+        csvDocEntries.push({
+          date,
+          title: doc.title || '',
+          sender: doc.sender || '',
+          amount,
+          category: doc.category || '',
+          filename: csvFilenameForDoc,
+        });
+      }
+
+      // Generate CSV summary (no umlauts in filename for maximum compatibility)
+      const csvYear = year ? year : new Date().getFullYear();
+      const escapeCsv = (val: string) => `"${String(val || '').replace(/"/g, '""')}"`;
+      const csvHeader = ['"Datum"', '"Titel"', '"Absender"', '"Betrag (EUR)"', '"Kategorie"', '"Dateiname"'].join(';');
+      const csvRows = csvDocEntries.map(e =>
+        [escapeCsv(e.date), escapeCsv(e.title), escapeCsv(e.sender), escapeCsv(e.amount), escapeCsv(e.category), escapeCsv(e.filename)].join(';')
+      );
+      const totalAmount = csvDocEntries
+        .filter(e => e.amount !== '')
+        .reduce((sum, e) => sum + parseFloat(e.amount.replace(',', '.')), 0);
+      const totalRow = ['"Gesamt"', '""', '""', `"${totalAmount.toFixed(2).replace('.', ',')}"`, '""', '""'].join(';');
+      const csvContent = '\uFEFF' + [csvHeader, ...csvRows, totalRow].join('\r\n');
+      archive.append(Buffer.from(csvContent, 'utf-8'), { name: `steueruebersicht_${csvYear}.csv` });
 
       await archive.finalize();
       console.log(`[SmartFolderExport] Successfully exported ${documents.length} documents for folder: ${folder.name}`);
