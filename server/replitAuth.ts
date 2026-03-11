@@ -46,7 +46,7 @@ export function getSession() {
     cookie: {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      sameSite: 'lax',
       maxAge: sessionTtl,
     },
   });
@@ -80,14 +80,28 @@ export async function setupAuth(app: Express) {
   app.use(passport.initialize());
   app.use(passport.session());
 
-  // Serialize: Save minimal data to session (works for both OIDC and Local users)
+  // Serialize: Store only the user ID in the session cookie
   passport.serializeUser((user: any, cb) => {
-    cb(null, user);
+    const id = user?.claims?.sub || user?.id || null;
+    cb(null, id ?? user);
   });
-  
-  // Deserialize: Restore user from session
-  passport.deserializeUser((user: any, cb) => {
-    cb(null, user);
+
+  // Deserialize: Restore full user object from DB by ID
+  passport.deserializeUser(async (sessionData: any, cb) => {
+    try {
+      // Support legacy sessions that stored the full object
+      if (sessionData && typeof sessionData === 'object') {
+        return cb(null, sessionData);
+      }
+      // New sessions: sessionData is the user ID string
+      const userId = String(sessionData);
+      const user = await storage.getUser(userId);
+      if (!user) return cb(null, false);
+      // Re-wrap as a minimal claims object for compatibility
+      cb(null, { claims: { sub: user.id, email: user.email }, id: user.id, email: user.email });
+    } catch (err) {
+      cb(err);
+    }
   });
 
   // Only setup Replit OIDC auth if running on Replit

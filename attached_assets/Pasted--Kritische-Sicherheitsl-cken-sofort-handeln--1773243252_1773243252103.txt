@@ -1,0 +1,91 @@
+  Kritische Sicherheitslücken (sofort handeln)                                                                                                                                                                                                                                                                                                                              
+                                                                                                                                                                                                                                                                                                                                                                            
+  1. Stripe Webhook kann gefälscht werden                                                                                                                                                                                                                                                                                                                                   
+                                                                                                                                                                                                                                                                                                                                                                            
+  // routes.ts ~Zeile 4407
+  if (webhookSecret) {
+    event = stripe.webhooks.constructEvent(...);                                                                                                                                                                                                                                                                                                                            
+  } else {                                                                                                                                                                                                                                                                                                                                                                  
+    event = JSON.parse(req.body.toString()); // ← GEFÄHRLICH                                                                                                                                                                                                                                                                                                                
+  }
+  Wenn STRIPE_WEBHOOK_SECRET auf Render fehlt oder leer ist, akzeptiert das System jede Stripe-Event-Anfrage ohne Verifizierung. Ein Angreifer könnte kostenlose Upgrades, gefälschte Zahlungsbestätigungen etc. einschleusen.
+
+  2. Mailgun Webhook ebenfalls ungesichert
+
+  Gleiche Logik: Fehlt MAILGUN_WEBHOOK_SIGNING_KEY, werden alle eingehenden Mails akzeptiert.
+
+  3. Admin-Login zu schwach
+
+  Admin-Zugang basiert nur auf der E-Mail service@meinedokbox.de. Kein zweiter Faktor, kein gehashtes Passwort bei der Prüfung.
+
+  4. Session-Cookie unsicher konfiguriert
+
+  SameSite: 'none' in Production → CSRF-Angriffe möglich. Sollte 'strict' sein.
+
+  5. Passport serialisiert ganzes User-Objekt in Session
+
+  passport.serializeUser((user: any, cb) => cb(null, user)); // ← falsch
+  Nur die User-ID sollte gespeichert werden.
+
+  ---
+  Kritische Bugs
+
+  ┌───────────────────────────────────────────────────────────────────┬────────────────────────────────────────────────────────────┐
+  │                                Bug                                │                         Auswirkung                         │
+  ├───────────────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────┤
+  │ masterAccountId im Code verwendet, aber nicht im Schema definiert │ Runtime-Crash bei Slave-Accounts                           │
+  ├───────────────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────┤
+  │ Race Condition beim Upload-Zähler                                 │ Monatslimits können mit parallelen Uploads umgangen werden │
+  ├───────────────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────┤
+  │ PDF-Merge lädt alles in RAM                                       │ Bei 20×10MB = 200MB RAM-Spike möglich                      │
+  ├───────────────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────┤
+  │ Email-Job-Queue ohne Retry-Limit                                  │ Jobs können unendlich wiederholt werden                    │
+  └───────────────────────────────────────────────────────────────────┴────────────────────────────────────────────────────────────┘
+
+  ---
+  Code-Qualität
+
+  - routes.ts hat 5.507 Zeilen - eine einzige Datei für Auth, Upload, Stripe, Admin, E-Mail, Referrals. Nicht wartbar.
+  - 429 console.log-Aufrufe im Server-Code, teils mit E-Mails und User-IDs
+  - Keine einzige Test-Datei im gesamten Projekt
+  - Dynamischer import() innerhalb einer Route-Funktion (ineffizient, sollte top-level sein)
+
+  ---
+  Was weg kann (Replit-Artefakte)
+
+  ┌──────────────────────────────────┬───────┬─────────────────────────────┐
+  │           Datei/Ordner           │ Größe │            Grund            │
+  ├──────────────────────────────────┼───────┼─────────────────────────────┤
+  │ .replit                          │ -     │ Nur für Replit-Plattform    │
+  ├──────────────────────────────────┼───────┼─────────────────────────────┤
+  │ .local/                          │ ~67MB │ Interne Replit-Skills/State │
+  ├──────────────────────────────────┼───────┼─────────────────────────────┤
+  │ .agents/                         │ -     │ Internes Tooling            │
+  ├──────────────────────────────────┼───────┼─────────────────────────────┤
+  │ .config/npm/                     │ -     │ Lokale npm-Config           │
+  ├──────────────────────────────────┼───────┼─────────────────────────────┤
+  │ @replit/vite-plugin-* (3 Pakete) │ -     │ Nur für Replit Dev          │
+  ├──────────────────────────────────┼───────┼─────────────────────────────┤
+  │ memorystore                      │ -     │ In-Memory Session (nur Dev) │
+  └──────────────────────────────────┴───────┴─────────────────────────────┘
+
+  ---
+  Performance
+
+  - Kein Pagination bei getDocumentsByUserId() → lädt alle Dokumente auf einmal
+  - Fehlende DB-Indizes auf (userId, uploadedAt), (fileHash), (category)
+  - Frontend-Bundle vermutlich >500KB wegen 18+ Radix-UI-Paketen + pdfjs-dist
+  - Keine Redis-Caching-Schicht (jede Anfrage trifft die DB)
+
+  ---
+  Prioritätenliste
+
+  1. Stripe + Mailgun Webhook-Validierung erzwingen ← sofort
+  2. masterAccountId ins Schema aufnehmen ← sofort
+  3. Session SameSite auf strict ← schnell
+  4. Passport nur userId serialisieren ← schnell
+  5. routes.ts aufteilen ← mittelfristig
+  6. Logging ersetzen (Winston/Pino statt console.log) ← mittelfristig
+  7. Replit-Artefakte entfernen ← einfach, sofort möglich
+  8. DB-Indizes hinzufügen ← mittelfristig
+  9. Erste Tests schreiben (Auth + Payments) ← wichtig

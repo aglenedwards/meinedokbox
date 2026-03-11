@@ -4401,14 +4401,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     let event: Stripe.Event;
 
     try {
-      // In production, you should set STRIPE_WEBHOOK_SECRET from Stripe Dashboard
       const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-      if (webhookSecret) {
-        event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
-      } else {
-        // For testing without webhook secret
-        event = JSON.parse(req.body.toString());
+      if (!webhookSecret) {
+        console.error('[StripeWebhook] STRIPE_WEBHOOK_SECRET not configured — rejecting unverified event');
+        return res.status(400).send('Webhook Error: Missing webhook secret configuration');
       }
+      event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
     } catch (err: any) {
       console.error('[StripeWebhook] Signature verification failed:', err.message);
       return res.status(400).send(`Webhook Error: ${err.message}`);
