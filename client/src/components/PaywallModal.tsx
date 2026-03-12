@@ -106,7 +106,7 @@ export function PaywallModal({ open, onClose }: PaywallModalProps) {
             <TimelineStep
               icon={<Lock className="h-4 w-4" />}
               label="Heute"
-              description="Vollzugriff auf alle Funktionen – sofort nutzbar"
+              description="Alle Limits aufgehoben – unbegrenzt hochladen & organisieren"
               active
             />
             <TimelineStep
@@ -117,7 +117,7 @@ export function PaywallModal({ open, onClose }: PaywallModalProps) {
             <TimelineStep
               icon={<ThumbsUp className="h-4 w-4" />}
               label="In 7 Tagen"
-              description="Erste Abbuchung – nur wenn nicht vorher gekündigt"
+              description="Erste Abbuchung – jederzeit vorher kündbar, keine Bindung"
               last
             />
           </div>
