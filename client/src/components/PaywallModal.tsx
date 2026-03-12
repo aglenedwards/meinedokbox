@@ -9,6 +9,7 @@ import { useLocation } from "wouter";
 
 interface PaywallModalProps {
   open: boolean;
+  onClose?: () => void;
 }
 
 const PLANS = [
@@ -53,7 +54,7 @@ function getTrialEndDate(): string {
   return date.toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" });
 }
 
-export function PaywallModal({ open }: PaywallModalProps) {
+export function PaywallModal({ open, onClose }: PaywallModalProps) {
   const [selectedPlan, setSelectedPlan] = useState<"solo" | "family" | "family-plus">("family");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
@@ -87,12 +88,12 @@ export function PaywallModal({ open }: PaywallModalProps) {
   };
 
   return (
-    <Dialog open={open} modal>
+    <Dialog open={open} onOpenChange={onClose ? (isOpen) => { if (!isOpen) onClose(); } : undefined} modal>
       <DialogContent
         className="sm:max-w-[480px] p-0 gap-0 overflow-hidden"
-        onInteractOutside={(e) => e.preventDefault()}
-        onEscapeKeyDown={(e) => e.preventDefault()}
-        hideCloseButton
+        onInteractOutside={onClose ? undefined : (e) => e.preventDefault()}
+        onEscapeKeyDown={onClose ? undefined : (e) => e.preventDefault()}
+        hideCloseButton={!onClose}
       >
         <DialogTitle className="sr-only">Testphase starten</DialogTitle>
 

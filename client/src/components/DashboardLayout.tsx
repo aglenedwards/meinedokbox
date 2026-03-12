@@ -36,6 +36,7 @@ export function DashboardLayout({
   const { toast } = useToast();
   const [location] = useLocation();
   const [showPaywallModal, setShowPaywallModal] = useState(false);
+  const [paywallDismissible, setPaywallDismissible] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   // Fetch user data
@@ -274,7 +275,7 @@ export function DashboardLayout({
               </div>
               <Button
                 size="sm"
-                onClick={() => setShowPaywallModal(true)}
+                onClick={() => { setShowPaywallModal(true); setPaywallDismissible(true); }}
                 data-testid="button-preview-subscribe"
               >
                 Jetzt abonnieren
@@ -288,7 +289,10 @@ export function DashboardLayout({
         {children}
       </main>
 
-      <PaywallModal open={showPaywallModal} />
+      <PaywallModal
+        open={showPaywallModal}
+        onClose={paywallDismissible ? () => { setShowPaywallModal(false); setPaywallDismissible(false); } : undefined}
+      />
 
       <UpgradeModal
         open={showUpgradeModal}
