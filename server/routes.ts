@@ -23,7 +23,7 @@ import { parseMailgunWebhook, isSupportedAttachment, isValidDocumentAttachment, 
 import { sendSharedAccessInvitation, sendVerificationEmail, sendPasswordResetEmail, sendContactFormEmail, sendAdminNewUserNotification, sendAdminNewSubscriptionNotification, sendAdminSubscriptionCancelledNotification, sendAccountSeparatedEmail, sendReferralSignupNotification, sendReferralActivationNotification } from "./lib/sendEmail";
 import { emailQueue } from "./lib/emailQueue";
 import bcrypt from 'bcrypt';
-import { checkDocumentLimit, checkEmailFeature, checkAndDowngradeTrial, getEffectiveUserId, isSharedUser, getTrialStatus, getEffectiveUser } from "./middleware/subscriptionLimits";
+import { checkDocumentLimit, checkEmailFeature, checkAndDowngradeTrial, getEffectiveUserId, isSharedUser, getTrialStatus, getEffectiveUser, FREE_PREVIEW_LIMIT } from "./middleware/subscriptionLimits";
 import { 
   loginLimiter, 
   registerLimiter, 
@@ -1032,8 +1032,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const partnerIds = await storage.getPartnerUserIds(effectiveUser.id);
       const allUserIds = [effectiveUser.id, ...partnerIds];
 
+      // Determine preview mode (no Stripe subscription ever given)
+      const isPreviewMode = !effectiveUser.stripeSubscriptionId && effectiveUser.subscriptionPlan === 'trial';
+
       // Run all parallel operations at once: reset counters + fetch user data + storage stats + doc count
-      const [userResults, storageResults, documentCount] = await Promise.all([
+      const [userResults, storageResults, documentCount, previewDocCount] = await Promise.all([
         // Reset counters if new month, then fetch all users in parallel
         Promise.all(allUserIds.map(id =>
           storage.checkAndResetUploadCounter(id).then(() => storage.getUser(id))
@@ -1042,6 +1045,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         Promise.all(allUserIds.map(id => storage.getUserStorageStats(id))),
         // Count documents via SQL COUNT (no full array fetch)
         storage.getDocumentCount(userId),
+        // Count documents on the effective (master) account for preview limit
+        isPreviewMode ? storage.getDocumentCount(effectiveUser.id) : Promise.resolve(0),
       ]);
 
       // 1. Sum up monthly uploads (Master + Slaves)
@@ -1096,6 +1101,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Migration / initial import budget (shared on master account)
         migrationUploadsTotal: effectiveUser.migrationUploadsTotal ?? 0,
         migrationUploadsUsed: effectiveUser.migrationUploadsUsed ?? 0,
+        // Preview mode (no credit card given yet)
+        previewMode: isPreviewMode,
+        previewUploadsUsed: isPreviewMode ? previewDocCount : undefined,
+        previewUploadsAllowed: isPreviewMode ? FREE_PREVIEW_LIMIT : undefined,
       });
     } catch (error) {
       console.error("Error fetching subscription status:", error);
@@ -2028,7 +2037,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/documents/upload', isAuthenticated, uploadLimiter, checkDocumentLimit, upload.array('files', 20), async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const files = req.files as Express.Multer.File[];
+      let files = req.files as Express.Multer.File[];
       const folderId = req.body.folderId || null; // Optional folder assignment
       const mergeIntoOne = req.body.mergeIntoOne === 'true'; // Parse boolean from form data
       const forceDuplicates = req.body.forceDuplicates === 'true'; // Allow uploading duplicates
@@ -2039,6 +2048,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       if (files.length > 20) {
         return res.status(400).json({ message: "Maximal 20 Dateien gleichzeitig möglich" });
+      }
+
+      // === PREVIEW MODE: Partial upload handling ===
+      // If the user is in preview mode and tries to upload more files than their remaining
+      // slots, we silently accept only the allowed number and report skipped files in the response.
+      const previewSlotsRemaining: number | undefined = req.previewSlotsRemaining;
+      let previewLimitReached = false;
+      let skippedFilesCount = 0;
+      if (previewSlotsRemaining !== undefined && files.length > previewSlotsRemaining) {
+        skippedFilesCount = files.length - previewSlotsRemaining;
+        files = files.slice(0, previewSlotsRemaining);
+        previewLimitReached = true;
+        if (files.length === 0) {
+          return res.status(403).json({
+            message: "Vorschau-Limit erreicht — jetzt abonnieren",
+            reason: "preview_limit_reached",
+          });
+        }
       }
 
       // Handle merge into one document
@@ -2150,7 +2177,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           return res.json({
             message: "Dokument erfolgreich zusammengeführt und hochgeladen",
-            documents: [document]
+            documents: [document],
+            previewLimitReached,
+            skippedFilesCount,
           });
         } catch (error) {
           console.error("Error merging documents:", error);
@@ -2290,14 +2319,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
           message: `${uploadedDocuments.length} von ${files.length} Dokumenten erfolgreich hochgeladen`,
           documents: uploadedDocuments,
           duplicates: duplicates.length > 0 ? duplicates : undefined,
-          errors: errors.length > 0 ? errors : undefined
+          errors: errors.length > 0 ? errors : undefined,
+          previewLimitReached,
+          skippedFilesCount,
         });
       }
       
       // All successful
       res.json({ 
         message: `${uploadedDocuments.length} Dokument(e) erfolgreich hochgeladen`,
-        documents: uploadedDocuments 
+        documents: uploadedDocuments,
+        previewLimitReached,
+        skippedFilesCount,
       });
     } catch (error) {
       console.error("Error uploading documents:", error);

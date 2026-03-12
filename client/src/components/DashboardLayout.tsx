@@ -1,6 +1,6 @@
 import { ReactNode, useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
-import { Plus, ChevronDown, Camera, Settings, LogOut, Trash2, Shield, Download, Gift } from "lucide-react";
+import { Plus, ChevronDown, Camera, Settings, LogOut, Trash2, Shield, Download, Gift, Sparkles } from "lucide-react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import {
@@ -53,15 +53,26 @@ export function DashboardLayout({
     staleTime: 1000 * 60,
   });
 
-  // Show paywall modal whenever user is on trial without an active Stripe subscription.
-  // This is robust: works after refresh, server restart, or if hasSeenWelcomeModal was set prematurely.
+  // Show paywall modal for users without an active Stripe subscription.
+  // In preview mode (no credit card yet): only show AFTER all free preview slots are used.
+  // For grace/expired trials (had credit card but plan expired): show immediately.
   // Never show for invited family members (slave accounts).
   useEffect(() => {
     if (user && subscriptionStatus) {
       const needsPayment = subscriptionStatus.plan === 'trial' && !subscriptionStatus.hasActiveSubscription;
       const isInvited = (user as any).isInvitedUser;
       if (needsPayment && !isInvited) {
-        setShowPaywallModal(true);
+        if (subscriptionStatus.previewMode) {
+          // Preview mode: only show paywall when all free slots are exhausted
+          const used = subscriptionStatus.previewUploadsUsed ?? 0;
+          const allowed = subscriptionStatus.previewUploadsAllowed ?? 3;
+          if (used >= allowed) {
+            setShowPaywallModal(true);
+          }
+        } else {
+          // Non-preview trial (had Stripe but expired): show immediately
+          setShowPaywallModal(true);
+        }
       }
     }
   }, [user, subscriptionStatus]);
@@ -242,6 +253,36 @@ export function DashboardLayout({
           </div>
         </div>
       </header>
+
+      {/* Preview mode banner — shown only to users who haven't given their credit card yet */}
+      {subscriptionStatus?.previewMode && !showPaywallModal && (() => {
+        const used = subscriptionStatus.previewUploadsUsed ?? 0;
+        const allowed = subscriptionStatus.previewUploadsAllowed ?? 3;
+        const remaining = Math.max(0, allowed - used);
+        return (
+          <div className="w-full border-b bg-muted/30">
+            <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-2 flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Sparkles className="h-4 w-4 text-primary shrink-0" />
+                <span>
+                  Kostenlose Vorschau:{" "}
+                  <span className="font-semibold text-foreground">{used} von {allowed}</span> Dokumente hochgeladen
+                  {remaining > 0
+                    ? ` — noch ${remaining} ${remaining === 1 ? "Upload" : "Uploads"} verfügbar`
+                    : " — Limit erreicht"}
+                </span>
+              </div>
+              <Button
+                size="sm"
+                onClick={() => setShowPaywallModal(true)}
+                data-testid="button-preview-subscribe"
+              >
+                Jetzt abonnieren
+              </Button>
+            </div>
+          </div>
+        );
+      })()}
 
       <main className="w-full max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-6 md:py-8">
         {children}

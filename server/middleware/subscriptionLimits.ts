@@ -3,6 +3,12 @@ import { storage } from "../storage";
 import { PLAN_LIMITS } from "../../shared/schema";
 
 /**
+ * Number of free preview uploads for users who have never given their credit card.
+ * After this limit, the PaywallModal is shown and further uploads are blocked.
+ */
+export const FREE_PREVIEW_LIMIT = 3;
+
+/**
  * Middleware to check upload limits for subscription plan
  * Checks BOTH monthly upload counter AND total storage
  * Master + Slaves share both limits
@@ -20,6 +26,25 @@ export const checkDocumentLimit: RequestHandler = async (req: any, res, next) =>
 
     if (!effectiveUser) {
       return res.status(404).json({ message: "User not found" });
+    }
+
+    // === PREVIEW MODE ===
+    // Users who have never given their credit card (no Stripe subscription) get
+    // FREE_PREVIEW_LIMIT free uploads so they can experience the product before paying.
+    const hasStripeSubscription = !!effectiveUser.stripeSubscriptionId;
+    if (!hasStripeSubscription && effectiveUser.subscriptionPlan === "trial") {
+      const docCount = await storage.getDocumentCount(effectiveUser.id);
+      if (docCount >= FREE_PREVIEW_LIMIT) {
+        return res.status(403).json({
+          message: "Vorschau-Limit erreicht — jetzt abonnieren",
+          reason: "preview_limit_reached",
+          previewUploadsUsed: docCount,
+          previewUploadsAllowed: FREE_PREVIEW_LIMIT,
+        });
+      }
+      // Attach remaining slots so the upload route can handle partial multi-file uploads
+      req.previewSlotsRemaining = FREE_PREVIEW_LIMIT - docCount;
+      return next();
     }
 
     // Check trial status with grace period (using Master's trial dates if Slave)

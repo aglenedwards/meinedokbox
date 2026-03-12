@@ -24,6 +24,9 @@ export interface UploadResult {
   duplicates?: Array<{ filename: string; duplicate: DuplicateInfo }>;
   isDuplicate?: boolean;
   duplicate?: DuplicateInfo;
+  // Preview mode: true when some files were skipped because the free preview limit was reached
+  previewLimitReached?: boolean;
+  skippedFilesCount?: number;
 }
 
 /**
@@ -386,6 +389,10 @@ export interface SubscriptionStatus {
   // Migration / Umzugspaket
   migrationUploadsTotal?: number;
   migrationUploadsUsed?: number;
+  // Preview mode (no credit card given yet — limited free uploads)
+  previewMode?: boolean;
+  previewUploadsUsed?: number;
+  previewUploadsAllowed?: number;
 }
 
 /**

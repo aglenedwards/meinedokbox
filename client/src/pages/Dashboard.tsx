@@ -210,8 +210,19 @@ export default function Dashboard() {
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ["/api/documents"] });
       queryClient.invalidateQueries({ queryKey: ["/api/storage/stats"] });
+      // Always refresh subscription status — in preview mode this may trigger the PaywallModal
+      queryClient.invalidateQueries({ queryKey: ["/api/subscription/status"] });
       
-      const { documents, errors, message } = result;
+      const { documents, errors, message, previewLimitReached, skippedFilesCount } = result;
+
+      // If preview limit was hit during a multi-file upload, inform the user
+      if (previewLimitReached && skippedFilesCount > 0) {
+        toast({
+          title: `${skippedFilesCount} ${skippedFilesCount === 1 ? "Datei" : "Dateien"} übersprungen`,
+          description: "Vorschau-Limit erreicht. Bitte abonnieren, um unbegrenzt Dokumente hochzuladen.",
+          variant: "destructive",
+        });
+      }
       
       // Show success for uploaded documents
       if (documents.length > 0) {
@@ -248,8 +259,16 @@ export default function Dashboard() {
       }
     },
     onError: (error: Error) => {
-      // Check if it's a 403 error (limit reached)
-      if (error.message.includes("403")) {
+      // Always refresh subscription status on upload error
+      queryClient.invalidateQueries({ queryKey: ["/api/subscription/status"] });
+
+      // Preview limit reached (no credit card yet) — subscription status refresh will trigger PaywallModal
+      if (error.message.includes("preview_limit") || error.message.includes("Vorschau-Limit")) {
+        return;
+      }
+
+      // Check if it's a 403 error (monthly/storage limit reached for paying users)
+      if (error.message.includes("403") || error.message.includes("Limit erreicht") || error.message.includes("Monatliches")) {
         setUpgradeModal({
           open: true,
           reason: "document_limit",
