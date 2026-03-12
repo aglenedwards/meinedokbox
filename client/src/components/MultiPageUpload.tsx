@@ -51,6 +51,7 @@ function PdfThumbnail({ url }: { url: string }) {
 interface MultiPageUploadProps {
   onComplete: (files: File[], mergeIntoOne: boolean) => void;
   onCancel: () => void;
+  initialFiles?: File[];
 }
 
 interface PagePreview {
@@ -60,8 +61,16 @@ interface PagePreview {
 
 const MAX_FILES = 20;
 
-export function MultiPageUpload({ onComplete, onCancel }: MultiPageUploadProps) {
-  const [pages, setPages] = useState<PagePreview[]>([]);
+function buildPreviews(files: File[]): PagePreview[] {
+  return files
+    .filter(f => f.type.startsWith('image/') || f.type === 'application/pdf')
+    .map(f => ({ file: f, previewUrl: URL.createObjectURL(f) }));
+}
+
+export function MultiPageUpload({ onComplete, onCancel, initialFiles }: MultiPageUploadProps) {
+  const [pages, setPages] = useState<PagePreview[]>(() =>
+    initialFiles && initialFiles.length > 0 ? buildPreviews(initialFiles.slice(0, MAX_FILES)) : []
+  );
   const [isDragging, setIsDragging] = useState(false);
   const [mergeIntoOne, setMergeIntoOne] = useState(false);
 

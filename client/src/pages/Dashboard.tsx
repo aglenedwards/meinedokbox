@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query";
-import { FileText, HardDrive, TrendingUp, Plus, Trash2, ArrowUpDown, Download, MoreVertical, RefreshCw, PackageOpen, CheckCircle2 } from "lucide-react";
+import { FileText, HardDrive, TrendingUp, Plus, Trash2, ArrowUpDown, Download, MoreVertical, RefreshCw, PackageOpen, CheckCircle2, Upload } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 
@@ -93,6 +93,9 @@ export default function Dashboard() {
   const [selectedDocuments, setSelectedDocuments] = useState<Set<string>>(new Set());
   const [showUpload, setShowUpload] = useState(false);
   const [showCameraMultiShot, setShowCameraMultiShot] = useState(false);
+  const [isDragOverPage, setIsDragOverPage] = useState(false);
+  const [droppedFiles, setDroppedFiles] = useState<File[]>([]);
+  const dragCounterRef = useRef(0);
   const [checkoutDialogOpen, setCheckoutDialogOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<"solo" | "family" | "family-plus">("family");
   const [selectedPeriod, setSelectedPeriod] = useState<"monthly" | "yearly">("yearly");
@@ -110,6 +113,49 @@ export default function Dashboard() {
       }, 150);
     }
   }, [showUpload, showCameraMultiShot]);
+
+  // Global drag-and-drop: detect files dragged over the entire page
+  useEffect(() => {
+    const isFileDrag = (e: DragEvent) =>
+      !!e.dataTransfer?.types && Array.from(e.dataTransfer.types).includes('Files');
+
+    const onDragEnter = (e: DragEvent) => {
+      if (!isFileDrag(e)) return;
+      dragCounterRef.current += 1;
+      if (dragCounterRef.current === 1) setIsDragOverPage(true);
+    };
+    const onDragLeave = (e: DragEvent) => {
+      if (!isFileDrag(e)) return;
+      dragCounterRef.current -= 1;
+      if (dragCounterRef.current === 0) setIsDragOverPage(false);
+    };
+    const onDragOver = (e: DragEvent) => {
+      if (isFileDrag(e)) e.preventDefault();
+    };
+    const onDrop = (e: DragEvent) => {
+      e.preventDefault();
+      dragCounterRef.current = 0;
+      setIsDragOverPage(false);
+      const files = Array.from(e.dataTransfer?.files ?? []).filter(
+        f => f.type.startsWith('image/') || f.type === 'application/pdf'
+      );
+      if (files.length === 0) return;
+      setDroppedFiles(files);
+      setShowCameraMultiShot(false);
+      setShowUpload(true);
+    };
+
+    window.addEventListener('dragenter', onDragEnter);
+    window.addEventListener('dragleave', onDragLeave);
+    window.addEventListener('dragover', onDragOver);
+    window.addEventListener('drop', onDrop);
+    return () => {
+      window.removeEventListener('dragenter', onDragEnter);
+      window.removeEventListener('dragleave', onDragLeave);
+      window.removeEventListener('dragover', onDragOver);
+      window.removeEventListener('drop', onDrop);
+    };
+  }, []);
 
   // Listen for checkout events from UpgradeModal
   useEffect(() => {
@@ -818,6 +864,19 @@ export default function Dashboard() {
     .slice(0, 10); // Top 10 categories
 
   return (
+    <>
+    {/* Full-page drag-and-drop overlay */}
+    {isDragOverPage && (
+      <div className="fixed inset-0 z-[9999] pointer-events-none">
+        <div className="absolute inset-4 rounded-xl border-4 border-dashed border-primary bg-primary/10 backdrop-blur-sm flex flex-col items-center justify-center gap-4">
+          <div className="rounded-full bg-primary/20 p-6">
+            <Upload className="h-12 w-12 text-primary" />
+          </div>
+          <p className="text-xl font-semibold text-primary">Dateien hier ablegen</p>
+          <p className="text-sm text-muted-foreground">JPG, PNG, WEBP oder PDF</p>
+        </div>
+      </div>
+    )}
     <DashboardLayout
       showSearch={true}
       searchQuery={searchQuery}
@@ -827,6 +886,7 @@ export default function Dashboard() {
           setShowUpload(false);
           setShowCameraMultiShot(true);
         } else {
+          setDroppedFiles([]);
           setShowCameraMultiShot(false);
           setShowUpload(true);
         }
@@ -837,7 +897,8 @@ export default function Dashboard() {
             <div className="mb-8">
               <MultiPageUpload 
                 onComplete={handleFileSelect}
-                onCancel={() => setShowUpload(false)}
+                onCancel={() => { setShowUpload(false); setDroppedFiles([]); }}
+                initialFiles={droppedFiles.length > 0 ? droppedFiles : undefined}
               />
             </div>
           )}
@@ -1324,5 +1385,6 @@ export default function Dashboard() {
 
       <DashboardFooter />
     </DashboardLayout>
+    </>
   );
 }
