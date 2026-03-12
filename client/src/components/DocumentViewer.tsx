@@ -2,11 +2,17 @@ import { useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Download, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, X, RotateCw, Loader2 } from "lucide-react";
+import { Download, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, X, RotateCw, Loader2, FileText } from "lucide-react";
 import { Document, Page, pdfjs } from 'react-pdf';
 import type { Document as DocumentType } from "@shared/schema";
+
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
+
+const DOCX_MIMES = [
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/msword',
+];
 
 // Configure PDF.js worker
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
@@ -76,6 +82,9 @@ export function DocumentViewer({ document, open, onClose }: DocumentViewerProps)
   
   // Check if the document is a PDF using mimeType
   const isPdf = document.mimeType === 'application/pdf';
+
+  // Check if the document is a Word file
+  const isDocx = document.mimeType ? DOCX_MIMES.includes(document.mimeType) : false;
   
   // For PDFs, use our proxy endpoint instead of direct S3 URL
   const pdfViewUrl = isPdf ? `/api/documents/${document.id}/view` : currentPageUrl;
@@ -98,6 +107,13 @@ export function DocumentViewer({ document, open, onClose }: DocumentViewerProps)
     const link = window.document.createElement('a');
     link.href = `/api/documents/${document.id}/download-pdf`;
     link.download = `${document.title}.pdf`;
+    link.click();
+  };
+
+  const handleDownloadDocx = () => {
+    const link = window.document.createElement('a');
+    link.href = `/api/documents/${document.id}/view`;
+    link.download = `${document.title}.docx`;
     link.click();
   };
 
@@ -179,10 +195,10 @@ export function DocumentViewer({ document, open, onClose }: DocumentViewerProps)
             <Button
               variant="ghost"
               size="icon"
-              onClick={isPdf ? handleDownloadPDF : () => handleDownloadPage(currentPage)}
+              onClick={isDocx ? handleDownloadDocx : isPdf ? handleDownloadPDF : () => handleDownloadPage(currentPage)}
               data-testid="button-download-viewer"
               className="h-8 w-8 rounded-full hover:bg-accent"
-              aria-label={isPdf ? 'PDF herunterladen' : 'Bild herunterladen'}
+              aria-label={isDocx ? 'Word-Datei herunterladen' : isPdf ? 'PDF herunterladen' : 'Bild herunterladen'}
             >
               <Download className="h-4 w-4" />
             </Button>
@@ -247,8 +263,24 @@ export function DocumentViewer({ document, open, onClose }: DocumentViewerProps)
             </div>
           )}
 
+          {/* Floating download button for Word documents - desktop only */}
+          {isDocx && (
+            <div className="hidden sm:block absolute top-4 right-4 z-10">
+              <Button
+                variant="default"
+                size="sm"
+                onClick={handleDownloadDocx}
+                data-testid="button-download-docx"
+                className="h-9 shadow-lg"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                <span>Word</span>
+              </Button>
+            </div>
+          )}
+
           {/* Floating download button for images - desktop only */}
-          {!isPdf && (
+          {!isPdf && !isDocx && (
             <div className="hidden sm:block absolute top-4 right-4 z-10">
               <Button
                 variant="default"
@@ -264,7 +296,34 @@ export function DocumentViewer({ document, open, onClose }: DocumentViewerProps)
           )}
 
           <div className="flex items-center justify-center h-full p-4 overflow-x-hidden">
-            {isPdf ? (
+            {isDocx ? (
+              <div className="flex flex-col items-center justify-center gap-6 text-center max-w-sm w-full">
+                <div className="flex items-center justify-center w-20 h-20 rounded-full bg-blue-100 dark:bg-blue-900/30">
+                  <FileText className="h-10 w-10 text-blue-600 dark:text-blue-400" />
+                </div>
+                <div>
+                  <p className="font-medium text-foreground">{document.title}</p>
+                  <p className="text-sm text-muted-foreground mt-1">Word-Dokument (.docx)</p>
+                </div>
+                {document.extractedText && (
+                  <div className="w-full text-left bg-muted/40 rounded-md p-4 max-h-48 overflow-y-auto">
+                    <p className="text-xs text-muted-foreground uppercase tracking-wide mb-2 font-medium">Extrahierter Text</p>
+                    <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">
+                      {document.extractedText.slice(0, 800)}{document.extractedText.length > 800 ? '…' : ''}
+                    </p>
+                  </div>
+                )}
+                <Button
+                  variant="default"
+                  onClick={handleDownloadDocx}
+                  data-testid="button-download-docx-main"
+                  className="w-full"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Word-Datei herunterladen
+                </Button>
+              </div>
+            ) : isPdf ? (
               <div className="flex flex-col items-center justify-center w-full h-full max-w-full">
                 {pdfLoading && !pdfError && (
                   <div className="text-center text-muted-foreground mb-4">

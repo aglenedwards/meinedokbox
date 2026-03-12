@@ -3327,6 +3327,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
               'image/png': 'png',
               'image/webp': 'webp',
               'image/gif': 'gif',
+              'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
+              'application/msword': 'doc',
             };
             const extension = doc.mimeType ? (mimeTypeToExt[doc.mimeType] || 'bin') : 'bin';
             const filename = pageUrls.length > 1 
@@ -4148,20 +4150,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const safeTitle = (doc.title || 'Dokument').replace(/[^a-zA-Z0-9äöüÄÖÜß\s-]/g, '_');
         // mimeType-based check — but we also verify via magic bytes below
         const mimeIsImage = doc.mimeType ? imageMimeTypes.has(doc.mimeType) : false;
+        const mimeIsDocx = doc.mimeType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+          || doc.mimeType === 'application/msword';
+        const docxExtension = doc.mimeType === 'application/msword' ? 'doc' : 'docx';
 
-        // For CSV: always .pdf (images get converted, PDFs stay PDFs)
-        const csvFilenameForDoc = `${safeTitle}.pdf`;
+        // For CSV: .pdf for images/PDFs, original extension for Word files
+        const csvFilenameForDoc = mimeIsDocx ? `${safeTitle}.${docxExtension}` : `${safeTitle}.pdf`;
 
         if (pageUrls.length === 0) continue;
 
         if (pageUrls.length === 1) {
-          // Single file — fetch buffer, then decide: image → PDF, already PDF → pass through
+          // Single file — fetch buffer, then decide: image → PDF, Word → .docx, PDF → pass through
           try {
             const objectFile = await objectStorageService.getObjectEntityFile(pageUrls[0]);
             const fileBuffer = await objectStorageService.getObjectBuffer(objectFile);
             const isImage = mimeIsImage || bufferIsImage(fileBuffer);
-            console.log(`[SmartFolderExport] doc "${doc.title}" mimeType=${doc.mimeType} isImage=${isImage}`);
-            if (isImage) {
+            console.log(`[SmartFolderExport] doc "${doc.title}" mimeType=${doc.mimeType} isImage=${isImage} isDocx=${mimeIsDocx}`);
+            if (mimeIsDocx) {
+              archive.append(fileBuffer, { name: `${safeTitle}.${docxExtension}` });
+            } else if (isImage) {
               const pdfBuffer = await imageToPdf(fileBuffer);
               archive.append(pdfBuffer, { name: `${safeTitle}.pdf` });
             } else {
@@ -4182,7 +4189,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
               pageBuffers.push(buf);
               if (bufferIsImage(buf)) hasImagePages = true;
             }
-            if (hasImagePages || mimeIsImage) {
+            if (mimeIsDocx) {
+              // Word documents — add each page as-is with docx extension
+              for (let i = 0; i < pageBuffers.length; i++) {
+                const suffix = pageBuffers.length > 1 ? `_${i + 1}` : '';
+                archive.append(pageBuffers[i], { name: `${safeTitle}${suffix}.${docxExtension}` });
+              }
+            } else if (hasImagePages || mimeIsImage) {
               // All pages are images → merge into one multi-page PDF
               for (const buf of pageBuffers) {
                 const pngBuffer = await sharp(buf).png().toBuffer();
