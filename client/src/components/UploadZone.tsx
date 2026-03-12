@@ -92,7 +92,7 @@ export function UploadZone({ onFileSelect, onMultiShotClick }: UploadZoneProps) 
           </div>
 
           <p className="text-xs text-muted-foreground">
-            Unterstützt: JPG, PNG, PDF (max. 10MB)
+            Unterstützt: JPG, PNG, PDF, Word (max. 10MB)
           </p>
 
           <input
@@ -108,7 +108,7 @@ export function UploadZone({ onFileSelect, onMultiShotClick }: UploadZoneProps) 
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/*,application/pdf"
+            accept="image/*,application/pdf,.docx,.doc,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/msword"
             className="hidden"
             onChange={handleFileInput}
             data-testid="input-file"

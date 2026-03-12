@@ -19,6 +19,7 @@ import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { ObjectPermission } from "./objectAcl";
 import { insertDocumentSchema, updateDocumentSchema, DOCUMENT_CATEGORIES, PLAN_LIMITS } from "@shared/schema";
 import { combineImagesToPDF, type PageBuffer } from "./lib/pdfGenerator";
+import mammoth from "mammoth";
 import { parseMailgunWebhook, isSupportedAttachment, isValidDocumentAttachment, isEmailWhitelisted, verifyMailgunWebhook, extractEmailAddress } from "./lib/emailInbound";
 import { sendSharedAccessInvitation, sendVerificationEmail, sendPasswordResetEmail, sendContactFormEmail, sendAdminNewUserNotification, sendAdminNewSubscriptionNotification, sendAdminSubscriptionCancelledNotification, sendAccountSeparatedEmail, sendReferralSignupNotification, sendReferralActivationNotification } from "./lib/sendEmail";
 import { emailQueue } from "./lib/emailQueue";
@@ -74,18 +75,20 @@ const upload = multer({
     fileSize: 10 * 1024 * 1024, // 10MB max file size
   },
   fileFilter: (req, file, cb) => {
-    // Accept images and PDFs
+    // Accept images, PDFs and Word documents
     const allowedMimes = [
       'image/jpeg',      // .jpg, .jpeg
       'image/png',       // .png
       'image/webp',      // .webp
       'image/gif',       // .gif
-      'application/pdf'  // .pdf
+      'application/pdf', // .pdf
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
+      'application/msword', // .doc (older Word format)
     ];
     if (allowedMimes.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error('Ungültiger Dateityp. Bitte laden Sie nur Bilder (JPEG, PNG, WEBP, GIF) oder PDF-Dateien hoch.'));
+      cb(new Error('Ungültiger Dateityp. Bitte laden Sie nur Bilder (JPEG, PNG, WEBP, GIF), PDF- oder Word-Dokumente hoch.'));
     }
   },
 });
@@ -104,6 +107,10 @@ async function mergeFilesToPdf(files: Express.Multer.File[]): Promise<Buffer> {
       const pdfDoc = await PDFDocument.load(file.buffer);
       const pages = await mergedPdf.copyPages(pdfDoc, pdfDoc.getPageIndices());
       pages.forEach(page => mergedPdf.addPage(page));
+    } else if (DOCX_MIMES.includes(file.mimetype)) {
+      // Convert Word document to text-based PDF pages
+      const text = await extractTextFromDocx(file.buffer);
+      await addDocxTextPagesToPdf(mergedPdf, text);
     } else if (file.mimetype.startsWith('image/')) {
       // Convert image to PDF page
       const pageBuffer: PageBuffer = {
@@ -120,6 +127,66 @@ async function mergeFilesToPdf(files: Express.Multer.File[]): Promise<Buffer> {
   }
   
   return Buffer.from(await mergedPdf.save());
+}
+
+const DOCX_MIMES = [
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/msword',
+];
+
+/**
+ * Extracts raw text from a Word document (.docx / .doc) buffer using mammoth.
+ */
+async function extractTextFromDocx(buffer: Buffer): Promise<string> {
+  const result = await mammoth.extractRawText({ buffer });
+  return result.value.trim();
+}
+
+/**
+ * Converts extracted Word text into a simple A4 PDF page and adds it to the given PDFDocument.
+ */
+async function addDocxTextPagesToPdf(pdfDoc: PDFDocument, text: string): Promise<void> {
+  const { StandardFonts, rgb } = await import('pdf-lib');
+  const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  const pageWidth = 595.28;
+  const pageHeight = 841.89;
+  const margin = 50;
+  const fontSize = 10;
+  const lineHeight = 14;
+  const maxWidth = pageWidth - 2 * margin;
+
+  // Split text into wrapped lines
+  const paragraphs = text.split('\n');
+  const lines: string[] = [];
+  for (const paragraph of paragraphs) {
+    if (!paragraph.trim()) { lines.push(''); continue; }
+    const words = paragraph.split(' ');
+    let currentLine = '';
+    for (const word of words) {
+      const testLine = currentLine ? `${currentLine} ${word}` : word;
+      try {
+        const w = font.widthOfTextAtSize(testLine, fontSize);
+        if (w > maxWidth && currentLine) { lines.push(currentLine); currentLine = word; }
+        else { currentLine = testLine; }
+      } catch { currentLine = testLine; }
+    }
+    if (currentLine) lines.push(currentLine);
+  }
+
+  // Paginate
+  let y = pageHeight - margin;
+  let page = pdfDoc.addPage([pageWidth, pageHeight]);
+  for (const line of lines) {
+    if (y < margin) {
+      page = pdfDoc.addPage([pageWidth, pageHeight]);
+      y = pageHeight - margin;
+    }
+    if (line) {
+      try { page.drawText(line, { x: margin, y, size: fontSize, font, color: rgb(0, 0, 0) }); }
+      catch { /* skip lines with unsupported characters */ }
+    }
+    y -= lineHeight;
+  }
 }
 
 /**
@@ -2073,7 +2140,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log(`Merging ${files.length} file(s) into one document${folderId ? ` into folder ${folderId}` : ''}`);
         
         try {
-          // Check if all files are images (not PDFs)
+          // Check if all files are images (not PDFs or Word docs)
           const allFilesAreImages = files.every(f => 
             f.mimetype === 'image/jpeg' || 
             f.mimetype === 'image/png' || 
@@ -2224,9 +2291,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
           
           const isPdf = file.mimetype === 'application/pdf';
+          const isDocx = DOCX_MIMES.includes(file.mimetype);
           let analysisResult;
 
-          if (isPdf) {
+          if (isDocx) {
+            // Handle Word document: Extract text with mammoth and analyze
+            console.log(`    Extracting text from Word document: ${file.originalname}`);
+            const extractedText = await extractTextFromDocx(file.buffer);
+            console.log(`    Extracted ${extractedText.length} characters from Word document`);
+            if (extractedText.length < 10) {
+              throw new Error('Word-Dokument enthält keinen lesbaren Text.');
+            }
+            analysisResult = await analyzeDocumentFromText(extractedText);
+          } else if (isPdf) {
             // Handle PDF: Extract text and analyze
             const extractedText = await extractTextFromPdf(file.buffer);
             console.log(`    Extracted ${extractedText.length} characters from PDF`);
@@ -2261,8 +2338,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             analysisResult = await analyzeDocument(imageForAnalysis);
           }
           
-          // Auto-rotate image if AI detected upside down orientation
-          if (analysisResult.needsRotation && !isPdf && file.mimetype.startsWith('image/')) {
+          // Auto-rotate image if AI detected upside down orientation (images only)
+          if (analysisResult.needsRotation && !isPdf && !isDocx && file.mimetype.startsWith('image/')) {
             console.log('    ⟳ AI detected upside down document - auto-rotating 180°');
             try {
               const rotatedBuffer = await sharp(file.buffer)

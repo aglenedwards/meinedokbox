@@ -61,9 +61,18 @@ interface PagePreview {
 
 const MAX_FILES = 20;
 
+const DOCX_TYPES = [
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/msword',
+];
+
+function isAcceptedFileType(type: string): boolean {
+  return type.startsWith('image/') || type === 'application/pdf' || DOCX_TYPES.includes(type);
+}
+
 function buildPreviews(files: File[]): PagePreview[] {
   return files
-    .filter(f => f.type.startsWith('image/') || f.type === 'application/pdf')
+    .filter(f => isAcceptedFileType(f.type))
     .map(f => ({ file: f, previewUrl: URL.createObjectURL(f) }));
 }
 
@@ -82,7 +91,7 @@ export function MultiPageUpload({ onComplete, onCancel, initialFiles }: MultiPag
     const filesToAdd = Array.from(files).slice(0, remainingSlots);
 
     filesToAdd.forEach(file => {
-      if (file.type.startsWith('image/') || file.type === 'application/pdf') {
+      if (isAcceptedFileType(file.type)) {
         const previewUrl = URL.createObjectURL(file);
         newPages.push({ file, previewUrl });
       }
@@ -231,7 +240,7 @@ export function MultiPageUpload({ onComplete, onCancel, initialFiles }: MultiPag
                 Ziehen Sie eine Datei hierher oder klicken Sie zum Auswählen
               </p>
               <p className="text-xs text-muted-foreground/70 mt-1">
-                Maximal {MAX_FILES} Dateien pro Upload (JPG, PNG, PDF)
+                Maximal {MAX_FILES} Dateien pro Upload (JPG, PNG, PDF, Word)
               </p>
             </div>
 
@@ -239,7 +248,7 @@ export function MultiPageUpload({ onComplete, onCancel, initialFiles }: MultiPag
               type="file"
               id="page-upload"
               className="hidden"
-              accept="image/*,application/pdf"
+              accept="image/*,application/pdf,.docx,.doc,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/msword"
               multiple
               onChange={(e) => handleFileSelect(e.target.files)}
               data-testid="input-page-upload"

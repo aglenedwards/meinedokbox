@@ -136,8 +136,12 @@ export default function Dashboard() {
       e.preventDefault();
       dragCounterRef.current = 0;
       setIsDragOverPage(false);
+      const WORD_TYPES = [
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/msword',
+      ];
       const files = Array.from(e.dataTransfer?.files ?? []).filter(
-        f => f.type.startsWith('image/') || f.type === 'application/pdf'
+        f => f.type.startsWith('image/') || f.type === 'application/pdf' || WORD_TYPES.includes(f.type)
       );
       if (files.length === 0) return;
       setDroppedFiles(files);
@@ -873,7 +877,7 @@ export default function Dashboard() {
             <Upload className="h-12 w-12 text-primary" />
           </div>
           <p className="text-xl font-semibold text-primary">Dateien hier ablegen</p>
-          <p className="text-sm text-muted-foreground">JPG, PNG, WEBP oder PDF</p>
+          <p className="text-sm text-muted-foreground">JPG, PNG, WEBP, PDF oder Word</p>
         </div>
       </div>
     )}
