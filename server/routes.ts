@@ -4152,22 +4152,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const mimeIsImage = doc.mimeType ? imageMimeTypes.has(doc.mimeType) : false;
         const mimeIsDocx = doc.mimeType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
           || doc.mimeType === 'application/msword';
-        const docxExtension = doc.mimeType === 'application/msword' ? 'doc' : 'docx';
 
-        // For CSV: .pdf for images/PDFs, original extension for Word files
-        const csvFilenameForDoc = mimeIsDocx ? `${safeTitle}.${docxExtension}` : `${safeTitle}.pdf`;
+        // For CSV: always .pdf (everything gets converted to PDF in this export)
+        const csvFilenameForDoc = `${safeTitle}.pdf`;
 
         if (pageUrls.length === 0) continue;
 
         if (pageUrls.length === 1) {
-          // Single file — fetch buffer, then decide: image → PDF, Word → .docx, PDF → pass through
+          // Single file — fetch buffer, then decide: Word → text PDF, image → PDF, PDF → pass through
           try {
             const objectFile = await objectStorageService.getObjectEntityFile(pageUrls[0]);
             const fileBuffer = await objectStorageService.getObjectBuffer(objectFile);
             const isImage = mimeIsImage || bufferIsImage(fileBuffer);
             console.log(`[SmartFolderExport] doc "${doc.title}" mimeType=${doc.mimeType} isImage=${isImage} isDocx=${mimeIsDocx}`);
             if (mimeIsDocx) {
-              archive.append(fileBuffer, { name: `${safeTitle}.${docxExtension}` });
+              // Convert Word → text-based PDF
+              const docText = await extractTextFromDocx(fileBuffer);
+              const wordPdf = await PDFDocument.create();
+              await addDocxTextPagesToPdf(wordPdf, docText);
+              archive.append(Buffer.from(await wordPdf.save()), { name: `${safeTitle}.pdf` });
             } else if (isImage) {
               const pdfBuffer = await imageToPdf(fileBuffer);
               archive.append(pdfBuffer, { name: `${safeTitle}.pdf` });
@@ -4190,11 +4193,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
               if (bufferIsImage(buf)) hasImagePages = true;
             }
             if (mimeIsDocx) {
-              // Word documents — add each page as-is with docx extension
-              for (let i = 0; i < pageBuffers.length; i++) {
-                const suffix = pageBuffers.length > 1 ? `_${i + 1}` : '';
-                archive.append(pageBuffers[i], { name: `${safeTitle}${suffix}.${docxExtension}` });
+              // Convert Word → text-based PDF (merge all pages into one PDF)
+              const combinedPdf = await PDFDocument.create();
+              for (const buf of pageBuffers) {
+                const docText = await extractTextFromDocx(buf);
+                await addDocxTextPagesToPdf(combinedPdf, docText);
               }
+              archive.append(Buffer.from(await combinedPdf.save()), { name: `${safeTitle}.pdf` });
             } else if (hasImagePages || mimeIsImage) {
               // All pages are images → merge into one multi-page PDF
               for (const buf of pageBuffers) {
