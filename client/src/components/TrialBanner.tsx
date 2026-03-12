@@ -5,21 +5,23 @@ import { Clock, Sparkles } from "lucide-react";
 interface TrialBannerProps {
   daysRemaining: number;
   onUpgrade: () => void;
+  planDisplayName?: string;
 }
 
-export function TrialBanner({ daysRemaining, onUpgrade }: TrialBannerProps) {
+export function TrialBanner({ daysRemaining, onUpgrade, planDisplayName }: TrialBannerProps) {
   if (daysRemaining <= 0) {
     return null;
   }
 
   const isUrgent = daysRemaining <= 3;
+  const planLabel = planDisplayName ? `${planDisplayName}-Trial` : "Testphase";
 
   return (
     <Alert className={isUrgent ? "border-orange-500 bg-orange-50 dark:bg-orange-950/20" : "border-primary bg-primary/5"}>
       <Sparkles className="h-4 w-4" />
       <AlertTitle className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <span>
-          {isUrgent ? "⚡ Trial endet bald!" : "🎉 Family-Trial aktiv"}
+          {isUrgent ? "Trial endet bald!" : `${planLabel} aktiv`}
         </span>
         <Button 
           variant={isUrgent ? "default" : "outline"} 
@@ -37,7 +39,7 @@ export function TrialBanner({ daysRemaining, onUpgrade }: TrialBannerProps) {
           {isUrgent ? (
             <strong>Nur noch {daysRemaining} {daysRemaining === 1 ? "Tag" : "Tage"} bis zum Ende Ihrer Trial-Phase!</strong>
           ) : (
-            <span>Sie testen den Family-Tarif mit allen Features kostenfrei. Noch {daysRemaining} Tage verbleibend.</span>
+            <span>Sie testen alle Features kostenfrei. Noch {daysRemaining} {daysRemaining === 1 ? "Tag" : "Tage"} verbleibend.</span>
           )}
         </span>
       </AlertDescription>
