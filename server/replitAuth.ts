@@ -98,7 +98,8 @@ export async function setupAuth(app: Express) {
       const user = await storage.getUser(userId);
       if (!user) return cb(null, false);
       // Re-wrap as a minimal claims object for compatibility
-      cb(null, { claims: { sub: user.id, email: user.email }, id: user.id, email: user.email });
+      // isLocal: true is required so isAuthenticated() skips the OIDC token-expiry check
+      cb(null, { claims: { sub: user.id, email: user.email }, id: user.id, email: user.email, isLocal: true });
     } catch (err) {
       cb(err);
     }
