@@ -877,7 +877,7 @@ export default function Dashboard() {
             <Upload className="h-12 w-12 text-primary" />
           </div>
           <p className="text-xl font-semibold text-primary">Dateien hier ablegen</p>
-          <p className="text-sm text-muted-foreground">JPG, PNG, WEBP, PDF oder Word</p>
+          <p className="text-sm text-muted-foreground">JPG, PNG, HEIC, WEBP, PDF oder Word</p>
         </div>
       </div>
     )}

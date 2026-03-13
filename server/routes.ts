@@ -75,12 +75,16 @@ const upload = multer({
     fileSize: 10 * 1024 * 1024, // 10MB max file size
   },
   fileFilter: (req, file, cb) => {
-    // Accept images, PDFs and Word documents
+    // Accept images (incl. HEIC/HEIF from iPhone), PDFs and Word documents
     const allowedMimes = [
       'image/jpeg',      // .jpg, .jpeg
       'image/png',       // .png
       'image/webp',      // .webp
       'image/gif',       // .gif
+      'image/heic',      // .heic (iPhone)
+      'image/heif',      // .heif (iPhone)
+      'image/heic-sequence', // .heics
+      'image/heif-sequence', // .heifs
       'application/pdf', // .pdf
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
       'application/msword', // .doc (older Word format)
@@ -88,7 +92,7 @@ const upload = multer({
     if (allowedMimes.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error('Ungültiger Dateityp. Bitte laden Sie nur Bilder (JPEG, PNG, WEBP, GIF), PDF- oder Word-Dokumente hoch.'));
+      cb(new Error('Ungültiger Dateityp. Bitte laden Sie nur Bilder (JPEG, PNG, WEBP, HEIC, GIF), PDF- oder Word-Dokumente hoch.'));
     }
   },
 });
@@ -133,6 +137,31 @@ const DOCX_MIMES = [
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   'application/msword',
 ];
+
+const HEIC_MIMES = [
+  'image/heic',
+  'image/heif',
+  'image/heic-sequence',
+  'image/heif-sequence',
+];
+
+/**
+ * Converts a HEIC/HEIF file buffer to JPEG using sharp.
+ * Returns the file unchanged if it is not a HEIC/HEIF file.
+ */
+async function convertHeicToJpeg(file: Express.Multer.File): Promise<Express.Multer.File> {
+  if (!HEIC_MIMES.includes(file.mimetype)) return file;
+  console.log(`[HEIC] Converting ${file.originalname} (${file.mimetype}) → JPEG`);
+  const sharpLib = (await import('sharp')).default;
+  const jpegBuffer = await sharpLib(file.buffer).jpeg({ quality: 90 }).toBuffer();
+  return {
+    ...file,
+    buffer: jpegBuffer,
+    mimetype: 'image/jpeg',
+    originalname: file.originalname.replace(/\.(heic|heif|heics|heifs)$/i, '.jpg'),
+    size: jpegBuffer.length,
+  };
+}
 
 /**
  * Extracts raw text from a Word document (.docx / .doc) buffer using mammoth.
@@ -2128,6 +2157,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (files.length > 20) {
         return res.status(400).json({ message: "Maximal 20 Dateien gleichzeitig möglich" });
       }
+
+      // Convert any HEIC/HEIF files to JPEG before all further processing
+      files = await Promise.all(files.map(f => convertHeicToJpeg(f)));
 
       // === PREVIEW MODE: Partial upload handling ===
       // If the user is in preview mode and tries to upload more files than their remaining

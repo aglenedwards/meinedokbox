@@ -240,7 +240,7 @@ export function MultiPageUpload({ onComplete, onCancel, initialFiles }: MultiPag
                 Ziehen Sie eine Datei hierher oder klicken Sie zum Auswählen
               </p>
               <p className="text-xs text-muted-foreground/70 mt-1">
-                Maximal {MAX_FILES} Dateien pro Upload (JPG, PNG, PDF, Word)
+                Maximal {MAX_FILES} Dateien pro Upload (JPG, PNG, HEIC, PDF, Word)
               </p>
             </div>
 
@@ -248,7 +248,7 @@ export function MultiPageUpload({ onComplete, onCancel, initialFiles }: MultiPag
               type="file"
               id="page-upload"
               className="hidden"
-              accept="image/*,application/pdf,.docx,.doc,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/msword"
+              accept="image/*,.heic,.heif,application/pdf,.docx,.doc,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/msword"
               multiple
               onChange={(e) => handleFileSelect(e.target.files)}
               data-testid="input-page-upload"
