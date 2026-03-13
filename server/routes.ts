@@ -2101,7 +2101,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Document upload endpoint - supports single or multiple files (max 20)
-  app.post('/api/documents/upload', isAuthenticated, uploadLimiter, checkDocumentLimit, upload.array('files', 20), async (req: any, res) => {
+  const handleMulterUpload = (req: any, res: any, next: any) => {
+    upload.array('files', 20)(req, res, (err: any) => {
+      if (err) {
+        if (err instanceof multer.MulterError) {
+          return res.status(400).json({ message: `Upload-Fehler: ${err.message}` });
+        }
+        return res.status(400).json({ message: err.message || 'Ungültiger Dateityp' });
+      }
+      next();
+    });
+  };
+
+  app.post('/api/documents/upload', isAuthenticated, uploadLimiter, checkDocumentLimit, handleMulterUpload, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       let files = req.files as Express.Multer.File[];
