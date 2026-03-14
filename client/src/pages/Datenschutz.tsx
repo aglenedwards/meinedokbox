@@ -219,9 +219,15 @@ export default function Datenschutz() {
               <li>Datenübertragbarkeit (Art. 20 DSGVO)</li>
               <li>Widerspruch gegen die Verarbeitung (Art. 21 DSGVO)</li>
             </ul>
+            <p className="text-muted-foreground mb-3">
+              Zur Ausübung Ihrer Rechte – insbesondere zur Löschung Ihres Kontos und aller gespeicherten Daten –
+              nutzen Sie bitte unser{" "}
+              <a href="/kontakt" className="text-primary hover:underline">Kontaktformular</a>
+              {" "}oder schreiben Sie direkt an:{" "}
+              <a href="mailto:service@meinedokbox.de" className="text-primary hover:underline">service@meinedokbox.de</a>.
+            </p>
             <p className="text-muted-foreground">
-              Zur Ausübung der Rechte genügt eine E-Mail an:{" "}
-              <a href="mailto:service@meinedokbox.de" className="text-primary hover:underline">service@meinedokbox.de</a>
+              Wir bearbeiten Ihre Anfrage innerhalb von 30 Tagen gemäß Art. 12 DSGVO und bestätigen die Durchführung schriftlich per E-Mail.
             </p>
           </section>
 
