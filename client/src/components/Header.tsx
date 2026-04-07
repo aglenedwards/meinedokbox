@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -69,13 +69,6 @@ export function Header() {
     queryFn: getCurrentUser,
     retry: false,
   });
-
-  // Redirect to dashboard if already logged in
-  useEffect(() => {
-    if (!isLoading && user) {
-      setLocation("/dashboard");
-    }
-  }, [user, isLoading, setLocation]);
 
   const loginForm = useForm<LoginData>({
     resolver: zodResolver(loginSchema),
