@@ -75,7 +75,7 @@ export function WelcomeModal({ open, onOpenChange, onStartTrial, onDirectPayment
               </div>
             </div>
             <DialogTitle className="text-center text-2xl sm:text-3xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
-              Willkommen bei MeineDokBox!
+              Willkommen bei Doklify!
             </DialogTitle>
             <DialogDescription className="text-center text-sm sm:text-base mt-2 sm:mt-3 text-foreground/70">
               Ihre intelligente Lösung für sicheres, digitales Dokumentenmanagement

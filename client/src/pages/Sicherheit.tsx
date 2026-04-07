@@ -39,7 +39,7 @@ export default function Sicherheit() {
             
             {/* Subtitle */}
             <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto mb-12 leading-relaxed">
-              MeineDokBox setzt auf höchste Sicherheitsstandards. Alle Dokumente werden ausschließlich 
+              Doklify setzt auf höchste Sicherheitsstandards. Alle Dokumente werden ausschließlich 
               auf zertifizierten Servern in Deutschland gespeichert – DSGVO-konform.
             </p>
 

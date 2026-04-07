@@ -19,7 +19,7 @@ async function sendReactivationEmail(
 
   try {
     const formData = new URLSearchParams();
-    formData.append("from", `MeineDokBox <noreply@${domain}>`);
+    formData.append("from", `Doklify <noreply@${domain}>`);
     formData.append("to", to);
     formData.append("subject", subject);
     formData.append("text", text);
@@ -53,7 +53,7 @@ async function sendReactivationEmail(
 function getUnsubscribeUrl(userId: string): string {
   const baseUrl = process.env.REPLIT_DEPLOYMENT_URL || process.env.REPL_SLUG 
     ? `https://${process.env.REPL_SLUG}.repl.co` 
-    : "https://meinedokbox.de";
+    : "https://doklify.de";
   return `${baseUrl}/unsubscribe?uid=${userId}`;
 }
 
@@ -65,12 +65,12 @@ export function getReactivationEmail1Sleeper(userName: string, userId: string) {
 <tr><td align="center">
 <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
 <tr><td style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);padding:40px 30px;text-align:center;">
-<p style="margin:0 0 8px 0;font-size:28px;color:#ffffff !important;">&#128194; MeineDokBox</p>
+<p style="margin:0 0 8px 0;font-size:28px;color:#ffffff !important;">&#128194; Doklify</p>
 <h1 style="margin:0;font-size:22px;color:#ffffff !important;font-weight:600;">Dein Aktenschrank wartet!</h1>
 </td></tr>
 <tr><td style="padding:40px 36px 20px 36px;">
 <p style="margin:0 0 20px 0;font-size:16px;color:#333333;">Hey${userName ? ` ${userName}` : ''},</p>
-<p style="margin:0 0 24px 0;font-size:16px;color:#555555;">du hast dich bei MeineDokBox registriert, aber noch kein einziges Dokument hochgeladen. Dabei geht's so einfach:</p>
+<p style="margin:0 0 24px 0;font-size:16px;color:#555555;">du hast dich bei Doklify registriert, aber noch kein einziges Dokument hochgeladen. Dabei geht's so einfach:</p>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 28px 0;">
 <tr><td style="padding:14px 18px;background-color:#f8f9ff;border-radius:8px;margin-bottom:8px;">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
@@ -92,21 +92,21 @@ export function getReactivationEmail1Sleeper(userName: string, userId: string) {
 </table>
 <p style="margin:0 0 30px 0;font-size:16px;color:#555555;">Probier's doch einfach mal aus &#8211; dein erster Upload dauert keine 30 Sekunden!</p>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center">
-<a href="https://meinedokbox.de" style="display:inline-block;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#ffffff !important;padding:16px 40px;text-decoration:none;border-radius:8px;font-size:16px;font-weight:600;">Jetzt erstes Dokument hochladen</a>
+<a href="https://doklify.de" style="display:inline-block;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#ffffff !important;padding:16px 40px;text-decoration:none;border-radius:8px;font-size:16px;font-weight:600;">Jetzt erstes Dokument hochladen</a>
 </td></tr></table>
 <p style="margin:28px 0 0 0;padding:18px;background-color:#fef9e7;border-radius:8px;font-size:14px;color:#7c6f2a;border-left:4px solid #f5c518;">&#128161; <strong>Tipp:</strong> Du hast eine Rechnung, einen Vertrag oder ein Attest rumliegen? Perfekt zum Testen!</p>
 </td></tr>
 <tr><td style="padding:0 36px 36px 36px;">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #e5e7eb;padding-top:24px;margin-top:16px;">
 <tr><td style="text-align:center;">
-<p style="margin:0 0 6px 0;font-size:13px;color:#9ca3af;"><strong>MeineDokBox</strong> &#8211; Intelligente Dokumentenverwaltung</p>
+<p style="margin:0 0 6px 0;font-size:13px;color:#9ca3af;"><strong>Doklify</strong> &#8211; Intelligente Dokumentenverwaltung</p>
 <p style="margin:0;font-size:11px;"><a href="${unsubUrl}" style="color:#9ca3af;text-decoration:underline;">Keine weiteren E-Mails erhalten</a></p>
 </td></tr></table>
 </td></tr>
 </table>
 </td></tr></table>
 </body></html>`;
-  const text = `Hey${userName ? ` ${userName}` : ''},\n\ndu hast dich bei MeineDokBox registriert, aber noch kein Dokument hochgeladen.\n\nSo einfach geht's:\n1. Foto machen\n2. Hochladen\n3. Fertig - die KI sortiert alles!\n\nProbier's aus: https://meinedokbox.de\n\nKeine weiteren E-Mails: ${unsubUrl}`;
+  const text = `Hey${userName ? ` ${userName}` : ''},\n\ndu hast dich bei Doklify registriert, aber noch kein Dokument hochgeladen.\n\nSo einfach geht's:\n1. Foto machen\n2. Hochladen\n3. Fertig - die KI sortiert alles!\n\nProbier's aus: https://doklify.de\n\nKeine weiteren E-Mails: ${unsubUrl}`;
   return { subject, html, text };
 }
 
@@ -118,12 +118,12 @@ export function getReactivationEmail1PowerUser(userName: string, docCount: numbe
 <tr><td align="center">
 <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
 <tr><td style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);padding:40px 30px;text-align:center;">
-<p style="margin:0 0 8px 0;font-size:28px;color:#ffffff !important;">&#128194; MeineDokBox</p>
+<p style="margin:0 0 8px 0;font-size:28px;color:#ffffff !important;">&#128194; Doklify</p>
 <h1 style="margin:0;font-size:22px;color:#ffffff !important;font-weight:600;">Deine Dokumente vermissen dich!</h1>
 </td></tr>
 <tr><td style="padding:40px 36px 20px 36px;">
 <p style="margin:0 0 20px 0;font-size:16px;color:#333333;">Hey${userName ? ` ${userName}` : ''},</p>
-<p style="margin:0 0 24px 0;font-size:16px;color:#555555;">deine Testphase bei MeineDokBox ist abgelaufen.</p>
+<p style="margin:0 0 24px 0;font-size:16px;color:#555555;">deine Testphase bei Doklify ist abgelaufen.</p>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 28px 0;">
 <tr><td style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);padding:24px;border-radius:10px;text-align:center;">
 <p style="margin:0 0 4px 0;font-size:36px;color:#ffffff !important;font-weight:700;">${docCount}</p>
@@ -137,20 +137,20 @@ export function getReactivationEmail1PowerUser(userName: string, docCount: numbe
 <tr><td style="padding:10px 0;font-size:15px;color:#333333;border-top:1px solid #f0f0f0;"><span style="color:#667eea;font-size:18px;margin-right:10px;">&#10003;</span> Dokumente mit dem Partner teilen</td></tr>
 </table>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center">
-<a href="https://meinedokbox.de" style="display:inline-block;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#ffffff !important;padding:16px 40px;text-decoration:none;border-radius:8px;font-size:16px;font-weight:600;">Jetzt Zugang sichern</a>
+<a href="https://doklify.de" style="display:inline-block;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#ffffff !important;padding:16px 40px;text-decoration:none;border-radius:8px;font-size:16px;font-weight:600;">Jetzt Zugang sichern</a>
 </td></tr></table>
 </td></tr>
 <tr><td style="padding:0 36px 36px 36px;">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #e5e7eb;padding-top:24px;margin-top:16px;">
 <tr><td style="text-align:center;">
-<p style="margin:0 0 6px 0;font-size:13px;color:#9ca3af;"><strong>MeineDokBox</strong> &#8211; Intelligente Dokumentenverwaltung</p>
+<p style="margin:0 0 6px 0;font-size:13px;color:#9ca3af;"><strong>Doklify</strong> &#8211; Intelligente Dokumentenverwaltung</p>
 <p style="margin:0;font-size:11px;"><a href="${unsubUrl}" style="color:#9ca3af;text-decoration:underline;">Keine weiteren E-Mails erhalten</a></p>
 </td></tr></table>
 </td></tr>
 </table>
 </td></tr></table>
 </body></html>`;
-  const text = `Hey${userName ? ` ${userName}` : ''},\n\ndeine Testphase ist abgelaufen. ${docCount} Dokument${docCount > 1 ? 'e' : ''} warten auf dich!\n\nSchon ab 4,99 EUR/Monat: https://meinedokbox.de\n\nKeine weiteren E-Mails: ${unsubUrl}`;
+  const text = `Hey${userName ? ` ${userName}` : ''},\n\ndeine Testphase ist abgelaufen. ${docCount} Dokument${docCount > 1 ? 'e' : ''} warten auf dich!\n\nSchon ab 4,99 EUR/Monat: https://doklify.de\n\nKeine weiteren E-Mails: ${unsubUrl}`;
   return { subject, html, text };
 }
 
@@ -162,12 +162,12 @@ export function getReactivationEmail2Sleeper(userName: string, userId: string) {
 <tr><td align="center">
 <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
 <tr><td style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);padding:40px 30px;text-align:center;">
-<p style="margin:0 0 8px 0;font-size:28px;color:#ffffff !important;">&#128194; MeineDokBox</p>
+<p style="margin:0 0 8px 0;font-size:28px;color:#ffffff !important;">&#128194; Doklify</p>
 <h1 style="margin:0;font-size:22px;color:#ffffff !important;font-weight:600;">Warum Papierkram digital besser ist</h1>
 </td></tr>
 <tr><td style="padding:40px 36px 20px 36px;">
 <p style="margin:0 0 20px 0;font-size:16px;color:#333333;">Hey${userName ? ` ${userName}` : ''},</p>
-<p style="margin:0 0 28px 0;font-size:16px;color:#555555;">vielleicht hattest du noch keine Zeit zum Testen. Kein Problem! Hier sind 3 Situationen, in denen MeineDokBox Gold wert ist:</p>
+<p style="margin:0 0 28px 0;font-size:16px;color:#555555;">vielleicht hattest du noch keine Zeit zum Testen. Kein Problem! Hier sind 3 Situationen, in denen Doklify Gold wert ist:</p>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 12px 0;">
 <tr><td style="background-color:#f8f9ff;border-radius:10px;padding:20px;border:1px solid #e8ebf7;">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
@@ -191,20 +191,20 @@ export function getReactivationEmail2Sleeper(userName: string, userId: string) {
 </td></tr></table>
 <p style="margin:0 0 30px 0;padding:16px 20px;background-color:#f0f2f5;border-radius:8px;font-size:15px;color:#555555;">&#10024; <strong>Der Clou:</strong> Unsere KI erkennt automatisch, was auf dem Dokument steht und sortiert es f&#252;r dich ein.</p>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center">
-<a href="https://meinedokbox.de" style="display:inline-block;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#ffffff !important;padding:16px 40px;text-decoration:none;border-radius:8px;font-size:16px;font-weight:600;">Kostenlos ausprobieren</a>
+<a href="https://doklify.de" style="display:inline-block;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#ffffff !important;padding:16px 40px;text-decoration:none;border-radius:8px;font-size:16px;font-weight:600;">Kostenlos ausprobieren</a>
 </td></tr></table>
 </td></tr>
 <tr><td style="padding:0 36px 36px 36px;">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #e5e7eb;padding-top:24px;margin-top:16px;">
 <tr><td style="text-align:center;">
-<p style="margin:0 0 6px 0;font-size:13px;color:#9ca3af;"><strong>MeineDokBox</strong> &#8211; Intelligente Dokumentenverwaltung</p>
+<p style="margin:0 0 6px 0;font-size:13px;color:#9ca3af;"><strong>Doklify</strong> &#8211; Intelligente Dokumentenverwaltung</p>
 <p style="margin:0;font-size:11px;"><a href="${unsubUrl}" style="color:#9ca3af;text-decoration:underline;">Keine weiteren E-Mails erhalten</a></p>
 </td></tr></table>
 </td></tr>
 </table>
 </td></tr></table>
 </body></html>`;
-  const text = `Hey${userName ? ` ${userName}` : ''},\n\nWarum Papierkram digital besser ist:\n- Steuererklaerung: Belege sofort finden\n- Versicherungsfall: Police in Sekunden parat\n- Umzug: Alle Unterlagen digital dabei\n\nJetzt testen: https://meinedokbox.de\n\nKeine weiteren E-Mails: ${unsubUrl}`;
+  const text = `Hey${userName ? ` ${userName}` : ''},\n\nWarum Papierkram digital besser ist:\n- Steuererklaerung: Belege sofort finden\n- Versicherungsfall: Police in Sekunden parat\n- Umzug: Alle Unterlagen digital dabei\n\nJetzt testen: https://doklify.de\n\nKeine weiteren E-Mails: ${unsubUrl}`;
   return { subject, html, text };
 }
 
@@ -216,7 +216,7 @@ export function getReactivationEmail2PowerUser(userName: string, docCount: numbe
 <tr><td align="center">
 <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
 <tr><td style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);padding:40px 30px;text-align:center;">
-<p style="margin:0 0 8px 0;font-size:28px;color:#ffffff !important;">&#128194; MeineDokBox</p>
+<p style="margin:0 0 8px 0;font-size:28px;color:#ffffff !important;">&#128194; Doklify</p>
 <h1 style="margin:0;font-size:22px;color:#ffffff !important;font-weight:600;">Deine Dokumente warten immer noch</h1>
 </td></tr>
 <tr><td style="padding:40px 36px 20px 36px;">
@@ -232,21 +232,21 @@ export function getReactivationEmail2PowerUser(userName: string, docCount: numbe
 </td></tr></table>
 </td></tr></table>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px 0;"><tr><td align="center">
-<a href="https://meinedokbox.de" style="display:inline-block;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#ffffff !important;padding:16px 40px;text-decoration:none;border-radius:8px;font-size:16px;font-weight:600;">Zugang wiederherstellen</a>
+<a href="https://doklify.de" style="display:inline-block;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#ffffff !important;padding:16px 40px;text-decoration:none;border-radius:8px;font-size:16px;font-weight:600;">Zugang wiederherstellen</a>
 </td></tr></table>
 <p style="margin:0;text-align:center;font-size:14px;color:#888888;">Schon ab <strong style="color:#667eea;">4,99 EUR/Monat</strong> &#8211; weniger als ein Kaffee!</p>
 </td></tr>
 <tr><td style="padding:0 36px 36px 36px;">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #e5e7eb;padding-top:24px;margin-top:16px;">
 <tr><td style="text-align:center;">
-<p style="margin:0 0 6px 0;font-size:13px;color:#9ca3af;"><strong>MeineDokBox</strong> &#8211; Intelligente Dokumentenverwaltung</p>
+<p style="margin:0 0 6px 0;font-size:13px;color:#9ca3af;"><strong>Doklify</strong> &#8211; Intelligente Dokumentenverwaltung</p>
 <p style="margin:0;font-size:11px;"><a href="${unsubUrl}" style="color:#9ca3af;text-decoration:underline;">Keine weiteren E-Mails erhalten</a></p>
 </td></tr></table>
 </td></tr>
 </table>
 </td></tr></table>
 </body></html>`;
-  const text = `Hey${userName ? ` ${userName}` : ''},\n\n${docCount} Dokumente warten in deiner DokBox. Ohne Abo kannst du keine neuen hinzufuegen.\n\nTipp: Mit 5 Empfehlungen wird dein Abo kostenlos!\n\nZugang wiederherstellen: https://meinedokbox.de\n\nKeine weiteren E-Mails: ${unsubUrl}`;
+  const text = `Hey${userName ? ` ${userName}` : ''},\n\n${docCount} Dokumente warten in deiner DokBox. Ohne Abo kannst du keine neuen hinzufuegen.\n\nTipp: Mit 5 Empfehlungen wird dein Abo kostenlos!\n\nZugang wiederherstellen: https://doklify.de\n\nKeine weiteren E-Mails: ${unsubUrl}`;
   return { subject, html, text };
 }
 
@@ -258,7 +258,7 @@ export function getReactivationEmail3(userName: string, docCount: number, userId
 <tr><td align="center">
 <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
 <tr><td style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);padding:40px 30px;text-align:center;">
-<p style="margin:0 0 8px 0;font-size:28px;color:#ffffff !important;">&#128194; MeineDokBox</p>
+<p style="margin:0 0 8px 0;font-size:28px;color:#ffffff !important;">&#128194; Doklify</p>
 <h1 style="margin:0;font-size:22px;color:#ffffff !important;font-weight:600;">Wir vermissen dich!</h1>
 </td></tr>
 <tr><td style="padding:40px 36px 20px 36px;">
@@ -269,23 +269,23 @@ ${docCount > 0 ? `<table role="presentation" width="100%" cellpadding="0" cellsp
 <p style="margin:0 0 4px 0;font-size:32px;color:#ffffff !important;font-weight:700;">${docCount}</p>
 <p style="margin:0;font-size:15px;color:#ffffff !important;">gespeicherte Dokumente bleiben nat&#252;rlich erhalten</p>
 </td></tr></table>` : ''}
-<p style="margin:0 0 28px 0;font-size:16px;color:#555555;">Falls MeineDokBox nichts f&#252;r dich ist, verstehen wir das. Aber falls du es dir anders &#252;berlegst &#8211; wir sind jederzeit f&#252;r dich da!</p>
+<p style="margin:0 0 28px 0;font-size:16px;color:#555555;">Falls Doklify nichts f&#252;r dich ist, verstehen wir das. Aber falls du es dir anders &#252;berlegst &#8211; wir sind jederzeit f&#252;r dich da!</p>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px 0;"><tr><td align="center">
-<a href="https://meinedokbox.de" style="display:inline-block;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#ffffff !important;padding:16px 40px;text-decoration:none;border-radius:8px;font-size:16px;font-weight:600;">Nochmal reinschauen</a>
+<a href="https://doklify.de" style="display:inline-block;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#ffffff !important;padding:16px 40px;text-decoration:none;border-radius:8px;font-size:16px;font-weight:600;">Nochmal reinschauen</a>
 </td></tr></table>
 <p style="margin:0;text-align:center;padding:14px 18px;background-color:#f8f9ff;border-radius:8px;font-size:13px;color:#888888;">Du erh&#228;ltst nach dieser E-Mail keine weiteren Erinnerungen von uns.</p>
 </td></tr>
 <tr><td style="padding:0 36px 36px 36px;">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #e5e7eb;padding-top:24px;margin-top:16px;">
 <tr><td style="text-align:center;">
-<p style="margin:0 0 6px 0;font-size:13px;color:#9ca3af;"><strong>MeineDokBox</strong> &#8211; Intelligente Dokumentenverwaltung</p>
+<p style="margin:0 0 6px 0;font-size:13px;color:#9ca3af;"><strong>Doklify</strong> &#8211; Intelligente Dokumentenverwaltung</p>
 <p style="margin:0;font-size:11px;"><a href="${unsubUrl}" style="color:#9ca3af;text-decoration:underline;">Keine weiteren E-Mails erhalten</a></p>
 </td></tr></table>
 </td></tr>
 </table>
 </td></tr></table>
 </body></html>`;
-  const text = `Hey${userName ? ` ${userName}` : ''},\n\ndies ist unsere letzte Erinnerung - versprochen!\n\n${docCount > 0 ? `Deine ${docCount} Dokumente bleiben erhalten.` : ''}\n\nNochmal reinschauen: https://meinedokbox.de\n\nKeine weiteren E-Mails: ${unsubUrl}`;
+  const text = `Hey${userName ? ` ${userName}` : ''},\n\ndies ist unsere letzte Erinnerung - versprochen!\n\n${docCount > 0 ? `Deine ${docCount} Dokumente bleiben erhalten.` : ''}\n\nNochmal reinschauen: https://doklify.de\n\nKeine weiteren E-Mails: ${unsubUrl}`;
   return { subject, html, text };
 }
 

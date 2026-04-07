@@ -105,7 +105,7 @@ export function DashboardLayout({
                   className="hover-elevate active-elevate-2 rounded-lg transition-all cursor-pointer p-1"
                   data-testid="logo-link"
                 >
-                  <img src={logoImage} alt="MeineDokBox" className="h-12 md:h-16 shrink-0" data-testid="img-logo" />
+                  <img src={logoImage} alt="Doklify" className="h-12 md:h-16 shrink-0" data-testid="img-logo" />
                 </div>
               </Link>
               <div className="flex items-center gap-2 md:hidden">
@@ -211,7 +211,7 @@ export function DashboardLayout({
                   Einstellungen
                 </Button>
               </Link>
-              {user?.email === "service@meinedokbox.de" && (
+              {user?.email === "service@doklify.de" && (
                 <Link href="/admin">
                   <Button variant="outline" size="sm" data-testid="button-admin">
                     <Shield className="h-4 w-4 mr-2" />

@@ -38,7 +38,7 @@ export async function sendEmailWithId(options: EmailOptions): Promise<{ success:
     const fromEmail = `service@${domain}`;
     
     const formData = new URLSearchParams();
-    formData.append('from', `MeineDokBox <${fromEmail}>`);
+    formData.append('from', `Doklify <${fromEmail}>`);
     formData.append('to', options.to);
     formData.append('subject', options.subject);
     formData.append('text', options.text);
@@ -102,12 +102,12 @@ export async function sendSharedAccessInvitation(
 ): Promise<boolean> {
   const baseUrl = getAppUrl();
   const inviteLink = `${baseUrl}/invite?token=${invitationToken}`;
-  const subject = `${ownerName} lädt Sie zu MeineDokBox ein`;
+  const subject = `${ownerName} lädt Sie zu Doklify ein`;
   
   const text = `
 Hallo!
 
-${ownerName} möchte sein MeineDokBox-Konto mit Ihnen teilen.
+${ownerName} möchte sein Doklify-Konto mit Ihnen teilen.
 
 Mit dieser Einladung erhalten Sie vollen Zugriff auf alle geteilten Dokumente und können gemeinsam Dokumente verwalten.
 
@@ -121,7 +121,7 @@ Der Einladungslink ist 7 Tage gültig.
 Bei Fragen können Sie sich jederzeit an ${ownerName} wenden.
 
 Viele Grüße,
-Ihr MeineDokBox Team
+Ihr Doklify Team
   `.trim();
 
   const html = `
@@ -189,14 +189,14 @@ Ihr MeineDokBox Team
 </head>
 <body>
   <div style="background: #667eea; color: #ffffff; padding: 30px; border-radius: 8px 8px 0 0; text-align: center;">
-    <h1 style="color: #ffffff !important; margin: 0 0 10px 0; font-size: 24px;">📂 MeineDokBox</h1>
+    <h1 style="color: #ffffff !important; margin: 0 0 10px 0; font-size: 24px;">📂 Doklify</h1>
     <p style="color: #ffffff !important; margin: 0; font-size: 16px;">Einladung zum gemeinsamen Dokumenten-Management</p>
   </div>
   
   <div class="content">
     <p>Hallo!</p>
     
-    <p><strong>${ownerName}</strong> möchte sein MeineDokBox-Konto mit Ihnen teilen.</p>
+    <p><strong>${ownerName}</strong> möchte sein Doklify-Konto mit Ihnen teilen.</p>
     
     <p>Mit dieser Einladung erhalten Sie vollen Zugriff auf alle geteilten Dokumente und können gemeinsam Dokumente verwalten.</p>
     
@@ -223,7 +223,7 @@ Ihr MeineDokBox Team
     
     <p style="margin-top: 20px; font-size: 14px; color: #999;">
       Viele Grüße,<br>
-      Ihr MeineDokBox Team
+      Ihr Doklify Team
     </p>
   </div>
 </body>
@@ -248,12 +248,12 @@ export async function sendVerificationEmail(
   
   console.log(`[VerificationEmail] Sending to ${to} with link: ${verificationLink}`);
   
-  const subject = `Bestätigen Sie Ihre E-Mail-Adresse für MeineDokBox`;
+  const subject = `Bestätigen Sie Ihre E-Mail-Adresse für Doklify`;
   
   const text = `
 Hallo ${firstName}!
 
-Willkommen bei MeineDokBox!
+Willkommen bei Doklify!
 
 Bitte bestätigen Sie Ihre E-Mail-Adresse, um Ihr Konto zu aktivieren:
 
@@ -261,10 +261,10 @@ ${verificationLink}
 
 Dieser Link ist 24 Stunden gültig.
 
-Falls Sie sich nicht bei MeineDokBox registriert haben, können Sie diese E-Mail ignorieren.
+Falls Sie sich nicht bei Doklify registriert haben, können Sie diese E-Mail ignorieren.
 
 Viele Grüße,
-Ihr MeineDokBox Team
+Ihr Doklify Team
   `.trim();
 
   const html = `
@@ -300,14 +300,14 @@ Ihr MeineDokBox Team
 </head>
 <body>
   <div style="background: #667eea; color: #ffffff; padding: 30px; border-radius: 8px 8px 0 0; text-align: center;">
-    <h1 style="color: #ffffff !important; margin: 0 0 10px 0; font-size: 24px;">📂 MeineDokBox</h1>
+    <h1 style="color: #ffffff !important; margin: 0 0 10px 0; font-size: 24px;">📂 Doklify</h1>
     <p style="color: #ffffff !important; margin: 0; font-size: 16px;">E-Mail-Adresse bestätigen</p>
   </div>
   
   <div class="content">
     <p>Hallo ${firstName}!</p>
     
-    <p><strong>Willkommen bei MeineDokBox!</strong></p>
+    <p><strong>Willkommen bei Doklify!</strong></p>
     
     <p>Bitte bestätigen Sie Ihre E-Mail-Adresse, um Ihr Konto zu aktivieren:</p>
     
@@ -322,12 +322,12 @@ Ihr MeineDokBox Team
     </p>
     
     <p style="margin-top: 30px; font-size: 14px; color: #666;">
-      Falls Sie sich nicht bei MeineDokBox registriert haben, können Sie diese E-Mail ignorieren.
+      Falls Sie sich nicht bei Doklify registriert haben, können Sie diese E-Mail ignorieren.
     </p>
     
     <p style="margin-top: 20px; font-size: 14px; color: #999;">
       Viele Grüße,<br>
-      Ihr MeineDokBox Team
+      Ihr Doklify Team
     </p>
   </div>
 </body>
@@ -352,12 +352,12 @@ export async function sendPasswordResetEmail(
   
   console.log(`[PasswordResetEmail] Sending to ${to} with link: ${resetLink}`);
   
-  const subject = `Passwort zurücksetzen für MeineDokBox`;
+  const subject = `Passwort zurücksetzen für Doklify`;
   
   const text = `
 Hallo ${firstName}!
 
-Sie haben eine Anfrage zum Zurücksetzen Ihres Passworts bei MeineDokBox erhalten.
+Sie haben eine Anfrage zum Zurücksetzen Ihres Passworts bei Doklify erhalten.
 
 Klicken Sie auf den folgenden Link, um Ihr Passwort zurückzusetzen:
 
@@ -368,7 +368,7 @@ Dieser Link ist 1 Stunde gültig.
 Falls Sie diese Anfrage nicht gestellt haben, können Sie diese E-Mail ignorieren. Ihr Passwort bleibt unverändert.
 
 Viele Grüße,
-Ihr MeineDokBox Team
+Ihr Doklify Team
   `.trim();
 
   const html = `
@@ -404,14 +404,14 @@ Ihr MeineDokBox Team
 </head>
 <body>
   <div style="background: #667eea; color: #ffffff; padding: 30px; border-radius: 8px 8px 0 0; text-align: center;">
-    <h1 style="color: #ffffff !important; margin: 0 0 10px 0; font-size: 24px;">📂 MeineDokBox</h1>
+    <h1 style="color: #ffffff !important; margin: 0 0 10px 0; font-size: 24px;">📂 Doklify</h1>
     <p style="color: #ffffff !important; margin: 0; font-size: 16px;">Passwort zurücksetzen</p>
   </div>
   
   <div class="content">
     <p>Hallo ${firstName}!</p>
     
-    <p>Sie haben eine Anfrage zum Zurücksetzen Ihres Passworts bei MeineDokBox erhalten.</p>
+    <p>Sie haben eine Anfrage zum Zurücksetzen Ihres Passworts bei Doklify erhalten.</p>
     
     <p>Klicken Sie auf den folgenden Button, um Ihr Passwort zurückzusetzen:</p>
     
@@ -431,7 +431,7 @@ Ihr MeineDokBox Team
     
     <p style="margin-top: 20px; font-size: 14px; color: #999;">
       Viele Grüße,<br>
-      Ihr MeineDokBox Team
+      Ihr Doklify Team
     </p>
   </div>
 </body>
@@ -450,7 +450,7 @@ export async function sendContactFormEmail(
   subject: string,
   message: string
 ): Promise<boolean> {
-  const serviceEmail = "service@meinedokbox.de";
+  const serviceEmail = "service@doklify.de";
   const emailSubject = `[Kontaktformular] ${subject}`;
   
   const text = `
@@ -463,7 +463,7 @@ Nachricht:
 ${message}
 
 ---
-Diese Nachricht wurde über das Kontaktformular auf meinedokbox.de gesendet.
+Diese Nachricht wurde über das Kontaktformular auf doklify.de gesendet.
   `.trim();
 
   const html = `
@@ -546,7 +546,7 @@ Diese Nachricht wurde über das Kontaktformular auf meinedokbox.de gesendet.
     </div>
     
     <p style="margin-top: 30px; font-size: 14px; color: #999; text-align: center;">
-      Diese Nachricht wurde über das Kontaktformular auf meinedokbox.de gesendet.
+      Diese Nachricht wurde über das Kontaktformular auf doklify.de gesendet.
     </p>
   </div>
 </body>
@@ -564,11 +564,11 @@ export async function sendAdminNewUserNotification(
   userName: string,
   userId: string
 ): Promise<boolean> {
-  const serviceEmail = "service@meinedokbox.de";
+  const serviceEmail = "service@doklify.de";
   const subject = `🎉 Neue Registrierung: ${userName}`;
   
   const text = `
-Neue Benutzer-Registrierung bei MeineDokBox:
+Neue Benutzer-Registrierung bei Doklify:
 
 Name: ${userName}
 E-Mail: ${userEmail}
@@ -578,7 +578,7 @@ Zeitpunkt: ${new Date().toLocaleString('de-DE', { timeZone: 'Europe/Berlin' })}
 Der Benutzer befindet sich nun in der 7-tägigen Testphase.
 
 ---
-Automatische Benachrichtigung von MeineDokBox
+Automatische Benachrichtigung von Doklify
   `.trim();
 
   const html = `
@@ -657,7 +657,7 @@ Automatische Benachrichtigung von MeineDokBox
     </p>
     
     <p style="margin-top: 30px; font-size: 14px; color: #999; text-align: center;">
-      Automatische Benachrichtigung von MeineDokBox
+      Automatische Benachrichtigung von Doklify
     </p>
   </div>
 </body>
@@ -677,7 +677,7 @@ export async function sendAdminNewSubscriptionNotification(
   period: string,
   amount: number
 ): Promise<boolean> {
-  const serviceEmail = "service@meinedokbox.de";
+  const serviceEmail = "service@doklify.de";
   const subject = `💰 Neues Abo: ${plan} (${period}) - ${userName}`;
   
   const planNames: Record<string, string> = {
@@ -692,7 +692,7 @@ export async function sendAdminNewSubscriptionNotification(
   };
   
   const text = `
-Neues Abonnement abgeschlossen bei MeineDokBox:
+Neues Abonnement abgeschlossen bei Doklify:
 
 Kunde: ${userName} (${userEmail})
 Plan: ${planNames[plan] || plan}
@@ -703,7 +703,7 @@ Zeitpunkt: ${new Date().toLocaleString('de-DE', { timeZone: 'Europe/Berlin' })}
 Das Abonnement wurde erfolgreich über Stripe abgeschlossen.
 
 ---
-Automatische Benachrichtigung von MeineDokBox
+Automatische Benachrichtigung von Doklify
   `.trim();
 
   const html = `
@@ -797,7 +797,7 @@ Automatische Benachrichtigung von MeineDokBox
     </p>
     
     <p style="margin-top: 30px; font-size: 14px; color: #999; text-align: center;">
-      Automatische Benachrichtigung von MeineDokBox
+      Automatische Benachrichtigung von Doklify
     </p>
   </div>
 </body>
@@ -816,7 +816,7 @@ export async function sendAdminSubscriptionCancelledNotification(
   plan: string,
   cancelDate?: string
 ): Promise<boolean> {
-  const serviceEmail = "service@meinedokbox.de";
+  const serviceEmail = "service@doklify.de";
   const isScheduled = !!cancelDate;
   const subject = isScheduled
     ? `⚠️ Kündigung zum ${cancelDate}: ${plan} - ${userName}`
@@ -834,7 +834,7 @@ export async function sendAdminSubscriptionCancelledNotification(
     : `Der Kunde wurde sofort auf den kostenlosen Plan zurückgestuft.`;
 
   const text = `
-Abonnement gekündigt bei MeineDokBox:
+Abonnement gekündigt bei Doklify:
 
 Kunde: ${userName} (${userEmail})
 Plan: ${planNames[plan] || plan}
@@ -844,7 +844,7 @@ ${isScheduled ? `Zugang bis: ${cancelDate}` : 'Sofortige Beendigung'}
 ${statusLine}
 
 ---
-Automatische Benachrichtigung von MeineDokBox
+Automatische Benachrichtigung von Doklify
   `.trim();
 
   const html = `
@@ -920,7 +920,7 @@ Automatische Benachrichtigung von MeineDokBox
     </p>
 
     <p style="margin-top: 30px; font-size: 14px; color: #999; text-align: center;">
-      Automatische Benachrichtigung von MeineDokBox
+      Automatische Benachrichtigung von Doklify
     </p>
   </div>
 </body>
@@ -941,14 +941,14 @@ export async function sendAccountSeparatedEmail(
 ): Promise<boolean> {
   const baseUrl = getAppUrl();
   const loginLink = `${baseUrl}/login`;
-  const subject = "Wichtig: Änderungen an deinem MeineDokBox-Zugang";
+  const subject = "Wichtig: Änderungen an deinem Doklify-Zugang";
   
   const text = `
 Hallo ${userName}!
 
-Dein Zugang zum MeineDokBox-Konto von ${masterName} wurde beendet.
+Dein Zugang zum Doklify-Konto von ${masterName} wurde beendet.
 
-Keine Sorge - deine Dokumente sind sicher! Du hast jetzt dein eigenes MeineDokBox-Konto:
+Keine Sorge - deine Dokumente sind sicher! Du hast jetzt dein eigenes Doklify-Konto:
 
 ✓ Alle deine Dokumente bleiben erhalten
 ✓ Du hast 7 Tage kostenlos Zeit um ein eigenes Abo zu wählen
@@ -964,7 +964,7 @@ Du kannst dich jetzt anmelden: ${loginLink}
 Bei Fragen sind wir gerne für dich da!
 
 Viele Grüße,
-Dein MeineDokBox Team
+Dein Doklify Team
   `.trim();
 
   const html = `
@@ -1018,14 +1018,14 @@ Dein MeineDokBox Team
 </head>
 <body>
   <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #ffffff; padding: 30px; border-radius: 8px 8px 0 0; text-align: center;">
-    <h1 style="color: #ffffff !important; margin: 0 0 10px 0; font-size: 24px;">📂 MeineDokBox</h1>
+    <h1 style="color: #ffffff !important; margin: 0 0 10px 0; font-size: 24px;">📂 Doklify</h1>
     <p style="color: #ffffff !important; margin: 0; font-size: 16px;">Wichtige Änderungen an deinem Zugang</p>
   </div>
   
   <div class="content">
     <p>Hallo ${userName}!</p>
     
-    <p>Dein Zugang zum MeineDokBox-Konto von <strong>${masterName}</strong> wurde beendet.</p>
+    <p>Dein Zugang zum Doklify-Konto von <strong>${masterName}</strong> wurde beendet.</p>
     
     <div class="benefits">
       <h3 style="color: #10b981; margin-top: 0;">🎉 Gute Nachrichten!</h3>
@@ -1034,7 +1034,7 @@ Dein MeineDokBox Team
       <div class="benefit">Nach dem Test-Zeitraum kannst du weiterhin deine Dokumente ansehen</div>
     </div>
     
-    <p>Du hast jetzt dein eigenes MeineDokBox-Konto! Melde dich einfach an und wähle ein Abo-Modell, das zu dir passt.</p>
+    <p>Du hast jetzt dein eigenes Doklify-Konto! Melde dich einfach an und wähle ein Abo-Modell, das zu dir passt.</p>
     
     <center>
       <a href="${loginLink}" class="button" style="display: inline-block; background: #667eea; color: #ffffff !important; padding: 12px 30px; text-decoration: none; border-radius: 6px; margin: 20px 0;">
@@ -1048,7 +1048,7 @@ Dein MeineDokBox Team
     
     <p style="margin-top: 20px; font-size: 14px; color: #666; text-align: center;">
       Viele Grüße,<br>
-      Dein MeineDokBox Team
+      Dein Doklify Team
     </p>
   </div>
 </body>
@@ -1073,7 +1073,7 @@ export async function sendReferralSignupNotification(
   const text = `
 Hallo ${referrerName}!
 
-Tolle Neuigkeiten! Jemand hat sich über deinen Empfehlungslink registriert und testet jetzt MeineDokBox.
+Tolle Neuigkeiten! Jemand hat sich über deinen Empfehlungslink registriert und testet jetzt Doklify.
 
 Sobald diese Person zahlender Kunde wird, erhältst du +1 GB Bonus-Speicher!
 
@@ -1082,7 +1082,7 @@ Und nicht vergessen: Bei genügend zahlenden Empfehlungen wird dein Plan dauerha
 Schau dir deinen Fortschritt an: ${referralLink}
 
 Viele Grüße,
-Dein MeineDokBox Team
+Dein Doklify Team
   `.trim();
 
   const html = `
@@ -1101,11 +1101,11 @@ Dein MeineDokBox Team
 <body>
   <div class="header">
     <h1 style="color: #ffffff !important; margin: 0 0 10px 0; font-size: 24px;">🎉 Neue Empfehlung!</h1>
-    <p style="color: #ffffff !important; margin: 0; font-size: 16px;">Jemand testet MeineDokBox dank dir</p>
+    <p style="color: #ffffff !important; margin: 0; font-size: 16px;">Jemand testet Doklify dank dir</p>
   </div>
   <div class="content">
     <p>Hallo ${referrerName}!</p>
-    <p>Tolle Neuigkeiten! Jemand hat sich über deinen Empfehlungslink registriert und testet jetzt MeineDokBox.</p>
+    <p>Tolle Neuigkeiten! Jemand hat sich über deinen Empfehlungslink registriert und testet jetzt Doklify.</p>
     <div class="info-box">
       <p style="margin: 0; font-weight: 500;">Was passiert als nächstes?</p>
       <p style="margin: 10px 0 0 0; color: #1e40af;">Sobald diese Person zahlender Kunde wird, erhältst du <strong>+1 GB Bonus-Speicher</strong>!</p>
@@ -1118,7 +1118,7 @@ Dein MeineDokBox Team
     </center>
     <p style="margin-top: 30px; font-size: 14px; color: #666; text-align: center;">
       Viele Grüße,<br>
-      Dein MeineDokBox Team
+      Dein Doklify Team
     </p>
   </div>
 </body>
@@ -1143,7 +1143,7 @@ export async function sendReferralActivationNotification(
   const remaining = requiredReferrals - activeCount;
   
   const subject = isFreeNow 
-    ? `🎊 Glückwunsch! Dein MeineDokBox ist jetzt dauerhaft kostenlos!`
+    ? `🎊 Glückwunsch! Dein Doklify ist jetzt dauerhaft kostenlos!`
     : `✅ Deine Empfehlung ist jetzt zahlender Kunde (${activeCount}/${requiredReferrals})`;
   
   const text = isFreeNow
@@ -1157,7 +1157,7 @@ Du hast es geschafft! Mit ${requiredReferrals} aktiven zahlenden Empfehlungen is
 Schau dir deine Empfehlungen an: ${referralLink}
 
 Viele Grüße,
-Dein MeineDokBox Team
+Dein Doklify Team
     `.trim()
     : `
 Hallo ${referrerName}!
@@ -1173,7 +1173,7 @@ Bei ${requiredReferrals} aktiven Empfehlungen wird dein Plan dauerhaft kostenlos
 Schau dir deinen Fortschritt an: ${referralLink}
 
 Viele Grüße,
-Dein MeineDokBox Team
+Dein Doklify Team
     `.trim();
 
   const html = isFreeNow
@@ -1203,7 +1203,7 @@ Dein MeineDokBox Team
       <p class="free-text" style="margin: 15px 0;">DAUERHAFT KOSTENLOS!</p>
       <p style="margin: 0; color: #666;">Mit ${requiredReferrals} aktiven zahlenden Empfehlungen ist dein Plan ab sofort kostenlos!</p>
     </div>
-    <p>Danke, dass du MeineDokBox weiterempfiehlst!</p>
+    <p>Danke, dass du Doklify weiterempfiehlst!</p>
     <center>
       <a href="${referralLink}" class="button" style="display: inline-block; background: #667eea; color: #ffffff !important; padding: 12px 30px; text-decoration: none; border-radius: 6px; margin: 20px 0;">
         Deine Empfehlungen ansehen
@@ -1211,7 +1211,7 @@ Dein MeineDokBox Team
     </center>
     <p style="margin-top: 30px; font-size: 14px; color: #666; text-align: center;">
       Viele Grüße,<br>
-      Dein MeineDokBox Team
+      Dein Doklify Team
     </p>
   </div>
 </body>
@@ -1255,7 +1255,7 @@ Dein MeineDokBox Team
     </center>
     <p style="margin-top: 30px; font-size: 14px; color: #666; text-align: center;">
       Viele Grüße,<br>
-      Dein MeineDokBox Team
+      Dein Doklify Team
     </p>
   </div>
 </body>
@@ -1278,12 +1278,12 @@ export async function sendReferralProgramInfoEmail(
   const referralLink = `${baseUrl}/register?ref=${referralCode}`;
   const referralDashboardLink = `${baseUrl}/referral`;
   
-  const subject = `🎁 Teile MeineDokBox und erhalte kostenlos mehr Speicherplatz!`;
+  const subject = `🎁 Teile Doklify und erhalte kostenlos mehr Speicherplatz!`;
   
   const text = `
 Hallo ${userName}!
 
-Du nutzt MeineDokBox jetzt seit einer Woche - toll, dass du dabei bist!
+Du nutzt Doklify jetzt seit einer Woche - toll, dass du dabei bist!
 
 Wir möchten dir heute unser Empfehlungsprogramm vorstellen:
 
@@ -1301,7 +1301,7 @@ Teile diesen Link mit Freunden, Familie oder Kollegen. Du erhältst +1 GB sobald
 Schau dir dein Empfehlungs-Dashboard an: ${referralDashboardLink}
 
 Viele Grüße,
-Dein MeineDokBox Team
+Dein Doklify Team
   `.trim();
 
   const html = `
@@ -1328,11 +1328,11 @@ Dein MeineDokBox Team
 <body>
   <div class="header">
     <h1 style="color: #ffffff !important; margin: 0 0 10px 0; font-size: 26px;">🎁 Empfehlungsprogramm</h1>
-    <p style="color: #ffffff !important; margin: 0; font-size: 16px;">Teile MeineDokBox und werde belohnt!</p>
+    <p style="color: #ffffff !important; margin: 0; font-size: 16px;">Teile Doklify und werde belohnt!</p>
   </div>
   <div class="content">
     <p>Hallo ${userName}!</p>
-    <p>Du nutzt MeineDokBox jetzt seit einer Woche - toll, dass du dabei bist! Wir möchten dir heute unser <strong>Empfehlungsprogramm</strong> vorstellen:</p>
+    <p>Du nutzt Doklify jetzt seit einer Woche - toll, dass du dabei bist! Wir möchten dir heute unser <strong>Empfehlungsprogramm</strong> vorstellen:</p>
     
     <div class="reward-box">
       <div class="reward-item">
@@ -1368,7 +1368,7 @@ Dein MeineDokBox Team
     
     <p style="margin-top: 30px; font-size: 14px; color: #666; text-align: center;">
       Viele Grüße,<br>
-      Dein MeineDokBox Team
+      Dein Doklify Team
     </p>
   </div>
 </body>

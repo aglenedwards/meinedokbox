@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
 
-const ADMIN_EMAIL = "service@meinedokbox.de";
+const ADMIN_EMAIL = "service@doklify.de";
 
 export function isAdmin(req: Request, res: Response, next: NextFunction) {
   const user = (req as any).user;

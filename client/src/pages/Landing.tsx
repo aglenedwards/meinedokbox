@@ -263,7 +263,7 @@ export default function Landing() {
       <header className="border-b bg-background/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
         <div className="container mx-auto px-4 lg:px-6 py-4 md:py-5 flex items-center justify-between gap-6">
           <div className="flex items-center flex-shrink-0 hover-elevate active-elevate-2 px-3 py-2 rounded-lg transition-all">
-            <img src={logoImage} alt="MeineDokBox" className="h-12 md:h-14 lg:h-16 w-auto" data-testid="img-logo" />
+            <img src={logoImage} alt="Doklify" className="h-12 md:h-14 lg:h-16 w-auto" data-testid="img-logo" />
           </div>
 
           {/* Desktop Navigation */}
@@ -719,10 +719,10 @@ export default function Landing() {
                     <div>
                       <h3 className="text-lg font-semibold mb-2">So funktioniert's</h3>
                       <p className="text-muted-foreground text-base leading-relaxed mb-3">
-                        Sie erhalten eine E-Mail wie <span className="font-mono text-sm bg-muted px-2 py-1 rounded">ihre-dokumente@meinedokbox.de</span>. Leiten Sie einfach Rechnungen von Online-Shops, Versicherungen oder Ärzten weiter.
+                        Sie erhalten eine E-Mail wie <span className="font-mono text-sm bg-muted px-2 py-1 rounded">ihre-dokumente@doklify.de</span>. Leiten Sie einfach Rechnungen von Online-Shops, Versicherungen oder Ärzten weiter.
                       </p>
                       <p className="text-sm text-muted-foreground">
-                        <strong>Pro-Tipp:</strong> Richten Sie in Ihrem E-Mail-Postfach eine automatische Weiterleitung ein – z.B. für alle Amazon-Bestellbestätigungen. So landet jede Rechnung automatisch in MeineDokBox.
+                        <strong>Pro-Tipp:</strong> Richten Sie in Ihrem E-Mail-Postfach eine automatische Weiterleitung ein – z.B. für alle Amazon-Bestellbestätigungen. So landet jede Rechnung automatisch in Doklify.
                       </p>
                     </div>
                   </div>
@@ -1022,7 +1022,7 @@ export default function Landing() {
             <h2 className="text-4xl md:text-5xl font-bold mb-6" data-testid="text-usecases-title">
               Für wen ist{" "}
               <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-                MeineDokBox?
+                Doklify?
               </span>
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
@@ -1411,7 +1411,7 @@ export default function Landing() {
                     </div>
                   </summary>
                   <div className="px-6 pb-6 text-muted-foreground leading-relaxed">
-                    Mit MeineDokBox können Sie Ihre privaten Dokumente bereits ab €59,99/Jahr digitalisieren. 
+                    Mit Doklify können Sie Ihre privaten Dokumente bereits ab €59,99/Jahr digitalisieren. 
                     Sie starten mit einer kostenlosen 7-Tage-Testphase – Kreditkarte erforderlich, Abbuchung erst nach 7 Tagen. Im Solo-Tarif erhalten Sie 50 Dokumente pro Monat 
                     und 2 GB Speicherplatz – perfekt für den Einstieg in die Digitalisierung Ihrer Dokumente.
                   </div>
@@ -1423,7 +1423,7 @@ export default function Landing() {
                 <details className="group">
                   <summary className="flex items-center justify-between cursor-pointer p-6 hover:bg-muted/50 transition-colors">
                     <h3 className="font-semibold text-lg text-left pr-4">
-                      Wie sicher ist die Digitalisierung von Dokumenten bei MeineDokBox?
+                      Wie sicher ist die Digitalisierung von Dokumenten bei Doklify?
                     </h3>
                     <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center group-open:rotate-180 transition-transform">
                       <ArrowRight className="h-4 w-4 text-primary rotate-90" />
@@ -1468,7 +1468,7 @@ export default function Landing() {
                     </div>
                   </summary>
                   <div className="px-6 pb-6 text-muted-foreground leading-relaxed">
-                    Öffnen Sie einfach MeineDokBox auf Ihrem Smartphone und fotografieren Sie das Dokument. 
+                    Öffnen Sie einfach Doklify auf Ihrem Smartphone und fotografieren Sie das Dokument. 
                     Die App optimiert das Bild automatisch für beste Lesbarkeit. Unsere KI analysiert den Inhalt, 
                     extrahiert wichtige Daten wie Datum, Betrag und Absender und ordnet das Dokument der passenden Kategorie zu. 
                     Der gesamte Vorgang dauert nur wenige Sekunden.

@@ -36,7 +36,7 @@ export default function RatgeberWelcheDokumente() {
   ];
 
   useEffect(() => {
-    document.title = "Welche Dokumente aufbewahren? Vollständige Checkliste 2026 | MeineDokBox";
+    document.title = "Welche Dokumente aufbewahren? Vollständige Checkliste 2026 | Doklify";
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
       metaDescription.setAttribute("content", "Welche Dokumente müssen Sie aufbewahren und welche können weg? Vollständige Checkliste 2026: Lebensdokumente, Steuern, Versicherungen, Wohnen und mehr.");
@@ -48,15 +48,15 @@ export default function RatgeberWelcheDokumente() {
       canonicalLink.rel = 'canonical';
       document.head.appendChild(canonicalLink);
     }
-    canonicalLink.href = 'https://meinedokbox.de/ratgeber/welche-dokumente-aufbewahren';
+    canonicalLink.href = 'https://doklify.de/ratgeber/welche-dokumente-aufbewahren';
 
     const articleSchema = {
       "@context": "https://schema.org",
       "@type": "Article",
       "headline": "Welche Dokumente aufbewahren? Vollständige Checkliste 2026",
       "description": "Vollständige Checkliste welche Dokumente Privatpersonen in Deutschland aufbewahren müssen",
-      "author": { "@type": "Organization", "name": "MeineDokBox" },
-      "publisher": { "@type": "Organization", "name": "MeineDokBox", "url": "https://meinedokbox.de" },
+      "author": { "@type": "Organization", "name": "Doklify" },
+      "publisher": { "@type": "Organization", "name": "Doklify", "url": "https://doklify.de" },
       "datePublished": "2026-01-01",
       "dateModified": "2026-03-01"
     };
@@ -336,7 +336,7 @@ export default function RatgeberWelcheDokumente() {
               <p className="text-xs font-medium text-primary uppercase tracking-wide mb-1">Praxistipp</p>
               <h3 className="text-lg font-semibold mb-2">Alle Dokumente digital sichern — niemals verlieren</h3>
               <p className="text-sm text-muted-foreground mb-4">
-                Die sicherste Methode: Digitalisieren Sie alle wichtigen Dokumente mit MeineDokBox.
+                Die sicherste Methode: Digitalisieren Sie alle wichtigen Dokumente mit Doklify.
                 Kamera draufhalten, KI erkennt den Dokumenttyp automatisch, fertig — sicher archiviert auf deutschen Servern.
                 Auch wenn ein Original verloren geht, haben Sie immer eine digitale Kopie.
               </p>

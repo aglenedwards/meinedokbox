@@ -16,7 +16,7 @@ export async function sendEmail(options: EmailOptions): Promise<void> {
   const fromEmail = `service@${domain}`;
   
   const formData = new URLSearchParams();
-  formData.append('from', `MeineDokBox <${fromEmail}>`);
+  formData.append('from', `Doklify <${fromEmail}>`);
   formData.append('to', options.to);
   formData.append('subject', options.subject);
   if (options.text) {
@@ -65,7 +65,7 @@ export function getAppUrl(): string {
   }
   
   // Fallback: production domain
-  return 'https://meinedokbox.de';
+  return 'https://doklify.de';
 }
 
 // Trial notification email templates
@@ -73,7 +73,7 @@ export function getAppUrl(): string {
 // TAG 3: Engagement Email - Feature Highlights
 export function getDay3Email(userName: string): { subject: string; html: string; text: string } {
   const subject = "Schon gesehen, wie schnell DokBox deine Belege sortiert? 🎉";
-  const text = `Hallo ${userName},\n\ndu bist jetzt seit 3 Tagen dabei – wie läuft's?\n\nDie meisten Nutzer sind begeistert, wie schnell die KI ihre Belege automatisch sortiert. Rechnungen, Verträge, Arztbelege – alles landet automatisch im richtigen Ordner.\n\nDu hast noch 4 Tage Trial-Zeit, um alle Features auszuprobieren:\n✓ KI-Kategorisierung in 15+ Kategorien\n✓ Smartphone-Kamera-Upload\n✓ Private & geteilte Ordner\n✓ E-Mail-Eingang für Dokumente\n\nNutze die Zeit und probiere alle Features aus!\n\nViele Grüße,\nIhr MeineDokBox Team`;
+  const text = `Hallo ${userName},\n\ndu bist jetzt seit 3 Tagen dabei – wie läuft's?\n\nDie meisten Nutzer sind begeistert, wie schnell die KI ihre Belege automatisch sortiert. Rechnungen, Verträge, Arztbelege – alles landet automatisch im richtigen Ordner.\n\nDu hast noch 4 Tage Trial-Zeit, um alle Features auszuprobieren:\n✓ KI-Kategorisierung in 15+ Kategorien\n✓ Smartphone-Kamera-Upload\n✓ Private & geteilte Ordner\n✓ E-Mail-Eingang für Dokumente\n\nNutze die Zeit und probiere alle Features aus!\n\nViele Grüße,\nIhr Doklify Team`;
   
   const html = `
 <!DOCTYPE html>
@@ -162,7 +162,7 @@ export function getDay3Email(userName: string): { subject: string; html: string;
             <td style="padding: 30px 40px; background-color: #f8f8f8; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;">
               <p style="margin: 0; font-size: 14px; color: #666; line-height: 1.5;">
                 Viele Grüße,<br>
-                Ihr <strong>MeineDokBox</strong> Team
+                Ihr <strong>Doklify</strong> Team
               </p>
             </td>
           </tr>
@@ -179,7 +179,7 @@ export function getDay3Email(userName: string): { subject: string; html: string;
 // TAG 6: Urgency Email - Loss Aversion
 export function getDay6Email(userName: string): { subject: string; html: string; text: string } {
   const subject = "Deine Testphase endet morgen – sichere dir deine smarten Ordner dauerhaft 📁";
-  const text = `Hallo ${userName},\n\ndeine 7-tägige Testphase endet morgen.\n\nDeine Dokumente sind bereits perfekt sortiert in deinen smarten Ordnern. Möchtest du sie wirklich verlieren?\n\nWähle jetzt deinen Plan und behalte:\n✓ Alle deine sortierten Dokumente\n✓ KI-gestützte automatische Kategorisierung\n✓ Zugriff von jedem Gerät\n✓ Sicherer Cloud-Speicher in Deutschland\n\nUnsere Pläne:\n- Solo: €4,99/Monat (1 Nutzer, 100 Uploads, 5GB)\n- Family: €7,99/Monat (2 Nutzer, 200 Uploads, 10GB) - EMPFOHLEN\n- Family Plus: €11,99/Monat (4 Nutzer, 500 Uploads, 25GB)\n\nSichere dir jetzt deinen Plan – dauert nur 2 Minuten!\n\nViele Grüße,\nIhr MeineDokBox Team`;
+  const text = `Hallo ${userName},\n\ndeine 7-tägige Testphase endet morgen.\n\nDeine Dokumente sind bereits perfekt sortiert in deinen smarten Ordnern. Möchtest du sie wirklich verlieren?\n\nWähle jetzt deinen Plan und behalte:\n✓ Alle deine sortierten Dokumente\n✓ KI-gestützte automatische Kategorisierung\n✓ Zugriff von jedem Gerät\n✓ Sicherer Cloud-Speicher in Deutschland\n\nUnsere Pläne:\n- Solo: €4,99/Monat (1 Nutzer, 100 Uploads, 5GB)\n- Family: €7,99/Monat (2 Nutzer, 200 Uploads, 10GB) - EMPFOHLEN\n- Family Plus: €11,99/Monat (4 Nutzer, 500 Uploads, 25GB)\n\nSichere dir jetzt deinen Plan – dauert nur 2 Minuten!\n\nViele Grüße,\nIhr Doklify Team`;
   
   const html = `
 <!DOCTYPE html>
@@ -257,7 +257,7 @@ export function getDay6Email(userName: string): { subject: string; html: string;
             <td style="padding: 30px 40px; background-color: #f8f8f8; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;">
               <p style="margin: 0; font-size: 14px; color: #666; line-height: 1.5;">
                 Viele Grüße,<br>
-                Ihr <strong>MeineDokBox</strong> Team
+                Ihr <strong>Doklify</strong> Team
               </p>
             </td>
           </tr>
@@ -336,7 +336,7 @@ export function getDocumentProcessingFeedbackEmail(result: DocumentProcessingRes
     text += `\nℹ️ Hinweis: ${accountWarning}\n`;
   }
   
-  text += `\nViele Grüße,\nIhr MeineDokBox Team`;
+  text += `\nViele Grüße,\nIhr Doklify Team`;
   
   // HTML version
   const html = `
@@ -414,7 +414,7 @@ export function getDocumentProcessingFeedbackEmail(result: DocumentProcessingRes
             <td style="padding: 30px 40px; background-color: #f8f8f8; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;">
               <p style="margin: 0; font-size: 14px; color: #666; line-height: 1.5;">
                 Viele Grüße,<br>
-                Ihr <strong>MeineDokBox</strong> Team
+                Ihr <strong>Doklify</strong> Team
               </p>
             </td>
           </tr>
@@ -480,7 +480,7 @@ export function getInvoicePaidNotificationEmail(
             <td style="padding: 30px 40px; background-color: #f8f8f8; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;">
               <p style="margin: 0; font-size: 14px; color: #666; line-height: 1.5;">
                 Viele Grüße,<br>
-                Ihr <strong>MeineDokBox</strong> Team
+                Ihr <strong>Doklify</strong> Team
               </p>
             </td>
           </tr>
@@ -502,7 +502,7 @@ ${sender ? `Absender: ${sender}` : ''}
 ${amountStr ? `Betrag: ${amountStr}` : ''}
 
 Viele Grüße,
-Ihr MeineDokBox Team`;
+Ihr Doklify Team`;
 
   return { subject, html, text };
 }
@@ -556,7 +556,7 @@ export function getNewFeaturePublishedEmail(
             <td style="padding: 30px 40px; background-color: #f8f8f8; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;">
               <p style="margin: 0 0 10px; font-size: 14px; color: #666; line-height: 1.5;">
                 Viele Grüße,<br>
-                Ihr <strong>MeineDokBox</strong> Team
+                Ihr <strong>Doklify</strong> Team
               </p>
               <p style="margin: 0; font-size: 12px; color: #999;">
                 Sie erhalten diese E-Mail, weil Sie Benachrichtigungen über neue Feature-Wünsche aktiviert haben. 
@@ -582,7 +582,7 @@ Ein neuer Feature-Wunsch wurde von der Community eingereicht und ist jetzt berei
 Besuchen Sie unsere Wunsch-Features Seite und stimmen Sie ab: ${appUrl}/wunsch-features
 
 Viele Grüße,
-Ihr MeineDokBox Team
+Ihr Doklify Team
 
 ---
 Sie erhalten diese E-Mail, weil Sie Benachrichtigungen über neue Feature-Wünsche aktiviert haben.`;

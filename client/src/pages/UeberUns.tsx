@@ -30,7 +30,7 @@ export default function UeberUns() {
               Über 
               <br />
               <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-                MeineDokBox
+                Doklify
               </span>
             </h1>
             
@@ -104,7 +104,7 @@ export default function UeberUns() {
                 </p>
                 <p className="text-muted-foreground leading-relaxed">
                   Jeder kennt es: Wichtige Dokumente gehen verloren, Ordner quellen über, und die Suche nach 
-                  einer bestimmten Rechnung dauert ewig. Wir haben MeineDokBox entwickelt, um genau diese 
+                  einer bestimmten Rechnung dauert ewig. Wir haben Doklify entwickelt, um genau diese 
                   Probleme zu lösen – mit modernster KI-Technologie, die so einfach zu bedienen ist, dass sie 
                   jeder nutzen kann.
                 </p>
@@ -136,7 +136,7 @@ export default function UeberUns() {
                   oder die Rechnung von letzter Woche.
                 </p>
                 <p className="text-muted-foreground leading-relaxed">
-                  MeineDokBox ist der erste Schritt auf diesem Weg. Wir bauen das intelligenteste 
+                  Doklify ist der erste Schritt auf diesem Weg. Wir bauen das intelligenteste 
                   Dokumentenmanagement-System, das es je gab – und dabei bleibt es zu 100% in Deutschland.
                 </p>
               </CardContent>
@@ -214,7 +214,7 @@ export default function UeberUns() {
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-3xl md:text-4xl font-bold mb-8 text-center">
-              Warum MeineDokBox?
+              Warum Doklify?
             </h2>
             
             <div className="space-y-6">
@@ -238,7 +238,7 @@ export default function UeberUns() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-muted-foreground mb-4">
-                    MeineDokBox kombiniert das Beste aus zwei Welten:
+                    Doklify kombiniert das Beste aus zwei Welten:
                   </p>
                   <ul className="space-y-3">
                     <li className="flex items-start gap-3">
@@ -283,7 +283,7 @@ export default function UeberUns() {
 
               <Card>
                 <CardHeader>
-                  <CardTitle>Für wen ist MeineDokBox?</CardTitle>
+                  <CardTitle>Für wen ist Doklify?</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="grid sm:grid-cols-2 gap-4">
@@ -323,7 +323,7 @@ export default function UeberUns() {
                         Datenschutz-Bewusste
                       </h4>
                       <p className="text-sm text-muted-foreground">
-                        Sie möchten keine Cloud aus den USA? Perfekt – MeineDokBox 
+                        Sie möchten keine Cloud aus den USA? Perfekt – Doklify 
                         ist 100% deutsch und DSGVO-konform.
                       </p>
                     </div>
@@ -352,10 +352,10 @@ export default function UeberUns() {
                   <div>
                     <h3 className="font-semibold mb-2">E-Mail Support</h3>
                     <a 
-                      href="mailto:service@meinedokbox.de" 
+                      href="mailto:service@doklify.de" 
                       className="text-primary hover:underline text-lg"
                     >
-                      service@meinedokbox.de
+                      service@doklify.de
                     </a>
                   </div>
                   
@@ -380,7 +380,7 @@ export default function UeberUns() {
       <section className="py-24 bg-primary/5">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-6">
-            Werden Sie Teil der MeineDokBox-Familie
+            Werden Sie Teil der Doklify-Familie
           </h2>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
             Starten Sie noch heute mit 7 Tagen kostenloser Testphase – ohne Kreditkarte.

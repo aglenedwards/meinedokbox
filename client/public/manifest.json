@@ -1,7 +1,7 @@
 {
-  "id": "meinedokbox-pwa",
-  "name": "MeineDokBox - Intelligentes Dokumentenmanagement",
-  "short_name": "MeineDokBox",
+  "id": "doklify-pwa",
+  "name": "Doklify - Intelligentes Dokumentenmanagement",
+  "short_name": "Doklify",
   "description": "Intelligentes Dokumentenmanagement-System mit KI-gestützter Kategorisierung und mobilem Dokumenten-Scanner",
   "start_url": "/",
   "scope": "/",

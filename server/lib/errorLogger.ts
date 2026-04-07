@@ -3,7 +3,7 @@ import { errorLogs } from "@shared/schema";
 import { desc, gte, count, sql, and, eq } from "drizzle-orm";
 import { sendEmail } from "./sendEmail";
 
-const ADMIN_EMAIL = "service@meinedokbox.de";
+const ADMIN_EMAIL = "service@doklify.de";
 const EMAIL_THROTTLE_MS = 5 * 60 * 1000;
 const emailThrottle = new Map<string, number>();
 
@@ -49,7 +49,7 @@ export function logError(data: ErrorLogData): void {
 
 async function sendErrorAlertEmail(data: ErrorLogData): Promise<void> {
   const time = new Date().toLocaleString("de-DE", { timeZone: "Europe/Berlin" });
-  const subject = `[MeineDokBox] Server-Fehler ${data.statusCode ?? ""}: ${data.message.substring(0, 80)}`;
+  const subject = `[Doklify] Server-Fehler ${data.statusCode ?? ""}: ${data.message.substring(0, 80)}`;
 
   const html = `
     <div style="font-family: sans-serif; max-width: 600px;">

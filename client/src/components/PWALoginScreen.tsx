@@ -279,7 +279,7 @@ export function PWALoginScreen() {
         <div className="flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 mb-4">
           <FileText className="w-8 h-8 text-primary" />
         </div>
-        <img src={logoImage} alt="MeineDokBox" className="h-10 mb-1" data-testid="img-pwa-logo" />
+        <img src={logoImage} alt="Doklify" className="h-10 mb-1" data-testid="img-pwa-logo" />
         <p className="text-sm text-muted-foreground">Ihr digitales Dokumentenarchiv</p>
       </div>
 

@@ -21,14 +21,14 @@ export function verifyMailgunWebhook(timestamp: string, token: string, signature
 
 /**
  * Generates a unique inbound email address for a user
- * Format: firstname.lastname@in.meinedokbox.de (with auto-numbering if duplicate)
+ * Format: firstname.lastname@in.doklify.de (with auto-numbering if duplicate)
  */
 export async function generateInboundEmail(firstName: string, lastName: string): Promise<string> {
   const { db } = await import('../db');
   const { users } = await import('@shared/schema');
   const { eq, sql } = await import('drizzle-orm');
   
-  const domain = process.env.INBOUND_EMAIL_DOMAIN || 'in.meinedokbox.de';
+  const domain = process.env.INBOUND_EMAIL_DOMAIN || 'in.doklify.de';
   
   // Normalize name: lowercase, remove special chars, replace spaces/umlauts
   const normalize = (name: string) => {

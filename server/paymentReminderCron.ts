@@ -58,7 +58,7 @@ function getPaymentReminderEmail(partnerName: string, documentTitle: string, amo
           <p>Diese Erinnerung wird nur einmal verschickt.</p>
           
           <div class="footer">
-            <p><strong>MeineDokBox</strong><br>
+            <p><strong>Doklify</strong><br>
             Intelligente Dokumentenverwaltung für Familien</p>
           </div>
         </div>
@@ -83,7 +83,7 @@ Falls die Rechnung bereits bezahlt wurde, könnt ihr sie in der App als "bezahlt
 
 Diese Erinnerung wird nur einmal verschickt.
 
-MeineDokBox
+Doklify
 Intelligente Dokumentenverwaltung für Familien
   `;
   

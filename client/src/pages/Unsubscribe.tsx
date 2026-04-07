@@ -72,7 +72,7 @@ export default function Unsubscribe() {
                 )}
               </div>
               <p className="text-muted-foreground">
-                Du erhaeltst keine weiteren Marketing-E-Mails von MeineDokBox. 
+                Du erhaeltst keine weiteren Marketing-E-Mails von Doklify. 
                 Wichtige E-Mails zu deinem Konto (z.B. Passwort-Reset) erhaeltst du weiterhin.
               </p>
               <div className="pt-4 space-y-3">
@@ -103,7 +103,7 @@ export default function Unsubscribe() {
                 <h1 className="text-xl font-bold mb-2">Wieder angemeldet!</h1>
               </div>
               <p className="text-muted-foreground">
-                Du erhaeltst wieder Benachrichtigungen und Tipps von MeineDokBox.
+                Du erhaeltst wieder Benachrichtigungen und Tipps von Doklify.
               </p>
               <a href="/" className="block pt-4">
                 <Button className="w-full" data-testid="link-home-resubscribed">
@@ -123,7 +123,7 @@ export default function Unsubscribe() {
               </div>
               <p className="text-muted-foreground">
                 Der Abmelde-Link ist ungueltig oder abgelaufen. 
-                Bitte kontaktiere uns unter service@meinedokbox.de.
+                Bitte kontaktiere uns unter service@doklify.de.
               </p>
               <a href="/" className="block pt-4">
                 <Button variant="outline" className="w-full" data-testid="link-home-error">
@@ -134,7 +134,7 @@ export default function Unsubscribe() {
           )}
 
           <p className="text-xs text-muted-foreground pt-4 border-t">
-            MeineDokBox - Intelligente Dokumentenverwaltung
+            Doklify - Intelligente Dokumentenverwaltung
           </p>
         </CardContent>
       </Card>

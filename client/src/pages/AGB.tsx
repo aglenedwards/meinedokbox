@@ -21,10 +21,10 @@ export default function AGB() {
               Alvin Edwards<br />
               Am Kümmerling 20<br />
               55294 Bodenheim<br />
-              E-Mail: <a href="mailto:service@meinedokbox.de" className="underline">service@meinedokbox.de</a>
+              E-Mail: <a href="mailto:service@doklify.de" className="underline">service@doklify.de</a>
             </p>
             <p className="text-muted-foreground mb-3">
-              (nachfolgend „Anbieter") und natürlichen Personen, die den Dienst MeineDokBox für private Zwecke nutzen
+              (nachfolgend „Anbieter") und natürlichen Personen, die den Dienst Doklify für private Zwecke nutzen
               (nachfolgend „Kunde" oder „Nutzer").
             </p>
             <p className="text-muted-foreground mb-3">
@@ -32,7 +32,7 @@ export default function AGB() {
               Vertragsbestandteil, es sei denn, der Anbieter stimmt ihrer Geltung ausdrücklich schriftlich zu.
             </p>
             <p className="text-muted-foreground">
-              MeineDokBox richtet sich ausschließlich an Verbraucher im Sinne von § 13 BGB. Eine gewerbliche Nutzung
+              Doklify richtet sich ausschließlich an Verbraucher im Sinne von § 13 BGB. Eine gewerbliche Nutzung
               ist ohne vorherige schriftliche Zustimmung des Anbieters nicht gestattet.
             </p>
           </section>
@@ -40,7 +40,7 @@ export default function AGB() {
           <section>
             <h2 className="text-xl font-semibold mb-4">§ 2 Vertragsgegenstand</h2>
             <p className="text-muted-foreground mb-3">
-              MeineDokBox ist ein webbasierter Dienst zur digitalen Verwaltung persönlicher Dokumente. Der Anbieter
+              Doklify ist ein webbasierter Dienst zur digitalen Verwaltung persönlicher Dokumente. Der Anbieter
               stellt dem Kunden je nach gewähltem Tarif folgende Leistungen zur Verfügung:
             </p>
             <ul className="list-disc pl-6 text-muted-foreground space-y-2 mb-3">
@@ -54,7 +54,7 @@ export default function AGB() {
             <p className="text-muted-foreground">
               Die Datenspeicherung erfolgt ausschließlich auf Servern in Deutschland (Frankfurt am Main) und ist
               DSGVO-konform. Details entnehmen Sie der Datenschutzerklärung unter{" "}
-              <a href="/datenschutz" className="underline">meinedokbox.de/datenschutz</a>.
+              <a href="/datenschutz" className="underline">doklify.de/datenschutz</a>.
             </p>
           </section>
 
@@ -82,7 +82,7 @@ export default function AGB() {
           <section>
             <h2 className="text-xl font-semibold mb-4">§ 4 Tarife und Preise</h2>
             <p className="text-muted-foreground mb-3">
-              MeineDokBox wird ausschließlich als Jahresabonnement angeboten. Folgende Tarife stehen zur Verfügung:
+              Doklify wird ausschließlich als Jahresabonnement angeboten. Folgende Tarife stehen zur Verfügung:
             </p>
             <div className="overflow-x-auto mb-4">
               <table className="w-full text-sm text-muted-foreground border-collapse">
@@ -174,7 +174,7 @@ export default function AGB() {
               </p>
               <p className="text-muted-foreground mb-3">
                 Um Ihr Widerrufsrecht auszuüben, müssen Sie uns (Alvin Edwards, Am Kümmerling 20, 55294 Bodenheim,
-                E-Mail: <a href="mailto:service@meinedokbox.de" className="underline">service@meinedokbox.de</a>)
+                E-Mail: <a href="mailto:service@doklify.de" className="underline">service@doklify.de</a>)
                 mittels einer eindeutigen Erklärung (z. B. eine per E-Mail übersandte Mitteilung) über Ihren
                 Entschluss, diesen Vertrag zu widerrufen, informieren.
               </p>
@@ -220,7 +220,7 @@ export default function AGB() {
               zum Ende des jeweiligen Abrechnungszeitraums gekündigt werden. Die Kündigung ist möglich:
             </p>
             <ul className="list-disc pl-6 text-muted-foreground space-y-2 mb-3">
-              <li>per E-Mail an: <a href="mailto:service@meinedokbox.de" className="underline">service@meinedokbox.de</a></li>
+              <li>per E-Mail an: <a href="mailto:service@doklify.de" className="underline">service@doklify.de</a></li>
               <li>über die Kontoeinstellungen im Nutzerbereich (Einstellungen → Abonnement)</li>
             </ul>
             <p className="text-muted-foreground mb-3">
@@ -266,7 +266,7 @@ export default function AGB() {
               zu den Rechten des Nutzers und zur Datensicherheit finden sich in der Datenschutzerklärung:
             </p>
             <p className="text-muted-foreground">
-              <a href="/datenschutz" className="underline">meinedokbox.de/datenschutz</a>
+              <a href="/datenschutz" className="underline">doklify.de/datenschutz</a>
             </p>
           </section>
 

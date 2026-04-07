@@ -202,7 +202,7 @@ export default function Invite() {
               <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">Nächste Schritte:</h3>
               <ol className="list-decimal list-inside space-y-2 text-sm text-blue-800 dark:text-blue-200">
                 <li>Öffnen Sie Ihr E-Mail-Postfach</li>
-                <li>Suchen Sie nach der Bestätigungs-E-Mail von MeineDokBox</li>
+                <li>Suchen Sie nach der Bestätigungs-E-Mail von Doklify</li>
                 <li>Klicken Sie auf den Bestätigungslink</li>
                 <li>Nach der Bestätigung können Sie sich einloggen</li>
               </ol>
@@ -231,7 +231,7 @@ export default function Invite() {
           <div className="flex justify-center mb-4">
             <UserPlus className="h-12 w-12 text-primary" />
           </div>
-          <CardTitle>Willkommen bei MeineDokBox!</CardTitle>
+          <CardTitle>Willkommen bei Doklify!</CardTitle>
           <CardDescription className="text-base mt-4">
             Sie wurden eingeladen, ein Konto zu erstellen.
             <br />

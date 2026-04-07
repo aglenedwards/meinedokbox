@@ -103,7 +103,7 @@ export function OnboardingTour({ run, onFinish }: OnboardingTourProps) {
       target: '[data-testid="card-email-inbound"]',
       content: (
         <div className="space-y-2">
-          <h3 className="font-semibold text-base">📧 Deine MeineDokBox-Email</h3>
+          <h3 className="font-semibold text-base">📧 Deine Doklify-Email</h3>
           <p className="text-sm">
             Du hast eine eigene Email-Adresse! Rechnungen oder Dokumente können direkt hierhin weitergeleitet werden.
             Alle eingehenden Emails werden automatisch hochgeladen und kategorisiert.
@@ -295,7 +295,7 @@ export function OnboardingTour({ run, onFinish }: OnboardingTourProps) {
             Bei Family-Plänen kannst du hier Personen einladen und bestimmte Bereiche teilen.
           </p>
           <p className="text-xs mt-2 text-muted-foreground font-semibold">
-            🎉 Fertig! Du kennst jetzt alle wichtigen Funktionen von MeineDokBox.
+            🎉 Fertig! Du kennst jetzt alle wichtigen Funktionen von Doklify.
           </p>
         </div>
       ),

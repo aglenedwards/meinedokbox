@@ -14,7 +14,7 @@ const app = express();
 // Redirect to canonical domain (SEO: prevent duplicate content)
 app.use((req, res, next) => {
   const host = req.headers.host;
-  const canonicalDomain = 'meinedokbox.de';
+  const canonicalDomain = 'doklify.de';
   
   if (host) {
     // Redirect www to non-www

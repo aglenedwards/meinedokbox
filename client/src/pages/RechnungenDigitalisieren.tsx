@@ -12,7 +12,7 @@ export default function RechnungenDigitalisieren() {
   const faqs = [
     {
       question: "Wie digitalisiere ich Rechnungen am schnellsten?",
-      answer: "Einfach die MeineDokBox-App öffnen, die Rechnung mit dem Smartphone fotografieren – fertig. Unsere KI erkennt automatisch Betrag, Datum, Absender und Kategorie. Rechnungen digitalisieren dauert damit nur Sekunden pro Beleg."
+      answer: "Einfach die Doklify-App öffnen, die Rechnung mit dem Smartphone fotografieren – fertig. Unsere KI erkennt automatisch Betrag, Datum, Absender und Kategorie. Rechnungen digitalisieren dauert damit nur Sekunden pro Beleg."
     },
     {
       question: "Wie lange muss ich Rechnungen aufbewahren?",
@@ -20,15 +20,15 @@ export default function RechnungenDigitalisieren() {
     },
     {
       question: "Kann ich Rechnungen per E-Mail empfangen?",
-      answer: "Ja! Mit MeineDokBox erhalten Sie eine persönliche Eingangs-E-Mail-Adresse. Leiten Sie digitale Rechnungen einfach dorthin weiter – sie werden automatisch verarbeitet, kategorisiert und in Ihrem digitalen Archiv abgelegt."
+      answer: "Ja! Mit Doklify erhalten Sie eine persönliche Eingangs-E-Mail-Adresse. Leiten Sie digitale Rechnungen einfach dorthin weiter – sie werden automatisch verarbeitet, kategorisiert und in Ihrem digitalen Archiv abgelegt."
     },
     {
       question: "Welche Formate werden unterstützt?",
-      answer: "MeineDokBox unterstützt alle gängigen Formate: PDF, JPG, PNG und WEBP. Sie können Rechnungen abfotografieren, hochladen oder per E-Mail weiterleiten. Auch mehrere Seiten können zu einem Dokument zusammengefügt werden."
+      answer: "Doklify unterstützt alle gängigen Formate: PDF, JPG, PNG und WEBP. Sie können Rechnungen abfotografieren, hochladen oder per E-Mail weiterleiten. Auch mehrere Seiten können zu einem Dokument zusammengefügt werden."
     },
     {
       question: "Sind meine Rechnungen sicher gespeichert?",
-      answer: "Alle Belege werden verschlüsselt auf deutschen Servern (IONOS Frankfurt am Main) gespeichert und verlassen nie die EU. MeineDokBox ist vollständig DSGVO-konform. Ihre digitalen Rechnungen sind sicherer als in jedem Papierordner."
+      answer: "Alle Belege werden verschlüsselt auf deutschen Servern (IONOS Frankfurt am Main) gespeichert und verlassen nie die EU. Doklify ist vollständig DSGVO-konform. Ihre digitalen Rechnungen sind sicherer als in jedem Papierordner."
     },
     {
       question: "Kann ich Rechnungen mit meinem Partner teilen?",
@@ -36,12 +36,12 @@ export default function RechnungenDigitalisieren() {
     },
     {
       question: "Wie finde ich eine bestimmte Rechnung wieder?",
-      answer: "Über die Volltextsuche: Geben Sie einfach den Händlernamen, Betrag oder Datum ein. MeineDokBox durchsucht alle Ihre Belege in Sekunden – egal wie viele Rechnungen Sie archiviert haben. Schluss mit Suchen in Papierordnern."
+      answer: "Über die Volltextsuche: Geben Sie einfach den Händlernamen, Betrag oder Datum ein. Doklify durchsucht alle Ihre Belege in Sekunden – egal wie viele Rechnungen Sie archiviert haben. Schluss mit Suchen in Papierordnern."
     }
   ];
 
   useEffect(() => {
-    document.title = "Rechnungen digitalisieren & aufbewahren | Belege digital verwalten | MeineDokBox";
+    document.title = "Rechnungen digitalisieren & aufbewahren | Belege digital verwalten | Doklify";
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
       metaDescription.setAttribute("content", "Rechnungen digitalisieren leicht gemacht: Belege per Smartphone abfotografieren, KI sortiert automatisch. Alle Rechnungen digital aufbewahren – DSGVO-konform auf deutschen Servern.");
@@ -53,7 +53,7 @@ export default function RechnungenDigitalisieren() {
       canonicalLink.rel = 'canonical';
       document.head.appendChild(canonicalLink);
     }
-    canonicalLink.href = 'https://meinedokbox.de/rechnungen-digitalisieren';
+    canonicalLink.href = 'https://doklify.de/rechnungen-digitalisieren';
 
     const faqSchema = {
       "@context": "https://schema.org",
@@ -82,7 +82,7 @@ export default function RechnungenDigitalisieren() {
       <header className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur border-b">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <Link href="/">
-            <img src={logoImage} alt="MeineDokBox" className="h-10 cursor-pointer" />
+            <img src={logoImage} alt="Doklify" className="h-10 cursor-pointer" />
           </Link>
           <nav className="hidden md:flex items-center gap-6 text-sm">
             <Link href="/funktionen"><span className="text-muted-foreground hover:text-foreground cursor-pointer transition-colors">Funktionen</span></Link>
@@ -95,7 +95,7 @@ export default function RechnungenDigitalisieren() {
               <Button variant="ghost" size="icon" className="md:hidden"><Menu className="h-5 w-5" /></Button>
             </SheetTrigger>
             <SheetContent>
-              <SheetHeader><SheetTitle>MeineDokBox</SheetTitle></SheetHeader>
+              <SheetHeader><SheetTitle>Doklify</SheetTitle></SheetHeader>
               <div className="flex flex-col gap-4 mt-6">
                 <Link href="/funktionen"><span className="text-foreground cursor-pointer">Funktionen</span></Link>
                 <Link href="/preise"><span className="text-foreground cursor-pointer">Preise</span></Link>
@@ -120,7 +120,7 @@ export default function RechnungenDigitalisieren() {
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
             Belege abfotografieren, hochladen oder per E-Mail weiterleiten.
-            MeineDokBox erkennt automatisch Betrag, Datum und Absender — und legt alles sortiert ab.
+            Doklify erkennt automatisch Betrag, Datum und Absender — und legt alles sortiert ab.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link href="/registrieren">
@@ -158,7 +158,7 @@ export default function RechnungenDigitalisieren() {
               {
                 icon: Shield,
                 title: "Garantieansprüche",
-                desc: "Kaufbelege sofort zur Hand wenn das Gerät ausfällt. Mit MeineDokBox finden Sie jeden Kassenbon in Sekunden — egal wie lange er zurückliegt."
+                desc: "Kaufbelege sofort zur Hand wenn das Gerät ausfällt. Mit Doklify finden Sie jeden Kassenbon in Sekunden — egal wie lange er zurückliegt."
               },
               {
                 icon: Clock,
@@ -178,7 +178,7 @@ export default function RechnungenDigitalisieren() {
               {
                 icon: Zap,
                 title: "In Sekunden erledigt",
-                desc: "Rechnung erhalten, kurz abfotografieren, fertig. Kein manuelles Eintippen, keine manuelle Sortierung. MeineDokBox übernimmt alles automatisch."
+                desc: "Rechnung erhalten, kurz abfotografieren, fertig. Kein manuelles Eintippen, keine manuelle Sortierung. Doklify übernimmt alles automatisch."
               }
             ].map((item) => {
               const Icon = item.icon;
@@ -208,7 +208,7 @@ export default function RechnungenDigitalisieren() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
               { step: "1", icon: Camera, title: "Foto oder Upload", desc: "Rechnung mit dem Smartphone abfotografieren oder als PDF hochladen. Auch per E-Mail weiterleiten möglich." },
-              { step: "2", icon: Sparkles, title: "KI kategorisiert automatisch", desc: "MeineDokBox erkennt Absender, Betrag, Datum und Dokumenttyp — vollautomatisch, ohne manuelle Eingabe." },
+              { step: "2", icon: Sparkles, title: "KI kategorisiert automatisch", desc: "Doklify erkennt Absender, Betrag, Datum und Dokumenttyp — vollautomatisch, ohne manuelle Eingabe." },
               { step: "3", icon: FolderOpen, title: "Sortiert & durchsuchbar", desc: "Der Beleg ist sofort abgelegt und per Volltextsuche findbar. Für immer — sicher auf deutschen Servern." },
             ].map((item) => {
               const Icon = item.icon;

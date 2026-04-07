@@ -1,8 +1,19 @@
-# PaperEase - Intelligent Document Management System
+# Doklify - Intelligent Document Management System
 
 ## Overview
 
-PaperEase is a web and mobile application designed to digitize paper documents using smartphone cameras or file uploads. It leverages AI-powered OCR and semantic analysis for automatic document categorization and organization into digital folders. The application aims to provide a modern, productivity-focused interface for efficient document capture, storage, and retrieval, minimizing friction and maximizing clarity through AI assistance. The project's ambitions include GDPR compliance with data stored in Germany and robust anti-abuse and family quota systems.
+Doklify (formerly MeineDokBox) is a web and mobile application designed to digitize paper documents using smartphone cameras or file uploads. It leverages AI-powered OCR and semantic analysis for automatic document categorization and organization into digital folders. The application aims to provide a modern, productivity-focused interface for efficient document capture, storage, and retrieval, minimizing friction and maximizing clarity through AI assistance. The project's ambitions include GDPR compliance with data stored in Germany and robust anti-abuse and family quota systems.
+
+## Rebrand Notes
+
+- **Old brand:** MeineDokBox / meinedokbox.de
+- **New brand:** Doklify / doklify.de
+- **Admin email:** service@doklify.de
+- **Inbound email domain:** in.doklify.de (DNS must be updated in Mailgun)
+- **S3 bucket env var default:** `doklify-production` (actual bucket rename is external — update `IONOS_S3_BUCKET` env var on Render)
+- **Stripe webhooks:** Must be updated to point to `https://doklify.de/api/stripe/webhook`
+- **Old domain redirect:** Set up 301 redirect from meinedokbox.de → doklify.de for 6–12 months
+- **Logo asset:** Logo image file `meinedokbox_1760966015056.png` retained as-is; only alt text and brand labels updated. Replace with new Doklify logo when available.
 
 ## User Preferences
 

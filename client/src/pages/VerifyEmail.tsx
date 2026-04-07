@@ -52,7 +52,7 @@ export default function VerifyEmail() {
       {/* Header */}
       <header className="border-b">
         <div className="container mx-auto px-4 py-3 flex items-center justify-center">
-          <img src={logoImage} alt="MeineDokBox" className="h-12 md:h-16 w-auto" data-testid="img-logo" />
+          <img src={logoImage} alt="Doklify" className="h-12 md:h-16 w-auto" data-testid="img-logo" />
         </div>
       </header>
 

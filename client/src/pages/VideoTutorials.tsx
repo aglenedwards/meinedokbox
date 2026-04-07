@@ -66,7 +66,7 @@ export default function VideoTutorials() {
               Video-Tutorials
             </h1>
             <p className="text-muted-foreground mt-1">
-              Lernen Sie alle Funktionen von MeineDokBox mit unseren kurzen Video-Anleitungen.
+              Lernen Sie alle Funktionen von Doklify mit unseren kurzen Video-Anleitungen.
             </p>
           </div>
 

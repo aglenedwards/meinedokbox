@@ -11,7 +11,7 @@ export function Footer() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10">
             <div className="lg:col-span-1">
               <Link href="/">
-                <img src={logoImage} alt="MeineDokBox" className="h-12 w-auto mb-4 cursor-pointer" data-testid="img-footer-logo" />
+                <img src={logoImage} alt="Doklify" className="h-12 w-auto mb-4 cursor-pointer" data-testid="img-footer-logo" />
               </Link>
               <p className="text-sm text-muted-foreground mb-6 max-w-xs">
                 Die intelligente Dokumentenverwaltung für Ihren Haushalt. DSGVO-konform, sicher und made in Germany.
@@ -159,7 +159,7 @@ export function Footer() {
         <div className="border-t py-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="text-sm text-muted-foreground">
-              © 2025 MeineDokBox. Alle Rechte vorbehalten.
+              © 2025 Doklify. Alle Rechte vorbehalten.
             </div>
             <div className="flex items-center gap-6 text-sm text-muted-foreground">
               <span className="flex items-center gap-1.5">

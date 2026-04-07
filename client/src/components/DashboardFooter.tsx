@@ -39,7 +39,7 @@ export function DashboardFooter() {
         </div>
         
         <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-          <span>© 2025 MeineDokBox</span>
+          <span>© 2025 Doklify</span>
           <span className="hidden sm:inline">·</span>
           <span className="flex items-center gap-1">
             <div className="w-1.5 h-1.5 rounded-full bg-green-500" />

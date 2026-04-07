@@ -50,7 +50,7 @@ const ratgeber = [
 
 export default function Ratgeber() {
   useEffect(() => {
-    document.title = "Ratgeber – Dokumente organisieren & digitalisieren | MeineDokBox";
+    document.title = "Ratgeber – Dokumente organisieren & digitalisieren | Doklify";
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
       metaDescription.setAttribute("content", "Praktische Ratgeber rund um Dokumentenorganisation, Aufbewahrungsfristen und digitale Archivierung für Privatpersonen in Deutschland.");
@@ -62,7 +62,7 @@ export default function Ratgeber() {
       canonicalLink.rel = 'canonical';
       document.head.appendChild(canonicalLink);
     }
-    canonicalLink.href = 'https://meinedokbox.de/ratgeber';
+    canonicalLink.href = 'https://doklify.de/ratgeber';
   }, []);
 
   return (
@@ -135,7 +135,7 @@ export default function Ratgeber() {
             <div>
               <h2 className="text-lg font-semibold mb-2">Dokumente sicher digital aufbewahren</h2>
               <p className="text-sm text-muted-foreground mb-4 max-w-xl">
-                Statt Papierstapeln in Ordnern: Mit MeineDokBox laden Sie Ihre Dokumente einmalig hoch,
+                Statt Papierstapeln in Ordnern: Mit Doklify laden Sie Ihre Dokumente einmalig hoch,
                 die KI kategorisiert automatisch — und Sie finden alles in Sekunden. Server in Deutschland,
                 DSGVO-konform.
               </p>

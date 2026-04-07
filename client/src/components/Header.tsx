@@ -231,7 +231,7 @@ export function Header() {
             <div className="hover-elevate active-elevate-2 px-3 py-2 rounded-lg transition-all cursor-pointer">
               <img 
                 src={logoImage} 
-                alt="MeineDokBox Logo" 
+                alt="Doklify Logo" 
                 className="h-12 md:h-14 lg:h-16 w-auto" 
               />
             </div>

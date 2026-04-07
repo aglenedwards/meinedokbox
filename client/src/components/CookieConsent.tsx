@@ -11,7 +11,7 @@ type ConsentSettings = {
   marketing: boolean;
 };
 
-const CONSENT_COOKIE_NAME = "meinedokbox_cookie_consent";
+const CONSENT_COOKIE_NAME = "doklify_cookie_consent";
 
 function setCookieConsent(value: string): void {
   const maxAge = 365 * 24 * 60 * 60; // 1 year in seconds

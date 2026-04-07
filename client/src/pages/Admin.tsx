@@ -529,7 +529,7 @@ export default function Admin() {
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-3 md:py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <img src={logoImage} alt="MeineDokBox" className="h-12 md:h-16" data-testid="img-logo" />
+              <img src={logoImage} alt="Doklify" className="h-12 md:h-16" data-testid="img-logo" />
               <div className="flex items-center gap-2">
                 <Shield className="h-5 w-5 text-primary" />
                 <h1 className="text-xl md:text-2xl font-bold">Admin-Bereich</h1>

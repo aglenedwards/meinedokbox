@@ -487,7 +487,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Generate unique user ID
       const userId = `local_${Date.now()}_${Math.random().toString(36).substring(7)}`;
 
-      // Generate unique inbound email address for document forwarding (firstname.lastname@in.meinedokbox.de)
+      // Generate unique inbound email address for document forwarding (firstname.lastname@in.doklify.de)
       const { generateInboundEmail } = await import('./lib/emailInbound');
       const inboundEmail = await generateInboundEmail(firstName, lastName);
 
@@ -914,7 +914,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const existingCreds = ((user as any).webauthnCredentials as any[] | null) || [];
 
       const options = await generateRegistrationOptions({
-        rpName: 'MeineDokBox',
+        rpName: 'Doklify',
         rpID,
         userID: isoBase64URL.fromBuffer(Buffer.from(userId)),
         userName: user.email || userId,
@@ -1888,7 +1888,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const verificationToken = crypto.randomBytes(32).toString('hex');
       const verificationTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
-      // Generate inbound email address for document forwarding (firstname.lastname@in.meinedokbox.de)
+      // Generate inbound email address for document forwarding (firstname.lastname@in.doklify.de)
       const { generateInboundEmail } = await import('./lib/emailInbound');
       const inviteInboundEmail = await generateInboundEmail(firstName, lastName);
       
@@ -3339,7 +3339,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Set response headers for ZIP download
       res.setHeader('Content-Type', 'application/zip');
-      res.setHeader('Content-Disposition', `attachment; filename="meinedokbox_export_${new Date().toISOString().split('T')[0]}.zip"`);
+      res.setHeader('Content-Disposition', `attachment; filename="doklify_export_${new Date().toISOString().split('T')[0]}.zip"`);
 
       // Create ZIP archive
       const archive = archiver('zip', {
@@ -3831,7 +3831,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // ============================================
-  // ADMIN ROUTES (service@meinedokbox.de only)
+  // ADMIN ROUTES (service@doklify.de only)
   // ============================================
   
   // Admin login endpoint - verify admin password
@@ -3841,7 +3841,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userEmail = user.email || user.claims?.email;
       
       // Check if user is the admin email
-      if (userEmail?.toLowerCase() !== 'service@meinedokbox.de') {
+      if (userEmail?.toLowerCase() !== 'service@doklify.de') {
         return res.status(403).json({ message: 'Nur Administratoren können sich hier anmelden.' });
       }
       
@@ -3879,7 +3879,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const user = req.user;
     const userEmail = user.email || user.claims?.email;
     
-    const isAdminEmail = userEmail?.toLowerCase() === 'service@meinedokbox.de';
+    const isAdminEmail = userEmail?.toLowerCase() === 'service@doklify.de';
     const isAdminAuthenticated = req.session.isAdminAuthenticated === true;
     
     res.json({ 
@@ -5375,7 +5375,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const requiredReferrals = getRequiredReferralsForPlan(currentPlan);
       
       // Build referral link - always use production domain
-      const baseUrl = process.env.APP_URL || 'https://meinedokbox.de';
+      const baseUrl = process.env.APP_URL || 'https://doklify.de';
       const referralLink = `${baseUrl}/registrieren?ref=${referralCode}`;
       
       res.json({

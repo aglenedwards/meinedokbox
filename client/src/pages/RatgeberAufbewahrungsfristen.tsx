@@ -96,7 +96,7 @@ const neverDiscard = [
 
 export default function RatgeberAufbewahrungsfristen() {
   useEffect(() => {
-    document.title = "Aufbewahrungsfristen private Dokumente 2026 – Komplette Übersicht | MeineDokBox";
+    document.title = "Aufbewahrungsfristen private Dokumente 2026 – Komplette Übersicht | Doklify";
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
       metaDescription.setAttribute("content", "Wie lange müssen Sie private Dokumente aufbewahren? Komplette Übersicht der Aufbewahrungsfristen 2026: Steuern, Mietvertrag, Arztbriefe, Gehaltsabrechnungen und mehr – mit Tabelle zum Downloaden.");
@@ -108,17 +108,17 @@ export default function RatgeberAufbewahrungsfristen() {
       canonicalLink.rel = 'canonical';
       document.head.appendChild(canonicalLink);
     }
-    canonicalLink.href = 'https://meinedokbox.de/ratgeber/aufbewahrungsfristen';
+    canonicalLink.href = 'https://doklify.de/ratgeber/aufbewahrungsfristen';
 
     const articleSchema = {
       "@context": "https://schema.org",
       "@type": "Article",
       "headline": "Aufbewahrungsfristen für private Dokumente 2026 – Komplette Übersicht",
       "description": "Wie lange müssen Sie private Dokumente aufbewahren? Übersicht aller Aufbewahrungsfristen für Privatpersonen in Deutschland.",
-      "author": { "@type": "Organization", "name": "MeineDokBox" },
-      "publisher": { "@type": "Organization", "name": "MeineDokBox", "url": "https://meinedokbox.de" },
+      "author": { "@type": "Organization", "name": "Doklify" },
+      "publisher": { "@type": "Organization", "name": "Doklify", "url": "https://doklify.de" },
       "dateModified": "2026-03-01",
-      "mainEntityOfPage": "https://meinedokbox.de/ratgeber/aufbewahrungsfristen"
+      "mainEntityOfPage": "https://doklify.de/ratgeber/aufbewahrungsfristen"
     };
     const script = document.createElement('script');
     script.type = 'application/ld+json';
@@ -280,7 +280,7 @@ export default function RatgeberAufbewahrungsfristen() {
         <section className="mt-14 rounded-xl bg-primary/5 border border-primary/20 px-6 py-10 text-center">
           <h2 className="text-2xl font-semibold mb-3">Alle Dokumente digital organisieren</h2>
           <p className="text-muted-foreground mb-6 max-w-xl mx-auto">
-            Mit MeineDokBox behalten Sie den Überblick: Laden Sie Ihre Unterlagen hoch, unsere KI
+            Mit Doklify behalten Sie den Überblick: Laden Sie Ihre Unterlagen hoch, unsere KI
             kategorisiert sie automatisch — und Sie finden jedes Dokument in Sekunden wieder.
             DSGVO-konform, Server in Deutschland.
           </p>

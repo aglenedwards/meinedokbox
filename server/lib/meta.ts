@@ -79,7 +79,7 @@ export async function trackCompleteRegistration(params: {
   const eventData: EventData = {
     event_name: 'CompleteRegistration',
     event_time: Math.floor(Date.now() / 1000),
-    event_source_url: params.sourceUrl || 'https://meinedokbox.de/register',
+    event_source_url: params.sourceUrl || 'https://doklify.de/register',
     user_data: {
       client_ip_address: params.ipAddress,
       client_user_agent: params.userAgent,
@@ -106,7 +106,7 @@ export async function trackStartTrial(params: {
   const eventData: EventData = {
     event_name: 'StartTrial',
     event_time: Math.floor(Date.now() / 1000),
-    event_source_url: params.sourceUrl || 'https://meinedokbox.de/register',
+    event_source_url: params.sourceUrl || 'https://doklify.de/register',
     user_data: {
       client_ip_address: params.ipAddress,
       client_user_agent: params.userAgent,
@@ -136,7 +136,7 @@ export async function trackSubscribe(params: {
   const eventData: EventData = {
     event_name: 'Subscribe',
     event_time: Math.floor(Date.now() / 1000),
-    event_source_url: params.sourceUrl || 'https://meinedokbox.de/pricing',
+    event_source_url: params.sourceUrl || 'https://doklify.de/pricing',
     user_data: {
       client_ip_address: params.ipAddress,
       client_user_agent: params.userAgent,

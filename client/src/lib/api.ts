@@ -347,7 +347,7 @@ export function exportDocumentsAsZip(): void {
   // Use a temporary link element to trigger download with proper credentials
   const link = document.createElement('a');
   link.href = "/api/documents/export/zip";
-  link.download = `meinedokbox_export_${new Date().toISOString().split('T')[0]}.zip`;
+  link.download = `doklify_export_${new Date().toISOString().split('T')[0]}.zip`;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);

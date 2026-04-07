@@ -20,7 +20,7 @@ export default function Impressum() {
               Deutschland
             </p>
             <p className="text-muted-foreground mt-4">
-              E-Mail: <a href="mailto:service@meinedokbox.de" className="text-primary hover:underline">service@meinedokbox.de</a>
+              E-Mail: <a href="mailto:service@doklify.de" className="text-primary hover:underline">service@doklify.de</a>
             </p>
           </section>
 

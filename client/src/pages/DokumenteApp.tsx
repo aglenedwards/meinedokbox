@@ -11,16 +11,16 @@ import logoImage from "@assets/meinedokbox_1760966015056.png";
 export default function DokumenteApp() {
   const faqs = [
     {
-      question: "Ist MeineDokBox wirklich kostenlos testbar?",
-      answer: "Ja! Sie können MeineDokBox 7 Tage lang vollständig kostenlos testen – ohne Kreditkarte, ohne versteckte Kosten. Nach der Testphase entscheiden Sie, ob Sie ein Abo abschließen möchten. Dokumente digitalisieren war noch nie so risikofrei."
+      question: "Ist Doklify wirklich kostenlos testbar?",
+      answer: "Ja! Sie können Doklify 7 Tage lang vollständig kostenlos testen – ohne Kreditkarte, ohne versteckte Kosten. Nach der Testphase entscheiden Sie, ob Sie ein Abo abschließen möchten. Dokumente digitalisieren war noch nie so risikofrei."
     },
     {
       question: "Funktioniert die App auf meinem Smartphone?",
-      answer: "MeineDokBox ist eine Web-App, die auf allen modernen Smartphones, Tablets und Computern funktioniert – egal ob iPhone, Android, Windows oder Mac. Keine Installation im App Store nötig, einfach im Browser öffnen und Dokumente digitalisieren."
+      answer: "Doklify ist eine Web-App, die auf allen modernen Smartphones, Tablets und Computern funktioniert – egal ob iPhone, Android, Windows oder Mac. Keine Installation im App Store nötig, einfach im Browser öffnen und Dokumente digitalisieren."
     },
     {
-      question: "Wie unterscheidet sich MeineDokBox von kostenlosen Scanner-Apps?",
-      answer: "Kostenlose Scanner-Apps digitalisieren nur – sie organisieren nicht. MeineDokBox bietet KI-gestützte automatische Kategorisierung, Volltextsuche, Zahlungserinnerungen und sichere Speicherung auf deutschen Servern. Außerdem: keine Werbung, kein Datenverkauf."
+      question: "Wie unterscheidet sich Doklify von kostenlosen Scanner-Apps?",
+      answer: "Kostenlose Scanner-Apps digitalisieren nur – sie organisieren nicht. Doklify bietet KI-gestützte automatische Kategorisierung, Volltextsuche, Zahlungserinnerungen und sichere Speicherung auf deutschen Servern. Außerdem: keine Werbung, kein Datenverkauf."
     },
     {
       question: "Kann ich meine bereits digitalisierten Dokumente importieren?",
@@ -37,10 +37,10 @@ export default function DokumenteApp() {
   ];
 
   useEffect(() => {
-    document.title = "Dokumente digitalisieren App | Software für private Dokumente | MeineDokBox";
+    document.title = "Dokumente digitalisieren App | Software für private Dokumente | Doklify";
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
-      metaDescription.setAttribute("content", "Dokumente digitalisieren mit der MeineDokBox App: Die Software für private Dokumente. Kostenlos testen, einfach scannen, automatisch organisieren. Dokumente digitalisieren software privat.");
+      metaDescription.setAttribute("content", "Dokumente digitalisieren mit der Doklify App: Die Software für private Dokumente. Kostenlos testen, einfach scannen, automatisch organisieren. Dokumente digitalisieren software privat.");
     }
 
     let canonicalLink = document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
@@ -49,7 +49,7 @@ export default function DokumenteApp() {
       canonicalLink.rel = 'canonical';
       document.head.appendChild(canonicalLink);
     }
-    canonicalLink.href = 'https://meinedokbox.de/dokumente-digitalisieren-app';
+    canonicalLink.href = 'https://doklify.de/dokumente-digitalisieren-app';
 
     const faqSchema = {
       "@context": "https://schema.org",
@@ -80,16 +80,16 @@ export default function DokumenteApp() {
   }, []);
 
   const comparisonFeatures = [
-    { feature: "KI-Kategorisierung", meinedokbox: true, free: false },
-    { feature: "Deutsche Server (DSGVO)", meinedokbox: true, free: false },
-    { feature: "Keine Werbung", meinedokbox: true, free: false },
-    { feature: "Familien-Sharing", meinedokbox: true, free: false },
-    { feature: "Volltextsuche", meinedokbox: true, free: "teilweise" },
-    { feature: "E-Mail-Import", meinedokbox: true, free: false },
-    { feature: "Zahlungserinnerungen", meinedokbox: true, free: false },
-    { feature: "Offline-Zugriff", meinedokbox: true, free: "teilweise" },
-    { feature: "Automatische Backups", meinedokbox: true, free: false },
-    { feature: "Support auf Deutsch", meinedokbox: true, free: false },
+    { feature: "KI-Kategorisierung", doklify: true, free: false },
+    { feature: "Deutsche Server (DSGVO)", doklify: true, free: false },
+    { feature: "Keine Werbung", doklify: true, free: false },
+    { feature: "Familien-Sharing", doklify: true, free: false },
+    { feature: "Volltextsuche", doklify: true, free: "teilweise" },
+    { feature: "E-Mail-Import", doklify: true, free: false },
+    { feature: "Zahlungserinnerungen", doklify: true, free: false },
+    { feature: "Offline-Zugriff", doklify: true, free: "teilweise" },
+    { feature: "Automatische Backups", doklify: true, free: false },
+    { feature: "Support auf Deutsch", doklify: true, free: false },
   ];
 
   const testimonials = [
@@ -102,7 +102,7 @@ export default function DokumenteApp() {
     {
       name: "Markus T.",
       role: "IT-Manager, 52",
-      text: "Als Technik-Fan habe ich viele Apps getestet. MeineDokBox ist die beste Dokumente digitalisieren Software für Privatanwender. Endlich deutsche Server!",
+      text: "Als Technik-Fan habe ich viele Apps getestet. Doklify ist die beste Dokumente digitalisieren Software für Privatanwender. Endlich deutsche Server!",
       rating: 5
     },
     {
@@ -119,7 +119,7 @@ export default function DokumenteApp() {
         <div className="container mx-auto px-4 lg:px-6 py-4 md:py-5 flex items-center justify-between gap-6">
           <Link href="/">
             <div className="flex items-center flex-shrink-0 hover-elevate active-elevate-2 px-3 py-2 rounded-lg transition-all cursor-pointer">
-              <img src={logoImage} alt="MeineDokBox" className="h-12 md:h-14 lg:h-16 w-auto" data-testid="img-logo" />
+              <img src={logoImage} alt="Doklify" className="h-12 md:h-14 lg:h-16 w-auto" data-testid="img-logo" />
             </div>
           </Link>
 
@@ -207,7 +207,7 @@ export default function DokumenteApp() {
             </h1>
             
             <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto mb-8 leading-relaxed">
-              MeineDokBox ist Ihre Software zum Digitalisieren privater Dokumente – 
+              Doklify ist Ihre Software zum Digitalisieren privater Dokumente – 
               direkt im Browser, ohne Installation. Die intelligenteste Dokumente digitalisieren App auf dem Markt.
             </p>
 
@@ -299,7 +299,7 @@ export default function DokumenteApp() {
                 </div>
                 <h3 className="text-xl font-semibold mb-3">E-Mail-Import</h3>
                 <p className="text-muted-foreground">
-                  Leiten Sie digitale Rechnungen an Ihre persönliche MeineDokBox-Adresse weiter. 
+                  Leiten Sie digitale Rechnungen an Ihre persönliche Doklify-Adresse weiter. 
                   Die Software verarbeitet sie automatisch – ideal für Online-Bestellungen.
                 </p>
               </CardContent>
@@ -357,7 +357,7 @@ export default function DokumenteApp() {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-6">
-              MeineDokBox vs. kostenlose Alternativen
+              Doklify vs. kostenlose Alternativen
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               Warum unsere Dokumente digitalisieren Software privat besser ist als kostenlose Lösungen
@@ -368,7 +368,7 @@ export default function DokumenteApp() {
             <Card className="border-0 shadow-xl overflow-hidden">
               <div className="grid grid-cols-3 bg-muted/50 font-semibold text-center py-4 border-b">
                 <div className="text-left pl-6">Funktion</div>
-                <div className="text-primary">MeineDokBox</div>
+                <div className="text-primary">Doklify</div>
                 <div className="text-muted-foreground">Kostenlose Apps</div>
               </div>
               <CardContent className="p-0">
@@ -393,7 +393,7 @@ export default function DokumenteApp() {
             </Card>
 
             <p className="text-center text-muted-foreground mt-8">
-              Kostenlose Scanner-Apps digitalisieren nur – sie organisieren nicht. MeineDokBox ist die komplette Lösung 
+              Kostenlose Scanner-Apps digitalisieren nur – sie organisieren nicht. Doklify ist die komplette Lösung 
               für Ihre private Dokumentenverwaltung. Dokumente digitalisieren software privat kostenlos testen!
             </p>
           </div>
@@ -409,7 +409,7 @@ export default function DokumenteApp() {
                   Dokumente digitalisieren Software – mehr als nur scannen
                 </h2>
                 <p className="text-lg text-muted-foreground mb-8">
-                  MeineDokBox ist keine einfache Scanner-App. Es ist Ihre komplette Lösung für die private 
+                  Doklify ist keine einfache Scanner-App. Es ist Ihre komplette Lösung für die private 
                   Dokumentenverwaltung. Vom Fotografieren bis zur Steuererklärung – alles an einem Ort.
                 </p>
                 
@@ -501,7 +501,7 @@ export default function DokumenteApp() {
               Das sagen unsere Nutzer
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Tausende nutzen MeineDokBox als ihre Dokumente digitalisieren App
+              Tausende nutzen Doklify als ihre Dokumente digitalisieren App
             </p>
           </div>
 
@@ -626,7 +626,7 @@ export default function DokumenteApp() {
       <section className="py-24 bg-primary text-primary-foreground">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-6">
-            Jetzt Dokumente digitalisieren – mit der MeineDokBox App
+            Jetzt Dokumente digitalisieren – mit der Doklify App
           </h2>
           <p className="text-xl mb-4 opacity-90 max-w-2xl mx-auto">
             Die beste Dokumente digitalisieren Software für Privatanwender. Starten Sie noch heute.

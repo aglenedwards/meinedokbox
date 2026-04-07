@@ -336,7 +336,7 @@ export default function Preise() {
                 <CardContent>
                   <p className="text-muted-foreground">
                     Ja! Gemeinnützige Organisationen, Bildungseinrichtungen und NGOs erhalten einen Rabatt.
-                    Kontaktieren Sie uns einfach unter service@meinedokbox.de mit Ihrem Nachweis.
+                    Kontaktieren Sie uns einfach unter service@doklify.de mit Ihrem Nachweis.
                   </p>
                 </CardContent>
               </Card>

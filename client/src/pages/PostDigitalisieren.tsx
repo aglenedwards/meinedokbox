@@ -12,11 +12,11 @@ export default function PostDigitalisieren() {
   const faqs = [
     {
       question: "Was ist ein digitaler Briefkasten?",
-      answer: "Ein digitaler Briefkasten ist Ihre persönliche Sammelstelle für alle Dokumente – egal ob als Papierbrief eingescannt oder als digitale Post per E-Mail empfangen. MeineDokBox organisiert alles automatisch und macht Ihre Post durchsuchbar. Post digitalisieren privat war noch nie so einfach."
+      answer: "Ein digitaler Briefkasten ist Ihre persönliche Sammelstelle für alle Dokumente – egal ob als Papierbrief eingescannt oder als digitale Post per E-Mail empfangen. Doklify organisiert alles automatisch und macht Ihre Post durchsuchbar. Post digitalisieren privat war noch nie so einfach."
     },
     {
       question: "Wie scanne ich meine Post am besten?",
-      answer: "Einfach die MeineDokBox-App öffnen und den Brief mit Ihrem Smartphone fotografieren. Die App optimiert das Bild automatisch (Helligkeit, Kontrast, Perspektive) und unsere KI erkennt den Absender, Datum und Inhalt. Post digitalisieren geht in Sekunden."
+      answer: "Einfach die Doklify-App öffnen und den Brief mit Ihrem Smartphone fotografieren. Die App optimiert das Bild automatisch (Helligkeit, Kontrast, Perspektive) und unsere KI erkennt den Absender, Datum und Inhalt. Post digitalisieren geht in Sekunden."
     },
     {
       question: "Werden meine Briefe automatisch sortiert?",
@@ -24,7 +24,7 @@ export default function PostDigitalisieren() {
     },
     {
       question: "Kann ich Zahlungsfristen im Blick behalten?",
-      answer: "Absolut! MeineDokBox erkennt automatisch Rechnungen mit Zahlungsfristen und erinnert Sie rechtzeitig. So verpassen Sie nie wieder eine Zahlung. Post digitalisieren privat mit eingebauter Fristenkontrolle."
+      answer: "Absolut! Doklify erkennt automatisch Rechnungen mit Zahlungsfristen und erinnert Sie rechtzeitig. So verpassen Sie nie wieder eine Zahlung. Post digitalisieren privat mit eingebauter Fristenkontrolle."
     },
     {
       question: "Ist meine Post sicher?",
@@ -32,15 +32,15 @@ export default function PostDigitalisieren() {
     },
     {
       question: "Kann ich digitale Rechnungen per E-Mail empfangen?",
-      answer: "Ja! Sie erhalten eine persönliche MeineDokBox-E-Mail-Adresse. Leiten Sie digitale Rechnungen einfach dorthin weiter – sie werden automatisch verarbeitet und in Ihren digitalen Briefkasten einsortiert."
+      answer: "Ja! Sie erhalten eine persönliche Doklify-E-Mail-Adresse. Leiten Sie digitale Rechnungen einfach dorthin weiter – sie werden automatisch verarbeitet und in Ihren digitalen Briefkasten einsortiert."
     }
   ];
 
   useEffect(() => {
-    document.title = "Post digitalisieren privat | Digitaler Briefkasten | MeineDokBox";
+    document.title = "Post digitalisieren privat | Digitaler Briefkasten | Doklify";
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
-      metaDescription.setAttribute("content", "Post digitalisieren privat: Ihr digitaler Briefkasten mit MeineDokBox. Briefe scannen, automatisch einsortieren und sicher archivieren. Der smarte Weg, Briefpost zu verwalten.");
+      metaDescription.setAttribute("content", "Post digitalisieren privat: Ihr digitaler Briefkasten mit Doklify. Briefe scannen, automatisch einsortieren und sicher archivieren. Der smarte Weg, Briefpost zu verwalten.");
     }
 
     let canonicalLink = document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
@@ -49,7 +49,7 @@ export default function PostDigitalisieren() {
       canonicalLink.rel = 'canonical';
       document.head.appendChild(canonicalLink);
     }
-    canonicalLink.href = 'https://meinedokbox.de/post-digitalisieren';
+    canonicalLink.href = 'https://doklify.de/post-digitalisieren';
 
     const faqSchema = {
       "@context": "https://schema.org",
@@ -112,7 +112,7 @@ export default function PostDigitalisieren() {
     {
       name: "Julia M.",
       role: "Berufstätige Mutter, 35",
-      text: "Mit drei Kindern bleibt wenig Zeit für Papierkram. MeineDokBox ist mein digitaler Briefkasten – ich fotografiere die Post kurz ab und fertig. Die KI macht den Rest!",
+      text: "Mit drei Kindern bleibt wenig Zeit für Papierkram. Doklify ist mein digitaler Briefkasten – ich fotografiere die Post kurz ab und fertig. Die KI macht den Rest!",
       rating: 5
     },
     {
@@ -129,7 +129,7 @@ export default function PostDigitalisieren() {
         <div className="container mx-auto px-4 lg:px-6 py-4 md:py-5 flex items-center justify-between gap-6">
           <Link href="/">
             <div className="flex items-center flex-shrink-0 hover-elevate active-elevate-2 px-3 py-2 rounded-lg transition-all cursor-pointer">
-              <img src={logoImage} alt="MeineDokBox" className="h-12 md:h-14 lg:h-16 w-auto" data-testid="img-logo" />
+              <img src={logoImage} alt="Doklify" className="h-12 md:h-14 lg:h-16 w-auto" data-testid="img-logo" />
             </div>
           </Link>
 
@@ -588,7 +588,7 @@ export default function PostDigitalisieren() {
               Das sagen unsere Nutzer
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Tausende nutzen MeineDokBox als ihren digitalen Briefkasten
+              Tausende nutzen Doklify als ihren digitalen Briefkasten
             </p>
           </div>
 

@@ -71,7 +71,7 @@ export function PWAUpdatePrompt() {
               Update verfügbar
             </h3>
             <p className="text-xs text-muted-foreground mb-3">
-              Eine neue Version von MeineDokBox ist verfügbar
+              Eine neue Version von Doklify ist verfügbar
             </p>
             
             <div className="flex gap-2">

@@ -70,8 +70,8 @@ export default function Referral() {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: "MeineDokBox - Dokumente einfach digitalisieren",
-          text: "Ich nutze MeineDokBox, um meine Dokumente zu digitalisieren. Probiere es auch aus!",
+          title: "Doklify - Dokumente einfach digitalisieren",
+          text: "Ich nutze Doklify, um meine Dokumente zu digitalisieren. Probiere es auch aus!",
           url: referralData.referralLink,
         });
       } catch (error) {
@@ -142,7 +142,7 @@ export default function Referral() {
                 Freunde einladen
               </h1>
               <p className="text-muted-foreground mt-2">
-                Empfiehl MeineDokBox weiter und erhalte Bonusspeicher sowie kostenlose Premium-Vorteile!
+                Empfiehl Doklify weiter und erhalte Bonusspeicher sowie kostenlose Premium-Vorteile!
               </p>
             </div>
 
@@ -154,7 +154,7 @@ export default function Referral() {
                       <Award className="h-8 w-8 text-primary" />
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-bold text-lg">MeineDokBox dauerhaft kostenlos nutzen!</h3>
+                      <h3 className="font-bold text-lg">Doklify dauerhaft kostenlos nutzen!</h3>
                       <p className="text-muted-foreground">
                         Empfiehl {requiredReferrals} Freunde, die zahlende Kunden werden - und dein {planName} wird <span className="font-semibold text-primary">dauerhaft kostenlos</span>.
                         Aktuell: <span className="font-bold">{referralData?.activeReferrals || 0}/{requiredReferrals}</span> aktive Empfehlungen.
@@ -173,7 +173,7 @@ export default function Referral() {
                       <PartyPopper className="h-8 w-8 text-primary" />
                     </div>
                     <div>
-                      <h3 className="font-bold text-lg">Glückwunsch! Du nutzt MeineDokBox kostenlos</h3>
+                      <h3 className="font-bold text-lg">Glückwunsch! Du nutzt Doklify kostenlos</h3>
                       <p className="text-muted-foreground">
                         Dank deiner {referralData.activeReferrals} aktiven Empfehlungen ist dein {planName} dauerhaft kostenlos!
                       </p>

@@ -11,7 +11,7 @@ import logoImage from "@assets/meinedokbox_1760966015056.png";
 export default function DigitalArchivieren() {
   const faqs = [
     {
-      question: "Wie funktioniert digitale Archivierung mit MeineDokBox?",
+      question: "Wie funktioniert digitale Archivierung mit Doklify?",
       answer: "Sie fotografieren oder laden Ihre Dokumente hoch, unsere KI erkennt automatisch den Dokumententyp und sortiert ihn in die passende Kategorie. So entsteht ohne manuellen Aufwand eine strukturierte digitale Dokumentenablage. Die Archivierung digital erfolgt vollautomatisch."
     },
     {
@@ -28,7 +28,7 @@ export default function DigitalArchivieren() {
     },
     {
       question: "Welche Dokumentenformate werden unterstützt?",
-      answer: "MeineDokBox unterstützt alle gängigen Formate: PDF, JPG, PNG und WEBP. Sie können Dokumente fotografieren, hochladen oder per E-Mail weiterleiten. Die digitale Dokumentenablage akzeptiert praktisch jedes Dokument."
+      answer: "Doklify unterstützt alle gängigen Formate: PDF, JPG, PNG und WEBP. Sie können Dokumente fotografieren, hochladen oder per E-Mail weiterleiten. Die digitale Dokumentenablage akzeptiert praktisch jedes Dokument."
     },
     {
       question: "Kann ich meine digitale Archivierung mit der Familie teilen?",
@@ -37,10 +37,10 @@ export default function DigitalArchivieren() {
   ];
 
   useEffect(() => {
-    document.title = "Digital archivieren | Digitale Dokumentenablage | MeineDokBox";
+    document.title = "Digital archivieren | Digitale Dokumentenablage | Doklify";
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
-      metaDescription.setAttribute("content", "Digital archivieren mit MeineDokBox: Ihre digitale Dokumentenablage für private Dokumente. Archivierung digital, sicher und DSGVO-konform in Deutschland. Dokumente digital archivieren war noch nie so einfach.");
+      metaDescription.setAttribute("content", "Digital archivieren mit Doklify: Ihre digitale Dokumentenablage für private Dokumente. Archivierung digital, sicher und DSGVO-konform in Deutschland. Dokumente digital archivieren war noch nie so einfach.");
     }
 
     let canonicalLink = document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
@@ -49,7 +49,7 @@ export default function DigitalArchivieren() {
       canonicalLink.rel = 'canonical';
       document.head.appendChild(canonicalLink);
     }
-    canonicalLink.href = 'https://meinedokbox.de/digital-archivieren';
+    canonicalLink.href = 'https://doklify.de/digital-archivieren';
 
     const faqSchema = {
       "@context": "https://schema.org",
@@ -106,7 +106,7 @@ export default function DigitalArchivieren() {
         <div className="container mx-auto px-4 lg:px-6 py-4 md:py-5 flex items-center justify-between gap-6">
           <Link href="/">
             <div className="flex items-center flex-shrink-0 hover-elevate active-elevate-2 px-3 py-2 rounded-lg transition-all cursor-pointer">
-              <img src={logoImage} alt="MeineDokBox" className="h-12 md:h-14 lg:h-16 w-auto" data-testid="img-logo" />
+              <img src={logoImage} alt="Doklify" className="h-12 md:h-14 lg:h-16 w-auto" data-testid="img-logo" />
             </div>
           </Link>
 
@@ -194,7 +194,7 @@ export default function DigitalArchivieren() {
             </h1>
             
             <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto mb-8 leading-relaxed">
-              Schluss mit Papierstapeln und Aktenordnern. Mit MeineDokBox archivieren Sie Ihre Dokumente digital – 
+              Schluss mit Papierstapeln und Aktenordnern. Mit Doklify archivieren Sie Ihre Dokumente digital – 
               strukturiert, sicher und jederzeit griffbereit. Ihre digitale Dokumentenablage für die moderne Welt.
             </p>
 
@@ -333,7 +333,7 @@ export default function DigitalArchivieren() {
                 </h2>
                 <p className="text-lg text-muted-foreground mb-8">
                   Physische Aktenordner nehmen Platz, verstauben und sind bei Umzügen ein Alptraum. 
-                  Mit MeineDokBox ersetzen Sie den kompletten Aktenschrank durch eine schlanke digitale Dokumentenablage.
+                  Mit Doklify ersetzen Sie den kompletten Aktenschrank durch eine schlanke digitale Dokumentenablage.
                 </p>
                 <p className="text-lg text-muted-foreground mb-8">
                   Die Archivierung digital bietet Ihnen nicht nur mehr Platz im Regal, sondern auch echte Vorteile im Alltag: 
@@ -534,7 +534,7 @@ export default function DigitalArchivieren() {
               Das sagen unsere Nutzer
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Tausende Haushalte nutzen bereits MeineDokBox für ihre digitale Dokumentenablage
+              Tausende Haushalte nutzen bereits Doklify für ihre digitale Dokumentenablage
             </p>
           </div>
 

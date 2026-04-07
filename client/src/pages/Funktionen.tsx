@@ -36,7 +36,7 @@ export default function Funktionen() {
             
             {/* Subtitle */}
             <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto mb-12 leading-relaxed">
-              Erfahren Sie, wie MeineDokBox modernste KI-Technologie nutzt, um Ihre Dokumente 
+              Erfahren Sie, wie Doklify modernste KI-Technologie nutzt, um Ihre Dokumente 
               automatisch zu kategorisieren und zu organisieren.
             </p>
 
@@ -100,7 +100,7 @@ export default function Funktionen() {
               Wie funktioniert die KI-Kategorisierung?
             </h2>
             <p className="text-xl text-muted-foreground text-center mb-12">
-              MeineDokBox nutzt <strong>Azure OpenAI</strong> – die weltweit fortschrittlichste 
+              Doklify nutzt <strong>Azure OpenAI</strong> – die weltweit fortschrittlichste 
               KI für Bild- und Texterkennung, gehostet in europäischen Rechenzentren.
             </p>
           </div>

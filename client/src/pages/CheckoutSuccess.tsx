@@ -71,7 +71,7 @@ export default function CheckoutSuccess() {
             Zahlung erfolgreich!
           </CardTitle>
           <p className="text-xl text-muted-foreground">
-            Vielen Dank für Ihr Vertrauen in MeineDokBox
+            Vielen Dank für Ihr Vertrauen in Doklify
           </p>
         </CardHeader>
         

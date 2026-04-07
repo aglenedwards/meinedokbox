@@ -16,7 +16,7 @@ import {
 
 // IONOS S3 Configuration
 const S3_ENDPOINT = process.env.IONOS_S3_ENDPOINT || "https://s3.eu-central-4.ionoscloud.com";
-const S3_BUCKET_NAME = process.env.IONOS_S3_BUCKET || "meinedokbox-production";
+const S3_BUCKET_NAME = process.env.IONOS_S3_BUCKET || "doklify-production";
 const S3_REGION = process.env.IONOS_S3_REGION || "eu-central-4";
 const S3_ACCESS_KEY = process.env.IONOS_S3_ACCESS_KEY;
 const S3_SECRET_KEY = process.env.IONOS_S3_SECRET_KEY;

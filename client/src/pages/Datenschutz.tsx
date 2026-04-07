@@ -23,7 +23,7 @@ export default function Datenschutz() {
               55294 Bodenheim<br />
               Deutschland<br />
               <br />
-              E-Mail: <a href="mailto:service@meinedokbox.de" className="text-primary hover:underline">service@meinedokbox.de</a>
+              E-Mail: <a href="mailto:service@doklify.de" className="text-primary hover:underline">service@doklify.de</a>
             </p>
           </section>
 
@@ -224,7 +224,7 @@ export default function Datenschutz() {
               nutzen Sie bitte unser{" "}
               <a href="/kontakt" className="text-primary hover:underline">Kontaktformular</a>
               {" "}oder schreiben Sie direkt an:{" "}
-              <a href="mailto:service@meinedokbox.de" className="text-primary hover:underline">service@meinedokbox.de</a>.
+              <a href="mailto:service@doklify.de" className="text-primary hover:underline">service@doklify.de</a>.
             </p>
             <p className="text-muted-foreground">
               Wir bearbeiten Ihre Anfrage innerhalb von 30 Tagen gemäß Art. 12 DSGVO und bestätigen die Durchführung schriftlich per E-Mail.
@@ -247,8 +247,8 @@ export default function Datenschutz() {
             <p className="text-muted-foreground">
               Wir behalten uns vor, diese Datenschutzerklärung anzupassen, um sie an geänderte Rechtslagen oder neue Funktionen anzupassen.
               Die jeweils aktuelle Version ist jederzeit unter{" "}
-              <a href="https://meinedokbox.de/datenschutz" className="text-primary hover:underline">
-                https://meinedokbox.de/datenschutz
+              <a href="https://doklify.de/datenschutz" className="text-primary hover:underline">
+                https://doklify.de/datenschutz
               </a>{" "}
               abrufbar.
             </p>

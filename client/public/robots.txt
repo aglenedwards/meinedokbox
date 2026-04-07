@@ -1,7 +1,7 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://meinedokbox.de/sitemap.xml
+Sitemap: https://doklify.de/sitemap.xml
 
 # Geschützte Bereiche
 Disallow: /documents

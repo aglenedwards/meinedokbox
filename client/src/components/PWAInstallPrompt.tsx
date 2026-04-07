@@ -94,7 +94,7 @@ export function PWAInstallPrompt() {
               App installieren
             </h3>
             <p className="text-xs text-muted-foreground mb-3">
-              Installieren Sie MeineDokBox für schnellen Zugriff und Offline-Nutzung
+              Installieren Sie Doklify für schnellen Zugriff und Offline-Nutzung
             </p>
             
             <div className="flex gap-2">

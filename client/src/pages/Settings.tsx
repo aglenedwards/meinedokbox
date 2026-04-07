@@ -483,7 +483,7 @@ export default function Settings() {
                   {isPWA ? (
                     <div className="flex items-center gap-3 text-green-600 dark:text-green-400" data-testid="status-app-installed">
                       <CheckCircle2 className="h-5 w-5 shrink-0" />
-                      <p className="text-sm font-medium">App ist installiert – Sie nutzen MeineDokBox bereits als App.</p>
+                      <p className="text-sm font-medium">App ist installiert – Sie nutzen Doklify bereits als App.</p>
                     </div>
                   ) : installAccepted ? (
                     <div className="flex items-center gap-3 text-green-600 dark:text-green-400" data-testid="status-install-accepted">
@@ -499,7 +499,7 @@ export default function Settings() {
                           <div>
                             <p className="text-sm font-medium text-amber-800 dark:text-amber-200">Bitte Safari verwenden</p>
                             <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">
-                              iOS erlaubt die App-Installation nur über Safari. Öffnen Sie <strong>meinedokbox.de</strong> in Safari und folgen Sie den Schritten unten.
+                              iOS erlaubt die App-Installation nur über Safari. Öffnen Sie <strong>doklify.de</strong> in Safari und folgen Sie den Schritten unten.
                             </p>
                           </div>
                         </div>

@@ -64,7 +64,7 @@ export default function AdminLogin() {
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="flex justify-center mb-8">
-          <img src={logoImage} alt="MeineDokBox" className="h-20" data-testid="img-logo" />
+          <img src={logoImage} alt="Doklify" className="h-20" data-testid="img-logo" />
         </div>
 
         <Card>
@@ -109,7 +109,7 @@ export default function AdminLogin() {
               </Button>
 
               <div className="text-center text-sm text-muted-foreground mt-4">
-                Sie sind bereits als <strong>service@meinedokbox.de</strong> angemeldet.
+                Sie sind bereits als <strong>service@doklify.de</strong> angemeldet.
                 <br />
                 Geben Sie Ihr Admin-Passwort ein, um fortzufahren.
               </div>

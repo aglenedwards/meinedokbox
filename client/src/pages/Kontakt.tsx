@@ -94,7 +94,7 @@ export default function Kontakt() {
             
             {/* Subtitle */}
             <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-              Haben Sie Fragen zu MeineDokBox? Möchten Sie Feedback geben? 
+              Haben Sie Fragen zu Doklify? Möchten Sie Feedback geben? 
               Kontaktieren Sie uns – wir freuen uns auf Ihre Nachricht!
             </p>
           </div>
@@ -260,11 +260,11 @@ export default function Kontakt() {
                   <div>
                     <p className="text-sm text-muted-foreground mb-2">E-Mail Support</p>
                     <a 
-                      href="mailto:service@meinedokbox.de" 
+                      href="mailto:service@doklify.de" 
                       className="text-primary hover:underline font-medium"
                       data-testid="link-email"
                     >
-                      service@meinedokbox.de
+                      service@doklify.de
                     </a>
                   </div>
                 </CardContent>

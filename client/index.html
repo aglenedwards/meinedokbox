@@ -5,14 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     
     <!-- SEO Primary Meta Tags -->
-    <title>Dokumente digitalisieren privat | MeineDokBox - KI-Dokumentenmanagement</title>
-    <meta name="title" content="Dokumente digitalisieren privat | MeineDokBox - KI-Dokumentenmanagement" />
+    <title>Dokumente digitalisieren privat | Doklify - KI-Dokumentenmanagement</title>
+    <meta name="title" content="Dokumente digitalisieren privat | Doklify - KI-Dokumentenmanagement" />
     <meta name="description" content="Private Dokumente digitalisieren mit KI: Rechnungen, Verträge und Belege einfach scannen, automatisch kategorisieren und sicher in Deutschland speichern. DSGVO-konform." />
     <meta name="keywords" content="dokumente digitalisieren privat, private dokumente digitalisieren, digitalisierung dokumente, digitalisierung von dokumenten, digitalisieren von dokumenten, dokumentenmanagement, dokumenten scanner app" />
     
     <!-- Open Graph / Social Media -->
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="Dokumente digitalisieren privat | MeineDokBox" />
+    <meta property="og:title" content="Dokumente digitalisieren privat | Doklify" />
     <meta property="og:description" content="Private Dokumente digitalisieren mit KI: Rechnungen, Verträge und Belege einfach scannen, automatisch kategorisieren und sicher in Deutschland speichern." />
     <meta property="og:locale" content="de_DE" />
     
@@ -35,7 +35,7 @@
     <!-- Apple Mobile Web App Meta Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <meta name="apple-mobile-web-app-title" content="MeineDokBox" />
+    <meta name="apple-mobile-web-app-title" content="Doklify" />
 
     <!-- Apple Touch Startup Images (Splash Screens) -->
     <!-- iPhone 14/15 Pro Max: 1290×2796 -->
@@ -166,7 +166,7 @@
       
       // Check if consent was already given (read from cookie, shared across Safari + PWA)
       try {
-        var cookieMatch = document.cookie.match(/(?:^|; )meinedokbox_cookie_consent=([^;]*)/);
+        var cookieMatch = document.cookie.match(/(?:^|; )doklify_cookie_consent=([^;]*)/);
         var consent = cookieMatch ? JSON.parse(decodeURIComponent(cookieMatch[1])) : {};
         if (consent.analytics) {
           window.initClarity();
@@ -178,7 +178,7 @@
     <!-- Instant splash screen: visible before any JS loads -->
     <div id="app-splash">
       <img id="app-splash-icon" src="/icons/icon-192x192.png" alt="" />
-      <p id="app-splash-title">MeineDokBox</p>
+      <p id="app-splash-title">Doklify</p>
       <p id="app-splash-sub">Ihr digitales Dokumentenarchiv</p>
     </div>
 
