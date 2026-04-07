@@ -39,7 +39,7 @@ import { queryClient } from "@/lib/queryClient";
 import { Link } from "wouter";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
-import logoImage from "@assets/meinedokbox_1760966015056.png";
+import logoImage from "@assets/doklify_logo_transparent.png";
 import type { User as UserType, FeatureRequest, VideoTutorial, ErrorLog } from "@shared/schema";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 

@@ -6,7 +6,7 @@ import { Mail, Camera, FolderOpen, Sparkles, ArrowRight, Check, Bell, Search, Sh
 import { Footer } from "@/components/Footer";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import logoImage from "@assets/meinedokbox_1760966015056.png";
+import logoImage from "@assets/doklify_logo_transparent.png";
 
 export default function PostDigitalisieren() {
   const faqs = [

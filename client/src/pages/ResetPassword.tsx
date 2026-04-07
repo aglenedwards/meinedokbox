@@ -22,7 +22,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, CheckCircle2, XCircle, Eye, EyeOff } from "lucide-react";
-import logoImage from "@assets/meinedokbox_1760966015056.png";
+import logoImage from "@assets/doklify_logo_transparent.png";
 
 const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/;
 

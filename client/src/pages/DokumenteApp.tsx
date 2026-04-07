@@ -6,7 +6,7 @@ import { Smartphone, Camera, Mail, Sparkles, ArrowRight, Check, Cloud, Zap, Shie
 import { Footer } from "@/components/Footer";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import logoImage from "@assets/meinedokbox_1760966015056.png";
+import logoImage from "@assets/doklify_logo_transparent.png";
 
 export default function DokumenteApp() {
   const faqs = [

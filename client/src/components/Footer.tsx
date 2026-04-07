@@ -1,6 +1,6 @@
 import { Link } from "wouter";
 import { Shield, Server, Lock, FileText, CreditCard, Mail, Building2, Scale, FolderOpen, Smartphone, Mail as MailIcon, Cookie, BookOpen, Clock, Receipt } from "lucide-react";
-import logoImage from "@assets/meinedokbox_1760966015056.png";
+import logoImage from "@assets/doklify_logo_transparent.png";
 import { openCookieSettings } from "@/components/CookieConsent";
 
 export function Footer() {

@@ -20,7 +20,7 @@ import { queryClient } from "@/lib/queryClient";
 import { FileText, Zap, Users, Shield, Sparkles, Check, ArrowRight, Camera, Scan, FolderOpen, X, TrendingUp, Clock, Brain, Search, Mail, Home, Briefcase, Heart, Eye, EyeOff, MapPin, Menu, Euro, Info, Lock, PackageOpen } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Link } from "wouter";
-import logoImage from "@assets/meinedokbox_1760966015056.png";
+import logoImage from "@assets/doklify_logo_transparent.png";
 import { Footer } from "@/components/Footer";
 
 const loginSchema = z.object({

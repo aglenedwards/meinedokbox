@@ -16,7 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { PaywallModal } from "@/components/PaywallModal";
 import { UpgradeModal } from "@/components/UpgradeModal";
 import type { User } from "@shared/schema";
-import logoImage from "@assets/meinedokbox_1760966015056.png";
+import logoImage from "@assets/doklify_logo_transparent.png";
 
 interface DashboardLayoutProps {
   children: ReactNode;

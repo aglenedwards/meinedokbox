@@ -13,7 +13,7 @@ import { login, register, type LoginData, type RegisterData } from "@/lib/api";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { ToastAction } from "@/components/ui/toast";
-import logoImage from "@assets/meinedokbox_1760966015056.png";
+import logoImage from "@assets/doklify_logo_transparent.png";
 
 const loginSchema = z.object({
   email: z.string().email("Ungültige E-Mail-Adresse"),

@@ -6,7 +6,7 @@ import { Receipt, Camera, Search, Shield, ArrowRight, Check, Sparkles, Clock, Fo
 import { Footer } from "@/components/Footer";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import logoImage from "@assets/meinedokbox_1760966015056.png";
+import logoImage from "@assets/doklify_logo_transparent.png";
 
 export default function RechnungenDigitalisieren() {
   const faqs = [
