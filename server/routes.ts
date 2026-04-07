@@ -901,6 +901,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Change password (for logged-in local auth users)
+  app.post('/api/auth/change-password', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      if (!user) return res.status(404).json({ message: 'Nutzer nicht gefunden' });
+
+      // Only local auth users have passwords
+      if (!user.passwordHash) {
+        return res.status(400).json({ message: 'Passwort-Änderung nur für E-Mail-Konten möglich' });
+      }
+
+      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/;
+      const schema = z.object({
+        currentPassword: z.string().min(1, 'Aktuelles Passwort ist erforderlich'),
+        newPassword: z.string()
+          .min(8, 'Passwort muss mindestens 8 Zeichen lang sein')
+          .regex(passwordRegex, 'Passwort muss mindestens einen Kleinbuchstaben, einen Großbuchstaben, eine Zahl und ein Sonderzeichen enthalten'),
+      });
+      const { currentPassword, newPassword } = schema.parse(req.body);
+
+      const { validatePassword } = await import('./localAuth.js');
+      const isValid = await validatePassword(currentPassword, user.passwordHash);
+      if (!isValid) {
+        return res.status(400).json({ message: 'Aktuelles Passwort ist falsch' });
+      }
+
+      const passwordHash = await hashPassword(newPassword);
+      await db.update(users).set({ passwordHash }).where(eq(users.id, userId));
+
+      console.log(`[ChangePassword] ✅ Password changed for ${user.email}`);
+      res.json({ message: 'Passwort erfolgreich geändert' });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: error.errors[0].message });
+      }
+      console.error('[ChangePassword] Error:', error);
+      res.status(500).json({ message: 'Fehler beim Ändern des Passworts' });
+    }
+  });
+
   // WebAuthn / Passkeys (Face ID, fingerprint)
   app.post('/api/auth/webauthn/register/start', isAuthenticated, async (req: any, res) => {
     try {

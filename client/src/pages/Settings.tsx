@@ -82,6 +82,10 @@ export default function Settings() {
   const carouselRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef<number | null>(null);
 
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
   const IOS_STEPS = [
     { img: '/install-guide/step1.png', num: 1, label: 'Tippen Sie auf das \u00bb\u00b7\u00b7\u00b7\u00ab\u2011Menü unten rechts in Safari' },
     { img: '/install-guide/step2.png', num: 2, label: 'Tippen Sie auf \u00bbTeilen\u00ab im Menü' },
@@ -280,6 +284,27 @@ export default function Settings() {
         title: "Name aktualisiert",
         description: `Neue Weiterleitungsadresse: ${data.inboundEmail}`,
       });
+    },
+    onError: (err: any) => {
+      toast({ variant: "destructive", title: "Fehler", description: err.message });
+    },
+  });
+
+  // Change password mutation
+  const changePasswordMutation = useMutation({
+    mutationFn: async (data: { currentPassword: string; newPassword: string }) => {
+      const res = await apiRequest("POST", "/api/auth/change-password", data);
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.message || "Fehler beim Ändern des Passworts");
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      toast({ title: "Passwort geändert", description: "Ihr Passwort wurde erfolgreich aktualisiert." });
     },
     onError: (err: any) => {
       toast({ variant: "destructive", title: "Fehler", description: err.message });
@@ -783,6 +808,67 @@ export default function Settings() {
               )}
             </CardContent>
           </Card>
+
+          {/* Password Change Card — only for local auth users */}
+          {user?.id?.startsWith('local_') && (
+            <Card data-testid="card-change-password">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <ShieldCheck className="h-5 w-5" />
+                  Passwort ändern
+                </CardTitle>
+                <CardDescription>Legen Sie ein neues Passwort für Ihr Konto fest.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="current-password">Aktuelles Passwort</Label>
+                  <Input
+                    id="current-password"
+                    type="password"
+                    value={currentPassword}
+                    onChange={e => setCurrentPassword(e.target.value)}
+                    placeholder="••••••••"
+                    data-testid="input-current-password"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="new-password">Neues Passwort</Label>
+                  <Input
+                    id="new-password"
+                    type="password"
+                    value={newPassword}
+                    onChange={e => setNewPassword(e.target.value)}
+                    placeholder="••••••••"
+                    data-testid="input-new-password"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="confirm-password">Neues Passwort bestätigen</Label>
+                  <Input
+                    id="confirm-password"
+                    type="password"
+                    value={confirmPassword}
+                    onChange={e => setConfirmPassword(e.target.value)}
+                    placeholder="••••••••"
+                    data-testid="input-confirm-password"
+                  />
+                </div>
+                <Button
+                  onClick={() => {
+                    if (newPassword !== confirmPassword) {
+                      toast({ variant: "destructive", title: "Fehler", description: "Die Passwörter stimmen nicht überein." });
+                      return;
+                    }
+                    changePasswordMutation.mutate({ currentPassword, newPassword });
+                  }}
+                  disabled={changePasswordMutation.isPending || !currentPassword || !newPassword || !confirmPassword}
+                  data-testid="button-change-password"
+                >
+                  {changePasswordMutation.isPending ? "Wird gespeichert..." : "Passwort speichern"}
+                </Button>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Email Whitelist (Security Feature) */}
           <EmailWhitelistSettings />
