@@ -1,0 +1,132 @@
+3:09:16 PM [express] GET /api/documents 200 in 47ms :: {"documents":[{"id":"137f1eed-e74a-46bd-8b04-…
+📤 Sending to frontend: {
+  "id": "137f1eed-e74a-46bd-8b04-b8d6a5d60a07",
+  "userId": "local_1761228942148_8uy51h",
+  "folderId": null,
+  "title": "Vertraulichkeitsvereinbarung zwischen ALMARON GmbH und Florian Wystrach",
+  "category": "Verträge & Abos",
+  "extractedText": "www.almaron.de\n\nVertraulichkeitsvereinbarung\n\nZwischen\n\n\n\nALMARON GmbH, Leipziger Straße 35, 65191 Wiesbaden\n\nim nachfolgenden Gesellschaft genannt \n\n\n\nund \n\n\n\nHerr Florian Wystrach (Adverage Media UG), Schillerstraße 23, 97702 Münnerstadt\n\nim folgenden freie Mitarbeiter genannt \n\n\n\nwird folgende Vereinbarung geschlossen:\n\n\n\n§ 1 Inhalt und Zweck dieser Vertraulichkeitsvereinbarung\n\n(1) Der Auftragnehmer ist seit dem 20.02.2023 als freier Mitarbeiter für den Auftraggeber als Google Ads Manager tätig. Ein Angestelltenverhältnis wurde nicht begründet.  \n\nDiese Vereinbarung schützt die vertraulichen Informationen, die sich aus der Zugriffsmöglichkeit des Auftragnehmers auf vertrauliche Informationen des Auftraggebers ergeben.\n\n(2) Die Verwendung der vertraulichen Informationen ist nur im Rahmen und zum Zwecke der zwischen den Parteien vertraglich vereinbarten Tätigkeiten zulässig.\n\n§ 2 Definitionen\n\n(1) „Vertrauliche Informationen“ sind wirtschaftlich, rechtlich, steuerlich oder technisch sensible oder vorteilhafte Informationen des Auftraggebers, die dem Auftragnehmer bekannt werden. Vertrauliche Informationen können solche Informationen sein, die in irgendeiner Weise als vertraulich oder gesetzlich geschützt erkennbar bezeichnet werden oder deren vertraulicher Inhalt offensichtlich ist. Der Begriff umfasst sowohl jegliches Anschauungsmaterial wie Unterlagen, Schriftstücke, Notizen, Dokumente, digitale Aufzeichnungen etc. als auch mündliche Mitteilungen. \n\n(2) Öffentlich bekannte Informationen sind solche, die nachweislich vor ihrer Bekanntgabe bereits dem Auftragnehmer oder seinen Organen, Angestellten und Bevollmächtigten (im folgenden „Vertreter“) zugänglich waren bzw. ohne deren Verschulden während der Geltungsdauer dieser Vereinbarung öffentlich bekannt wurden. Der Begriff „vertrauliche Information“ umfasst weiterhin nicht solche Informationen, die der Auftragnehmer sich selbst erschlossen hat, vorausgesetzt, dass dies durch schriftliche Aufzeichnungen dieser Partei oder auf sonstige Weise belegt wird und keine in dieser Vereinbarung festgelegten Pflichten unterlaufen werden.\n\n(3) „Partei“ ist sowohl der Auftraggeber als auch der Auftragnehmer, sowie deren verbundene Gesellschaften, Organe, Mitarbeiter, Berater und eventuell sonstige für diese tätigen Dritten, soweit diese einer den Anforderungen dieses oder des Hauptvertrages entsprechenden Vertraulichkeitsverpflichtung unterliegen.\n\n(4) Verbundene Gesellschaften sind alle Unternehmen der Parteien, an denen die jeweilige Partei eine Beteiligung von mehr als 50 % mittelbar oder unmittelbar hält oder deren wirtschaftliche Führung sie innehat.\n\n(5) Mitarbeiter sind Arbeitnehmer, freie Mitarbeiter und Zeitarbeitskräfte der jeweiligen Partei.\n\n§ 3 Verpflichtung zur Vertraulichkeit\n\n(1) Der Auftragnehmer verpflichtet sich, die von dem Auftraggeber erhaltenen vertraulichen Informationen vertraulich zu behandeln.\n\n(2) Das bedeutet insbesondere, dass der Auftragnehmer diese Informationen an Dritte weder selbst noch durch Mitarbeiter bekanntzugeben oder sonst für andere als die vertraglich zwischen den Parteien vereinbarten Zwecke zu nutzen hat.\n\n(3) Eine anderweitige Nutzung oder Weitergabe der Informationen ist nur zulässig, wenn und soweit der Auftraggeber zuvor schriftlich eingewilligt hat.\n\n(4) Der Auftragnehmer verpflichtet sich, die von dem Auftraggeber erhaltenen vertraulichen Informationen mindestens mit der Sorgfalt zu behandeln, die er in eigenen Angelegenheiten anwendet.\n\n(5) Der Auftragnehmer verpflichtet sich, bei Verarbeitung der vertraulichen Informationen die gesetzlichen und vertraglichen Vorschriften zum Datenschutz einzuhalten. Dies beinhaltet auch dem aktuellen Stand der Technik angepasste technische Sicherheitsmaßnahmen (Art. 32 DS-GVO) und die Verpflichtung der Mitarbeiter auf das Datengeheimnis (Art. 28 Abs. 3 lit. b DS-GVO).\n\n(6) Der Auftragnehmer nutzt die erhaltenen vertraulichen Informationen ausschließlich zur Erfüllung des Hauptvertrages. Die Rechte an den Informationen, die der Auftragnehmer von dem Auftraggeber erhalten hat, verbleiben beim Auftraggeber, soweit nichts anderes vertraglich geregelt wird.\n\n§ 4 Ausnahmen von der Vertraulichkeitsverpflichtung\n\n(1) Diese Verpflichtung zum Schutze vertraulicher Information beinhaltet nicht solche Informationen, die öffentlich bekannt sind.\n\n(2) Die Pflicht zur Vertraulichkeit besteht nicht gegenüber Gerichten und Behörden, soweit eine (auch strafrechtliche) Rechtspflicht zur Weitergabe/Herausgabe besteht oder die jeweilige Information in einem zivilrechtlichen Prozess zwischen den Parteien oder einer der Parteien und einem Dritten relevant ist. Über eine Herausgabe von vertraulichen Informationen ist der Auftraggeber unverzüglich zu benachrichtigen.\n\n§ 5 Weitergabe an Dritte/Subunternehmer\n\n(1) Die überlassenen Informationen oder Teile hiervon können nur an externe Berater, die zur Vertraulichkeit verpflichtet sind oder solche Vertreter weitergegeben werden, die zur betreffenden Auftragsdurchführung benötigt werden und von der Vertraulichkeit der gegebenen Informationen unterrichtet und gleichlautend verpflichtet wurden. Die Parteien erklären ausdrücklich, für jegliche schuldhafte Verletzung durch ihre Vertreter einzustehen.\n\n(2) Der Auftragnehmer darf Subunternehmer lediglich nach schriftlicher Genehmigung durch den Auftraggeber im Rahmen der Erfüllung der beauftragten Tätigkeiten einsetzen. Die sich aus dieser Vereinbarung ergebenden Verpflichtungen sind auch diesen aufzuerlegen.\n\n§ 6 Wettbewerbsverbot\n\nDer Auftragnehmer verpflichtet sich, während der Dauer der Zusammenarbeit keiner Beschäftigung für ein drittes Unternehmen nachgehen, welches auf dem gleichen Markt wie der Auftraggeber tätig ist, sich an einem solchen Unternehmen direkt oder indirekt zu beteiligen oder sonstwie den Wettbewerb eines solchen Unternehmens zu fördern.\n\n§ 7 Vertragsstrafe\n\n(1) Für jeden Fall eines schuldhaften Verstoßes gegen die sich aus dieser Vereinbarung ergebenden Verpflichtungen hat der Auftragnehmer an den Auftraggeber eine vom Auftraggeber nach billigem Ermessen zu bestimmende Vertragsstrafe zu zahlen. Die Vertragsstrafe kann im Streitfall von einem zuständigen Gericht überprüft werden. \n\n(2) Die Geltendmachung weiterer Ansprüche, wie auf Schadensersatz oder Unterlassung, bleibt dem Auftraggeber vorbehalten.\n\n(3) Die Vertragsstrafe wird auf einen eventuell zu leistenden Schadensersatz angerechnet.\n\n§ 8 Kontroll- und Löschrechte\n\n(1) Innerhalb von vierzehn (14) Tagen nach Aufforderung des Auftraggebers wird der Auftragnehmer alle vorliegenden vertraulichen Informationen und aufgrund dieser Informationen gefertigten weiteren Unterlagen an den Auftraggeber zurücksenden bzw. ihm die Vernichtung der Informationen und Unterlagen nachvollziehbar nachweisen. Dies gilt nicht, soweit eine Verpflichtung zur Aufbewahrung aus Gesetz oder aufgrund behördlicher bzw. gerichtlicher Anordnung besteht. \n\n(2) Der Auftraggeber ist berechtigt, die Einhaltung dieser Vereinbarung im erforderlichen Umfang zu kontrollieren oder kontrollieren zu lassen. Der Auftragnehmer gewährt dazu nach Absprache ungehinderten Zutritt und Zugang zu informationsverarbeitenden Systemen, Dateien und Informationen, die mit der Durchführung der Tätigkeiten in Verbindung stehen. Dem Auftraggeber sind durch den Auftragnehmer alle Auskünfte zu erteilen, die zur Erfüllung der Kontrollfunktion benötigt werden. Der Auftragnehmer hat dem Auftraggeber auf Aufforderung mitzuteilen, welche vertraulichen Informationen zurückgesendet oder vernichtet und welche aufbewahrt wurden. Die Mitteilung, dass bestimmte Unterlagen oder Informationen aufbewahrt wurden, ist zu begründen.\n\n(3) Sollte eine Partei Kenntnis davon erlangen, dass vertrauliche Informationen entgegen dieser Vertraulichkeitsvereinbarung weitergegeben wurden, hat die Partei die jeweils andere Partei umgehend zu informieren.\n\n\n\nwww.almaron.de\n\n§ 9 Laufzeit\n\nDie Laufzeit dieser Vereinbarung beginnt ab Unterzeichnung und entspricht der des Hauptvertrages. Die Verpflichtungen aus dieser Vereinbarung bestehen für einen Zeitraum von 12 Monaten nach Beendigung des Hauptvertrags, unabhängig des Grundes dessen Beendigung, fort.  \n\n§ 10 Schlussbestimmungen\n\n(1) Sollten einzelne Bestimmungen dieser Vertraulichkeitsvereinbarung im Ganzen oder in Teilen unwirksam oder undurchführbar sein oder werden, berührt dies nicht die Wirksamkeit der sonstigen Bestimmungen.\n\n(2) Änderungen und Ergänzungen dieser Vertraulichkeitsvereinbarung, die Erklärung einer Kündigung sowie die Abänderung dieser Klausel bedürfen zu ihrer Wirksamkeit der Schriftform (§ 126 Abs. 1, Abs. 2 BGB). Die Ersetzung der Schriftform durch die elektronische Form (§§ 126 Abs. 3, 126 a BGB) oder die Textform (§ 126 b BGB) ist ausgeschlossen.\n\n(3) Anwendbares Recht und Gerichtsstand richten sich nach dem Hauptvertrag. \n\n\n\nWiesbaden 20.02.2023\n\n\n\n\n\n\n\n________________________                  \t________________________\n\nFlorian Wystrach\t\t\t\tALMARON GmbH\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nwww.almaron.de",
+  "fileUrl": null,
+  "pageUrls": [
+    "/objects/uploads/ca739b58-f306-42ff-8ba5-cf9bdef21321"
+  ],
+  "thumbnailUrl": null,
+  "mimeType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "confidence": 0.95,
+  "isShared": false,
+  "uploadedAt": "2026-03-12T15:17:22.464Z",
+  "deletedAt": null,
+  "extractedDate": "2023-02-20T00:00:00.000Z",
+  "amount": null,
+  "sender": "ALMARON GmbH",
+  "year": 2023,
+  "documentDate": "2023-02-20T00:00:00.000Z",
+  "systemTags": [
+    "vertrag",
+    "privat"
+  ],
+  "fileHash": "8380e3a8a0b23478d384aae30a424390aabd4f286623f7d07bab1d44137f9ae2",
+  "fileSizeBytes": 417192,
+  "paymentStatus": "not_applicable",
+  "paymentReminderSentAt": null,
+  "folderName": null,
+  "folderIcon": null
+}
+3:09:46 PM [express] GET /api/documents 200 in 37ms :: {"documents":[{"id":"137f1eed-e74a-46bd-8b04-…
+[PostgreSQL Pool] New client connected
+Processing 1 file(s) as separate documents
+  [1/1] Processing: Screenshot 2026-02-25 191935.jpg
+Analyzing document with 1 page(s)
+  - Adding page with MIME type: image/jpeg
+[RateLimiter] analyzeDocument: Executing (4/5 slots available)
+OpenAI Analysis Result: {
+  category: 'Sonstiges / Privat',
+  title: 'Lieferschein Diesel B7 EN590',
+  confidence: 0.95,
+  textLength: 701,
+  extractedDate: null,
+  amount: null,
+  sender: 'AKSEBE GmbH',
+  needsRotation: false,
+  year: null,
+  documentDate: null,
+  systemTags: []
+}
+Compressing image: Screenshot 2026-02-25 191935.jpg
+  Image compression: 59379 → 24396 bytes (58.9% reduction)
+Uploading file to S3: Screenshot 2026-02-25 191935.jpg Key: .private/uploads/20b439c5-6efa-425d-856f-05ba024b7a69 Content-Type: image/webp
+{ sendHeader: false, bodyLength: 24396, threshold: 2097152 }
+    ✗ Failed to process Screenshot 2026-02-25 191935.jpg: NoSuchBucket: UnknownError
+    at de_NoSuchBucketRes (/opt/render/project/src/node_modules/@aws-sdk/client-s3/dist-cjs/index.js:4948:23)
+    at de_CommandError (/opt/render/project/src/node_modules/@aws-sdk/client-s3/dist-cjs/index.js:4838:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async /opt/render/project/src/node_modules/@smithy/middleware-serde/dist-cjs/index.js:8:24
+    at async /opt/render/project/src/node_modules/@aws-sdk/client-s3/node_modules/@aws-sdk/middleware-sdk-s3/dist-cjs/index.js:386:20
+    at async /opt/render/project/src/node_modules/@smithy/middleware-retry/dist-cjs/index.js:254:46
+    at async /opt/render/project/src/node_modules/@aws-sdk/middleware-flexible-checksums/dist-cjs/index.js:247:20
+    at async /opt/render/project/src/node_modules/@aws-sdk/client-s3/node_modules/@aws-sdk/middleware-sdk-s3/dist-cjs/index.js:63:28
+    at async /opt/render/project/src/node_modules/@aws-sdk/client-s3/node_modules/@aws-sdk/middleware-sdk-s3/dist-cjs/index.js:90:20
+    at async /opt/render/project/src/node_modules/@aws-sdk/middleware-logger/dist-cjs/index.js:5:26
+    at async ObjectStorageService.uploadBuffer (file:///opt/render/project/src/dist/index.js:1156:9)
+    at async uploadFile (file:///opt/render/project/src/dist/index.js:5979:3)
+    at async processSingleFileUpload (file:///opt/render/project/src/dist/index.js:8220:41)
+    at async file:///opt/render/project/src/dist/index.js:8166:28 {
+  '$fault': 'client',
+  '$response': HttpResponse {
+    statusCode: 404,
+    reason: 'Not Found',
+    headers: {
+      'content-length': '268',
+      'x-amz-request-id': 'tx00000ec190e7691a89610-0069d51e44-5796341-eu-central-4',
+      'accept-ranges': 'bytes',
+      'content-type': 'application/xml',
+      server: 'IONOSCS',
+      date: 'Tue, 07 Apr 2026 15:09:56 GMT'
+    },
+    body: IncomingMessage {
+      _events: [Object],
+      _readableState: [ReadableState],
+      _maxListeners: undefined,
+      socket: null,
+      httpVersionMajor: 1,
+      httpVersionMinor: 1,
+      httpVersion: '1.1',
+      complete: true,
+      rawHeaders: [Array],
+      rawTrailers: [],
+      joinDuplicateHeaders: undefined,
+      aborted: false,
+      upgrade: false,
+      url: '',
+      method: null,
+      statusCode: 404,
+      statusMessage: 'Not Found',
+      client: [TLSSocket],
+      _consuming: true,
+      _dumped: false,
+      req: [ClientRequest],
+      _eventsCount: 2,
+      [Symbol(shapeMode)]: true,
+      [Symbol(kCapture)]: false,
+      [Symbol(kHeaders)]: [Object],
+Menu
+      [Symbol(kHeadersCount)]: 12,
+      [Symbol(kTrailers)]: null,
+      [Symbol(kTrailersCount)]: 0
+    }
+  },
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 404,
+    requestId: 'tx00000ec190e7691a89610-0069d51e44-5796341-eu-central-4',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'NoSuchBucket',
+  BucketName: 'doklify-production',
+  RequestId: 'tx00000ec190e7691a89610-0069d51e44-5796341-eu-central-4',
+  HostId: '5796341-eu-central-4-eu-central-4'
+}
+3:09:56 PM [express] POST /api/documents/upload 400 in 4927ms :: {"message":"Alle Uploads sind fehlg…
