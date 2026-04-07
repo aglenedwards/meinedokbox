@@ -228,6 +228,44 @@ export default function Admin() {
     enabled: adminStatus?.isAdminAuthenticated === true,
   });
 
+  // Inbound email migration state
+  const [migrationTestEmail, setMigrationTestEmail] = useState("");
+  const [migrationConfirmOpen, setMigrationConfirmOpen] = useState(false);
+  const [migrationResult, setMigrationResult] = useState<any>(null);
+  const [migrationDryResult, setMigrationDryResult] = useState<any>(null);
+
+  const migrationMutation = useMutation({
+    mutationFn: async (body: object) => {
+      const response = await fetch("/api/admin/migrate-inbound-emails", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+        credentials: "include",
+      });
+      if (!response.ok) {
+        const d = await response.json();
+        throw new Error(d.message || "Fehler bei der Migration");
+      }
+      return response.json();
+    },
+    onSuccess: (data, variables: any) => {
+      if (variables.testEmail) {
+        toast({ title: "Test-Mail gesendet", description: `Preview-Mail an ${variables.testEmail} gesendet.` });
+      } else if (variables.dryRun) {
+        setMigrationDryResult(data);
+        toast({ title: "Vorschau geladen", description: `${data.affected} betroffene Adressen gefunden.` });
+      } else {
+        setMigrationResult(data);
+        setMigrationConfirmOpen(false);
+        queryClient.invalidateQueries({ queryKey: ["/api/admin/marketing/stats"] });
+        toast({ title: "Migration abgeschlossen", description: data.message });
+      }
+    },
+    onError: (error: Error) => {
+      toast({ title: "Fehler", description: error.message, variant: "destructive" });
+    },
+  });
+
   // Error Log state
   const [errorLogLevel, setErrorLogLevel] = useState("all");
   const [errorLogPeriod, setErrorLogPeriod] = useState("7d");
@@ -1531,6 +1569,129 @@ export default function Admin() {
 
           {/* Email Marketing Tab */}
           <TabsContent value="email">
+            {/* Inbound Email Migration Card */}
+            <Card className="mb-6 border-amber-500/40">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <Mail className="h-5 w-5 text-amber-500" />
+                  Inbound-Adress-Migration (meinedokbox → doklify)
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  Aktualisiert alle Nutzer-Inbound-Adressen von <code className="bg-muted px-1 rounded">@in.meinedokbox.de</code> auf <code className="bg-muted px-1 rounded">@in.doklify.de</code> und sendet jedem Nutzer eine persönliche Benachrichtigungs-Mail.
+                </p>
+
+                {/* Step 1: Dry run */}
+                <div className="flex flex-wrap items-center gap-3">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    data-testid="button-migration-dryrun"
+                    disabled={migrationMutation.isPending}
+                    onClick={() => migrationMutation.mutate({ dryRun: true })}
+                  >
+                    Vorschau anzeigen (kein Versand)
+                  </Button>
+                  {migrationDryResult && (
+                    <span className="text-sm text-muted-foreground">
+                      {migrationDryResult.affected} betroffene Nutzer gefunden
+                    </span>
+                  )}
+                </div>
+
+                {migrationDryResult?.preview && migrationDryResult.preview.length > 0 && (
+                  <div className="rounded-md border max-h-48 overflow-y-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>E-Mail</TableHead>
+                          <TableHead>Neue Inbound-Adresse</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {migrationDryResult.preview.map((u: any, i: number) => (
+                          <TableRow key={i}>
+                            <TableCell className="text-sm">{u.email}</TableCell>
+                            <TableCell className="text-sm font-mono text-xs">{u.newInbound}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+
+                {/* Step 2: Test mail */}
+                <div className="flex flex-wrap items-center gap-2">
+                  <Input
+                    placeholder="test@example.com"
+                    value={migrationTestEmail}
+                    onChange={e => setMigrationTestEmail(e.target.value)}
+                    className="w-64"
+                    data-testid="input-migration-test-email"
+                  />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    data-testid="button-migration-test"
+                    disabled={migrationMutation.isPending || !migrationTestEmail}
+                    onClick={() => migrationMutation.mutate({ testEmail: migrationTestEmail })}
+                  >
+                    Test-Mail senden
+                  </Button>
+                </div>
+
+                {/* Step 3: Full migration */}
+                <div className="pt-2 border-t">
+                  <Button
+                    variant="destructive"
+                    data-testid="button-migration-start"
+                    disabled={migrationMutation.isPending}
+                    onClick={() => setMigrationConfirmOpen(true)}
+                  >
+                    <Mail className="h-4 w-4 mr-2" />
+                    Jetzt migrieren (DB + Mails)
+                  </Button>
+                </div>
+
+                {/* Result summary */}
+                {migrationResult && (
+                  <div className="rounded-md bg-muted p-3 text-sm space-y-1">
+                    <p className="font-medium">Migration abgeschlossen</p>
+                    <p>Adressen in DB aktualisiert: <strong>{migrationResult.dbRowsUpdated}</strong></p>
+                    <p>Mails gesendet: <strong>{migrationResult.emailsSent}</strong></p>
+                    <p>Mails übersprungen (bereits erhalten): <strong>{migrationResult.emailsSkipped}</strong></p>
+                    {migrationResult.emailsFailed > 0 && (
+                      <p className="text-red-500">Fehlgeschlagen: <strong>{migrationResult.emailsFailed}</strong> — erneut auslösen zum Wiederholen.</p>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Confirmation Dialog */}
+            <Dialog open={migrationConfirmOpen} onOpenChange={setMigrationConfirmOpen}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Migration wirklich starten?</DialogTitle>
+                  <DialogDescription>
+                    Dies aktualisiert alle Inbound-Adressen in der Datenbank und sendet eine Benachrichtigungs-Mail an jeden betroffenen Nutzer. Diese Aktion kann nicht rückgängig gemacht werden.
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter className="gap-2">
+                  <Button variant="outline" onClick={() => setMigrationConfirmOpen(false)}>Abbrechen</Button>
+                  <Button
+                    variant="destructive"
+                    data-testid="button-migration-confirm"
+                    disabled={migrationMutation.isPending}
+                    onClick={() => migrationMutation.mutate({})}
+                  >
+                    {migrationMutation.isPending ? "Läuft..." : "Ja, jetzt migrieren"}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+
             {loadingMarketing ? (
               <div className="text-center py-8 text-muted-foreground">Lädt E-Mail-Statistiken...</div>
             ) : marketingStats ? (
