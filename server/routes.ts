@@ -5672,9 +5672,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // ADMIN: Inbound email domain migration (in.meinedokbox.de → in.doklify.de)
-  // Supports two modes:
+  // Supports three modes:
   //   testEmail (string)  → sends a preview to that address only, no DB changes
-  //   dryRun   (boolean)  → performs DB update but sends no emails (returns preview list)
+  //   dryRun   (boolean)  → returns list of old-domain users; no DB changes, no emails
   //   (neither)           → full migration: DB update + emails to every affected user
   app.post('/api/admin/migrate-inbound-emails', isAuthenticated, isAdmin, async (req: any, res) => {
     try {
