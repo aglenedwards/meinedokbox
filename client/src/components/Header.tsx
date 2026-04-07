@@ -11,12 +11,11 @@ import { Menu, ArrowRight, Eye, EyeOff } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { login, register, getCurrentUser, type LoginData, type RegisterData } from "@/lib/api";
+import { useMutation } from "@tanstack/react-query";
+import { login, register, type LoginData, type RegisterData } from "@/lib/api";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { ToastAction } from "@/components/ui/toast";
-import type { User } from "@shared/schema";
 import logoImage from "@assets/doklify_logo_transparent.png";
 
 const loginSchema = z.object({
@@ -62,13 +61,6 @@ export function Header() {
   ];
 
   const isActive = (path: string) => location === path;
-
-  // Check if user is already logged in
-  const { data: user, isLoading } = useQuery<User | null>({
-    queryKey: ["/api/auth/user"],
-    queryFn: getCurrentUser,
-    retry: false,
-  });
 
   const loginForm = useForm<LoginData>({
     resolver: zodResolver(loginSchema),
