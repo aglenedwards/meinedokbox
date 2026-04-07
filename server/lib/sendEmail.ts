@@ -1410,6 +1410,8 @@ Was hat sich geändert?
 
 Sonst bleibt alles gleich: Ihre Dokumente, Ordner und Einstellungen sind unverändert.
 
+Ihr Dashboard erreichen Sie wie gewohnt unter: https://doklify.de
+
 Bei Fragen stehen wir Ihnen unter service@doklify.de zur Verfügung.
 
 Viele Grüße,
@@ -1473,10 +1475,21 @@ Ihr Doklify Team
                   Bitte aktualisieren Sie alle <strong>Weiterleitungsregeln</strong> in Outlook, Gmail oder anderen E-Mail-Programmen auf Ihre neue Adresse. Die alte Adresse <strong>@in.meinedokbox.de</strong> ist ab sofort nicht mehr aktiv.
                 </p>
               </div>
-              <p style="margin: 0 0 18px; font-size: 15px; line-height: 1.6; color: #555555;">
+              <p style="margin: 0 0 24px; font-size: 15px; line-height: 1.6; color: #555555;">
                 Alles andere bleibt unverändert: Ihre Dokumente, Ordner und Einstellungen sind sicher und vollständig erhalten.
               </p>
-              <p style="margin: 0 0 6px; font-size: 15px; line-height: 1.6; color: #555555;">
+              <!-- CTA to doklify.de -->
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin: 0 0 24px;">
+                <tr>
+                  <td align="center">
+                    <a href="https://doklify.de" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #ffffff; text-decoration: none; font-weight: 600; font-size: 15px; padding: 14px 36px; border-radius: 6px;">Zum Doklify Dashboard</a>
+                  </td>
+                </tr>
+              </table>
+              <p style="margin: 0 0 6px; font-size: 14px; line-height: 1.6; color: #888888; text-align: center;">
+                oder direkt: <a href="https://doklify.de" style="color: #667eea; text-decoration: none;">https://doklify.de</a>
+              </p>
+              <p style="margin: 24px 0 0; font-size: 14px; line-height: 1.6; color: #555555;">
                 Bei Fragen erreichen Sie uns unter <a href="mailto:service@doklify.de" style="color: #667eea; text-decoration: none;">service@doklify.de</a>.
               </p>
             </td>

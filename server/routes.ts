@@ -5731,32 +5731,75 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // ── FULL MIGRATION ────────────────────────────────────────────────────────
-      // 1. Update all inbound_email values in DB
-      await db.execute(
+      // Step 1: Also collect users whose DB was already migrated but email was missed
+      //         (retry-safe: a previous partial run may have updated DB but failed mid-email)
+      const { marketingEmails } = await import('@shared/schema');
+      const { inArray } = await import('drizzle-orm');
+
+      // Users with new domain but no migration email → DB already done, email still needed
+      const alreadyMigratedUsers = await db
+        .select({ id: users.id, email: users.email, firstName: users.firstName, inboundEmail: users.inboundEmail })
+        .from(users)
+        .where(like(users.inboundEmail, `%${NEW_DOMAIN}`));
+
+      // IDs that already received the migration email
+      const allCandidateIds = [
+        ...affectedUsers.map(u => u.id),
+        ...alreadyMigratedUsers.map(u => u.id),
+      ];
+      const alreadyNotifiedRows = allCandidateIds.length > 0
+        ? await db
+            .select({ userId: marketingEmails.userId })
+            .from(marketingEmails)
+            .where(
+              drizzleSql`${marketingEmails.emailType} = 'inbound_migration' AND ${marketingEmails.userId} = ANY(${allCandidateIds})`
+            )
+        : [];
+      const alreadyNotifiedIds = new Set(alreadyNotifiedRows.map(r => r.userId));
+
+      // Step 2: DB update — update all old-domain users; capture actual updated row count
+      const updateResult = await db.execute(
         drizzleSql`UPDATE users SET inbound_email = REPLACE(inbound_email, ${OLD_DOMAIN}, ${NEW_DOMAIN}) WHERE inbound_email LIKE ${'%' + OLD_DOMAIN}`
       );
-      console.log(`[Admin InboundMigration] DB updated: ${affectedUsers.length} rows`);
+      const dbRowsUpdated: number = (updateResult as any).rowCount ?? affectedUsers.length;
+      console.log(`[Admin InboundMigration] DB updated: ${dbRowsUpdated} rows`);
 
-      // 2. Send personalised notification to each user
-      const results: Array<{ email: string; newInbound: string; sent: boolean }> = [];
-      for (const user of affectedUsers) {
-        const newInbound = user.inboundEmail!.replace(OLD_DOMAIN, NEW_DOMAIN);
-        const sent = await sendInboundMigrationEmail(user.email, user.firstName, newInbound, user.id);
-        results.push({ email: user.email, newInbound, sent });
-        // Brief pause to avoid rate-limiting
+      // Step 3: Send personalised notifications — combine both groups, skip already notified
+      const emailCandidates = [
+        ...affectedUsers.map(u => ({
+          ...u,
+          newInbound: u.inboundEmail!.replace(OLD_DOMAIN, NEW_DOMAIN),
+        })),
+        ...alreadyMigratedUsers
+          .filter(u => !affectedUsers.some(a => a.id === u.id)) // deduplicate
+          .map(u => ({ ...u, newInbound: u.inboundEmail! })),
+      ];
+
+      const results: Array<{ email: string; newInbound: string; sent: boolean; skipped?: boolean }> = [];
+      for (const user of emailCandidates) {
+        if (alreadyNotifiedIds.has(user.id)) {
+          results.push({ email: user.email, newInbound: user.newInbound, sent: false, skipped: true });
+          continue;
+        }
+        const sent = await sendInboundMigrationEmail(user.email, user.firstName, user.newInbound, user.id);
+        results.push({ email: user.email, newInbound: user.newInbound, sent });
+        // Brief pause to avoid Mailgun rate-limiting
         await new Promise(r => setTimeout(r, 300));
       }
 
       const successCount = results.filter(r => r.sent).length;
-      console.log(`[Admin InboundMigration] Emails sent: ${successCount}/${affectedUsers.length}`);
+      const skippedCount = results.filter(r => r.skipped).length;
+      console.log(`[Admin InboundMigration] Emails sent: ${successCount}, skipped (already notified): ${skippedCount}`);
 
       return res.json({
         mode: 'full',
-        affected: affectedUsers.length,
+        dbRowsUpdated,
+        emailCandidates: emailCandidates.length,
         emailsSent: successCount,
-        emailsFailed: affectedUsers.length - successCount,
+        emailsSkipped: skippedCount,
+        emailsFailed: emailCandidates.length - successCount - skippedCount,
         results,
-        message: `Migration abgeschlossen: ${affectedUsers.length} Adressen aktualisiert, ${successCount} E-Mails gesendet.`,
+        message: `Migration abgeschlossen: ${dbRowsUpdated} Adressen in DB aktualisiert, ${successCount} E-Mails gesendet (${skippedCount} bereits erhalten).`,
       });
     } catch (error) {
       console.error('[Admin InboundMigration] Error:', error);
