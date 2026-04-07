@@ -76,17 +76,20 @@ export async function sendEmailWithId(options: EmailOptions): Promise<{ success:
 export async function sendTrackedEmail(options: TrackedEmailOptions): Promise<boolean> {
   const result = await sendEmailWithId(options);
   
-  try {
-    await storage.createMarketingEmail({
-      userId: options.userId,
-      emailType: options.emailType,
-      subject: options.subject,
-      recipientEmail: options.to,
-      mailgunMessageId: result.messageId,
-      status: result.success ? 'sent' : 'failed',
-    });
-  } catch (err) {
-    console.error('[Mailgun] Failed to log email to tracking table:', err);
+  // Only track in DB when a real userId is available (avoids NOT NULL constraint in test sends)
+  if (options.userId) {
+    try {
+      await storage.createMarketingEmail({
+        userId: options.userId,
+        emailType: options.emailType,
+        subject: options.subject,
+        recipientEmail: options.to,
+        mailgunMessageId: result.messageId,
+        status: result.success ? 'sent' : 'failed',
+      });
+    } catch (err) {
+      console.error('[Mailgun] Failed to log email to tracking table:', err);
+    }
   }
 
   return result.success;
@@ -1376,5 +1379,125 @@ Dein Doklify Team
   `.trim();
 
   return sendTrackedEmail({ to, subject, text, html, emailType: 'referral_program_info' });
+}
+
+/**
+ * Send inbound email domain migration notification
+ * Informs user that their personal inbound address changed from @in.meinedokbox.de → @in.doklify.de
+ */
+export async function sendInboundMigrationEmail(
+  to: string,
+  firstName: string,
+  newInboundEmail: string,
+  userId?: string
+): Promise<boolean> {
+  const subject = `Ihre persönliche Doklify-Eingangsadresse hat sich geändert`;
+
+  const text = `
+Hallo ${firstName},
+
+wir haben unser Produkt von MeineDokBox zu Doklify umbenannt – einschließlich einer neuen Domain für Ihre persönliche E-Mail-Eingangsadresse.
+
+Ihre neue persönliche Eingangsadresse lautet:
+
+  ${newInboundEmail}
+
+Bitte aktualisieren Sie ab sofort alle Weiterleitungsregeln in Outlook, Gmail oder anderen E-Mail-Programmen auf diese neue Adresse. Die alte Adresse @in.meinedokbox.de ist nicht mehr aktiv.
+
+Was hat sich geändert?
+- Alte Adresse: ${newInboundEmail.replace('@in.doklify.de', '@in.meinedokbox.de')}
+- Neue Adresse: ${newInboundEmail}
+
+Sonst bleibt alles gleich: Ihre Dokumente, Ordner und Einstellungen sind unverändert.
+
+Bei Fragen stehen wir Ihnen unter service@doklify.de zur Verfügung.
+
+Viele Grüße,
+Ihr Doklify Team
+  `.trim();
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+          <!-- Header -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 32px 40px; border-radius: 8px 8px 0 0; text-align: center;">
+              <p style="margin: 0 0 6px; font-size: 28px; font-weight: 700; color: #ffffff; letter-spacing: -0.5px;">Doklify</p>
+              <p style="margin: 0; font-size: 15px; color: rgba(255,255,255,0.85);">Wichtige Änderung Ihrer Eingangs-E-Mail-Adresse</p>
+            </td>
+          </tr>
+          <!-- Body -->
+          <tr>
+            <td style="padding: 36px 40px 24px;">
+              <p style="margin: 0 0 18px; font-size: 16px; line-height: 1.6; color: #333333;">Hallo ${firstName},</p>
+              <p style="margin: 0 0 18px; font-size: 16px; line-height: 1.6; color: #333333;">
+                wir haben unser Produkt von <strong>MeineDokBox</strong> zu <strong>Doklify</strong> umbenannt – inklusive einer neuen Domain für Ihre persönliche E-Mail-Eingangsadresse.
+              </p>
+              <p style="margin: 0 0 8px; font-size: 15px; font-weight: 600; color: #1a1a1a;">Ihre neue persönliche Eingangsadresse:</p>
+              <!-- New address highlight box -->
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin: 0 0 28px;">
+                <tr>
+                  <td style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px 24px; border-radius: 8px; text-align: center;">
+                    <p style="margin: 0; font-size: 18px; font-weight: 700; color: #ffffff; word-break: break-all;">${newInboundEmail}</p>
+                  </td>
+                </tr>
+              </table>
+              <!-- Change overview -->
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin: 0 0 28px; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden;">
+                <tr>
+                  <td style="padding: 14px 20px; background-color: #fef2f2; border-bottom: 1px solid #e5e7eb;">
+                    <span style="font-size: 13px; font-weight: 600; color: #991b1b;">ALT</span>
+                    <span style="margin-left: 12px; font-size: 14px; color: #7f1d1d; word-break: break-all;">${newInboundEmail.replace('@in.doklify.de', '@in.meinedokbox.de')}</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 14px 20px; background-color: #f0fdf4;">
+                    <span style="font-size: 13px; font-weight: 600; color: #166534;">NEU</span>
+                    <span style="margin-left: 12px; font-size: 14px; color: #14532d; word-break: break-all;">${newInboundEmail}</span>
+                  </td>
+                </tr>
+              </table>
+              <!-- Action required -->
+              <div style="background-color: #fef3c7; border-left: 4px solid #f59e0b; padding: 16px 20px; border-radius: 4px; margin-bottom: 28px;">
+                <p style="margin: 0 0 8px; font-size: 14px; font-weight: 600; color: #92400e;">Handlungsbedarf:</p>
+                <p style="margin: 0; font-size: 14px; color: #78350f;">
+                  Bitte aktualisieren Sie alle <strong>Weiterleitungsregeln</strong> in Outlook, Gmail oder anderen E-Mail-Programmen auf Ihre neue Adresse. Die alte Adresse <strong>@in.meinedokbox.de</strong> ist ab sofort nicht mehr aktiv.
+                </p>
+              </div>
+              <p style="margin: 0 0 18px; font-size: 15px; line-height: 1.6; color: #555555;">
+                Alles andere bleibt unverändert: Ihre Dokumente, Ordner und Einstellungen sind sicher und vollständig erhalten.
+              </p>
+              <p style="margin: 0 0 6px; font-size: 15px; line-height: 1.6; color: #555555;">
+                Bei Fragen erreichen Sie uns unter <a href="mailto:service@doklify.de" style="color: #667eea; text-decoration: none;">service@doklify.de</a>.
+              </p>
+            </td>
+          </tr>
+          <!-- Footer -->
+          <tr>
+            <td style="padding: 24px 40px; background-color: #f8f8f8; border-radius: 0 0 8px 8px; border-top: 1px solid #e5e7eb;">
+              <p style="margin: 0; font-size: 14px; color: #666; line-height: 1.5;">
+                Viele Grüße,<br>
+                Ihr <strong>Doklify</strong> Team
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `.trim();
+
+  return sendTrackedEmail({ to, subject, text, html, emailType: 'inbound_migration', userId });
 }
 

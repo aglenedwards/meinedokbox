@@ -5671,6 +5671,99 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ADMIN: Inbound email domain migration (in.meinedokbox.de → in.doklify.de)
+  // Supports two modes:
+  //   testEmail (string)  → sends a preview to that address only, no DB changes
+  //   dryRun   (boolean)  → performs DB update but sends no emails (returns preview list)
+  //   (neither)           → full migration: DB update + emails to every affected user
+  app.post('/api/admin/migrate-inbound-emails', isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const { testEmail, dryRun } = req.body as { testEmail?: string; dryRun?: boolean };
+      const { db } = await import('./db');
+      const { users } = await import('@shared/schema');
+      const { sql: drizzleSql, isNotNull, like } = await import('drizzle-orm');
+      const { sendInboundMigrationEmail } = await import('./lib/sendEmail');
+
+      const OLD_DOMAIN = '@in.meinedokbox.de';
+      const NEW_DOMAIN = '@in.doklify.de';
+
+      // ── TEST MODE ────────────────────────────────────────────────────────────
+      if (testEmail) {
+        // Send a representative preview to the supplied address (no DB changes)
+        const sampleNewAddress = `max.mustermann${NEW_DOMAIN}`;
+        const sent = await sendInboundMigrationEmail(testEmail, 'Max', sampleNewAddress);
+        return res.json({
+          mode: 'test',
+          sentTo: testEmail,
+          sampleAddress: sampleNewAddress,
+          success: sent,
+          message: sent
+            ? `Test-E-Mail erfolgreich an ${testEmail} gesendet.`
+            : `Fehler beim Senden an ${testEmail}.`,
+        });
+      }
+
+      // ── GATHER AFFECTED USERS ────────────────────────────────────────────────
+      const affectedUsers = await db
+        .select({ id: users.id, email: users.email, firstName: users.firstName, inboundEmail: users.inboundEmail })
+        .from(users)
+        .where(like(users.inboundEmail, `%${OLD_DOMAIN}`));
+
+      if (affectedUsers.length === 0) {
+        return res.json({
+          mode: dryRun ? 'dry_run' : 'full',
+          affected: 0,
+          message: 'Keine Nutzer mit alter Domain gefunden. Migration bereits abgeschlossen oder keine E-Mail-Adressen konfiguriert.',
+        });
+      }
+
+      // ── DRY-RUN MODE ─────────────────────────────────────────────────────────
+      if (dryRun) {
+        return res.json({
+          mode: 'dry_run',
+          affected: affectedUsers.length,
+          preview: affectedUsers.map(u => ({
+            email: u.email,
+            oldInbound: u.inboundEmail,
+            newInbound: u.inboundEmail!.replace(OLD_DOMAIN, NEW_DOMAIN),
+          })),
+        });
+      }
+
+      // ── FULL MIGRATION ────────────────────────────────────────────────────────
+      // 1. Update all inbound_email values in DB
+      await db.execute(
+        drizzleSql`UPDATE users SET inbound_email = REPLACE(inbound_email, ${OLD_DOMAIN}, ${NEW_DOMAIN}) WHERE inbound_email LIKE ${'%' + OLD_DOMAIN}`
+      );
+      console.log(`[Admin InboundMigration] DB updated: ${affectedUsers.length} rows`);
+
+      // 2. Send personalised notification to each user
+      const results: Array<{ email: string; newInbound: string; sent: boolean }> = [];
+      for (const user of affectedUsers) {
+        const newInbound = user.inboundEmail!.replace(OLD_DOMAIN, NEW_DOMAIN);
+        const sent = await sendInboundMigrationEmail(user.email, user.firstName, newInbound, user.id);
+        results.push({ email: user.email, newInbound, sent });
+        // Brief pause to avoid rate-limiting
+        await new Promise(r => setTimeout(r, 300));
+      }
+
+      const successCount = results.filter(r => r.sent).length;
+      console.log(`[Admin InboundMigration] Emails sent: ${successCount}/${affectedUsers.length}`);
+
+      return res.json({
+        mode: 'full',
+        affected: affectedUsers.length,
+        emailsSent: successCount,
+        emailsFailed: affectedUsers.length - successCount,
+        results,
+        message: `Migration abgeschlossen: ${affectedUsers.length} Adressen aktualisiert, ${successCount} E-Mails gesendet.`,
+      });
+    } catch (error) {
+      console.error('[Admin InboundMigration] Error:', error);
+      res.status(500).json({ message: 'Fehler bei der Inbound-E-Mail-Migration', error: String(error) });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
