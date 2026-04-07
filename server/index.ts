@@ -13,22 +13,25 @@ const app = express();
 
 // Redirect to canonical domain (SEO: prevent duplicate content)
 app.use((req, res, next) => {
-  const host = req.headers.host;
+  const host = req.headers.host || '';
   const canonicalDomain = 'doklify.de';
-  
-  if (host) {
-    // Redirect www to non-www
-    if (host.startsWith('www.')) {
-      const newHost = host.slice(4);
-      return res.redirect(301, `https://${newHost}${req.originalUrl}`);
-    }
-    
-    // Redirect replit.app to custom domain
-    if (host.includes('.replit.app')) {
-      return res.redirect(301, `https://${canonicalDomain}${req.originalUrl}`);
-    }
+
+  // Redirect old brand domain (with or without www) → doklify.de
+  if (host === 'meinedokbox.de' || host === 'www.meinedokbox.de') {
+    return res.redirect(301, `https://${canonicalDomain}${req.originalUrl}`);
   }
-  
+
+  // Redirect www to non-www
+  if (host.startsWith('www.')) {
+    const newHost = host.slice(4);
+    return res.redirect(301, `https://${newHost}${req.originalUrl}`);
+  }
+
+  // Redirect replit.app to custom domain
+  if (host.includes('.replit.app')) {
+    return res.redirect(301, `https://${canonicalDomain}${req.originalUrl}`);
+  }
+
   next();
 });
 
