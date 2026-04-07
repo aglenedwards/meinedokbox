@@ -5681,7 +5681,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { testEmail, dryRun } = req.body as { testEmail?: string; dryRun?: boolean };
       const { db } = await import('./db');
       const { users } = await import('@shared/schema');
-      const { sql: drizzleSql, isNotNull, like } = await import('drizzle-orm');
+      const { sql: drizzleSql, like } = await import('drizzle-orm');
       const { sendInboundMigrationEmail } = await import('./lib/sendEmail');
 
       const OLD_DOMAIN = '@in.meinedokbox.de';
@@ -5703,26 +5703,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // ── GATHER AFFECTED USERS ────────────────────────────────────────────────
-      const affectedUsers = await db
+      const { marketingEmails } = await import('@shared/schema');
+
+      // ── GATHER BOTH GROUPS OF USERS ───────────────────────────────────────────
+      // Group A: still have old domain → need DB update + email
+      const oldDomainUsers = await db
         .select({ id: users.id, email: users.email, firstName: users.firstName, inboundEmail: users.inboundEmail })
         .from(users)
         .where(like(users.inboundEmail, `%${OLD_DOMAIN}`));
-
-      if (affectedUsers.length === 0) {
-        return res.json({
-          mode: dryRun ? 'dry_run' : 'full',
-          affected: 0,
-          message: 'Keine Nutzer mit alter Domain gefunden. Migration bereits abgeschlossen oder keine E-Mail-Adressen konfiguriert.',
-        });
-      }
 
       // ── DRY-RUN MODE ─────────────────────────────────────────────────────────
       if (dryRun) {
         return res.json({
           mode: 'dry_run',
-          affected: affectedUsers.length,
-          preview: affectedUsers.map(u => ({
+          affected: oldDomainUsers.length,
+          preview: oldDomainUsers.map(u => ({
             email: u.email,
             oldInbound: u.inboundEmail,
             newInbound: u.inboundEmail!.replace(OLD_DOMAIN, NEW_DOMAIN),
@@ -5731,48 +5726,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // ── FULL MIGRATION ────────────────────────────────────────────────────────
-      // Step 1: Also collect users whose DB was already migrated but email was missed
-      //         (retry-safe: a previous partial run may have updated DB but failed mid-email)
-      const { marketingEmails } = await import('@shared/schema');
-      const { inArray } = await import('drizzle-orm');
-
-      // Users with new domain but no migration email → DB already done, email still needed
-      const alreadyMigratedUsers = await db
+      // Group B: DB already migrated to new domain, but email may have been missed
+      //          (retry-safe: handles partial failures from a previous run)
+      const newDomainUsers = await db
         .select({ id: users.id, email: users.email, firstName: users.firstName, inboundEmail: users.inboundEmail })
         .from(users)
         .where(like(users.inboundEmail, `%${NEW_DOMAIN}`));
 
-      // IDs that already received the migration email
+      // Deduplicated set of all candidate user IDs
+      const oldDomainIds = new Set(oldDomainUsers.map(u => u.id));
+      const uniqueNewDomainUsers = newDomainUsers.filter(u => !oldDomainIds.has(u.id));
+
+      if (oldDomainUsers.length === 0 && uniqueNewDomainUsers.length === 0) {
+        return res.json({
+          mode: 'full',
+          dbRowsUpdated: 0,
+          emailCandidates: 0,
+          emailsSent: 0,
+          emailsSkipped: 0,
+          emailsFailed: 0,
+          message: 'Keine Nutzer mit Inbound-E-Mail-Adressen gefunden. Nichts zu tun.',
+        });
+      }
+
+      // Find who already received the migration notification (for deduplication on retry)
       const allCandidateIds = [
-        ...affectedUsers.map(u => u.id),
-        ...alreadyMigratedUsers.map(u => u.id),
+        ...oldDomainUsers.map(u => u.id),
+        ...uniqueNewDomainUsers.map(u => u.id),
       ];
-      const alreadyNotifiedRows = allCandidateIds.length > 0
-        ? await db
-            .select({ userId: marketingEmails.userId })
-            .from(marketingEmails)
-            .where(
-              drizzleSql`${marketingEmails.emailType} = 'inbound_migration' AND ${marketingEmails.userId} = ANY(${allCandidateIds})`
-            )
-        : [];
+      const alreadyNotifiedRows = await db
+        .select({ userId: marketingEmails.userId })
+        .from(marketingEmails)
+        .where(
+          drizzleSql`${marketingEmails.emailType} = 'inbound_migration'
+            AND ${marketingEmails.userId} = ANY(${allCandidateIds})`
+        );
       const alreadyNotifiedIds = new Set(alreadyNotifiedRows.map(r => r.userId));
 
-      // Step 2: DB update — update all old-domain users; capture actual updated row count
-      const updateResult = await db.execute(
-        drizzleSql`UPDATE users SET inbound_email = REPLACE(inbound_email, ${OLD_DOMAIN}, ${NEW_DOMAIN}) WHERE inbound_email LIKE ${'%' + OLD_DOMAIN}`
-      );
-      const dbRowsUpdated: number = (updateResult as any).rowCount ?? affectedUsers.length;
+      // Step 1: DB update using returning() for typed row count (no 'any' cast needed)
+      const updatedRows = await db
+        .update(users)
+        .set({ inboundEmail: drizzleSql`REPLACE(inbound_email, ${OLD_DOMAIN}, ${NEW_DOMAIN})` })
+        .where(like(users.inboundEmail, `%${OLD_DOMAIN}`))
+        .returning({ id: users.id });
+      const dbRowsUpdated = updatedRows.length;
       console.log(`[Admin InboundMigration] DB updated: ${dbRowsUpdated} rows`);
 
-      // Step 3: Send personalised notifications — combine both groups, skip already notified
+      // Step 2: Send personalised notifications to all candidates, skip already-notified
       const emailCandidates = [
-        ...affectedUsers.map(u => ({
-          ...u,
-          newInbound: u.inboundEmail!.replace(OLD_DOMAIN, NEW_DOMAIN),
-        })),
-        ...alreadyMigratedUsers
-          .filter(u => !affectedUsers.some(a => a.id === u.id)) // deduplicate
-          .map(u => ({ ...u, newInbound: u.inboundEmail! })),
+        ...oldDomainUsers.map(u => ({ ...u, newInbound: u.inboundEmail!.replace(OLD_DOMAIN, NEW_DOMAIN) })),
+        ...uniqueNewDomainUsers.map(u => ({ ...u, newInbound: u.inboundEmail! })),
       ];
 
       const results: Array<{ email: string; newInbound: string; sent: boolean; skipped?: boolean }> = [];
@@ -5789,7 +5792,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const successCount = results.filter(r => r.sent).length;
       const skippedCount = results.filter(r => r.skipped).length;
-      console.log(`[Admin InboundMigration] Emails sent: ${successCount}, skipped (already notified): ${skippedCount}`);
+      console.log(`[Admin InboundMigration] Emails sent: ${successCount}, skipped: ${skippedCount}`);
 
       return res.json({
         mode: 'full',
