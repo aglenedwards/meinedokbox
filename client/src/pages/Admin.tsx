@@ -181,10 +181,13 @@ export default function Admin() {
     retry: false,
   });
 
-  // Redirect to admin login if not authenticated
+  // Redirect non-admin users away immediately
   useEffect(() => {
-    if (!checkingAuth && adminStatus?.requiresLogin) {
+    if (checkingAuth) return;
+    if (adminStatus?.requiresLogin) {
       setLocation("/admin/login");
+    } else if (adminStatus && !adminStatus.isAdminEmail) {
+      setLocation("/");
     }
   }, [adminStatus, checkingAuth, setLocation]);
 
@@ -568,8 +571,8 @@ export default function Admin() {
     );
   }
 
-  // Don't render if user needs to login (will redirect)
-  if (adminStatus?.requiresLogin) {
+  // Don't render while redirecting
+  if (adminStatus?.requiresLogin || (adminStatus && !adminStatus.isAdminEmail)) {
     return null;
   }
 
