@@ -221,7 +221,7 @@ export function getReactivationEmail2PowerUser(userName: string, docCount: numbe
 </td></tr>
 <tr><td style="padding:40px 36px 20px 36px;">
 <p style="margin:0 0 20px 0;font-size:16px;color:#333333;">Hey${userName ? ` ${userName}` : ''},</p>
-<p style="margin:0 0 24px 0;font-size:16px;color:#555555;">du hast <strong>${docCount} Dokument${docCount > 1 ? 'e' : ''}</strong> in deiner DokBox gespeichert. Die sind weiterhin sicher bei uns &#8211; aber ohne aktives Abo kannst du keine neuen hinzuf&#252;gen.</p>
+<p style="margin:0 0 24px 0;font-size:16px;color:#555555;">du hast <strong>${docCount} Dokument${docCount > 1 ? 'e' : ''}</strong> in deinem Doklify-Account gespeichert. Die sind weiterhin sicher bei uns &#8211; aber ohne aktives Abo kannst du keine neuen hinzuf&#252;gen.</p>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 28px 0;">
 <tr><td style="background-color:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:22px;">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
@@ -246,7 +246,7 @@ export function getReactivationEmail2PowerUser(userName: string, docCount: numbe
 </table>
 </td></tr></table>
 </body></html>`;
-  const text = `Hey${userName ? ` ${userName}` : ''},\n\n${docCount} Dokumente warten in deiner DokBox. Ohne Abo kannst du keine neuen hinzufuegen.\n\nTipp: Mit 5 Empfehlungen wird dein Abo kostenlos!\n\nZugang wiederherstellen: https://doklify.de\n\nKeine weiteren E-Mails: ${unsubUrl}`;
+  const text = `Hey${userName ? ` ${userName}` : ''},\n\n${docCount} Dokumente warten in deinem Doklify-Account. Ohne Abo kannst du keine neuen hinzufuegen.\n\nTipp: Mit 5 Empfehlungen wird dein Abo kostenlos!\n\nZugang wiederherstellen: https://doklify.de\n\nKeine weiteren E-Mails: ${unsubUrl}`;
   return { subject, html, text };
 }
 

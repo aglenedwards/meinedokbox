@@ -72,7 +72,7 @@ export function getAppUrl(): string {
 
 // TAG 3: Engagement Email - Feature Highlights
 export function getDay3Email(userName: string): { subject: string; html: string; text: string } {
-  const subject = "Schon gesehen, wie schnell DokBox deine Belege sortiert? 🎉";
+  const subject = "Schon gesehen, wie schnell Doklify deine Belege sortiert?";
   const text = `Hallo ${userName},\n\ndu bist jetzt seit 3 Tagen dabei – wie läuft's?\n\nDie meisten Nutzer sind begeistert, wie schnell die KI ihre Belege automatisch sortiert. Rechnungen, Verträge, Arztbelege – alles landet automatisch im richtigen Ordner.\n\nDu hast noch 4 Tage Trial-Zeit, um alle Features auszuprobieren:\n✓ KI-Kategorisierung in 15+ Kategorien\n✓ Smartphone-Kamera-Upload\n✓ Private & geteilte Ordner\n✓ E-Mail-Eingang für Dokumente\n\nNutze die Zeit und probiere alle Features aus!\n\nViele Grüße,\nIhr Doklify Team`;
   
   const html = `
@@ -465,7 +465,7 @@ export function getInvoicePaidNotificationEmail(
                 Hallo${partnerName ? ` ${partnerName}` : ''},
               </p>
               <p style="margin: 0 0 20px; font-size: 16px; color: #333; line-height: 1.6;">
-                <strong>${paidByName}</strong> hat eine Rechnung in eurer gemeinsamen DokBox als bezahlt markiert:
+                <strong>${paidByName}</strong> hat eine Rechnung in eurem gemeinsamen Doklify-Account als bezahlt markiert:
               </p>
               <div style="background-color: #f0fdf4; border-radius: 8px; padding: 20px; margin: 20px 0; border-left: 4px solid #10b981;">
                 <p style="margin: 0 0 8px; font-size: 18px; font-weight: 600; color: #065f46;">
@@ -495,7 +495,7 @@ export function getInvoicePaidNotificationEmail(
 
 Hallo${partnerName ? ` ${partnerName}` : ''},
 
-${paidByName} hat eine Rechnung in eurer gemeinsamen DokBox als bezahlt markiert:
+${paidByName} hat eine Rechnung in eurem gemeinsamen Doklify-Account als bezahlt markiert:
 
 Dokument: ${documentTitle}
 ${sender ? `Absender: ${sender}` : ''}

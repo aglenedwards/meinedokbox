@@ -44,7 +44,7 @@ function getPaymentReminderEmail(partnerName: string, documentTitle: string, amo
         <div class="content">
           <p>Hallo${partnerName ? ` ${partnerName}` : ''},</p>
           
-          <p>dies ist eine freundliche Erinnerung für eine unbezahlte Rechnung in eurer gemeinsamen DokBox:</p>
+          <p>dies ist eine freundliche Erinnerung für eine unbezahlte Rechnung in eurem gemeinsamen Doklify-Account:</p>
           
           <div style="background: white; padding: 20px; border-radius: 6px; margin: 20px 0;">
             <h2 style="margin-top: 0; color: #2563eb;">${documentTitle}</h2>
@@ -72,7 +72,7 @@ Zahlungserinnerung
 
 Hallo${partnerName ? ` ${partnerName}` : ''},
 
-dies ist eine freundliche Erinnerung für eine unbezahlte Rechnung in eurer gemeinsamen DokBox:
+dies ist eine freundliche Erinnerung für eine unbezahlte Rechnung in eurem gemeinsamen Doklify-Account:
 
 Dokument: ${documentTitle}
 ${senderStr}
