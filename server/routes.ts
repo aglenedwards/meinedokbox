@@ -5807,32 +5807,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // ── EMAIL-ONLY MODE ───────────────────────────────────────────────────────
       if (emailOnly) {
-        // Find all users queued for notification (pending or failed) — never send to 'sent/delivered/opened/clicked'
+        // Group 1: users with pending/failed tracking records (created by dbOnly step)
         const pendingRows = await db
           .select({ userId: marketingEmails.userId })
           .from(marketingEmails)
           .where(drizzleSql`${marketingEmails.emailType} = 'inbound_migration'
             AND ${marketingEmails.status} IN ('pending', 'failed')`);
+        const pendingUserIds = new Set(pendingRows.map(r => r.userId!));
 
-        if (pendingRows.length === 0) {
+        // Group 2: users already on @in.doklify.de but with NO inbound_migration record at all
+        // (migrated before this tool existed — DB was updated but users were never notified)
+        const alreadyNotifiedRows = await db
+          .select({ userId: marketingEmails.userId })
+          .from(marketingEmails)
+          .where(drizzleSql`${marketingEmails.emailType} = 'inbound_migration'
+            AND ${marketingEmails.status} IN ('sent', 'delivered', 'opened', 'clicked')`);
+        const alreadyNotifiedIds = new Set(alreadyNotifiedRows.map(r => r.userId!));
+
+        const doklifyUsers = await db
+          .select({ id: users.id, email: users.email, firstName: users.firstName, inboundEmail: users.inboundEmail })
+          .from(users)
+          .where(like(users.inboundEmail, `%@in.doklify.de`));
+
+        // Combine: pending/failed + unnotified doklify users (exclude already successfully notified)
+        const unnotifiedUsers = doklifyUsers.filter(u =>
+          pendingUserIds.has(u.id) || !alreadyNotifiedIds.has(u.id)
+        );
+
+        if (unnotifiedUsers.length === 0) {
           return res.json({
             mode: 'email_only',
             emailsSent: 0,
             emailsFailed: 0,
             emailsSkipped: 0,
-            message: 'Keine ausstehenden Benachrichtigungen gefunden. Alle Nutzer wurden bereits informiert oder DB-Migration noch nicht durchgeführt.',
+            message: 'Alle Nutzer wurden bereits benachrichtigt.',
           });
         }
 
-        const pendingUserIds = pendingRows.map(r => r.userId!);
-        const pendingUsers = await db
-          .select({ id: users.id, email: users.email, firstName: users.firstName, inboundEmail: users.inboundEmail })
-          .from(users)
-          .where(drizzleSql`${users.id} = ANY(${pendingUserIds})`);
-
         const results: Array<{ email: string; sent: boolean }> = [];
-        for (const user of pendingUsers) {
-          // Delete the 'pending' placeholder so sendTrackedEmail can create a clean 'sent'/'failed' record
+        for (const user of unnotifiedUsers) {
+          // Delete any stale 'pending' placeholder to avoid duplicate rows
           await db.delete(marketingEmails).where(
             drizzleSql`${marketingEmails.userId} = ${user.id}
               AND ${marketingEmails.emailType} = 'inbound_migration'
