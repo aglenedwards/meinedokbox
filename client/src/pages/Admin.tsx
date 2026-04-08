@@ -231,8 +231,12 @@ export default function Admin() {
   // Inbound email migration state
   const [migrationTestEmail, setMigrationTestEmail] = useState("");
   const [migrationConfirmOpen, setMigrationConfirmOpen] = useState(false);
+  const [migrationDbConfirmOpen, setMigrationDbConfirmOpen] = useState(false);
+  const [migrationEmailConfirmOpen, setMigrationEmailConfirmOpen] = useState(false);
   const [migrationResult, setMigrationResult] = useState<any>(null);
   const [migrationDryResult, setMigrationDryResult] = useState<any>(null);
+  const [migrationDbResult, setMigrationDbResult] = useState<any>(null);
+  const [migrationEmailResult, setMigrationEmailResult] = useState<any>(null);
 
   const migrationMutation = useMutation({
     mutationFn: async (body: object) => {
@@ -254,6 +258,15 @@ export default function Admin() {
       } else if (variables.dryRun) {
         setMigrationDryResult(data);
         toast({ title: "Vorschau geladen", description: `${data.affected} betroffene Adressen gefunden.` });
+      } else if (variables.dbOnly) {
+        setMigrationDbResult(data);
+        setMigrationDbConfirmOpen(false);
+        toast({ title: "DB migriert", description: data.message });
+      } else if (variables.emailOnly) {
+        setMigrationEmailResult(data);
+        setMigrationEmailConfirmOpen(false);
+        queryClient.invalidateQueries({ queryKey: ["/api/admin/marketing/stats"] });
+        toast({ title: "E-Mails gesendet", description: data.message });
       } else {
         setMigrationResult(data);
         setMigrationConfirmOpen(false);
@@ -1641,20 +1654,61 @@ export default function Admin() {
                   </Button>
                 </div>
 
-                {/* Step 3: Full migration */}
-                <div className="pt-2 border-t">
+                {/* Step 3: Two-phase migration */}
+                <div className="pt-2 border-t space-y-3">
+                  <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Schritt-für-Schritt-Migration</p>
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      variant="outline"
+                      data-testid="button-migration-db-only"
+                      disabled={migrationMutation.isPending}
+                      onClick={() => setMigrationDbConfirmOpen(true)}
+                    >
+                      Schritt 1: Nur DB migrieren
+                    </Button>
+                    <Button
+                      variant="outline"
+                      data-testid="button-migration-email-only"
+                      disabled={migrationMutation.isPending}
+                      onClick={() => setMigrationEmailConfirmOpen(true)}
+                    >
+                      <Mail className="h-4 w-4 mr-2" />
+                      Schritt 2: Nur E-Mails senden
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">Oder alles auf einmal:</p>
                   <Button
                     variant="destructive"
+                    size="sm"
                     data-testid="button-migration-start"
                     disabled={migrationMutation.isPending}
                     onClick={() => setMigrationConfirmOpen(true)}
                   >
-                    <Mail className="h-4 w-4 mr-2" />
-                    Jetzt migrieren (DB + Mails)
+                    DB + Mails in einem Schritt
                   </Button>
                 </div>
 
-                {/* Result summary */}
+                {/* DB-only result */}
+                {migrationDbResult && (
+                  <div className="rounded-md bg-muted p-3 text-sm space-y-1">
+                    <p className="font-medium">Schritt 1 abgeschlossen</p>
+                    <p>Adressen in DB aktualisiert: <strong>{migrationDbResult.dbRowsUpdated}</strong></p>
+                    <p className="text-muted-foreground">E-Mails noch nicht gesendet — Schritt 2 auslösen, wenn bereit.</p>
+                  </div>
+                )}
+
+                {/* Email-only result */}
+                {migrationEmailResult && (
+                  <div className="rounded-md bg-muted p-3 text-sm space-y-1">
+                    <p className="font-medium">Schritt 2 abgeschlossen</p>
+                    <p>E-Mails gesendet: <strong>{migrationEmailResult.emailsSent}</strong></p>
+                    {migrationEmailResult.emailsFailed > 0 && (
+                      <p className="text-amber-600">Fehlgeschlagen: <strong>{migrationEmailResult.emailsFailed}</strong> — Schritt 2 erneut auslösen zum Wiederholen.</p>
+                    )}
+                  </div>
+                )}
+
+                {/* Full migration result */}
                 {migrationResult && (
                   <div className="rounded-md bg-muted p-3 text-sm space-y-1">
                     <p className="font-medium">Migration abgeschlossen</p>
@@ -1687,6 +1741,50 @@ export default function Admin() {
                     onClick={() => migrationMutation.mutate({})}
                   >
                     {migrationMutation.isPending ? "Läuft..." : "Ja, jetzt migrieren"}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+
+            {/* DB-only Confirmation Dialog */}
+            <Dialog open={migrationDbConfirmOpen} onOpenChange={setMigrationDbConfirmOpen}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Nur DB migrieren?</DialogTitle>
+                  <DialogDescription>
+                    Dies aktualisiert alle Inbound-Adressen in der Datenbank von <code>@in.meinedokbox.de</code> auf <code>@in.doklify.de</code>. Es werden noch keine E-Mails an Nutzer gesendet — das erfolgt separat in Schritt 2.
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter className="gap-2">
+                  <Button variant="outline" onClick={() => setMigrationDbConfirmOpen(false)}>Abbrechen</Button>
+                  <Button
+                    data-testid="button-migration-db-confirm"
+                    disabled={migrationMutation.isPending}
+                    onClick={() => migrationMutation.mutate({ dbOnly: true })}
+                  >
+                    {migrationMutation.isPending ? "Läuft..." : "Ja, DB migrieren"}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+
+            {/* Email-only Confirmation Dialog */}
+            <Dialog open={migrationEmailConfirmOpen} onOpenChange={setMigrationEmailConfirmOpen}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Benachrichtigungen senden?</DialogTitle>
+                  <DialogDescription>
+                    Sendet die Migrations-Benachrichtigungs-Mail an alle Nutzer, deren Adresse bereits in der DB aktualisiert wurde, die aber noch keine E-Mail erhalten haben. Fehlgeschlagene Zustellungen werden automatisch wiederholt.
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter className="gap-2">
+                  <Button variant="outline" onClick={() => setMigrationEmailConfirmOpen(false)}>Abbrechen</Button>
+                  <Button
+                    data-testid="button-migration-email-confirm"
+                    disabled={migrationMutation.isPending}
+                    onClick={() => migrationMutation.mutate({ emailOnly: true })}
+                  >
+                    {migrationMutation.isPending ? "Läuft..." : "Ja, E-Mails senden"}
                   </Button>
                 </DialogFooter>
               </DialogContent>

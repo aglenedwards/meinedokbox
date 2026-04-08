@@ -5766,7 +5766,90 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // ── FULL MIGRATION ────────────────────────────────────────────────────────
+      // ── DB-ONLY MIGRATION ─────────────────────────────────────────────────────
+      const { dbOnly, emailOnly } = req.body as { dbOnly?: boolean; emailOnly?: boolean };
+
+      if (dbOnly) {
+        // Update DB only — no emails sent
+        // Insert 'pending' marketing_email records so emailOnly mode can find them later
+        const updatedRows = await db
+          .update(users)
+          .set({ inboundEmail: drizzleSql`REPLACE(inbound_email, ${OLD_DOMAIN}, ${NEW_DOMAIN})` })
+          .where(like(users.inboundEmail, `%${OLD_DOMAIN}`))
+          .returning({ id: users.id, email: users.email, firstName: users.firstName, inboundEmail: users.inboundEmail });
+        const dbRowsUpdated = updatedRows.length;
+        console.log(`[Admin InboundMigration] DB-only: ${dbRowsUpdated} rows updated`);
+
+        // Track migrated users in marketing_emails with status='pending' (so emailOnly can find them)
+        for (const u of updatedRows) {
+          const existing = await db
+            .select({ id: marketingEmails.id })
+            .from(marketingEmails)
+            .where(drizzleSql`${marketingEmails.userId} = ${u.id} AND ${marketingEmails.emailType} = 'inbound_migration'`)
+            .limit(1);
+          if (existing.length === 0) {
+            await db.insert(marketingEmails).values({
+              userId: u.id,
+              email: u.email,
+              emailType: 'inbound_migration',
+              status: 'pending',
+            });
+          }
+        }
+
+        return res.json({
+          mode: 'db_only',
+          dbRowsUpdated,
+          message: `DB-Migration abgeschlossen: ${dbRowsUpdated} Adressen aktualisiert. E-Mails noch nicht gesendet — Schritt 2 separat auslösen.`,
+        });
+      }
+
+      // ── EMAIL-ONLY MODE ───────────────────────────────────────────────────────
+      if (emailOnly) {
+        // Find all users queued for notification (pending or failed) — never send to 'sent/delivered/opened/clicked'
+        const pendingRows = await db
+          .select({ userId: marketingEmails.userId })
+          .from(marketingEmails)
+          .where(drizzleSql`${marketingEmails.emailType} = 'inbound_migration'
+            AND ${marketingEmails.status} IN ('pending', 'failed')`);
+
+        if (pendingRows.length === 0) {
+          return res.json({
+            mode: 'email_only',
+            emailsSent: 0,
+            emailsFailed: 0,
+            emailsSkipped: 0,
+            message: 'Keine ausstehenden Benachrichtigungen gefunden. Alle Nutzer wurden bereits informiert oder DB-Migration noch nicht durchgeführt.',
+          });
+        }
+
+        const pendingUserIds = pendingRows.map(r => r.userId!);
+        const pendingUsers = await db
+          .select({ id: users.id, email: users.email, firstName: users.firstName, inboundEmail: users.inboundEmail })
+          .from(users)
+          .where(drizzleSql`${users.id} = ANY(${pendingUserIds})`);
+
+        const results: Array<{ email: string; sent: boolean }> = [];
+        for (const user of pendingUsers) {
+          const sent = await sendInboundMigrationEmail(user.email, user.firstName, user.inboundEmail!, user.id);
+          results.push({ email: user.email, sent });
+          await new Promise(r => setTimeout(r, 300));
+        }
+
+        const successCount = results.filter(r => r.sent).length;
+        const failCount = results.filter(r => !r.sent).length;
+        console.log(`[Admin InboundMigration] Email-only: ${successCount} sent, ${failCount} failed`);
+
+        return res.json({
+          mode: 'email_only',
+          emailsSent: successCount,
+          emailsFailed: failCount,
+          emailsSkipped: 0,
+          message: `E-Mails gesendet: ${successCount} erfolgreich, ${failCount} fehlgeschlagen.`,
+        });
+      }
+
+      // ── FULL MIGRATION (DB + Emails in one step) ──────────────────────────────
       // Group B (retry-safe): users whose DB was already migrated in a previous partial run
       // but whose notification email FAILED — identified via marketing_emails status='failed'.
       // We intentionally avoid including all @in.doklify.de users here, because users who
@@ -5777,11 +5860,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .from(marketingEmails)
         .where(
           drizzleSql`${marketingEmails.emailType} = 'inbound_migration'
-            AND ${marketingEmails.status} = 'failed'`
+            AND ${marketingEmails.status} IN ('failed', 'pending')`
         );
       const failedNotificationUserIds = new Set(failedNotificationRows.map(r => r.userId!));
 
-      // Load Group B users who had a failed send (DB already on new domain)
+      // Load Group B users who had a failed/pending send (DB already on new domain)
       const retryUserIds = [...failedNotificationUserIds].filter(
         id => !oldDomainUsers.some(u => u.id === id)
       );
@@ -5800,12 +5883,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           emailsSent: 0,
           emailsSkipped: 0,
           emailsFailed: 0,
-          message: 'Keine Nutzer mit alter Domain gefunden und keine fehlgeschlagenen Zustellungen zum Wiederholen. Migration vollständig.',
+          message: 'Keine Nutzer mit alter Domain gefunden und keine ausstehenden Benachrichtigungen. Migration vollständig.',
         });
       }
 
       // Users considered successfully notified (sent/delivered/opened/clicked).
-      // Only these are skipped — 'failed' entries remain retryable.
+      // Only these are skipped — 'failed'/'pending' entries remain retryable.
       const allCandidateIds = [
         ...oldDomainUsers.map(u => u.id),
         ...retryUsers.map(u => u.id),
@@ -5820,7 +5903,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         );
       const alreadySucceededIds = new Set(alreadySucceededRows.map(r => r.userId));
 
-      // Step 1: DB update using returning() for typed row count
+      // Step 1: DB update
       const updatedRows = await db
         .update(users)
         .set({ inboundEmail: drizzleSql`REPLACE(inbound_email, ${OLD_DOMAIN}, ${NEW_DOMAIN})` })
@@ -5843,7 +5926,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         const sent = await sendInboundMigrationEmail(user.email, user.firstName, user.newInbound, user.id);
         results.push({ email: user.email, newInbound: user.newInbound, sent });
-        // Brief pause to avoid Mailgun rate-limiting
         await new Promise(r => setTimeout(r, 300));
       }
 
