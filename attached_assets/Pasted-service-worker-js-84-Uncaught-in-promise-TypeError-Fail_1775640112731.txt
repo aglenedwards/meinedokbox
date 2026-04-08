@@ -1,0 +1,23 @@
+service-worker.js:84 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at cacheFirst (service-worker.js:84:13)
+index-DKTnzu1n.js:780 Service Worker registered successfully: https://doklify.de/
+admin:1 <meta name="apple-mobile-web-app-capable" content="yes"> is deprecated. Please include <meta name="mobile-web-app-capable" content="yes">
+service-worker.js:84 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at cacheFirst (service-worker.js:84:13)
+service-worker.js:84 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at cacheFirst (service-worker.js:84:13)
+service-worker.js:84 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at cacheFirst (service-worker.js:84:13)
+service-worker.js:84 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at cacheFirst (service-worker.js:84:13)
+service-worker.js:84 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at cacheFirst (service-worker.js:84:13)
+service-worker.js:84 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at cacheFirst (service-worker.js:84:13)
+service-worker.js:84 Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Request scheme 'chrome-extension' is unsupported
+    at cacheFirst (service-worker.js:84:13)
+api/admin/migrate-inbound-emails:1  Failed to load resource: the server responded with a status of 500 ()
+index-DKTnzu1n.js:633 🔍 Full API Response: Object
+index-DKTnzu1n.js:633 🔍 First document keys: Array(26)
+index-DKTnzu1n.js:633 🔍 First document folderName: null
+index-DKTnzu1n.js:633 🔍 First document folderIcon: null

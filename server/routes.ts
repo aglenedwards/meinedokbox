@@ -5790,8 +5790,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           if (existing.length === 0) {
             await db.insert(marketingEmails).values({
               userId: u.id,
-              email: u.email,
+              recipientEmail: u.email,
               emailType: 'inbound_migration',
+              subject: 'Ihre Doklify-Eingangsadresse hat sich geändert',
               status: 'pending',
             });
           }
@@ -5831,6 +5832,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         const results: Array<{ email: string; sent: boolean }> = [];
         for (const user of pendingUsers) {
+          // Delete the 'pending' placeholder so sendTrackedEmail can create a clean 'sent'/'failed' record
+          await db.delete(marketingEmails).where(
+            drizzleSql`${marketingEmails.userId} = ${user.id}
+              AND ${marketingEmails.emailType} = 'inbound_migration'
+              AND ${marketingEmails.status} = 'pending'`
+          );
           const sent = await sendInboundMigrationEmail(user.email, user.firstName, user.inboundEmail!, user.id);
           results.push({ email: user.email, sent });
           await new Promise(r => setTimeout(r, 300));
